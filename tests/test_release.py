@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.0.2','version must be 1.0.2')
+ok(ver.get('version')=='1.1.0','version must be 1.1.0')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -143,6 +143,12 @@ console.log('algorithm regression tests passed');
     ok(cp.returncode==0,'algorithm regression tests failed: '+cp.stderr)
 except Exception as e:
     errors.append('could not build algorithm regression tests: '+str(e))
+
+# Backdated active-fast feature regression checks
+ok('id="startEarlierBtn"' in index and 'id="backdateModal"' in index,'backdated active-fast UI missing')
+ok('function saveBackdatedActiveFast()' in index and 'function setBackdatePreset(hours)' in index,'backdated active-fast logic missing')
+ok("'backdate.errOverlap'" in index and "'fasting.startEarlier'" in index,'backdated active-fast localization missing')
+ok('data.activeStart = start.toISOString();' in index and 'data.activeGoalHours = data.goalHours;' in index,'backdated active fast must persist start and locked target')
 
 if errors:
     print('FAIL')

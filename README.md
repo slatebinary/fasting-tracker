@@ -7,6 +7,7 @@ Fasting Tracker is designed to work locally on your device, including offline af
 ## Features
 
 - Start and stop fasting with a live timer
+- Start an ongoing fast retroactively if you forgot to press Start, with quick 1–12 hour presets or an exact start time
 - Unlimited custom fasting targets, including multi-day fasts
 - Fasting history with manual add/edit/delete support
 - Daily fasting visualization and statistics
