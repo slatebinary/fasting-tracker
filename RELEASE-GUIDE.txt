@@ -1,37 +1,19 @@
-FASTING TRACKER — RELEASE / UPDATE PROTOCOL v1
+FASTING TRACKER — RELEASE GUIDE
 
-For ordinary releases (for example 1.0.0 -> 1.0.1 or 1.5.0):
+Ordinary release process
 
-1. DO NOT modify sw.js. It is the stable update-protocol worker.
-2. Bump the semantic version in all three places:
-   - <meta name="ft-app-version" content="X.Y.Z"> in index.html
-   - const APP_VERSION = 'X.Y.Z' in index.html
-   - version in version.json
-3. Keep version.json protocolVersion at 1.
-4. Update version.json released/notes.
-5. Update version.json shell only if public release files were added/removed.
-6. Keep entry set to ./index.html.
-7. Update visible footer/version text and sitemap lastmod when appropriate.
-8. Run: python tools/build_release.py
-   This regenerates the SHA-256 hash for EVERY update-managed shell asset.
-   Do not hand-edit the hashes. HTML hashes use the documented github-pages-v1 normalization so Jekyll's site/repository URL substitutions remain verifiable.
-9. Run: python tests/test_release.py
-10. Deploy all changed public files in one Git commit.
-11. Existing installations keep serving their active cached release until the user accepts the in-app update.
-12. The stable service worker fetches/stages the complete shell with a release cache-buster, verifies every asset against version.json, verifies that index.html declares the same release version, and only then atomically switches the active release cache.
+1. Start from the latest complete release folder.
+2. Update APP_VERSION, the ft-app-version meta value, public About/Privacy footer versions, version.json version/date/notes, and release-specific tests.
+3. Keep sw.js byte-for-byte unchanged unless the update protocol itself must change. Any protocol change must remain backward-compatible with already installed versions.
+4. Run tools/build_release.py to regenerate SHA-256 hashes for every version.json shell asset.
+5. Run tests/test_release.py and JavaScript syntax checks. Do not package a release unless all checks pass.
+6. Package the CONTENTS as a complete release. Upload the entire release contents together so index.html, version.json, manifests and hashes cannot become mismatched.
+7. After GitHub Pages deploys, verify live version.json and the app version shown in Settings.
 
-Only change sw.js if the UPDATE PROTOCOL itself needs to change. A protocol change requires deliberate compatibility planning and a protocolVersion bump; it is not an ordinary app update.
+Data-safety rules
 
-IMPORTANT: Any public app/content change that installed users must receive requires a version bump. Editing index.html without changing version.json will intentionally NOT replace an installed active release.
-
-PROTOCOL CHANGES
-Protocol changes must be backward-compatible with the currently deployed app/SW long enough for installed clients to cross the upgrade boundary. Do not simply replace protocol v1 with an incompatible message contract.
-
-ACCESSIBILITY
-Do not re-add a forced portrait orientation unless there is a compelling requirement; the responsive app intentionally allows device rotation.
-
-
-LICENSE / BRANDING BASELINE
-- Source code is MIT-licensed; keep LICENSE unless intentionally changing the software license.
-- Fasting Tracker brand assets are reserved under BRANDING.md and are not granted by the MIT software license.
-- Do not remove or weaken the health, safety, or privacy notices as part of routine release work.
+- Main fasting/weight data is always higher priority than retaining the full internal snapshot schedule.
+- Internal snapshots are local recovery aids, not external backups. If storage is tight, the app may keep fewer snapshots and must warn the user.
+- Before update/import/restore operations that replace data, require a verified internal recovery snapshot when the workflow depends on it.
+- Before removing/reinstalling a Home Screen PWA (including icon changes), export an external JSON backup first.
+- Do not describe persistent browser storage as surviving uninstall; it only reduces ordinary eviction risk.

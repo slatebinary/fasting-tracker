@@ -16,12 +16,13 @@ Fasting Tracker is designed to work locally on your device, including offline af
 - Weight tracking with kg/lb support and target weight
 - Weight trend chart and history
 - Optional consistency-focused gamification and achievements
-- Science-based fasting/autophagy information with reputable references
+- Evidence-aware intermittent-fasting basics, potential benefits, limitations and safety guidance, plus fasting/autophagy information with reputable references
 - English, Bulgarian, and Spanish interface
 - System, light, and dark appearance modes
 - Offline PWA support
 - Local JSON export/import backups
 - Automatic rolling internal JSON recovery snapshots (5 recent, 7 daily, 4 weekly, 6 monthly) and update safeguards
+- Snapshot-storage pressure detection: main records stay the priority, recovery retention is reduced gracefully if local storage is tight, and the app prompts for an external backup
 - Privacy-focused local storage model
 - Accessibility improvements for keyboard and assistive technologies
 
@@ -62,7 +63,7 @@ See the in-app **Privacy** page for details.
 
 Fasting Tracker is a tracking and educational tool. It does **not** provide medical advice, diagnose conditions, determine whether a fasting duration is safe, or recommend prolonged fasting.
 
-The autophagy information is intentionally cautious: there is no validated universal human clock time at which autophagy suddenly “starts.” The app links to scientific literature so users can review the evidence directly.
+The app includes an evidence-aware overview of what intermittent fasting is, common patterns, possible benefits, important uncertainties and safety considerations. It also keeps the autophagy information intentionally cautious: there is no validated universal human clock time at which autophagy suddenly “starts.” The app links to scientific literature so users can review the evidence directly.
 
 People with medical conditions, people taking medications, pregnant or breastfeeding people, and anyone considering prolonged fasting should seek appropriate professional medical guidance.
 
@@ -107,3 +108,8 @@ For bugs or feature requests, use the repository's **Issues** section. GitHub Is
 ## Disclaimer
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, as described in the MIT License. Health and safety notices in the application are separate from the software license and remain applicable to the official Fasting Tracker application.
+
+
+## Internationalization
+
+The interface currently supports English, Bulgarian and Spanish. Language, region, time zone and weight unit are kept independent. Locale-sensitive numbers/dates use `Intl`, plurals use `Intl.PluralRules`, and the layout is prepared for future right-to-left languages. See `I18N-GUIDE.md` before adding another translation. Backup JSON remains language-neutral.

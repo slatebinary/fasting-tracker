@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.5.0" />
+  <meta name="ft-app-version" content="1.6.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -46,8 +46,9 @@ layout: null
       const qi=params.get('icon');
       let pref=null, storedData=null;
       try { storedData=JSON.parse(localStorage.getItem('fastingTracker.data')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=storedData.appearance==='dark'?'#000000':'#ffffff'; } } catch {}
-      const sys=(navigator.language||'en').toLowerCase();
-      const systemLang=sys.startsWith('bg')?'bg':sys.startsWith('es')?'es':'en';
+      const primarySystemTag=((Array.isArray(navigator.languages)&&navigator.languages[0])||navigator.language||'en').toLowerCase();
+      const systemBase=primarySystemTag.split(/[-_]/,1)[0];
+      const systemLang=allowed.includes(systemBase)?systemBase:'en';
       const lang=allowed.includes(q)?q:(allowed.includes(pref)?pref:systemLang);
       const iconAllowed=['plate','moon','hourglass','timer'];
       const icon=iconAllowed.includes(qi)?qi:(iconAllowed.includes(storedData&&storedData.iconChoice)?storedData.iconChoice:'plate');
@@ -150,7 +151,7 @@ layout: null
     .small { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
     .goalInputWrap { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
     select { max-width: 190px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
-    input.numericInput { width: 112px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; text-align: right; }
+    input.numericInput { width: 112px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; text-align: end; }
     .presetWrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .chip { padding: 9px 12px; border-radius: 999px; background: var(--line); color: var(--text); font-size: 13px; }
     .chip.active { background: var(--accent); color: white; }
@@ -175,12 +176,13 @@ layout: null
     .backupBanner strong { display: block; }
     .backupBanner .small { margin-top: 2px; }
     .backupBanner button { padding: 9px 12px; flex: 0 0 auto; }
+    .backupBanner.warn { background: color-mix(in srgb, var(--danger) 8%, var(--card)); border-color: color-mix(in srgb, var(--danger) 34%, transparent); }
     .snapshotItem { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
     .snapshotItem:last-child { border-bottom: 0; }
     .snapshotItem button { padding: 9px 12px; flex: 0 0 auto; }
     .modalActions.wrap { flex-wrap: wrap; }
     .version { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 0 2px; }
-    .helpSteps { margin: 8px 0 0; padding-left: 22px; }
+    .helpSteps { margin: 8px 0 0; padding-inline-start: 22px; }
     .helpSteps li { margin: 8px 0; line-height: 1.4; }
     .helpHeading { font-weight: 700; margin-top: 16px; }
     .platformNote { margin-top:10px; padding:11px 12px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
@@ -197,7 +199,15 @@ layout: null
     .iconChoice img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:22%; margin-bottom:7px; }
     .iconChoice span { display:block; font-size:12px; line-height:1.25; }
     .iconChoice.active { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--bg)); }
+    button, select, .small, .metric .label, .notice { word-break: normal; overflow-wrap: normal; }
+    button { max-width: 100%; }
+    html[dir="rtl"] .scienceLead, html[dir="rtl"] .row, html[dir="rtl"] .sectionHeader, html[dir="rtl"] .snapshotItem { direction: rtl; }
+    html[dir="rtl"] canvas { direction: ltr; } /* chart coordinates remain numeric; labels are localized separately */
     @media (max-width: 430px) { .iconChoiceGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    .reinstallLinkTools { margin-top:12px; }
+    .reinstallLinkRow { display:flex; gap:8px; align-items:stretch; margin-top:6px; flex-wrap:wrap; }
+    .reinstallLinkRow input { flex:1 1 280px; min-width:0; font-size:13px; }
+    .reinstallLinkRow button { flex:0 0 auto; }
     .modalBackdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); background: rgba(0,0,0,.46); }
     .modalCard { width: min(460px, 100%); max-height: 90vh; overflow: auto; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 18px 60px rgba(0,0,0,.28); }
     .modalCard h2 { margin-bottom: 16px; }
@@ -275,14 +285,14 @@ layout: null
     .row > *, .sectionHeader > *, .scienceLead > *, .xpHeader > *, .weightTop > * { min-width: 0; }
     #settings .row > div:first-child, .updateBanner > div:first-child, .backupBanner > div:first-child { flex: 1 1 220px; min-width: 0; }
     #settings .row > button, .updateBanner > button, .backupBanner > button, .snapshotItem > button, .sectionHeader > button, .historyActions button {
-      flex: 0 0 auto; white-space: nowrap; overflow-wrap: normal;
+      flex: 0 1 auto; white-space: normal; overflow-wrap: normal; word-break: normal;
     }
     .scienceLead { flex-wrap: wrap; align-items: flex-start; }
     .scienceWindow { flex: 1 1 150px; min-width: 0; overflow-wrap: anywhere; }
     .evidenceBadge { flex: 0 1 auto; max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: center; }
     @media (max-width: 520px) {
       #settings .row, .updateBanner, .backupBanner, .snapshotItem, .sectionHeader, .xpHeader, .weightTop { flex-wrap: wrap; }
-      #settings .row > button, .updateBanner > button, .backupBanner > button, .snapshotItem > button, .sectionHeader > button { margin-left: auto; }
+      #settings .row > button, .updateBanner > button, .backupBanner > button, .snapshotItem > button, .sectionHeader > button { margin-inline-start: auto; }
       .modalActions { flex-wrap: wrap; }
     }
     @media (max-width: 359px) {
@@ -315,18 +325,18 @@ layout: null
       <button id="updateBannerBtn" class="secondary" data-i18n="update.update">Update</button>
     </div>
     <div class="backupBanner" id="backupReminder" hidden>
-      <div><strong data-i18n="backup.reminderTitle">External backup reminder</strong><div class="small" id="backupReminderText">It has been 7 days since your last backup.</div></div>
+      <div><strong id="backupReminderTitle" data-i18n="backup.reminderTitle">External backup reminder</strong><div class="small" id="backupReminderText">It has been 7 days since your last backup.</div></div>
       <button id="backupReminderBtn" class="secondary" data-i18n="backup.now">Back up now</button>
     </div>
     <div class="card hero">
-      <div class="eyebrow" id="statusText">Ready to start</div>
-      <div class="friendlyTimer" id="friendlyTimer">0h 0m</div>
+      <div class="eyebrow" id="statusText" data-i18n="fasting.ready">Ready to start</div>
+      <div class="friendlyTimer" id="friendlyTimer">—</div>
       <div class="exactTimer" id="timer">00:00:00</div>
       <div class="progressTrack" id="fastProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Fasting target progress" data-i18n-aria="a11y.fastProgress"><div class="progressFill" id="progressFill"></div></div>
-      <div class="goal" id="goalText">Target: 16 hours</div>
-      <div class="progressDetail" id="progressDetail">0% complete</div>
+      <div class="goal" id="goalText">—</div>
+      <div class="progressDetail" id="progressDetail" data-i18n="fasting.zeroProgress">0% complete</div>
       <div class="targetMoment" id="targetMoment" hidden></div>
-      <button id="toggleFast" class="primary">Start Fast</button>
+      <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
     </div>
     <div class="card">
@@ -336,17 +346,39 @@ layout: null
     </div>
     <div class="card gamificationCard" id="gamificationSummary">
       <div class="sectionHeader"><h2 data-i18n="game.consistency">Consistency</h2><span class="levelPill" id="gSummaryLevel">Level 1</span></div>
-      <div class="xpHeader"><div class="xpValue" id="gSummaryXP">0 XP</div><div class="small" id="gSummaryNext">50 XP to next level</div></div>
+      <div class="xpHeader"><div class="xpValue" id="gSummaryXP">—</div><div class="small" id="gSummaryNext">—</div></div>
       <div class="xpTrack" id="xpProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Consistency level progress" data-i18n-aria="a11y.xpProgress"><div class="xpFill" id="gSummaryFill"></div></div>
       <div class="small" data-i18n="game.summaryHelp">XP rewards completing your chosen target and logging weight consistently. Fasting beyond the target earns no extra XP.</div>
     </div>
+    <div class="card" id="ifBasicsCard">
+      <h2 data-i18n="if.title">What is intermittent fasting?</h2>
+      <div class="small" data-i18n="if.what">Intermittent fasting (IF) is an eating pattern that alternates planned periods of eating with periods of little or no caloric intake. It focuses mainly on when you eat rather than prescribing a particular food list.</div>
+      <div class="small" style="margin-top:8px" data-i18n="if.examples">Common approaches include daily time-restricted eating (for example, 16:8), the 5:2 pattern, and alternate-day fasting.</div>
+      <details class="scienceSources">
+        <summary data-i18n="if.learnMore">Potential benefits, limits &amp; safety</summary>
+        <div class="helpHeading" data-i18n="if.benefitsTitle">Potential benefits</div>
+        <div class="small" data-i18n="if.benefits">Human trials suggest intermittent fasting can help some adults reduce body weight and waist circumference and may improve blood-glucose control, insulin sensitivity, blood pressure and some blood-lipid markers. Effects are usually modest, vary among people and regimens, and are often similar to continuous calorie restriction when total energy intake and weight loss are comparable.</div>
+        <div class="helpHeading" data-i18n="if.limitsTitle">What is still uncertain</div>
+        <div class="small" data-i18n="if.limits">Long-term effects on disease prevention, lifespan, cognitive function and the best fasting schedule remain uncertain. Much of the human evidence is short- to medium-term and is concentrated in adults with overweight, obesity or metabolic risk.</div>
+        <div class="helpHeading" data-i18n="if.safetyTitle">Who should be cautious</div>
+        <div class="small" data-i18n="if.safety">Fasting is not suitable for everyone. Seek professional advice before fasting if you are pregnant or breastfeeding, under 18, underweight, have a current or past eating disorder, diabetes or another medical condition, or take medicines that can be affected by meal timing. Stop the fast and seek appropriate care for severe weakness, fainting, confusion, dehydration, persistent vomiting or other concerning symptoms.</div>
+        <div class="helpHeading" data-i18n="if.sourcesTitle">Evidence &amp; sources</div>
+        <ul class="sourceList small">
+          <li data-i18n-html="if.src1"><a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">BMJ 2025 systematic review</a> — 99 randomized trials; intermittent fasting and continuous calorie restriction produced broadly similar weight and cardiometabolic outcomes, with generally small differences between strategies.</li>
+          <li data-i18n-html="if.src2"><a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">U.S. National Institute on Aging</a> — overview of intermittent-fasting patterns, potential health effects and uncertainty about long-term outcomes.</li>
+          <li data-i18n-html="if.src3"><a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — an 8–10 hour eating window produced modest benefits over three months in people with metabolic syndrome; longer studies are needed.</li>
+          <li data-i18n-html="if.src4"><a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — possible benefits and medication-related safety considerations for people with type 2 diabetes.</li>
+        </ul>
+      </details>
+    </div>
+
     <div class="card scienceCard" id="scienceCard">
       <h2 data-i18n="science.title">Autophagy &amp; fasting science</h2>
       <div class="scienceLead">
-        <div class="scienceWindow" id="scienceWindow">Not fasting</div>
-        <div class="evidenceBadge" id="scienceEvidence">Human evidence: limited</div>
+        <div class="scienceWindow" id="scienceWindow" data-i18n="science.notFasting">Not fasting</div>
+        <div class="evidenceBadge" id="scienceEvidence" data-i18n="science.limited">Human evidence: limited</div>
       </div>
-      <div class="small" id="scienceText">Autophagy is active at basal levels even when you are not fasting. Human research has not established a universal hour when fasting-induced autophagy “starts.”</div>
+      <div class="small" id="scienceText" data-i18n="science.idle">Autophagy is active at basal levels even when you are not fasting. Human research has not established a universal hour when fasting-induced autophagy “starts.”</div>
       <div class="scienceTimeline" id="scienceTimeline">
         <div class="scienceStage" data-stage="0" data-i18n-html="science.timeline0"><strong>0–8 h</strong> — early fast; no clock-based autophagy inference.</div>
         <div class="scienceStage" data-stage="1" data-i18n-html="science.timeline1"><strong>8–12 h</strong> — ketones commonly begin to rise; metabolic switching starts.</div>
@@ -451,10 +483,7 @@ layout: null
       <div class="row">
         <div><strong data-i18n="settings.language">Interface language</strong><div class="small" data-i18n="settings.languageHelp">Use the device language automatically, or choose a language for this app.</div></div>
         <select id="languageSelect" aria-label="Interface language" data-i18n-aria="settings.language">
-          <option value="system">System language</option>
-          <option value="en">English</option>
-          <option value="bg">Български</option>
-          <option value="es">Español</option>
+          <option value="system"></option>
         </select>
       </div>
       <div class="row">
@@ -475,10 +504,10 @@ layout: null
         </div>
         <div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
         <div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
-        <div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button type="button" id="prepareIconChangeBtn" class="secondary" data-i18n="settings.appIconPrepare">Back up & prepare icon change</button></div>
+        <div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button type="button" id="prepareIconChangeBtn" class="secondary" data-i18n="settings.appIconPrepare">Back up & prepare icon change</button><div id="reinstallLinkTools" class="reinstallLinkTools" hidden><label class="small" for="reinstallLinkInput" data-i18n="iconChange.linkLabel">Reinstall link</label><div class="reinstallLinkRow"><input id="reinstallLinkInput" type="text" readonly autocomplete="off" aria-label="Reinstall link" data-i18n-aria="iconChange.linkLabel"><button type="button" id="copyReinstallLinkBtn" class="secondary" data-i18n="iconChange.copyLink">Copy reinstall link</button></div><div id="reinstallLinkStatus" class="small" aria-live="polite"></div></div></div>
       </div>
       <div class="row">
-        <div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours. There is no app-imposed maximum. A fast keeps the target that was active when it started.</div></div>
+        <div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.</div></div>
         <div class="goalInputWrap"><input id="goalHours" class="numericInput" type="text" inputmode="decimal" autocomplete="off" value="16" aria-label="Target fasting duration" data-i18n-aria="settings.goal"> <span id="goalUnit">h</span></div>
       </div>
       <div class="presetWrap" aria-label="Quick fasting targets" data-i18n-aria="settings.goal">
@@ -501,7 +530,7 @@ layout: null
       </div>
       <div class="row">
         <div><strong data-i18n="backup.last">Last external backup</strong><div class="small" data-i18n="backup.lastHelp">A reminder appears after 7 days without one.</div></div>
-        <div class="duration" id="lastBackupLabel">Never</div>
+        <div class="duration" id="lastBackupLabel" data-i18n="common.never">Never</div>
       </div>
       <div class="row">
         <div><strong data-i18n="backup.nextReminder">Next external backup reminder</strong><div class="small" id="nextBackupLabel">Starts after your first fasting or weight record.</div></div>
@@ -567,14 +596,14 @@ layout: null
 
       <div class="row" style="margin-top:10px">
         <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
-        <div class="duration" id="appVersionLabel">v1.2.0</div>
+        <div class="duration" id="appVersionLabel">—</div>
       </div>
       <div class="row">
         <div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
         <button id="updateBtn" class="secondary" data-i18n="update.check">Check</button>
       </div>
     </div>
-    <div class="version">Fasting Tracker v1.2.0</div>
+    <div class="version" id="appFooterVersion">Fasting Tracker</div>
   </section>
 </main>
 
@@ -595,7 +624,7 @@ layout: null
         <button class="chip backdatePreset" type="button" data-hours="12" data-i18n="backdate.12h">12h ago</button>
       </div>
     </div>
-    <div class="notice" id="backdateTargetSummary">Target: 16 hours • locked for this fast</div>
+    <div class="notice" id="backdateTargetSummary">—</div>
     <div class="formError" id="backdateError" hidden></div>
     <div class="backdateConflict" id="backdateConflict" hidden role="alert">
       <strong id="backdateConflictTitle"></strong>
@@ -616,7 +645,7 @@ layout: null
 
 <div class="modalBackdrop" id="entryModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="entryModalTitle">
-    <h2 id="entryModalTitle">Add fasting entry</h2>
+    <h2 id="entryModalTitle" data-i18n="history.addTitle">Add fasting entry</h2>
     <div class="formGroup">
       <label for="entryStart" data-i18n="history.start">Start</label>
       <input id="entryStart" type="datetime-local" step="60" />
@@ -640,7 +669,7 @@ layout: null
 
 <div class="modalBackdrop" id="weightModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="weightModalTitle">
-    <h2 id="weightModalTitle">Add weight</h2>
+    <h2 id="weightModalTitle" data-i18n="weight.addTitle">Add weight</h2>
     <div class="formGroup">
       <label for="weightWhen" data-i18n="weight.dateTime">Date &amp; time</label>
       <input id="weightWhen" type="datetime-local" step="60" />
@@ -660,7 +689,7 @@ layout: null
 <div class="modalBackdrop" id="updateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
     <h2 id="updateModalTitle" data-i18n="update.install">Install update</h2>
-    <div class="small" id="updateModalText">A newer version is available. An internal recovery snapshot will be created automatically before installation.</div>
+    <div class="small" id="updateModalText">—</div>
     <div class="modalActions wrap">
       <button id="updateCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
       <button id="updateWithoutBackupBtn" class="secondary" data-i18n="update.withoutBackup">Update without backup</button>
@@ -672,7 +701,7 @@ layout: null
 <div class="modalBackdrop" id="snapshotModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="snapshotModalTitle">
     <h2 id="snapshotModalTitle" data-i18n="backup.snapshots">Internal recovery snapshots</h2>
-    <div class="small" data-i18n="backup.snapshotsHelp">These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. They do not replace an external backup.</div>
+    <div class="small" data-i18n="backup.snapshotsHelp">These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. If local storage becomes limited, it may keep fewer snapshots and will warn you. They do not replace an external backup.</div>
     <div id="snapshotList" style="margin-top:10px"></div>
     <div class="modalActions">
       <button id="snapshotCloseBtn" class="secondary" data-i18n="common.close">Close</button>
@@ -715,7 +744,15 @@ layout: null
   const DATA_VERSION = 1;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
-  const APP_VERSION = '1.5.0';
+  // Increment only when canonical English source wording intentionally changes.
+  const I18N_SOURCE_REVISION = 3;
+  const LANGUAGE_META = Object.freeze({
+    en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
+    bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
+    es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
+  });
+  const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
+  const APP_VERSION = '1.6.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -729,10 +766,18 @@ layout: null
   const MAX_IMPORT_FASTS = 10000;
   const MAX_IMPORT_WEIGHTS = 10000;
   const HISTORY_PAGE_SIZE = 50;
-  const MAX_SAFE_GOAL_HOURS = Math.floor(Number.MAX_SAFE_INTEGER / 3600000);
+  const MAX_DATE_MS = 8.64e15;
+  // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
+  const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
   const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, records: [], weights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, language: 'system', appearance: 'system', iconChoice: 'plate' };
   let recoveryMode = null;
   let backupMeta = loadBackupMeta();
+  let snapshotProtectionState = {
+    status: ['ok','reduced','failed'].includes(backupMeta.snapshotProtectionStatus) ? backupMeta.snapshotProtectionStatus : 'ok',
+    kept: Math.max(0, Number(backupMeta.snapshotStoredCount) || 0),
+    desired: Math.max(0, Number(backupMeta.snapshotDesiredCount) || 0)
+  };
+  let automaticSnapshotFailureAlerted = false;
   const versionTransitionSnapshotOK = captureVersionTransitionSnapshot();
   let data = load();
   let lastPersistedDataRaw = getStoredDataRaw();
@@ -765,7 +810,7 @@ layout: null
   let fastActionLocked = false;
   let emergencyBoot = new URLSearchParams(location.search).get('ft_recovery') === '1';
   const initialUrlParams = new URLSearchParams(location.search);
-  let urlLangOverride = ['en','bg','es'].includes(initialUrlParams.get('lang')) ? initialUrlParams.get('lang') : null;
+  let urlLangOverride = SUPPORTED_LANGUAGES.includes(initialUrlParams.get('lang')) ? initialUrlParams.get('lang') : null;
   let urlIconOverride = ['plate','moon','hourglass','timer'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
   const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -779,6 +824,11 @@ layout: null
       'backup.tiers':'Recovery point: {tiers}',
       'backup.autoReason':'automatic change',
       'backup.rollingPolicy':'{n} saved • keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points',
+      'backup.snapshotAttentionTitle':'Recovery backup needs attention',
+      'backup.autoSnapshotFailed':'Your data was saved, but the automatic recovery snapshot could not be created. Make an external backup now and check available device storage.',
+      'backup.autoSnapshotReduced':'Automatic recovery protection is reduced because local storage is limited. {n} recovery snapshots are currently being kept. Make an external backup now.',
+      'backup.snapshotFailedStatus':'Automatic recovery snapshot failed • your main data is saved, but internal recovery protection needs attention',
+      'backup.snapshotReducedStatus':'Reduced protection • {n} recovery snapshots kept because local storage is limited',
       'backup.nextOn':'Next reminder: {date}',
       'backup.nextDueNow':'Due now',
       'backup.nextStarts':'Starts after your first fasting or weight record.',
@@ -786,8 +836,9 @@ layout: null
       'nav.fasting':'Fasting','nav.history':'History','nav.weight':'Weight','nav.stats':'Statistics','nav.settings':'Settings',
       'common.on':'On','common.export':'Export','common.import':'Import','common.restore':'Restore','common.delete':'Delete','common.edit':'Edit','common.cancel':'Cancel','common.save':'Save','common.close':'Close','common.never':'Never','common.loadMoreCount':'Load more ({n} remaining)',
       'public.healthTitle':'Health & safety','public.healthText':'Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.','public.healthLink':'Read health & safety information','public.infoTitle':'Public information','public.infoText':'Read the full privacy information, health disclaimer and scientific-source notes.','public.privacy':'Privacy','public.about':'About & sources','public.support':'Support / report an issue','public.supportWarning':'GitHub Issues are public. Do not include fasting history, weight data, medical information or other personal data in a report.',
-      'settings.language':'Interface language','settings.languageHelp':'Use the device language automatically, or choose a language for this app.','settings.systemLanguage':'System language','settings.appearance':'Appearance','settings.appearanceHelp':'Follow the device appearance automatically, or choose light or dark mode for this app.','settings.appearanceSystem':'System','settings.appearanceLight':'Light','settings.appearanceDark':'Dark','settings.appIcon':'App icon','settings.appIconHelp':'Choose the icon for the next installation of Fasting Tracker. Changing this setting does not replace the icon of an app that is already installed.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.','settings.appIconSafetyHeading':'Changing an installed icon safely','settings.appIconSafetyText':'Removing or uninstalling the Home Screen web app can remove all of that installation\'s local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.','settings.appIconPrepare':'Back up & prepare icon change','iconChange.readyCopied':'Backup created. A reinstall link for “{icon}” was copied. Now remove/uninstall the current Home Screen app, open Safari/Chrome, paste the copied link, install Fasting Tracker again, then open Settings → Import to restore the backup.','iconChange.readyPrompt':'Backup created for “{icon}”. Copy this reinstall link. Then remove/uninstall the current Home Screen app, open the link in Safari/Chrome, reinstall Fasting Tracker, and use Settings → Import to restore the backup.','icon.plate':'Plate & clock','icon.moon':'Moon & utensils','icon.hourglass':'Hourglass & leaf','icon.timer':'F timer','settings.goal':'Target fasting duration','settings.goalHelp':'Any positive number of hours. There is no app-imposed maximum. A fast keeps the target that was active when it started.','settings.storageNotice':'Your fasting and weight records are stored locally on this device. The app automatically keeps rolling internal JSON recovery snapshots and reminds you every 7 days to make an external backup.','settings.deleteAll':'Delete all data','settings.deleteHelp':'Permanently clear fasting and weight history on this device',
-      'fasting.today':'Today','fasting.elapsedToday':'Fasting elapsed today','fasting.targetStreak':'Current target streak','fasting.ready':'Ready to start','fasting.start':'Start Fast','fasting.stop':'Stop Fast','fasting.started':'Started {date}','fasting.target':'Target: {goal}','fasting.targetLocked':'Target: {goal} • locked for this fast','fasting.targetReached':'Target reached • {duration} beyond target','fasting.progress':'{pct}% complete • {duration} remaining','fasting.zeroProgress':'0% complete','fasting.expectedTargetTime':'Expected target time: {date}','fasting.targetTimePassed':'Target time was: {date}','fasting.fastCount.one':'{n} fast','fasting.fastCount.other':'{n} fasts','fasting.shortConfirm':'This fast lasted less than one minute. Save it to your history?','fasting.clockError':'The device clock is earlier than this fast’s start time. Check the date/time settings before stopping the fast.',
+      'if.title':'What is intermittent fasting?','if.what':'Intermittent fasting (IF) is an eating pattern that alternates planned periods of eating with periods of little or no caloric intake. It focuses mainly on when you eat rather than prescribing a particular food list.','if.examples':'Common approaches include daily time-restricted eating (for example, 16:8), the 5:2 pattern, and alternate-day fasting.','if.learnMore':'Potential benefits, limits & safety','if.benefitsTitle':'Potential benefits','if.benefits':'Human trials suggest intermittent fasting can help some adults reduce body weight and waist circumference and may improve blood-glucose control, insulin sensitivity, blood pressure and some blood-lipid markers. Effects are usually modest, vary among people and regimens, and are often similar to continuous calorie restriction when total energy intake and weight loss are comparable.','if.limitsTitle':'What is still uncertain','if.limits':'Long-term effects on disease prevention, lifespan, cognitive function and the best fasting schedule remain uncertain. Much of the human evidence is short- to medium-term and is concentrated in adults with overweight, obesity or metabolic risk.','if.safetyTitle':'Who should be cautious','if.safety':'Fasting is not suitable for everyone. Seek professional advice before fasting if you are pregnant or breastfeeding, under 18, underweight, have a current or past eating disorder, diabetes or another medical condition, or take medicines that can be affected by meal timing. Stop the fast and seek appropriate care for severe weakness, fainting, confusion, dehydration, persistent vomiting or other concerning symptoms.','if.sourcesTitle':'Evidence & sources','if.src1':'<a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">BMJ 2025 systematic review</a> — 99 randomized trials; intermittent fasting and continuous calorie restriction produced broadly similar weight and cardiometabolic outcomes, with generally small differences between strategies.','if.src2':'<a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">U.S. National Institute on Aging</a> — overview of intermittent-fasting patterns, potential health effects and uncertainty about long-term outcomes.','if.src3':'<a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — an 8–10 hour eating window produced modest benefits over three months in people with metabolic syndrome; longer studies are needed.','if.src4':'<a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — possible benefits and medication-related safety considerations for people with type 2 diabetes.',
+      'settings.language':'Interface language','settings.languageHelp':'Use the device language automatically, or choose a language for this app.','settings.systemLanguage':'System language','settings.appearance':'Appearance','settings.appearanceHelp':'Follow the device appearance automatically, or choose light or dark mode for this app.','settings.appearanceSystem':'System','settings.appearanceLight':'Light','settings.appearanceDark':'Dark','settings.appIcon':'App icon','settings.appIconHelp':'Choose the icon for the next installation of Fasting Tracker. Changing this setting does not replace the icon of an app that is already installed.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.','settings.appIconSafetyHeading':'Changing an installed icon safely','settings.appIconSafetyText':'Removing or uninstalling the Home Screen web app can remove all of that installation\'s local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.','settings.appIconPrepare':'Back up & prepare icon change','iconChange.linkLabel':'Reinstall link','iconChange.copyLink':'Copy reinstall link','iconChange.ready':'Backup created for “{icon}”. The reinstall link is ready below. Copy it before removing the installed app.','iconChange.copied':'Reinstall link copied.','iconChange.copyFailed':'Automatic copying was not available. The reinstall link is selected below; use the device copy command.','iconChange.readyCopied':'Backup created. A reinstall link for “{icon}” was copied. Now remove/uninstall the current Home Screen app, open Safari/Chrome, paste the copied link, install Fasting Tracker again, then open Settings → Import to restore the backup.','iconChange.readyPrompt':'Backup created for “{icon}”. Copy this reinstall link. Then remove/uninstall the current Home Screen app, open the link in Safari/Chrome, reinstall Fasting Tracker, and use Settings → Import to restore the backup.','icon.plate':'Plate & clock','icon.moon':'Moon & utensils','icon.hourglass':'Hourglass & leaf','icon.timer':'F timer','settings.goal':'Target fasting duration','settings.goalHelp':'Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.','settings.storageNotice':'Your fasting and weight records are stored locally on this device. The app automatically keeps rolling internal JSON recovery snapshots and reminds you every 7 days to make an external backup.','settings.deleteAll':'Delete all data','settings.deleteHelp':'Permanently clear fasting and weight history on this device',
+      'fasting.today':'Today','fasting.elapsedToday':'Fasting elapsed today','fasting.targetStreak':'Current target streak','fasting.ready':'Ready to start','fasting.start':'Start Fast','fasting.stop':'Stop Fast','fasting.started':'Started {date}','fasting.target':'Target: {goal}','fasting.targetLocked':'Target: {goal} • locked for this fast','fasting.targetReached':'Target reached • {duration} beyond target','fasting.progress':'{pct}% complete • {duration} remaining','fasting.zeroProgress':'0% complete','fasting.expectedTargetTime':'Expected target time: {date}','fasting.targetTimePassed':'Target time was: {date}','fasting.fastCount.one':'{n} fast','fasting.fastCount.other':'{n} fasts','fasting.fastCount.zero':'{n} fasts','fasting.fastCount.two':'{n} fasts','fasting.fastCount.few':'{n} fasts','fasting.fastCount.many':'{n} fasts','fasting.shortConfirm':'This fast lasted less than one minute. Save it to your history?','fasting.clockError':'The device clock is earlier than this fast’s start time. Check the date/time settings before stopping the fast.',
       'fasting.startEarlier':'Started earlier','backdate.title':'Start an ongoing fast','backdate.help':'Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.','backdate.start':'Started at','backdate.target':'Target: {goal} • locked for this fast','backdate.targetHelp':'This target is locked to the active fast. Changing Settings later will not change it.','backdate.startFast':'Start fast','backdate.quickAria':'Quick start times','backdate.1h':'1h ago','backdate.2h':'2h ago','backdate.3h':'3h ago','backdate.4h':'4h ago','backdate.6h':'6h ago','backdate.12h':'12h ago','backdate.errStart':'Enter a valid start date and time.','backdate.errFuture':'The start time cannot be in the future.','backdate.errGoal':'Enter a target greater than 0 hours.','backdate.errOverlap':'This ongoing fast would overlap a completed fasting record.','backdate.conflictTitle':'Conflicts with an existing fast','backdate.conflictTitleMany':'Conflicts with {n} existing fasts','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Your ongoing fast cannot begin before {time}.','backdate.startAfter':'Start at {time}','backdate.editConflict':'Edit existing record','backdate.deleteConflict':'Delete conflicting record & start','backdate.deleteConfirm':'Delete this completed fasting record and start the ongoing fast from your selected time? This cannot be undone unless you have a backup.',
       'history.add':'Add entry','history.start':'Start','history.end':'End','history.targetHours':'Target hours','history.overlapHelp':'Manual entries cannot overlap another saved fast or the current active fast.','history.empty':'No completed fasts yet. Tap Add entry to enter one manually.','history.target':'Target: {goal}','history.targetReached':'Target reached','history.deleteConfirm':'Delete this fasting record?','history.addTitle':'Add fasting entry','history.editTitle':'Edit fasting entry','history.errDates':'Enter a valid start and end date/time.','history.errEndAfter':'End time must be after start time.','history.errFuture':'End time cannot be in the future.','history.errMinute':'A manual fasting entry must be at least one minute long.','history.errGoal':'Enter a target greater than 0 hours.','history.errOverlap':'This interval overlaps another saved fast or the current active fast.',
       'weight.add':'Add weight','weight.intro':'Track body weight alongside your fasting history.','weight.latest':'Latest weight','weight.change':'Change since first','weight.target':'Target weight','weight.toTarget':'Difference to target','weight.targetHelp':'Optional. Leave blank if you only want to track the trend.','weight.trend':'Weight trend','weight.chartHelp':'Last 30 weigh-ins. A target line appears when a target weight is set.','weight.dateTime':'Date & time','weight.empty':'No weight entries yet. Tap Add weight to record your first measurement.','weight.addChart':'Add weight entries to see your trend.','weight.editTitle':'Edit weight','weight.addTitle':'Add weight','weight.deleteConfirm':'Delete this weight entry?','weight.errDate':'Enter a valid date and time.','weight.errFuture':'Weight date/time cannot be in the future.','weight.errValue':'Enter a valid weight greater than 0 {unit}.','weight.errTarget':'Enter a valid target weight greater than 0 {unit}, or leave it blank.',
@@ -797,15 +848,15 @@ layout: null
       'science.title':'Autophagy & fasting science','science.notFasting':'Not fasting','science.limited':'Human evidence: limited','science.idle':'Autophagy is active at basal levels even when you are not fasting. Human research has not established a universal hour when fasting-induced autophagy “starts.”','science.caution':'This indicator is educational, not a measurement of autophagy and not a reason to prolong a fast. Fasting responses vary by tissue, activity, prior diet, glycogen status and other factors.','science.sources':'Scientific basis & sources',
       'science.timeline0':'<strong>0–8 h</strong> — early fast; no clock-based autophagy inference.','science.timeline1':'<strong>8–12 h</strong> — ketones commonly begin to rise; metabolic switching starts.','science.timeline2':'<strong>12–24 h</strong> — metabolic transition progresses; autophagy onset in humans remains unproven.','science.timeline3':'<strong>24–36 h</strong> — human autophagy-related markers have been studied; results are mixed and tissue-dependent.','science.timeline4':'<strong>36–48 h</strong> — prolonged fasting; a 36 h human muscle study found only modest effects on autophagy mediators.','science.timeline5':'<strong>48 h+</strong> — extended fasting; there is no validated whole-body “autophagy level” that can be calculated from elapsed time.','science.stage0':'0–8 h • Early fast','science.stage0e':'Autophagy: basal, not timed','science.stage0t':'Autophagy is already active at basal levels. Elapsed fasting time alone cannot show whether it has increased.','science.stage1':'8–12 h • Metabolic switch beginning','science.stage1e':'Autophagy: not established','science.stage1t':'Human ketone levels commonly begin to rise in this window. That metabolic change is not evidence that autophagy has switched on at a specific hour.','science.stage2':'12–24 h • Metabolic transition','science.stage2e':'Human evidence: uncertain','science.stage2t':'Fuel use shifts further toward fat and ketones, but reviews conclude that a significant fasting-induced rise in human autophagy during an acute fast has not been established.','science.stage3':'24–36 h • Autophagy markers studied','science.stage3e':'Human evidence: mixed','science.stage3t':'Human skeletal-muscle studies at 24–36 hours show mixed or modest changes in autophagy-related markers. Effects differ by tissue and individual context.','science.stage4':'36–48 h • Prolonged fasting','science.stage4e':'Human evidence: limited','science.stage4t':'Ketosis generally deepens, but a 36-hour human muscle study found only modest effects on autophagy mediators. There is no validated whole-body autophagy threshold.','science.stage5':'48 h+ • Extended fasting','science.stage5e':'No validated clock-based level','science.stage5t':'Current human evidence does not let an app calculate an autophagy “level” from fasting duration. Longer fasting should not be interpreted as proportionally more autophagy.',
       'science.src1':'<a href="https://pubmed.ncbi.nlm.nih.gov/35892559/" target="_blank" rel="noopener noreferrer">Gómez-Virgilio et al., 2022 (PubMed)</a> — autophagy is active at basal levels in cells and responds to nutrient stress.','science.src2':'<a href="https://www.nejm.org/doi/abs/10.1056/NEJMra1905136" target="_blank" rel="noopener noreferrer">de Cabo &amp; Mattson, NEJM 2019</a> and <a href="https://www.nejm.org/doi/full/10.1056/NEJMx200002" target="_blank" rel="noopener noreferrer">2020 correction</a> — human ketone levels begin rising roughly 8–12 h into fasting and increase further by 48 h.','science.src3':'<a href="https://pubmed.ncbi.nlm.nih.gov/35142356/" target="_blank" rel="noopener noreferrer">Anton et al., 2022 (PubMed)</a> — review concluding that whether an acute fast produces significant increases in human autophagy remains unknown.','science.src4':'<a href="https://pubmed.ncbi.nlm.nih.gov/35660501/" target="_blank" rel="noopener noreferrer">Chaudhary et al., 2022 (PubMed)</a> — 12–24 h fasting did not show robust activation of autophagy markers in human skeletal muscle.','science.src5':'<a href="https://pubmed.ncbi.nlm.nih.gov/30161009/" target="_blank" rel="noopener noreferrer">Dethlefsen et al., 2018 (PubMed)</a> — 36 h fasting produced only modest changes in autophagy-related markers in human skeletal muscle, influenced by training status.',
-      'backup.reminderTitle':'External backup reminder','backup.now':'Back up now','backup.exportTitle':'Export backup','backup.exportHelp':'Save/share your data as a JSON file','backup.last':'Last external backup','backup.lastHelp':'A reminder appears after 7 days without one.','backup.noneYet':'No external backup yet','backup.snapshots':'Automatic internal JSON snapshots','backup.importTitle':'Import backup','backup.importHelp':'Restore from an exported JSON file','backup.snapshotsHelp':'These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. They do not replace an external backup.','backup.shareTitle':'Fasting Tracker backup','backup.errCreate':'The backup could not be created. Try again before updating.','backup.snapshotFailed':'A recovery snapshot could not be saved. The operation has been stopped to protect your current data. Export a backup and check available device storage, then try again.','backup.dueLast':'Your last external backup was {date}. Save a fresh copy to Files, iCloud Drive, Google Drive, or another secure location.','backup.dueNever':'Your fasting or weight data has not been externally backed up for at least 7 days. Save a copy to Files, iCloud Drive, Google Drive, or another secure location.','backup.snapshotCount':'{n} of {max} rolling {word} stored locally.','backup.snapshotWord.one':'snapshot','backup.snapshotWord.other':'snapshots','backup.snapshotNone':'No recovery snapshots yet. One is created automatically around an app update.','backup.snapshotUnavailable':'That recovery snapshot is no longer available.','backup.snapshotRestoreConfirm':'Restore the recovery snapshot from {date}? This will replace the fasting and weight data currently on this device.','backup.snapshotRestored':'Recovery snapshot restored.','backup.snapshotEmpty':'No internal recovery snapshots are available yet.','backup.snapshotTitle':'Recovery snapshot','backup.snapshotFrom':'From {version} • {reason}','backup.unencrypted':'Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.',
+      'backup.reminderTitle':'External backup reminder','backup.now':'Back up now','backup.exportTitle':'Export backup','backup.exportHelp':'Save/share your data as a JSON file','backup.last':'Last external backup','backup.lastHelp':'A reminder appears after 7 days without one.','backup.noneYet':'No external backup yet','backup.snapshots':'Automatic internal JSON snapshots','backup.importTitle':'Import backup','backup.importHelp':'Restore from an exported JSON file','backup.snapshotsHelp':'These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. If local storage becomes limited, it may keep fewer snapshots and will warn you. They do not replace an external backup.','backup.shareTitle':'Fasting Tracker backup','backup.errCreate':'The backup could not be created. Try again before updating.','backup.snapshotFailed':'A recovery snapshot could not be saved. The operation has been stopped to protect your current data. Export a backup and check available device storage, then try again.','backup.dueLast':'Your last external backup was {date}. Save a fresh copy to Files, iCloud Drive, Google Drive, or another secure location.','backup.dueNever':'Your fasting or weight data has not been externally backed up for at least 7 days. Save a copy to Files, iCloud Drive, Google Drive, or another secure location.','backup.snapshotCount':'{n} of {max} rolling {word} stored locally.','backup.snapshotWord.one':'snapshot','backup.snapshotWord.other':'snapshots','backup.snapshotWord.zero':'snapshots','backup.snapshotWord.two':'snapshots','backup.snapshotWord.few':'snapshots','backup.snapshotWord.many':'snapshots','backup.snapshotNone':'No recovery snapshots yet. One is created automatically after the first meaningful fasting or weight change.','backup.snapshotUnavailable':'That recovery snapshot is no longer available.','backup.snapshotRestoreConfirm':'Restore the recovery snapshot from {date}? This will replace the fasting and weight data currently on this device.','backup.snapshotRestored':'Recovery snapshot restored.','backup.snapshotEmpty':'No internal recovery snapshots are available yet.','backup.snapshotTitle':'Recovery snapshot','backup.snapshotFrom':'From {version} • {reason}','backup.unencrypted':'Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.',
       'update.newVersion':'New version available','update.releaseReady':'A newer Fasting Tracker release is ready.','update.update':'Update','update.updates':'Updates','update.check':'Check','update.checking':'Checking for updates…','update.checkingBtn':'Checking…','update.available':'Version v{version} is available.','update.updateNow':'Update now','update.ready':'Fasting Tracker v{version} is ready.','update.installing':'Installing the latest version…','update.updating':'Updating…','update.installingShort':'Installing update…','update.offline':'Could not check. Connect to the internet and try again.','update.offlineExplicit':'Offline — connect to the internet to check for updates.','update.failed':'Update check failed. Try again when you have a connection.','update.current':'Up to date — v{version}.','update.install':'Install update','update.withoutBackup':'Update without backup','update.backupUpdate':'Backup & Update','update.modalText':'Fasting Tracker v{version} is available. An internal recovery snapshot will be created automatically before installation.','update.failedInstall':'Update failed. Check your connection and try again.','update.preparing':'Preparing backup…',
       'help.title':'About & Help','help.installIOS':'Install on iPhone / iPad','help.installIOS1':"Open the app's web address in Safari.",'help.installIOS2':'Tap Share, then <strong>Add to Home Screen</strong>.','help.installIOS3':'Keep <strong>Open as Web App</strong> enabled if iOS shows that option, then tap Add.','help.installAndroid':'Install on Android','help.installAndroid1':"Open the app's web address in Chrome or another browser that supports PWA installation.",'help.installAndroid2':'Open the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.','help.installAndroid3':'Confirm the installation. Fasting Tracker will appear on the Home screen/app launcher and can work offline after its files are cached.','help.backup':'Backup & restore','help.backupText':'The app automatically keeps rolling internal JSON snapshots after meaningful changes and reminds you every 7 days to use <strong>Back up now</strong> for an external JSON copy in Files, iCloud Drive, Google Drive, or another secure location. When enough history exists it keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points. Internal snapshots are lost if this installation is removed. Before reinstalling to change the Home Screen icon, create an external backup; after reinstalling, use <strong>Import</strong> to restore it.','help.privacy':'Privacy & storage','help.privacyText':"Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each friend who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.",'help.timeZoneTitle':'Historical time zones','help.timeZoneText':'Fasts and weight entries remember the time zone in which they were created, so historical clock times and calendar-day charts do not shift if you later travel to another time zone.','help.autophagy':'Autophagy indicator','help.autophagyText':'The science card deliberately does not claim that autophagy starts at a fixed hour. Autophagy occurs continuously at a basal level, and current human studies do not support a universal fasting-duration threshold. The card separates well-established metabolic timing from more uncertain autophagy evidence and links to the studies used.','help.consistency':'Consistency system','help.consistencyText':'Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.','help.appVersion':'App version','help.versionHelp':'Useful when checking which release is installed',
-      'recovery.title':'Recovery mode','recovery.text':'Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten. Export the raw data or restore a recovery snapshot before continuing.','recovery.exportRaw':'Export raw data','recovery.snapshots':'Recovery snapshots','recovery.importBackup':'Import backup','recovery.startFresh':'Start fresh','recovery.resetConfirm':'Start with fresh empty data? The unreadable raw data will be replaced. Export it first if you may need it later.','recovery.writeBlocked':'Changes are blocked while Recovery mode is active. Resolve the stored-data problem first.','sync.conflict':'Fasting Tracker changed in another tab or app window. The latest saved data has been loaded; please repeat your action.','backup.downloadConfirm':'A backup download was started. After you verify the JSON file is saved, tap OK to mark the external backup as complete.','game.unlocked':'Unlocked','game.locked':'Locked','update.emergencyRecovery':'The cached app release was damaged. Fasting Tracker is repairing it after protecting your local data.','error.save':'Fasting Tracker could not save your data. Export a backup and check available device storage.','error.goal':'Enter a target greater than 0 hours.','import.confirm':'Import {fasts} fasting {fastWord} and {weights} weight {weightWord} and replace the data currently on this device?','import.fast.one':'record','import.fast.other':'records','import.weight.one':'entry','import.weight.other':'entries','import.done':'Backup imported.','import.invalid':'That file is not a valid Fasting Tracker v1 backup, or its records are inconsistent.','reset.confirm':'Delete all fasting history, weight history, settings, and internal recovery snapshots from this device? This cannot be undone unless you have an external backup.',
+      'recovery.title':'Recovery mode','recovery.text':'Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten. Export the raw data or restore a recovery snapshot before continuing.','recovery.exportRaw':'Export raw data','recovery.snapshots':'Recovery snapshots','recovery.importBackup':'Import backup','recovery.startFresh':'Start fresh','recovery.resetConfirm':'Start with fresh empty data? The unreadable raw data will be replaced. Export it first if you may need it later.','recovery.writeBlocked':'Changes are blocked while Recovery mode is active. Resolve the stored-data problem first.','sync.conflict':'Fasting Tracker changed in another tab or app window. The latest saved data has been loaded; please repeat your action.','backup.downloadConfirm':'A backup download was started. After you verify the JSON file is saved, tap OK to mark the external backup as complete.','game.unlocked':'Unlocked','game.locked':'Locked','update.emergencyRecovery':'The cached app release was damaged. Fasting Tracker is repairing it after protecting your local data.','error.save':'Fasting Tracker could not save your data. Export a backup and check available device storage.','error.goal':'Enter a target greater than 0 hours and within the supported date range.','import.confirm':'Import {fasts} fasting {fastWord} and {weights} weight {weightWord} and replace the data currently on this device?','import.fast.one':'record','import.fast.other':'records','import.fast.zero':'records','import.fast.two':'records','import.fast.few':'records','import.fast.many':'records','import.weight.one':'entry','import.weight.other':'entries','import.weight.zero':'entries','import.weight.two':'entries','import.weight.few':'entries','import.weight.many':'entries','import.done':'Backup imported.','import.invalid':'That file is not a valid Fasting Tracker v1 backup, or its records are inconsistent.','reset.confirm':'Delete all fasting history, weight history, settings, and internal recovery snapshots from this device? This cannot be undone unless you have an external backup.',
       'backup.reason.firstLaunch':'before first launch of v{version}','backup.reason.restore':'before restoring another snapshot','backup.reason.update':'before updating from v{from} to v{to}','backup.reason.import':'before importing an external backup',
       'common.dismiss':'Dismiss','installStorage.title':'Using Safari on iPhone?','installStorage.text':'Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.','storage.title':'Storage protection','storage.checking':'Checking storage protection…','storage.protected':'Persistent storage: Protected','storage.bestEffort':'Persistent storage: Best effort','storage.unavailable':'Persistent storage status unavailable','storage.help':'Persistent storage can reduce the chance that the browser removes local app data under storage pressure. External backups are still recommended.','storage.request':'Request protection','storage.requestDenied':'Protection was not granted. Keep recent external backups.','storage.usage':'Using {used} of {quota} available storage.','storage.usageUnknown':'Storage usage information is unavailable.',
       'safety.longFastTitle':'Extended fasting target','safety.longFastText':'You selected {goal}. Extended fasting of 72 hours or more can carry additional risks and is not appropriate for everyone. Fasting Tracker records your choice; it does not recommend this duration. Review the health & safety information before continuing.','safety.continue':'Use this target',
       'a11y.fastProgress':'Fasting target progress','a11y.xpProgress':'Consistency level progress','a11y.weightUnit':'Weight unit','a11y.fastChart':'Fasting hours chart for the last 14 days','a11y.weightChart':'Weight trend chart',
-      'unit.day.one':'day','unit.day.other':'days','unit.d':'d','unit.h':'h','unit.m':'m','unit.hour.one':'hour','unit.hour.other':'hours'
+      'unit.day.one':'day','unit.day.other':'days','unit.day.zero':'days','unit.day.two':'days','unit.day.few':'days','unit.day.many':'days','unit.d':'d','unit.h':'h','unit.m':'m','unit.hour.one':'hour','unit.hour.other':'hours','unit.hour.zero':'hours','unit.hour.two':'hours','unit.hour.few':'hours','unit.hour.many':'hours'
     },
     bg: {
       'backup.tierMonthly':'месечна',
@@ -815,6 +866,11 @@ layout: null
       'backup.tiers':'Точка за възстановяване: {tiers}',
       'backup.autoReason':'автоматична промяна',
       'backup.rollingPolicy':'{n} запазени • 5 последни, 7 дневни, 4 седмични и 6 месечни точки',
+      'backup.snapshotAttentionTitle':'Възстановителният архив изисква внимание',
+      'backup.autoSnapshotFailed':'Данните ви са запазени, но автоматичното възстановително копие не можа да бъде създадено. Направете външен архив сега и проверете свободното място на устройството.',
+      'backup.autoSnapshotReduced':'Автоматичната защита за възстановяване е намалена поради ограничено локално пространство. В момента се пазят {n} възстановителни копия. Направете външен архив сега.',
+      'backup.snapshotFailedStatus':'Автоматичното възстановително копие е неуспешно • основните ви данни са запазени, но вътрешната защита изисква внимание',
+      'backup.snapshotReducedStatus':'Намалена защита • пазят се {n} възстановителни копия поради ограничено локално пространство',
       'backup.nextOn':'Следващо напомняне: {date}',
       'backup.nextDueNow':'Архивирайте сега',
       'backup.nextStarts':'Започва след първия запис за гладуване или тегло.',
@@ -822,8 +878,9 @@ layout: null
       'nav.fasting':'Гладуване','nav.history':'История','nav.weight':'Тегло','nav.stats':'Статистика','nav.settings':'Настройки',
       'common.on':'Вкл.','common.export':'Експорт','common.import':'Импорт','common.restore':'Възстанови','common.delete':'Изтрий','common.edit':'Редактирай','common.cancel':'Отказ','common.save':'Запази','common.close':'Затвори','common.never':'Никога','common.loadMoreCount':'Покажи още ({n} оставащи)',
       'public.healthTitle':'Здраве и безопасност','public.healthText':'Fasting Tracker е информационен инструмент за лично проследяване, а не медицински съвет. Той не определя дали дадена продължителност на гладуване е безопасна за вас и не препоръчва продължително гладуване.','public.healthLink':'Прочетете информацията за здраве и безопасност','public.infoTitle':'Публична информация','public.infoText':'Прочетете пълната информация за поверителност, здравния отказ от отговорност и бележките към научните източници.','public.privacy':'Поверителност','public.about':'За приложението и източници','public.support':'Поддръжка / сигнал за проблем','public.supportWarning':'GitHub Issues са публични. Не включвайте история на гладуване, данни за тегло, медицинска информация или други лични данни в сигнал.',
-      'settings.language':'Език на интерфейса','settings.languageHelp':'Използвайте автоматично езика на устройството или изберете език само за приложението.','settings.systemLanguage':'Системен език','settings.appearance':'Външен вид','settings.appearanceHelp':'Следвайте автоматично режима на устройството или изберете светъл или тъмен режим само за приложението.','settings.appearanceSystem':'Системен','settings.appearanceLight':'Светъл','settings.appearanceDark':'Тъмен','settings.appIcon':'Икона на приложението','settings.appIconHelp':'Изберете иконата за следващото инсталиране на Fasting Tracker. Промяната тук не заменя иконата на вече инсталирано приложение.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Изберете иконата в Safari преди Add to Home Screen. Инсталирано уеб приложение на началния екран не може да смени иконата си на място.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Изберете иконата преди Install app или Add to Home screen. При някои Android launcher-и също е необходимо преинсталиране, за да се покаже новата икона.','settings.appIconSafetyHeading':'Безопасна смяна на иконата на инсталираното приложение','settings.appIconSafetyText':'Премахването или деинсталирането на уеб приложението от началния екран може да изтрие всички локални данни на тази инсталация, статуса за постоянно хранилище и вътрешните възстановителни копия. Те не преживяват деинсталиране. Преди премахване създайте външен архив. След повторно инсталиране с новата икона импортирайте архива, за да възстановите данните и настройките.','settings.appIconPrepare':'Архивирай и подготви смяна на иконата','iconChange.readyCopied':'Архивът е създаден. Копирана е връзка за повторно инсталиране с „{icon}“. Сега премахнете/деинсталирайте текущото приложение от началния екран, отворете Safari/Chrome, поставете копираната връзка, инсталирайте Fasting Tracker отново и после използвайте Настройки → Импорт, за да възстановите архива.','iconChange.readyPrompt':'Архивът за „{icon}“ е създаден. Копирайте тази връзка за повторно инсталиране. После премахнете/деинсталирайте текущото приложение, отворете връзката в Safari/Chrome, инсталирайте Fasting Tracker отново и използвайте Настройки → Импорт, за да възстановите архива.','icon.plate':'Чиния и часовник','icon.moon':'Луна и прибори','icon.hourglass':'Пясъчен часовник и листо','icon.timer':'F таймер','settings.goal':'Целева продължителност на гладуването','settings.goalHelp':'Въведете произволен положителен брой часове. Приложението не налага максимална стойност. Всяко започнато гладуване запазва целта, активна при старта му.','settings.storageNotice':'Данните за гладуването и теглото се съхраняват локално на това устройство. Приложението автоматично пази поредица от вътрешни JSON възстановителни копия и на всеки 7 дни напомня за външен архив.','settings.deleteAll':'Изтрий всички данни','settings.deleteHelp':'Изтрий окончателно историята на гладуването и теглото от това устройство',
-      'fasting.today':'Днес','fasting.elapsedToday':'Време в гладуване днес','fasting.targetStreak':'Текуща поредица от постигнати цели','fasting.ready':'Готово за старт','fasting.start':'Започни гладуване','fasting.stop':'Спри гладуването','fasting.started':'Начало: {date}','fasting.target':'Цел: {goal}','fasting.targetLocked':'Цел: {goal} • фиксирана за това гладуване','fasting.targetReached':'Целта е достигната • {duration} над целта','fasting.progress':'{pct}% изпълнено • остават {duration}','fasting.zeroProgress':'0% изпълнено','fasting.expectedTargetTime':'Очакван час за достигане на целта: {date}','fasting.targetTimePassed':'Часът за достигане на целта беше: {date}','fasting.fastCount.one':'{n} гладуване','fasting.fastCount.other':'{n} гладувания','fasting.shortConfirm':'Това гладуване продължи по-малко от една минута. Да бъде ли запазено в историята?','fasting.clockError':'Часовникът на устройството показва час преди началото на това гладуване. Проверете настройките за дата и час, преди да го спрете.',
+      'if.title':'Какво е интермитентното гладуване?','if.what':'Интермитентното гладуване (IF) е хранителен режим, при който планирани периоди на хранене се редуват с периоди с малко или без калориен прием. Основният акцент е върху това кога се приема храна, а не върху конкретен списък от храни.','if.examples':'Често използвани подходи са ежедневно хранене в ограничен времеви прозорец (например 16:8), режим 5:2 и гладуване през ден.','if.learnMore':'Възможни ползи, ограничения и безопасност','if.benefitsTitle':'Възможни ползи','if.benefits':'Проучвания при хора показват, че при някои възрастни интермитентното гладуване може да подпомогне намаляването на телесното тегло и обиколката на талията и може да подобри контрола на кръвната глюкоза, инсулиновата чувствителност, кръвното налягане и някои липидни показатели. Ефектите обикновено са умерени, различават се между хората и режимите и в много проучвания са сходни с тези при постоянно калорийно ограничение, когато общият енергиен прием и отслабването са сравними.','if.limitsTitle':'Какво все още не е сигурно','if.limits':'Дългосрочните ефекти върху профилактиката на заболявания, продължителността на живота, когнитивните функции и най-добрия график за гладуване остават несигурни. Голяма част от изследванията при хора са краткосрочни или средносрочни и са проведени основно при възрастни с наднормено тегло, затлъстяване или метаболитен риск.','if.safetyTitle':'Кой трябва да бъде особено внимателен','if.safety':'Гладуването не е подходящо за всеки. Потърсете професионален съвет преди гладуване при бременност или кърмене, възраст под 18 години, поднормено тегло, настоящи или минали хранителни разстройства, диабет или друго заболяване, или ако приемате лекарства, които могат да бъдат повлияни от времето на хранене. Прекратете гладуването и потърсете подходяща помощ при силна слабост, припадък, обърканост, обезводняване, продължително повръщане или други тревожни симптоми.','if.sourcesTitle':'Доказателства и източници','if.src1':'<a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">Систематичен преглед в BMJ, 2025</a> — 99 рандомизирани проучвания; интермитентното гладуване и постоянното калорийно ограничение дават като цяло сходни резултати за теглото и кардиометаболитните показатели, с обикновено малки разлики между стратегиите.','if.src2':'<a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">Национален институт по стареене на САЩ</a> — преглед на режимите на интермитентно гладуване, възможните ефекти върху здравето и несигурността за дългосрочните резултати.','if.src3':'<a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — хранене в 8–10-часов прозорец показва скромни ползи за три месеца при хора с метаболитен синдром; необходими са по-дълги проучвания.','if.src4':'<a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — възможни ползи и съображения за безопасност, свързани с лекарствата, при хора с диабет тип 2.',
+      'settings.language':'Език на интерфейса','settings.languageHelp':'Използвайте автоматично езика на устройството или изберете език само за приложението.','settings.systemLanguage':'Системен език','settings.appearance':'Външен вид','settings.appearanceHelp':'Следвайте автоматично режима на устройството или изберете светъл или тъмен режим само за приложението.','settings.appearanceSystem':'Системен','settings.appearanceLight':'Светъл','settings.appearanceDark':'Тъмен','settings.appIcon':'Икона на приложението','settings.appIconHelp':'Изберете иконата за следващото инсталиране на Fasting Tracker. Промяната тук не заменя иконата на вече инсталирано приложение.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Изберете иконата в Safari преди Add to Home Screen. Инсталирано уеб приложение на началния екран не може да смени иконата си на място.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Изберете иконата преди Install app или Add to Home screen. При някои Android launcher-и също е необходимо преинсталиране, за да се покаже новата икона.','settings.appIconSafetyHeading':'Безопасна смяна на иконата на инсталираното приложение','settings.appIconSafetyText':'Премахването или деинсталирането на уеб приложението от началния екран може да изтрие всички локални данни на тази инсталация, статуса за постоянно хранилище и вътрешните възстановителни копия. Те не преживяват деинсталиране. Преди премахване създайте външен архив. След повторно инсталиране с новата икона импортирайте архива, за да възстановите данните и настройките.','settings.appIconPrepare':'Архивирай и подготви смяна на иконата','iconChange.linkLabel':'Линк за преинсталиране','iconChange.copyLink':'Копирай линка за преинсталиране','iconChange.ready':'Архивът за „{icon}“ е създаден. Линкът за преинсталиране е готов по-долу. Копирайте го преди да премахнете инсталираното приложение.','iconChange.copied':'Линкът за преинсталиране е копиран.','iconChange.copyFailed':'Автоматичното копиране не е налично. Линкът за преинсталиране е маркиран по-долу; използвайте командата за копиране на устройството.','iconChange.readyCopied':'Архивът е създаден. Копирана е връзка за повторно инсталиране с „{icon}“. Сега премахнете/деинсталирайте текущото приложение от началния екран, отворете Safari/Chrome, поставете копираната връзка, инсталирайте Fasting Tracker отново и после използвайте Настройки → Импорт, за да възстановите архива.','iconChange.readyPrompt':'Архивът за „{icon}“ е създаден. Копирайте тази връзка за повторно инсталиране. После премахнете/деинсталирайте текущото приложение, отворете връзката в Safari/Chrome, инсталирайте Fasting Tracker отново и използвайте Настройки → Импорт, за да възстановите архива.','icon.plate':'Чиния и часовник','icon.moon':'Луна и прибори','icon.hourglass':'Пясъчен часовник и листо','icon.timer':'F таймер','settings.goal':'Целева продължителност на гладуването','settings.goalHelp':'Въведете положителен брой часове в рамките на поддържания от браузъра диапазон за дати. Всяко започнато гладуване запазва целта, активна при старта му.','settings.storageNotice':'Данните за гладуването и теглото се съхраняват локално на това устройство. Приложението автоматично пази поредица от вътрешни JSON възстановителни копия и на всеки 7 дни напомня за външен архив.','settings.deleteAll':'Изтрий всички данни','settings.deleteHelp':'Изтрий окончателно историята на гладуването и теглото от това устройство',
+      'fasting.today':'Днес','fasting.elapsedToday':'Време в гладуване днес','fasting.targetStreak':'Текуща поредица от постигнати цели','fasting.ready':'Готово за старт','fasting.start':'Започни гладуване','fasting.stop':'Спри гладуването','fasting.started':'Начало: {date}','fasting.target':'Цел: {goal}','fasting.targetLocked':'Цел: {goal} • фиксирана за това гладуване','fasting.targetReached':'Целта е достигната • {duration} над целта','fasting.progress':'{pct}% изпълнено • остават {duration}','fasting.zeroProgress':'0% изпълнено','fasting.expectedTargetTime':'Очакван час за достигане на целта: {date}','fasting.targetTimePassed':'Часът за достигане на целта беше: {date}','fasting.fastCount.one':'{n} гладуване','fasting.fastCount.other':'{n} гладувания','fasting.fastCount.zero':'{n} гладувания','fasting.fastCount.two':'{n} гладувания','fasting.fastCount.few':'{n} гладувания','fasting.fastCount.many':'{n} гладувания','fasting.shortConfirm':'Това гладуване продължи по-малко от една минута. Да бъде ли запазено в историята?','fasting.clockError':'Часовникът на устройството показва час преди началото на това гладуване. Проверете настройките за дата и час, преди да го спрете.',
       'fasting.startEarlier':'Започнало по-рано','backdate.title':'Започни текущо гладуване','backdate.help':'Изберете кога всъщност е започнало това гладуване. То ще остане активно и ще продължи да се отчита, докато натиснете „Спри гладуването“.','backdate.start':'Начало','backdate.target':'Цел: {goal} • заключена за това гладуване','backdate.targetHelp':'Тази цел се заключва за текущото гладуване. По-късна промяна в Настройки няма да я промени.','backdate.startFast':'Започни гладуването','backdate.quickAria':'Бърз избор на начален час','backdate.1h':'преди 1ч','backdate.2h':'преди 2ч','backdate.3h':'преди 3ч','backdate.4h':'преди 4ч','backdate.6h':'преди 6ч','backdate.12h':'преди 12ч','backdate.errStart':'Въведете валидни дата и час за начало.','backdate.errFuture':'Началният час не може да бъде в бъдещето.','backdate.errGoal':'Въведете цел над 0 часа.','backdate.errOverlap':'Това текущо гладуване би се застъпило със завършен запис за гладуване.','backdate.conflictTitle':'Застъпване със съществуващо гладуване','backdate.conflictTitleMany':'Застъпване с {n} съществуващи гладувания','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Текущото гладуване не може да започне преди {time}.','backdate.startAfter':'Започни в {time}','backdate.editConflict':'Редактирай съществуващия запис','backdate.deleteConflict':'Изтрий застъпващия се запис и започни','backdate.deleteConfirm':'Да се изтрие ли този завършен запис за гладуване и да се започне текущото гладуване от избрания час? Това не може да бъде отменено без резервно копие.',
       'history.add':'Добави запис','history.start':'Начало','history.end':'Край','history.targetHours':'Целеви часове','history.overlapHelp':'Ръчните записи не могат да се застъпват с друго запазено или текущо гладуване.','history.empty':'Все още няма завършени гладувания. Натиснете „Добави запис“, за да въведете едно ръчно.','history.target':'Цел: {goal}','history.targetReached':'Целта е достигната','history.deleteConfirm':'Да се изтрие ли този запис за гладуване?','history.addTitle':'Добавяне на гладуване','history.editTitle':'Редактиране на гладуване','history.errDates':'Въведете валидни дата и час за начало и край.','history.errEndAfter':'Крайният час трябва да е след началния.','history.errFuture':'Крайният час не може да бъде в бъдещето.','history.errMinute':'Ръчният запис трябва да е с продължителност поне една минута.','history.errGoal':'Въведете цел над 0 часа.','history.errOverlap':'Този интервал се застъпва с друго запазено или текущо гладуване.',
       'weight.add':'Добави тегло','weight.intro':'Следете телесното тегло заедно с историята на гладуването.','weight.latest':'Последно тегло','weight.change':'Промяна от първото измерване','weight.target':'Целево тегло','weight.toTarget':'Разлика до целта','weight.targetHelp':'По избор. Оставете празно, ако искате само да следите тенденцията.','weight.trend':'Тенденция на теглото','weight.chartHelp':'Последните 30 измервания. При зададено целево тегло се показва линия на целта.','weight.dateTime':'Дата и час','weight.empty':'Все още няма записи за тегло. Натиснете „Добави тегло“ за първото измерване.','weight.addChart':'Добавете измервания на теглото, за да видите тенденцията.','weight.editTitle':'Редактиране на тегло','weight.addTitle':'Добавяне на тегло','weight.deleteConfirm':'Да се изтрие ли този запис за тегло?','weight.errDate':'Въведете валидни дата и час.','weight.errFuture':'Датата/часът на теглото не може да е в бъдещето.','weight.errValue':'Въведете валидно тегло над 0 {unit}.','weight.errTarget':'Въведете валидно целево тегло над 0 {unit} или оставете полето празно.',
@@ -833,15 +890,15 @@ layout: null
       'science.title':'Автофагия и наука за гладуването','science.notFasting':'Не гладувате','science.limited':'Данни при хора: ограничени','science.idle':'Автофагията протича на базово ниво и когато не гладувате. Изследванията при хора не са установили универсален час, в който автофагията, предизвикана от гладуване, „започва“.','science.caution':'Този индикатор е с образователна цел, не измерва автофагията и не е причина да удължавате гладуването. Реакциите зависят от тъканите, активността, предходното хранене, запасите от гликоген и други фактори.','science.sources':'Научна основа и източници',
       'science.timeline0':'<strong>0–8 ч</strong> — ранно гладуване; не може да се прави извод за автофагия само по часовника.','science.timeline1':'<strong>8–12 ч</strong> — кетоните обичайно започват да се повишават; започва метаболитното превключване.','science.timeline2':'<strong>12–24 ч</strong> — метаболитният преход напредва; началото на автофагията при хора не е доказано.','science.timeline3':'<strong>24–36 ч</strong> — изследвани са маркери, свързани с автофагията при хора; резултатите са смесени и зависят от тъканта.','science.timeline4':'<strong>36–48 ч</strong> — продължително гладуване; човешко изследване при 36 ч установява само умерени ефекти върху медиаторите на автофагията в мускула.','science.timeline5':'<strong>48 ч+</strong> — продължително гладуване; няма валидирано общотелесно „ниво на автофагия“, което може да се изчисли от изминалото време.','science.stage0':'0–8 ч • Ранно гладуване','science.stage0e':'Автофагия: базова, без точен час','science.stage0t':'Автофагията вече е активна на базово ниво. Само изминалото време не показва дали се е увеличила.','science.stage1':'8–12 ч • Начало на метаболитното превключване','science.stage1e':'Автофагия: не е установено начало','science.stage1t':'Нивата на кетони при хора често започват да се повишават в този интервал. Тази метаболитна промяна не доказва, че автофагията се включва в определен час.','science.stage2':'12–24 ч • Метаболитен преход','science.stage2e':'Данни при хора: несигурни','science.stage2t':'Използването на гориво се измества повече към мазнини и кетони, но обзорите заключават, че значимо увеличение на автофагията при остро гладуване при хора не е установено.','science.stage3':'24–36 ч • Изследвани маркери на автофагията','science.stage3e':'Данни при хора: смесени','science.stage3t':'Изследвания на скелетната мускулатура при хора на 24–36 часа показват смесени или умерени промени в маркери, свързани с автофагията. Ефектите зависят от тъканта и индивидуалния контекст.','science.stage4':'36–48 ч • Продължително гладуване','science.stage4e':'Данни при хора: ограничени','science.stage4t':'Кетозата обичайно се задълбочава, но 36-часово изследване при хора установява само умерени ефекти върху медиаторите на автофагията в мускула. Няма валидиран общотелесен праг за автофагия.','science.stage5':'48 ч+ • Продължително гладуване','science.stage5e':'Няма валидирано ниво според часовника','science.stage5t':'Сегашните данни при хора не позволяват приложение да изчислява „ниво“ на автофагия само от продължителността на гладуването. По-дългото гладуване не трябва да се тълкува като пропорционално повече автофагия.',
       'science.src1':'<a href="https://pubmed.ncbi.nlm.nih.gov/35892559/" target="_blank" rel="noopener noreferrer">Gómez-Virgilio et al., 2022 (PubMed)</a> — автофагията е активна на базово ниво в клетките и реагира на недостиг на хранителни вещества.','science.src2':'<a href="https://www.nejm.org/doi/abs/10.1056/NEJMra1905136" target="_blank" rel="noopener noreferrer">de Cabo &amp; Mattson, NEJM 2019</a> и <a href="https://www.nejm.org/doi/full/10.1056/NEJMx200002" target="_blank" rel="noopener noreferrer">корекцията от 2020 г.</a> — кетоните при хора започват да се повишават приблизително 8–12 ч след началото на гладуването и нарастват допълнително до 48 ч.','science.src3':'<a href="https://pubmed.ncbi.nlm.nih.gov/35142356/" target="_blank" rel="noopener noreferrer">Anton et al., 2022 (PubMed)</a> — обзор, според който остава неизвестно дали еднократно остро гладуване значимо увеличава автофагията при хора.','science.src4':'<a href="https://pubmed.ncbi.nlm.nih.gov/35660501/" target="_blank" rel="noopener noreferrer">Chaudhary et al., 2022 (PubMed)</a> — гладуване 12–24 ч не показва убедително активиране на маркери на автофагията в човешката скелетна мускулатура.','science.src5':'<a href="https://pubmed.ncbi.nlm.nih.gov/30161009/" target="_blank" rel="noopener noreferrer">Dethlefsen et al., 2018 (PubMed)</a> — 36 ч гладуване водят само до умерени промени в маркери, свързани с автофагията в човешката скелетна мускулатура, повлияни от тренировъчния статус.',
-      'backup.reminderTitle':'Напомняне за външен архив','backup.now':'Архивирай сега','backup.exportTitle':'Експорт на архив','backup.exportHelp':'Запазете/споделете данните като JSON файл','backup.last':'Последен външен архив','backup.lastHelp':'След 7 дни без архив се показва напомняне.','backup.noneYet':'Все още няма външен архив','backup.snapshots':'Автоматични вътрешни JSON копия','backup.importTitle':'Импорт на архив','backup.importHelp':'Възстановяване от експортиран JSON файл','backup.snapshotsHelp':'Тези автоматични JSON копия се пазят само на това устройство. При достатъчно история приложението пази 5 последни, 7 дневни, 4 седмични и 6 месечни точки за възстановяване. Те не заменят външен архив.','backup.shareTitle':'Архив на Fasting Tracker','backup.errCreate':'Архивът не можа да бъде създаден. Опитайте отново преди обновяване.','backup.snapshotFailed':'Не можа да бъде запазено възстановително копие. Операцията е спряна, за да се защитят текущите ви данни. Експортирайте архив, проверете свободното място и опитайте отново.','backup.dueLast':'Последният ви външен архив е от {date}. Запазете ново копие във Files, iCloud Drive, Google Drive или друго сигурно място.','backup.dueNever':'Данните ви за гладуване или тегло не са архивирани външно поне 7 дни. Запазете копие във Files, iCloud Drive, Google Drive или друго сигурно място.','backup.snapshotCount':'{n} от {max} поредни {word} се пазят локално.','backup.snapshotWord.one':'копие','backup.snapshotWord.other':'копия','backup.snapshotNone':'Все още няма възстановителни копия. Такова се създава автоматично около обновяване на приложението.','backup.snapshotUnavailable':'Това възстановително копие вече не е налично.','backup.snapshotRestoreConfirm':'Да се възстанови ли копието от {date}? Това ще замени текущите данни за гладуване и тегло на устройството.','backup.snapshotRestored':'Възстановителното копие е заредено.','backup.snapshotEmpty':'Все още няма налични вътрешни възстановителни копия.','backup.snapshotTitle':'Възстановително копие','backup.snapshotFrom':'От {version} • {reason}','backup.unencrypted':'Експортираните JSON архиви са обикновени, некриптирани файлове. Съхранявайте ги на място, което считате за сигурно.',
+      'backup.reminderTitle':'Напомняне за външен архив','backup.now':'Архивирай сега','backup.exportTitle':'Експорт на архив','backup.exportHelp':'Запазете/споделете данните като JSON файл','backup.last':'Последен външен архив','backup.lastHelp':'След 7 дни без архив се показва напомняне.','backup.noneYet':'Все още няма външен архив','backup.snapshots':'Автоматични вътрешни JSON копия','backup.importTitle':'Импорт на архив','backup.importHelp':'Възстановяване от експортиран JSON файл','backup.snapshotsHelp':'Тези автоматични JSON копия се пазят само на това устройство. При достатъчно история приложението пази 5 последни, 7 дневни, 4 седмични и 6 месечни точки за възстановяване. Ако локалното пространство се ограничи, приложението може да пази по-малко копия и ще ви предупреди. Те не заменят външен архив.','backup.shareTitle':'Архив на Fasting Tracker','backup.errCreate':'Архивът не можа да бъде създаден. Опитайте отново преди обновяване.','backup.snapshotFailed':'Не можа да бъде запазено възстановително копие. Операцията е спряна, за да се защитят текущите ви данни. Експортирайте архив, проверете свободното място и опитайте отново.','backup.dueLast':'Последният ви външен архив е от {date}. Запазете ново копие във Files, iCloud Drive, Google Drive или друго сигурно място.','backup.dueNever':'Данните ви за гладуване или тегло не са архивирани външно поне 7 дни. Запазете копие във Files, iCloud Drive, Google Drive или друго сигурно място.','backup.snapshotCount':'{n} от {max} поредни {word} се пазят локално.','backup.snapshotWord.one':'копие','backup.snapshotWord.other':'копия','backup.snapshotWord.zero':'копия','backup.snapshotWord.two':'копия','backup.snapshotWord.few':'копия','backup.snapshotWord.many':'копия','backup.snapshotNone':'Все още няма възстановителни копия. Такова се създава автоматично след първата съществена промяна в данните за гладуване или тегло.','backup.snapshotUnavailable':'Това възстановително копие вече не е налично.','backup.snapshotRestoreConfirm':'Да се възстанови ли копието от {date}? Това ще замени текущите данни за гладуване и тегло на устройството.','backup.snapshotRestored':'Възстановителното копие е заредено.','backup.snapshotEmpty':'Все още няма налични вътрешни възстановителни копия.','backup.snapshotTitle':'Възстановително копие','backup.snapshotFrom':'От {version} • {reason}','backup.unencrypted':'Експортираните JSON архиви са обикновени, некриптирани файлове. Съхранявайте ги на място, което считате за сигурно.',
       'update.newVersion':'Има нова версия','update.releaseReady':'Налична е по-нова версия на Fasting Tracker.','update.update':'Обнови','update.updates':'Обновявания','update.check':'Провери','update.checking':'Проверка за обновявания…','update.checkingBtn':'Проверка…','update.available':'Налична е версия v{version}.','update.updateNow':'Обнови сега','update.ready':'Fasting Tracker v{version} е готова.','update.installing':'Инсталиране на най-новата версия…','update.updating':'Обновяване…','update.installingShort':'Инсталиране на обновяване…','update.offline':'Проверката не бе успешна. Свържете се с интернет и опитайте отново.','update.offlineExplicit':'Офлайн — свържете се с интернет, за да проверите за обновявания.','update.failed':'Проверката за обновяване не бе успешна. Опитайте отново при интернет връзка.','update.current':'Версията е актуална — v{version}.','update.install':'Инсталиране на обновяване','update.withoutBackup':'Обнови без външен архив','update.backupUpdate':'Архивирай и обнови','update.modalText':'Налична е Fasting Tracker v{version}. Преди инсталирането автоматично ще бъде създадено вътрешно възстановително копие.','update.failedInstall':'Обновяването не бе успешно. Проверете връзката и опитайте отново.','update.preparing':'Подготовка на архив…',
       'help.title':'За приложението и помощ','help.installIOS':'Инсталиране на iPhone / iPad','help.installIOS1':'Отворете уеб адреса на приложението в Safari.','help.installIOS2':'Натиснете Share, след това <strong>Add to Home Screen</strong>.','help.installIOS3':'Оставете <strong>Open as Web App</strong> включено, ако iOS показва тази опция, след което натиснете Add.','help.installAndroid':'Инсталиране на Android','help.installAndroid1':'Отворете уеб адреса на приложението в Chrome или друг браузър, който поддържа инсталиране на PWA.','help.installAndroid2':'Отворете менюто на браузъра и изберете <strong>Install app</strong> или <strong>Add to Home screen</strong>.','help.installAndroid3':'Потвърдете инсталирането. Fasting Tracker ще се появи на началния екран/в списъка с приложения и може да работи офлайн, след като файловете му бъдат кеширани.','help.backup':'Архивиране и възстановяване','help.backupText':'Приложението автоматично пази вътрешни JSON копия след съществени промени и на всеки 7 дни напомня да използвате <strong>Архивирай сега</strong> за външно JSON копие във Files, iCloud Drive, Google Drive или друго сигурно място. При достатъчно история пази 5 последни, 7 дневни, 4 седмични и 6 месечни точки за възстановяване. Вътрешните копия се губят при премахване на тази инсталация. Преди преинсталиране за смяна на иконата създайте външен архив; след това използвайте <strong>Импорт</strong> за възстановяване.','help.privacy':'Поверителност и съхранение','help.privacyText':'Данните за гладуването и теглото остават в локалното хранилище на това устройство. Хостваният сайт съдържа само файловете на приложението и не получава вашата история. Всеки човек, който инсталира приложението, има отделни локални данни. Изчистването на данните на браузъра или сайта може да премахне локалните записи, затова пазете актуален архив.','help.timeZoneTitle':'Исторически часови зони','help.timeZoneText':'Записите за гладуване и тегло запомнят часовата зона, в която са създадени, така че историческите часове и дневните графики да не се изместват, ако по-късно пътувате в друга часова зона.','help.autophagy':'Индикатор за автофагия','help.autophagyText':'Научната карта нарочно не твърди, че автофагията започва в точно определен час. Тя протича непрекъснато на базово ниво, а сегашните изследвания при хора не подкрепят универсален праг според продължителността на гладуването. Картата отделя добре установената метаболитна времева рамка от по-несигурните данни за автофагията и съдържа връзки към използваните изследвания.','help.consistency':'Система за постоянство','help.consistencyText':'Геймификацията е по избор. Гладуване, което достига избраната цел, носи 10 XP независимо дали приключва точно на целта или продължава много по-дълго. Записването на тегло носи 2 XP за отделен календарен ден. Системата умишлено не награждава екстремна продължителност на гладуването.','help.appVersion':'Версия на приложението','help.versionHelp':'Полезно при проверка коя версия е инсталирана',
-      'recovery.title':'Режим за възстановяване','recovery.text':'Съхранените данни на приложението не могат да бъдат прочетени безопасно. Обичайните промени са блокирани, за да не бъдат презаписани първоначалните данни. Експортирайте суровите данни или възстановете копие, преди да продължите.','recovery.exportRaw':'Експортирай суровите данни','recovery.snapshots':'Възстановителни копия','recovery.importBackup':'Импортирай архив','recovery.startFresh':'Започни начисто','recovery.resetConfirm':'Да се започне с нови празни данни? Непрочитаемите сурови данни ще бъдат заменени. Първо ги експортирайте, ако може да са ви нужни.','recovery.writeBlocked':'Промените са блокирани, докато е активен режимът за възстановяване. Първо разрешете проблема със съхранените данни.','sync.conflict':'Fasting Tracker е променен в друг раздел или прозорец на приложението. Заредени са последните записани данни; повторете действието си.','backup.downloadConfirm':'Стартирано е изтегляне на архив. След като проверите, че JSON файлът е запазен, натиснете OK, за да бъде отчетен външният архив като завършен.','game.unlocked':'Отключено','game.locked':'Заключено','update.emergencyRecovery':'Кешираната версия на приложението е повредена. Fasting Tracker я възстановява, след като защити локалните ви данни.','error.save':'Fasting Tracker не можа да запази данните. Експортирайте архив и проверете свободното място на устройството.','error.goal':'Въведете цел над 0 часа.','import.confirm':'Да се импортират ли {fasts} {fastWord} и {weights} {weightWord} и да се заменят текущите данни на това устройство?','import.fast.one':'запис за гладуване','import.fast.other':'записа за гладуване','import.weight.one':'запис за тегло','import.weight.other':'записа за тегло','import.done':'Архивът е импортиран.','import.invalid':'Файлът не е валиден архив на Fasting Tracker v1 или записите в него са несъвместими.','reset.confirm':'Да се изтрият ли цялата история на гладуването, историята на теглото, настройките и вътрешните възстановителни копия от това устройство? Това не може да се отмени без външен архив.',
+      'recovery.title':'Режим за възстановяване','recovery.text':'Съхранените данни на приложението не могат да бъдат прочетени безопасно. Обичайните промени са блокирани, за да не бъдат презаписани първоначалните данни. Експортирайте суровите данни или възстановете копие, преди да продължите.','recovery.exportRaw':'Експортирай суровите данни','recovery.snapshots':'Възстановителни копия','recovery.importBackup':'Импортирай архив','recovery.startFresh':'Започни начисто','recovery.resetConfirm':'Да се започне с нови празни данни? Непрочитаемите сурови данни ще бъдат заменени. Първо ги експортирайте, ако може да са ви нужни.','recovery.writeBlocked':'Промените са блокирани, докато е активен режимът за възстановяване. Първо разрешете проблема със съхранените данни.','sync.conflict':'Fasting Tracker е променен в друг раздел или прозорец на приложението. Заредени са последните записани данни; повторете действието си.','backup.downloadConfirm':'Стартирано е изтегляне на архив. След като проверите, че JSON файлът е запазен, натиснете OK, за да бъде отчетен външният архив като завършен.','game.unlocked':'Отключено','game.locked':'Заключено','update.emergencyRecovery':'Кешираната версия на приложението е повредена. Fasting Tracker я възстановява, след като защити локалните ви данни.','error.save':'Fasting Tracker не можа да запази данните. Експортирайте архив и проверете свободното място на устройството.','error.goal':'Въведете цел над 0 часа и в рамките на поддържания диапазон за дати.','import.confirm':'Да се импортират ли {fasts} {fastWord} и {weights} {weightWord} и да се заменят текущите данни на това устройство?','import.fast.one':'запис за гладуване','import.fast.other':'записа за гладуване','import.fast.zero':'записа за гладуване','import.fast.two':'записа за гладуване','import.fast.few':'записа за гладуване','import.fast.many':'записа за гладуване','import.weight.one':'запис за тегло','import.weight.other':'записа за тегло','import.weight.zero':'записа за тегло','import.weight.two':'записа за тегло','import.weight.few':'записа за тегло','import.weight.many':'записа за тегло','import.done':'Архивът е импортиран.','import.invalid':'Файлът не е валиден архив на Fasting Tracker v1 или записите в него са несъвместими.','reset.confirm':'Да се изтрият ли цялата история на гладуването, историята на теглото, настройките и вътрешните възстановителни копия от това устройство? Това не може да се отмени без външен архив.',
       'backup.reason.firstLaunch':'преди първото стартиране на v{version}','backup.reason.restore':'преди възстановяване на друго копие','backup.reason.update':'преди обновяване от v{from} към v{to}','backup.reason.import':'преди импорт на външен архив',
       'common.dismiss':'Затвори','installStorage.title':'Използвате Safari на iPhone?','installStorage.text':'Safari и уеб приложението на началния екран могат да използват отделни локални хранилища. Ако ще използвате приложението от началния екран, инсталирайте го преди да въвеждате данни. За да преместите съществуващи записи от Safari, експортирайте архив тук, инсталирайте приложението и после импортирайте архива там.','storage.title':'Защита на хранилището','storage.checking':'Проверка на защитата на хранилището…','storage.protected':'Постоянно хранилище: Защитено','storage.bestEffort':'Постоянно хранилище: Най-добро усилие','storage.unavailable':'Статусът на постоянното хранилище не е наличен','storage.help':'Постоянното хранилище може да намали вероятността браузърът да премахне локалните данни при недостиг на място. Външните архиви все още са препоръчителни.','storage.request':'Поискай защита','storage.requestDenied':'Защитата не беше предоставена. Пазете актуални външни архиви.','storage.usage':'Използвани {used} от {quota} налично място.','storage.usageUnknown':'Информацията за използваното място не е налична.',
       'safety.longFastTitle':'Цел за продължително гладуване','safety.longFastText':'Избрахте {goal}. Продължителното гладуване от 72 часа или повече може да носи допълнителни рискове и не е подходящо за всеки. Fasting Tracker записва избора ви, но не препоръчва тази продължителност. Прегледайте информацията за здраве и безопасност, преди да продължите.','safety.continue':'Използвай тази цел',
       'a11y.fastProgress':'Напредък към целта за гладуване','a11y.xpProgress':'Напредък на нивото за постоянство','a11y.weightUnit':'Мерна единица за тегло','a11y.fastChart':'Графика на часовете гладуване за последните 14 дни','a11y.weightChart':'Графика на теглото',
-      'unit.day.one':'ден','unit.day.other':'дни','unit.d':'д','unit.h':'ч','unit.m':'мин','unit.hour.one':'час','unit.hour.other':'часа'
+      'unit.day.one':'ден','unit.day.other':'дни','unit.day.zero':'дни','unit.day.two':'дни','unit.day.few':'дни','unit.day.many':'дни','unit.d':'д','unit.h':'ч','unit.m':'мин','unit.hour.one':'час','unit.hour.other':'часа','unit.hour.zero':'часа','unit.hour.two':'часа','unit.hour.few':'часа','unit.hour.many':'часа'
     },
     es: {
       'backup.tierMonthly':'mensual',
@@ -851,6 +908,11 @@ layout: null
       'backup.tiers':'Punto de recuperación: {tiers}',
       'backup.autoReason':'cambio automático',
       'backup.rollingPolicy':'{n} guardadas • conserva 5 recientes, 7 diarias, 4 semanales y 6 mensuales',
+      'backup.snapshotAttentionTitle':'La copia de recuperación requiere atención',
+      'backup.autoSnapshotFailed':'Tus datos se guardaron, pero no se pudo crear la copia automática de recuperación. Haz una copia externa ahora y comprueba el espacio disponible del dispositivo.',
+      'backup.autoSnapshotReduced':'La protección automática de recuperación se ha reducido porque el almacenamiento local es limitado. Actualmente se conservan {n} copias de recuperación. Haz una copia externa ahora.',
+      'backup.snapshotFailedStatus':'Falló la copia automática de recuperación • tus datos principales están guardados, pero la protección interna requiere atención',
+      'backup.snapshotReducedStatus':'Protección reducida • se conservan {n} copias de recuperación por falta de espacio local',
       'backup.nextOn':'Próximo recordatorio: {date}',
       'backup.nextDueNow':'Copia pendiente ahora',
       'backup.nextStarts':'Empieza después del primer registro de ayuno o peso.',
@@ -858,8 +920,9 @@ layout: null
       'nav.fasting':'Ayuno','nav.history':'Historial','nav.weight':'Peso','nav.stats':'Estadísticas','nav.settings':'Ajustes',
       'common.on':'Sí','common.export':'Exportar','common.import':'Importar','common.restore':'Restaurar','common.delete':'Eliminar','common.edit':'Editar','common.cancel':'Cancelar','common.save':'Guardar','common.close':'Cerrar','common.never':'Nunca','common.loadMoreCount':'Cargar más ({n} restantes)',
       'public.healthTitle':'Salud y seguridad','public.healthText':'Fasting Tracker es una herramienta informativa de seguimiento personal, no consejo médico. No determina si una duración de ayuno es segura para ti ni recomienda ayunos prolongados.','public.healthLink':'Leer información de salud y seguridad','public.infoTitle':'Información pública','public.infoText':'Lee la información completa de privacidad, el aviso de salud y las notas de las fuentes científicas.','public.privacy':'Privacidad','public.about':'Acerca de y fuentes','public.support':'Soporte / informar de un problema','public.supportWarning':'GitHub Issues es público. No incluyas historial de ayuno, datos de peso, información médica ni otros datos personales en un informe.',
-      'settings.language':'Idioma de la interfaz','settings.languageHelp':'Usa automáticamente el idioma del dispositivo o elige un idioma solo para esta app.','settings.systemLanguage':'Idioma del sistema','settings.appearance':'Apariencia','settings.appearanceHelp':'Sigue automáticamente la apariencia del dispositivo o elige modo claro u oscuro solo para esta app.','settings.appearanceSystem':'Sistema','settings.appearanceLight':'Claro','settings.appearanceDark':'Oscuro','settings.appIcon':'Icono de la app','settings.appIconHelp':'Elige el icono para la próxima instalación de Fasting Tracker. Cambiar esta opción no sustituye el icono de una app que ya está instalada.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Elige el icono en Safari antes de usar Añadir a pantalla de inicio. Una app web ya instalada en la pantalla de inicio no puede sustituir su icono directamente.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Elige el icono antes de usar Instalar app o Añadir a pantalla de inicio. Algunos launchers de Android también requieren reinstalar la app web para mostrar un icono nuevo.','settings.appIconSafetyHeading':'Cambiar de forma segura el icono instalado','settings.appIconSafetyText':'Eliminar o desinstalar la app web de la pantalla de inicio puede borrar todos los datos locales de esa instalación, el estado de almacenamiento persistente y las copias internas de recuperación. No sobreviven a la desinstalación. Antes de eliminar la app, crea una copia externa. Después de reinstalarla con el nuevo icono, importa esa copia para restaurar tus datos y ajustes.','settings.appIconPrepare':'Copia y prepara el cambio de icono','iconChange.readyCopied':'Copia creada. Se ha copiado un enlace de reinstalación para “{icon}”. Ahora elimina/desinstala la app actual de la pantalla de inicio, abre Safari/Chrome, pega el enlace copiado, instala Fasting Tracker de nuevo y después usa Ajustes → Importar para restaurar la copia.','iconChange.readyPrompt':'Copia creada para “{icon}”. Copia este enlace de reinstalación. Después elimina/desinstala la app actual, abre el enlace en Safari/Chrome, reinstala Fasting Tracker y usa Ajustes → Importar para restaurar la copia.','icon.plate':'Plato y reloj','icon.moon':'Luna y cubiertos','icon.hourglass':'Reloj de arena y hoja','icon.timer':'Temporizador F','settings.goal':'Duración objetivo del ayuno','settings.goalHelp':'Cualquier número positivo de horas. La app no impone un máximo. Cada ayuno conserva el objetivo que estaba activo cuando comenzó.','settings.storageNotice':'Tus registros de ayuno y peso se guardan localmente en este dispositivo. La app conserva automáticamente copias JSON internas rotativas y te recuerda cada 7 días hacer una copia externa.','settings.deleteAll':'Eliminar todos los datos','settings.deleteHelp':'Borra permanentemente el historial de ayuno y peso de este dispositivo',
-      'fasting.today':'Hoy','fasting.elapsedToday':'Tiempo de ayuno hoy','fasting.targetStreak':'Racha actual de objetivos cumplidos','fasting.ready':'Listo para empezar','fasting.start':'Iniciar ayuno','fasting.stop':'Detener ayuno','fasting.started':'Inicio: {date}','fasting.target':'Objetivo: {goal}','fasting.targetLocked':'Objetivo: {goal} • fijado para este ayuno','fasting.targetReached':'Objetivo alcanzado • {duration} por encima del objetivo','fasting.progress':'{pct}% completado • quedan {duration}','fasting.zeroProgress':'0% completado','fasting.expectedTargetTime':'Hora prevista para alcanzar el objetivo: {date}','fasting.targetTimePassed':'La hora objetivo fue: {date}','fasting.fastCount.one':'{n} ayuno','fasting.fastCount.other':'{n} ayunos','fasting.shortConfirm':'Este ayuno duró menos de un minuto. ¿Guardarlo en el historial?','fasting.clockError':'El reloj del dispositivo está en una hora anterior al inicio de este ayuno. Comprueba la fecha y la hora antes de detenerlo.',
+      'if.title':'¿Qué es el ayuno intermitente?','if.what':'El ayuno intermitente (AI) es un patrón de alimentación que alterna periodos planificados de ingesta con periodos de poca o ninguna ingesta calórica. Se centra principalmente en cuándo se come, no en prescribir una lista concreta de alimentos.','if.examples':'Los enfoques habituales incluyen la alimentación diaria con horario restringido (por ejemplo, 16:8), el patrón 5:2 y el ayuno en días alternos.','if.learnMore':'Posibles beneficios, límites y seguridad','if.benefitsTitle':'Posibles beneficios','if.benefits':'Los ensayos en humanos sugieren que el ayuno intermitente puede ayudar a algunos adultos a reducir el peso corporal y la circunferencia de la cintura, y puede mejorar el control de la glucosa, la sensibilidad a la insulina, la presión arterial y algunos marcadores de lípidos. Los efectos suelen ser modestos, varían entre personas y regímenes y, en muchos estudios, son similares a los de la restricción calórica continua cuando la ingesta energética total y la pérdida de peso son comparables.','if.limitsTitle':'Lo que sigue siendo incierto','if.limits':'Los efectos a largo plazo sobre la prevención de enfermedades, la longevidad, la función cognitiva y el mejor horario de ayuno siguen siendo inciertos. Gran parte de la evidencia en humanos es de corto o medio plazo y se concentra en adultos con sobrepeso, obesidad o riesgo metabólico.','if.safetyTitle':'Quién debe tener especial precaución','if.safety':'El ayuno no es adecuado para todo el mundo. Consulta a un profesional antes de ayunar si estás embarazada o amamantando, tienes menos de 18 años, bajo peso, antecedentes actuales o pasados de trastornos alimentarios, diabetes u otra enfermedad, o tomas medicamentos que puedan verse afectados por el horario de las comidas. Interrumpe el ayuno y busca atención adecuada si presentas debilidad intensa, desmayo, confusión, deshidratación, vómitos persistentes u otros síntomas preocupantes.','if.sourcesTitle':'Evidencia y fuentes','if.src1':'<a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">Revisión sistemática de BMJ, 2025</a> — 99 ensayos aleatorizados; el ayuno intermitente y la restricción calórica continua produjeron resultados ampliamente similares sobre el peso y los factores cardiometabólicos, con diferencias generalmente pequeñas entre estrategias.','if.src2':'<a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">Instituto Nacional sobre el Envejecimiento de EE. UU.</a> — resumen de los patrones de ayuno intermitente, sus posibles efectos en la salud y la incertidumbre sobre los resultados a largo plazo.','if.src3':'<a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — una ventana de alimentación de 8–10 horas produjo beneficios modestos durante tres meses en personas con síndrome metabólico; hacen falta estudios más largos.','if.src4':'<a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — posibles beneficios y consideraciones de seguridad relacionadas con la medicación en personas con diabetes tipo 2.',
+      'settings.language':'Idioma de la interfaz','settings.languageHelp':'Usa automáticamente el idioma del dispositivo o elige un idioma solo para esta app.','settings.systemLanguage':'Idioma del sistema','settings.appearance':'Apariencia','settings.appearanceHelp':'Sigue automáticamente la apariencia del dispositivo o elige modo claro u oscuro solo para esta app.','settings.appearanceSystem':'Sistema','settings.appearanceLight':'Claro','settings.appearanceDark':'Oscuro','settings.appIcon':'Icono de la app','settings.appIconHelp':'Elige el icono para la próxima instalación de Fasting Tracker. Cambiar esta opción no sustituye el icono de una app que ya está instalada.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Elige el icono en Safari antes de usar Añadir a pantalla de inicio. Una app web ya instalada en la pantalla de inicio no puede sustituir su icono directamente.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Elige el icono antes de usar Instalar app o Añadir a pantalla de inicio. Algunos launchers de Android también requieren reinstalar la app web para mostrar un icono nuevo.','settings.appIconSafetyHeading':'Cambiar de forma segura el icono instalado','settings.appIconSafetyText':'Eliminar o desinstalar la app web de la pantalla de inicio puede borrar todos los datos locales de esa instalación, el estado de almacenamiento persistente y las copias internas de recuperación. No sobreviven a la desinstalación. Antes de eliminar la app, crea una copia externa. Después de reinstalarla con el nuevo icono, importa esa copia para restaurar tus datos y ajustes.','settings.appIconPrepare':'Copia y prepara el cambio de icono','iconChange.linkLabel':'Enlace de reinstalación','iconChange.copyLink':'Copiar enlace de reinstalación','iconChange.ready':'Se creó la copia para “{icon}”. El enlace de reinstalación está listo abajo. Cópialo antes de eliminar la app instalada.','iconChange.copied':'Enlace de reinstalación copiado.','iconChange.copyFailed':'La copia automática no está disponible. El enlace de reinstalación está seleccionado abajo; usa el comando de copiar del dispositivo.','iconChange.readyCopied':'Copia creada. Se ha copiado un enlace de reinstalación para “{icon}”. Ahora elimina/desinstala la app actual de la pantalla de inicio, abre Safari/Chrome, pega el enlace copiado, instala Fasting Tracker de nuevo y después usa Ajustes → Importar para restaurar la copia.','iconChange.readyPrompt':'Copia creada para “{icon}”. Copia este enlace de reinstalación. Después elimina/desinstala la app actual, abre el enlace en Safari/Chrome, reinstala Fasting Tracker y usa Ajustes → Importar para restaurar la copia.','icon.plate':'Plato y reloj','icon.moon':'Luna y cubiertos','icon.hourglass':'Reloj de arena y hoja','icon.timer':'Temporizador F','settings.goal':'Duración objetivo del ayuno','settings.goalHelp':'Cualquier número positivo de horas dentro del intervalo de fechas admitido por el navegador. Cada ayuno conserva el objetivo que estaba activo cuando comenzó.','settings.storageNotice':'Tus registros de ayuno y peso se guardan localmente en este dispositivo. La app conserva automáticamente copias JSON internas rotativas y te recuerda cada 7 días hacer una copia externa.','settings.deleteAll':'Eliminar todos los datos','settings.deleteHelp':'Borra permanentemente el historial de ayuno y peso de este dispositivo',
+      'fasting.today':'Hoy','fasting.elapsedToday':'Tiempo de ayuno hoy','fasting.targetStreak':'Racha actual de objetivos cumplidos','fasting.ready':'Listo para empezar','fasting.start':'Iniciar ayuno','fasting.stop':'Detener ayuno','fasting.started':'Inicio: {date}','fasting.target':'Objetivo: {goal}','fasting.targetLocked':'Objetivo: {goal} • fijado para este ayuno','fasting.targetReached':'Objetivo alcanzado • {duration} por encima del objetivo','fasting.progress':'{pct}% completado • quedan {duration}','fasting.zeroProgress':'0% completado','fasting.expectedTargetTime':'Hora prevista para alcanzar el objetivo: {date}','fasting.targetTimePassed':'La hora objetivo fue: {date}','fasting.fastCount.one':'{n} ayuno','fasting.fastCount.other':'{n} ayunos','fasting.fastCount.zero':'{n} ayunos','fasting.fastCount.two':'{n} ayunos','fasting.fastCount.few':'{n} ayunos','fasting.fastCount.many':'{n} ayunos','fasting.shortConfirm':'Este ayuno duró menos de un minuto. ¿Guardarlo en el historial?','fasting.clockError':'El reloj del dispositivo está en una hora anterior al inicio de este ayuno. Comprueba la fecha y la hora antes de detenerlo.',
       'fasting.startEarlier':'Empezó antes','backdate.title':'Iniciar un ayuno en curso','backdate.help':'Elige cuándo empezó realmente este ayuno. Seguirá activo y contando hasta que pulses Detener ayuno.','backdate.start':'Empezó a las','backdate.target':'Objetivo: {goal} • fijado para este ayuno','backdate.targetHelp':'Este objetivo queda fijado para el ayuno activo. Cambiar Ajustes más tarde no lo modificará.','backdate.startFast':'Iniciar ayuno','backdate.quickAria':'Horas de inicio rápidas','backdate.1h':'hace 1h','backdate.2h':'hace 2h','backdate.3h':'hace 3h','backdate.4h':'hace 4h','backdate.6h':'hace 6h','backdate.12h':'hace 12h','backdate.errStart':'Introduce una fecha y hora de inicio válidas.','backdate.errFuture':'La hora de inicio no puede estar en el futuro.','backdate.errGoal':'Introduce un objetivo superior a 0 horas.','backdate.errOverlap':'Este ayuno en curso se solaparía con un registro de ayuno completado.','backdate.conflictTitle':'Conflicto con un ayuno existente','backdate.conflictTitleMany':'Conflicto con {n} ayunos existentes','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'El ayuno en curso no puede comenzar antes de {time}.','backdate.startAfter':'Empezar a las {time}','backdate.editConflict':'Editar registro existente','backdate.deleteConflict':'Eliminar registro en conflicto e iniciar','backdate.deleteConfirm':'¿Eliminar este registro de ayuno completado e iniciar el ayuno en curso desde la hora seleccionada? No se puede deshacer salvo que tengas una copia de seguridad.',
       'history.add':'Añadir registro','history.start':'Inicio','history.end':'Fin','history.targetHours':'Horas objetivo','history.overlapHelp':'Los registros manuales no pueden solaparse con otro ayuno guardado ni con el ayuno activo.','history.empty':'Aún no hay ayunos completados. Pulsa Añadir registro para introducir uno manualmente.','history.target':'Objetivo: {goal}','history.targetReached':'Objetivo alcanzado','history.deleteConfirm':'¿Eliminar este registro de ayuno?','history.addTitle':'Añadir registro de ayuno','history.editTitle':'Editar registro de ayuno','history.errDates':'Introduce una fecha y hora válidas de inicio y fin.','history.errEndAfter':'La hora de fin debe ser posterior a la de inicio.','history.errFuture':'La hora de fin no puede estar en el futuro.','history.errMinute':'Un registro manual de ayuno debe durar al menos un minuto.','history.errGoal':'Introduce un objetivo superior a 0 horas.','history.errOverlap':'Este intervalo se solapa con otro ayuno guardado o con el ayuno activo.',
       'weight.add':'Añadir peso','weight.intro':'Registra el peso corporal junto con tu historial de ayuno.','weight.latest':'Último peso','weight.change':'Cambio desde el primero','weight.target':'Peso objetivo','weight.toTarget':'Diferencia hasta el objetivo','weight.targetHelp':'Opcional. Déjalo en blanco si solo quieres seguir la tendencia.','weight.trend':'Tendencia del peso','weight.chartHelp':'Últimos 30 pesajes. Aparece una línea objetivo cuando se establece un peso objetivo.','weight.dateTime':'Fecha y hora','weight.empty':'Aún no hay registros de peso. Pulsa Añadir peso para guardar tu primera medición.','weight.addChart':'Añade registros de peso para ver la tendencia.','weight.editTitle':'Editar peso','weight.addTitle':'Añadir peso','weight.deleteConfirm':'¿Eliminar este registro de peso?','weight.errDate':'Introduce una fecha y hora válidas.','weight.errFuture':'La fecha/hora del peso no puede estar en el futuro.','weight.errValue':'Introduce un peso válido superior a 0 {unit}.','weight.errTarget':'Introduce un peso objetivo válido superior a 0 {unit}, o déjalo en blanco.',
@@ -869,67 +932,100 @@ layout: null
       'science.title':'Autofagia y ciencia del ayuno','science.notFasting':'Sin ayuno activo','science.limited':'Evidencia en humanos: limitada','science.idle':'La autofagia está activa a nivel basal incluso cuando no ayunas. La investigación en humanos no ha establecido una hora universal en la que la autofagia inducida por el ayuno “empiece”.','science.caution':'Este indicador es educativo, no una medición de la autofagia ni una razón para prolongar un ayuno. Las respuestas varían según el tejido, la actividad, la dieta previa, el glucógeno y otros factores.','science.sources':'Base científica y fuentes',
       'science.timeline0':'<strong>0–8 h</strong> — ayuno temprano; no se puede inferir autofagia solo por el tiempo.','science.timeline1':'<strong>8–12 h</strong> — las cetonas suelen empezar a aumentar; comienza el cambio metabólico.','science.timeline2':'<strong>12–24 h</strong> — progresa la transición metabólica; no está demostrado el inicio de la autofagia en humanos.','science.timeline3':'<strong>24–36 h</strong> — se han estudiado marcadores relacionados con la autofagia en humanos; los resultados son mixtos y dependen del tejido.','science.timeline4':'<strong>36–48 h</strong> — ayuno prolongado; un estudio humano de 36 h encontró solo efectos modestos sobre mediadores de autofagia muscular.','science.timeline5':'<strong>48 h+</strong> — ayuno prolongado; no existe un “nivel de autofagia” corporal validado que pueda calcularse a partir del tiempo transcurrido.','science.stage0':'0–8 h • Ayuno temprano','science.stage0e':'Autofagia: basal, sin hora exacta','science.stage0t':'La autofagia ya está activa a nivel basal. El tiempo de ayuno por sí solo no muestra si ha aumentado.','science.stage1':'8–12 h • Inicio del cambio metabólico','science.stage1e':'Autofagia: inicio no establecido','science.stage1t':'Las cetonas humanas suelen empezar a aumentar en este intervalo. Ese cambio metabólico no demuestra que la autofagia se active a una hora concreta.','science.stage2':'12–24 h • Transición metabólica','science.stage2e':'Evidencia humana: incierta','science.stage2t':'El uso de combustible cambia más hacia grasas y cetonas, pero las revisiones concluyen que no se ha establecido un aumento significativo de la autofagia humana durante un ayuno agudo.','science.stage3':'24–36 h • Marcadores de autofagia estudiados','science.stage3e':'Evidencia humana: mixta','science.stage3t':'Los estudios de músculo esquelético humano a 24–36 horas muestran cambios mixtos o modestos en marcadores relacionados con la autofagia. Los efectos varían según el tejido y el contexto individual.','science.stage4':'36–48 h • Ayuno prolongado','science.stage4e':'Evidencia humana: limitada','science.stage4t':'La cetosis suele profundizarse, pero un estudio de 36 horas encontró solo efectos modestos en mediadores de autofagia muscular. No existe un umbral corporal validado.','science.stage5':'48 h+ • Ayuno prolongado','science.stage5e':'Sin nivel validado basado en el reloj','science.stage5t':'La evidencia humana actual no permite que una app calcule un “nivel” de autofagia a partir de la duración del ayuno. Un ayuno más largo no debe interpretarse como una autofagia proporcionalmente mayor.',
       'science.src1':'<a href="https://pubmed.ncbi.nlm.nih.gov/35892559/" target="_blank" rel="noopener noreferrer">Gómez-Virgilio et al., 2022 (PubMed)</a> — la autofagia está activa a nivel basal en las células y responde al estrés nutricional.','science.src2':'<a href="https://www.nejm.org/doi/abs/10.1056/NEJMra1905136" target="_blank" rel="noopener noreferrer">de Cabo &amp; Mattson, NEJM 2019</a> y <a href="https://www.nejm.org/doi/full/10.1056/NEJMx200002" target="_blank" rel="noopener noreferrer">corrección de 2020</a> — las cetonas humanas empiezan a subir aproximadamente a las 8–12 h de ayuno y aumentan más hasta las 48 h.','science.src3':'<a href="https://pubmed.ncbi.nlm.nih.gov/35142356/" target="_blank" rel="noopener noreferrer">Anton et al., 2022 (PubMed)</a> — revisión que concluye que sigue sin saberse si un ayuno agudo produce aumentos significativos de la autofagia humana.','science.src4':'<a href="https://pubmed.ncbi.nlm.nih.gov/35660501/" target="_blank" rel="noopener noreferrer">Chaudhary et al., 2022 (PubMed)</a> — el ayuno de 12–24 h no mostró una activación robusta de marcadores de autofagia en músculo esquelético humano.','science.src5':'<a href="https://pubmed.ncbi.nlm.nih.gov/30161009/" target="_blank" rel="noopener noreferrer">Dethlefsen et al., 2018 (PubMed)</a> — 36 h de ayuno produjeron solo cambios modestos en marcadores relacionados con la autofagia en músculo esquelético humano, influidos por el estado de entrenamiento.',
-      'backup.reminderTitle':'Recordatorio de copia externa','backup.now':'Hacer copia ahora','backup.exportTitle':'Exportar copia','backup.exportHelp':'Guarda/compartir tus datos como archivo JSON','backup.last':'Última copia externa','backup.lastHelp':'Aparece un recordatorio tras 7 días sin copia.','backup.noneYet':'Aún no hay una copia externa','backup.snapshots':'Copias JSON internas automáticas','backup.importTitle':'Importar copia','backup.importHelp':'Restaurar desde un archivo JSON exportado','backup.snapshotsHelp':'Estas copias JSON automáticas se guardan solo en este dispositivo. Con suficiente historial, la app conserva 5 recientes, 7 diarias, 4 semanales y 6 mensuales. No sustituyen una copia externa.','backup.shareTitle':'Copia de Fasting Tracker','backup.errCreate':'No se pudo crear la copia. Inténtalo de nuevo antes de actualizar.','backup.snapshotFailed':'No se pudo guardar una copia interna de recuperación. La operación se ha detenido para proteger tus datos actuales. Exporta una copia, comprueba el espacio disponible e inténtalo de nuevo.','backup.dueLast':'Tu última copia externa fue el {date}. Guarda una copia nueva en Archivos, iCloud Drive, Google Drive u otra ubicación segura.','backup.dueNever':'Tus datos de ayuno o peso no se han guardado en una copia externa durante al menos 7 días. Guarda una copia en Archivos, iCloud Drive, Google Drive u otra ubicación segura.','backup.snapshotCount':'{n} de {max} {word} rotativas guardadas localmente.','backup.snapshotWord.one':'copia','backup.snapshotWord.other':'copias','backup.snapshotNone':'Aún no hay copias de recuperación. Se crea una automáticamente alrededor de una actualización de la app.','backup.snapshotUnavailable':'Esa copia de recuperación ya no está disponible.','backup.snapshotRestoreConfirm':'¿Restaurar la copia de recuperación del {date}? Sustituirá los datos actuales de ayuno y peso de este dispositivo.','backup.snapshotRestored':'Copia de recuperación restaurada.','backup.snapshotEmpty':'Aún no hay copias internas de recuperación disponibles.','backup.snapshotTitle':'Copia de recuperación','backup.snapshotFrom':'De {version} • {reason}','backup.unencrypted':'Las copias JSON exportadas son archivos de texto sin cifrar. Guárdalas en un lugar que consideres seguro.',
+      'backup.reminderTitle':'Recordatorio de copia externa','backup.now':'Hacer copia ahora','backup.exportTitle':'Exportar copia','backup.exportHelp':'Guarda/compartir tus datos como archivo JSON','backup.last':'Última copia externa','backup.lastHelp':'Aparece un recordatorio tras 7 días sin copia.','backup.noneYet':'Aún no hay una copia externa','backup.snapshots':'Copias JSON internas automáticas','backup.importTitle':'Importar copia','backup.importHelp':'Restaurar desde un archivo JSON exportado','backup.snapshotsHelp':'Estas copias JSON automáticas se guardan solo en este dispositivo. Con suficiente historial, la app conserva 5 recientes, 7 diarias, 4 semanales y 6 mensuales. Si el almacenamiento local se limita, puede conservar menos copias y te avisará. No sustituyen una copia externa.','backup.shareTitle':'Copia de Fasting Tracker','backup.errCreate':'No se pudo crear la copia. Inténtalo de nuevo antes de actualizar.','backup.snapshotFailed':'No se pudo guardar una copia interna de recuperación. La operación se ha detenido para proteger tus datos actuales. Exporta una copia, comprueba el espacio disponible e inténtalo de nuevo.','backup.dueLast':'Tu última copia externa fue el {date}. Guarda una copia nueva en Archivos, iCloud Drive, Google Drive u otra ubicación segura.','backup.dueNever':'Tus datos de ayuno o peso no se han guardado en una copia externa durante al menos 7 días. Guarda una copia en Archivos, iCloud Drive, Google Drive u otra ubicación segura.','backup.snapshotCount':'{n} de {max} {word} rotativas guardadas localmente.','backup.snapshotWord.one':'copia','backup.snapshotWord.other':'copias','backup.snapshotWord.zero':'copias','backup.snapshotWord.two':'copias','backup.snapshotWord.few':'copias','backup.snapshotWord.many':'copias','backup.snapshotNone':'Aún no hay copias de recuperación. Se crea una automáticamente después del primer cambio significativo en los datos de ayuno o peso.','backup.snapshotUnavailable':'Esa copia de recuperación ya no está disponible.','backup.snapshotRestoreConfirm':'¿Restaurar la copia de recuperación del {date}? Sustituirá los datos actuales de ayuno y peso de este dispositivo.','backup.snapshotRestored':'Copia de recuperación restaurada.','backup.snapshotEmpty':'Aún no hay copias internas de recuperación disponibles.','backup.snapshotTitle':'Copia de recuperación','backup.snapshotFrom':'De {version} • {reason}','backup.unencrypted':'Las copias JSON exportadas son archivos de texto sin cifrar. Guárdalas en un lugar que consideres seguro.',
       'update.newVersion':'Nueva versión disponible','update.releaseReady':'Hay una versión más reciente de Fasting Tracker.','update.update':'Actualizar','update.updates':'Actualizaciones','update.check':'Comprobar','update.checking':'Buscando actualizaciones…','update.checkingBtn':'Comprobando…','update.available':'Está disponible la versión v{version}.','update.updateNow':'Actualizar ahora','update.ready':'Fasting Tracker v{version} está lista.','update.installing':'Instalando la versión más reciente…','update.updating':'Actualizando…','update.installingShort':'Instalando actualización…','update.offline':'No se pudo comprobar. Conéctate a Internet e inténtalo de nuevo.','update.offlineExplicit':'Sin conexión — conéctate a Internet para buscar actualizaciones.','update.failed':'Falló la comprobación. Inténtalo de nuevo cuando tengas conexión.','update.current':'Actualizado — v{version}.','update.install':'Instalar actualización','update.withoutBackup':'Actualizar sin copia','update.backupUpdate':'Copia y actualizar','update.modalText':'Está disponible Fasting Tracker v{version}. Se creará automáticamente una copia interna de recuperación antes de la instalación.','update.failedInstall':'La actualización falló. Comprueba la conexión e inténtalo de nuevo.','update.preparing':'Preparando copia…',
       'help.title':'Acerca de y ayuda','help.installIOS':'Instalar en iPhone / iPad','help.installIOS1':'Abre la dirección web de la app en Safari.','help.installIOS2':'Pulsa Compartir y luego <strong>Añadir a pantalla de inicio</strong>.','help.installIOS3':'Mantén <strong>Abrir como app web</strong> activado si iOS muestra esa opción y después pulsa Añadir.','help.installAndroid':'Instalar en Android','help.installAndroid1':'Abre la dirección web de la app en Chrome u otro navegador compatible con la instalación de PWA.','help.installAndroid2':'Abre el menú del navegador y elige <strong>Instalar app</strong> o <strong>Añadir a pantalla de inicio</strong>.','help.installAndroid3':'Confirma la instalación. Fasting Tracker aparecerá en la pantalla de inicio/lanzador de apps y podrá funcionar sin conexión cuando sus archivos estén guardados en caché.','help.backup':'Copia y restauración','help.backupText':'La app conserva automáticamente copias JSON internas rotativas después de cambios importantes y te recuerda cada 7 días usar <strong>Hacer copia ahora</strong> para guardar una copia JSON externa en Archivos, iCloud Drive, Google Drive u otro lugar seguro. Con suficiente historial conserva 5 recientes, 7 diarias, 4 semanales y 6 mensuales. Las copias internas se pierden al eliminar esta instalación. Antes de reinstalar para cambiar el icono, crea una copia externa; después usa <strong>Importar</strong> para restaurarla.','help.privacy':'Privacidad y almacenamiento','help.privacyText':'Tus registros de ayuno y peso permanecen en el almacenamiento local de este dispositivo. El sitio alojado contiene solo los archivos de la app y no recibe tu historial. Cada persona que instala la app tiene sus propios datos locales. Borrar los datos del navegador o del sitio puede eliminar los registros locales, así que conserva una copia reciente.','help.timeZoneTitle':'Zonas horarias históricas','help.timeZoneText':'Los ayunos y registros de peso recuerdan la zona horaria en la que se crearon, para que las horas históricas y los gráficos por día no cambien si después viajas a otra zona horaria.','help.autophagy':'Indicador de autofagia','help.autophagyText':'La tarjeta científica evita afirmar que la autofagia empiece a una hora fija. La autofagia ocurre continuamente a nivel basal y los estudios humanos actuales no respaldan un umbral universal basado en la duración del ayuno. La tarjeta separa la cronología metabólica bien establecida de la evidencia más incierta sobre autofagia y enlaza los estudios utilizados.','help.consistency':'Sistema de constancia','help.consistencyText':'La gamificación es opcional. Un ayuno que alcanza su objetivo elegido gana 10 XP, tanto si termina exactamente en el objetivo como si continúa mucho más. Registrar el peso da 2 XP por día natural distinto. El sistema no recompensa deliberadamente duraciones extremas de ayuno.','help.appVersion':'Versión de la app','help.versionHelp':'Útil para comprobar qué versión está instalada',
-      'recovery.title':'Modo de recuperación','recovery.text':'Los datos guardados de la app no se pudieron leer de forma segura. Los cambios normales están bloqueados para no sobrescribir los datos originales. Exporta los datos sin procesar o restaura una copia de recuperación antes de continuar.','recovery.exportRaw':'Exportar datos sin procesar','recovery.snapshots':'Copias de recuperación','recovery.importBackup':'Importar copia','recovery.startFresh':'Empezar de nuevo','recovery.resetConfirm':'¿Empezar con datos nuevos y vacíos? Los datos ilegibles se sustituirán. Expórtalos primero si puedes necesitarlos después.','recovery.writeBlocked':'Los cambios están bloqueados mientras el modo de recuperación está activo. Resuelve primero el problema de los datos guardados.','sync.conflict':'Fasting Tracker cambió en otra pestaña o ventana de la app. Se han cargado los datos guardados más recientes; repite tu acción.','backup.downloadConfirm':'Se inició la descarga de una copia. Cuando compruebes que el archivo JSON está guardado, pulsa Aceptar para marcar la copia externa como completada.','game.unlocked':'Desbloqueado','game.locked':'Bloqueado','update.emergencyRecovery':'La versión en caché de la app estaba dañada. Fasting Tracker la está reparando después de proteger tus datos locales.','error.save':'Fasting Tracker no pudo guardar tus datos. Exporta una copia y comprueba el espacio disponible del dispositivo.','error.goal':'Introduce un objetivo superior a 0 horas.','import.confirm':'¿Importar {fasts} {fastWord} y {weights} {weightWord} y sustituir los datos actuales de este dispositivo?','import.fast.one':'registro de ayuno','import.fast.other':'registros de ayuno','import.weight.one':'registro de peso','import.weight.other':'registros de peso','import.done':'Copia importada.','import.invalid':'Ese archivo no es una copia válida de Fasting Tracker v1 o contiene registros incoherentes.','reset.confirm':'¿Eliminar todo el historial de ayuno, el historial de peso, los ajustes y las copias internas de recuperación de este dispositivo? No se puede deshacer salvo que tengas una copia externa.',
+      'recovery.title':'Modo de recuperación','recovery.text':'Los datos guardados de la app no se pudieron leer de forma segura. Los cambios normales están bloqueados para no sobrescribir los datos originales. Exporta los datos sin procesar o restaura una copia de recuperación antes de continuar.','recovery.exportRaw':'Exportar datos sin procesar','recovery.snapshots':'Copias de recuperación','recovery.importBackup':'Importar copia','recovery.startFresh':'Empezar de nuevo','recovery.resetConfirm':'¿Empezar con datos nuevos y vacíos? Los datos ilegibles se sustituirán. Expórtalos primero si puedes necesitarlos después.','recovery.writeBlocked':'Los cambios están bloqueados mientras el modo de recuperación está activo. Resuelve primero el problema de los datos guardados.','sync.conflict':'Fasting Tracker cambió en otra pestaña o ventana de la app. Se han cargado los datos guardados más recientes; repite tu acción.','backup.downloadConfirm':'Se inició la descarga de una copia. Cuando compruebes que el archivo JSON está guardado, pulsa Aceptar para marcar la copia externa como completada.','game.unlocked':'Desbloqueado','game.locked':'Bloqueado','update.emergencyRecovery':'La versión en caché de la app estaba dañada. Fasting Tracker la está reparando después de proteger tus datos locales.','error.save':'Fasting Tracker no pudo guardar tus datos. Exporta una copia y comprueba el espacio disponible del dispositivo.','error.goal':'Introduce un objetivo superior a 0 horas y dentro del intervalo de fechas admitido.','import.confirm':'¿Importar {fasts} {fastWord} y {weights} {weightWord} y sustituir los datos actuales de este dispositivo?','import.fast.one':'registro de ayuno','import.fast.other':'registros de ayuno','import.fast.zero':'registros de ayuno','import.fast.two':'registros de ayuno','import.fast.few':'registros de ayuno','import.fast.many':'registros de ayuno','import.weight.one':'registro de peso','import.weight.other':'registros de peso','import.weight.zero':'registros de peso','import.weight.two':'registros de peso','import.weight.few':'registros de peso','import.weight.many':'registros de peso','import.done':'Copia importada.','import.invalid':'Ese archivo no es una copia válida de Fasting Tracker v1 o contiene registros incoherentes.','reset.confirm':'¿Eliminar todo el historial de ayuno, el historial de peso, los ajustes y las copias internas de recuperación de este dispositivo? No se puede deshacer salvo que tengas una copia externa.',
       'backup.reason.firstLaunch':'antes del primer inicio de v{version}','backup.reason.restore':'antes de restaurar otra copia','backup.reason.update':'antes de actualizar de v{from} a v{to}','backup.reason.import':'antes de importar una copia externa',
       'common.dismiss':'Cerrar','installStorage.title':'¿Usas Safari en iPhone?','installStorage.text':'Safari y una app web de la pantalla de inicio pueden usar almacenamiento local separado. Si piensas usar la app de la pantalla de inicio, instálala antes de introducir datos. Para mover registros existentes de Safari, exporta una copia aquí, instala la app y luego importa la copia allí.','storage.title':'Protección del almacenamiento','storage.checking':'Comprobando la protección del almacenamiento…','storage.protected':'Almacenamiento persistente: Protegido','storage.bestEffort':'Almacenamiento persistente: Mejor esfuerzo','storage.unavailable':'Estado del almacenamiento persistente no disponible','storage.help':'El almacenamiento persistente puede reducir la posibilidad de que el navegador elimine los datos locales por falta de espacio. Aun así, se recomiendan copias externas.','storage.request':'Solicitar protección','storage.requestDenied':'No se concedió la protección. Mantén copias externas recientes.','storage.usage':'Usando {used} de {quota} de almacenamiento disponible.','storage.usageUnknown':'La información de uso del almacenamiento no está disponible.',
       'safety.longFastTitle':'Objetivo de ayuno prolongado','safety.longFastText':'Has seleccionado {goal}. El ayuno prolongado de 72 horas o más puede implicar riesgos adicionales y no es adecuado para todo el mundo. Fasting Tracker registra tu elección; no recomienda esta duración. Revisa la información de salud y seguridad antes de continuar.','safety.continue':'Usar este objetivo',
       'a11y.fastProgress':'Progreso hacia el objetivo de ayuno','a11y.xpProgress':'Progreso del nivel de constancia','a11y.weightUnit':'Unidad de peso','a11y.fastChart':'Gráfico de horas de ayuno de los últimos 14 días','a11y.weightChart':'Gráfico de tendencia del peso',
-      'unit.day.one':'día','unit.day.other':'días','unit.d':'d','unit.h':'h','unit.m':'min','unit.hour.one':'hora','unit.hour.other':'horas'
+      'unit.day.one':'día','unit.day.other':'días','unit.day.zero':'días','unit.day.two':'días','unit.day.few':'días','unit.day.many':'días','unit.d':'d','unit.h':'h','unit.m':'min','unit.hour.one':'hora','unit.hour.other':'horas','unit.hour.zero':'horas','unit.hour.two':'horas','unit.hour.few':'horas','unit.hour.many':'horas'
     }
   };
 
-  function normalizeLanguage(value) { return ['system','en','bg','es'].includes(value) ? value : 'system'; }
+  function baseLanguage(tag) { return String(tag || '').trim().toLowerCase().split(/[-_]/, 1)[0]; }
+  function resolveSystemLanguage() {
+    // Use only the host/device primary language. If it is unsupported, English is the default.
+    const primary = (Array.isArray(navigator.languages) && navigator.languages[0]) || navigator.language || 'en';
+    const base = baseLanguage(primary);
+    return SUPPORTED_LANGUAGES.includes(base) ? base : 'en';
+  }
+  function normalizeLanguage(value) { return value === 'system' || SUPPORTED_LANGUAGES.includes(value) ? value : 'system'; }
   function normalizeAppearance(value) { return ['system','light','dark'].includes(value) ? value : 'system'; }
   function normalizeIconChoice(value) { return ['plate','moon','hourglass','timer'].includes(value) ? value : 'plate'; }
-  function manifestFor(lang, icon) { icon = normalizeIconChoice(icon); if (icon === 'plate') return lang === 'bg' ? 'manifest-bg.webmanifest' : lang === 'es' ? 'manifest-es.webmanifest' : 'manifest.webmanifest'; return `manifest-${icon}${lang === 'bg' ? '-bg' : lang === 'es' ? '-es' : ''}.webmanifest`; }
+  function manifestFor(lang, icon) {
+    icon = normalizeIconChoice(icon);
+    lang = SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en';
+    const suffix = LANGUAGE_META[lang].manifestSuffix;
+    return icon === 'plate' ? `manifest${suffix}.webmanifest` : `manifest-${icon}${suffix}.webmanifest`;
+  }
   function applyIconChoice() { const icon=normalizeIconChoice(urlIconOverride || data?.iconChoice); const lang=uiLanguage(); const manifest=el('appManifest'); if(manifest) manifest.href=manifestFor(lang,icon); const fav=el('appFavicon'); if(fav) fav.href=`icons/${icon}/favicon-32.png`; const touch=el('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/apple-touch-icon.png`; document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn=>{ const active=btn.dataset.iconChoice===icon; btn.classList.toggle('active',active); btn.setAttribute('aria-checked',active?'true':'false'); }); }
   function uiLanguage() {
     if (urlLangOverride) return urlLangOverride;
     const pref = normalizeLanguage(data?.language || 'system');
-    if (pref !== 'system') return pref;
-    const lang = String(navigator.language || 'en').toLowerCase();
-    if (lang.startsWith('bg')) return 'bg';
-    if (lang.startsWith('es')) return 'es';
-    return 'en';
+    return pref === 'system' ? resolveSystemLanguage() : pref;
   }
   function currentLocale() {
     const lang = uiLanguage();
-    if (lang === 'bg') return 'bg-BG';
-    if (lang === 'es') return 'es-ES';
-    return (data?.language === 'system' && navigator.language) ? navigator.language : 'en-GB';
+    const browserLocale = String(navigator.language || '');
+    // Preserve the user's regional conventions only when they match the UI language.
+    // Choosing a language therefore does not silently choose a country or time zone.
+    return baseLanguage(browserLocale) === lang ? browserLocale : LANGUAGE_META[lang].locale;
   }
   function t(key, vars = {}) {
     const lang = uiLanguage();
     let str = I18N[lang]?.[key] ?? I18N.en[key] ?? key;
     return String(str).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
   }
-  function pluralKey(base, n) { return `${base}.${Number(n) === 1 ? 'one' : 'other'}`; }
+  function pluralCategory(n) {
+    try { return new Intl.PluralRules(currentLocale()).select(Number(n)); }
+    catch { return Number(n) === 1 ? 'one' : 'other'; }
+  }
+  function pluralKey(base, n) {
+    const category = pluralCategory(n);
+    const candidate = `${base}.${category}`;
+    if (I18N[uiLanguage()]?.[candidate] != null || I18N.en[candidate] != null) return candidate;
+    return `${base}.other`;
+  }
   function formatNumber(value, minimumFractionDigits = 0, maximumFractionDigits = 0) {
     return Number(value).toLocaleString(currentLocale(), { minimumFractionDigits, maximumFractionDigits });
   }
+  function renderLanguageOptions() {
+    const sel = document.getElementById('languageSelect');
+    if (!sel) return;
+    const selected = urlLangOverride || normalizeLanguage(data.language);
+    sel.replaceChildren();
+    const systemOption = document.createElement('option');
+    systemOption.value = 'system';
+    systemOption.textContent = t('settings.systemLanguage');
+    sel.append(systemOption);
+    for (const code of SUPPORTED_LANGUAGES) {
+      const option = document.createElement('option');
+      option.value = code;
+      option.lang = code;
+      option.dir = LANGUAGE_META[code].dir;
+      option.textContent = LANGUAGE_META[code].label;
+      sel.append(option);
+    }
+    sel.value = selected;
+  }
   function applyLanguage() {
     const lang = uiLanguage();
+    const meta = LANGUAGE_META[lang] || LANGUAGE_META.en;
     document.documentElement.lang = lang;
-    document.documentElement.dir = 'ltr';
+    document.documentElement.dir = meta.dir;
     try { localStorage.setItem('fastingTrackerPublicLang', lang); } catch {}
     document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = t(node.dataset.i18n); });
     document.querySelectorAll('[data-i18n-html]').forEach(node => { node.innerHTML = t(node.dataset.i18nHtml); });
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
-    const sel = document.getElementById('languageSelect');
-    if (sel) {
-      sel.value = urlLangOverride || normalizeLanguage(data.language);
-      const systemOption = sel.querySelector('option[value="system"]');
-      if (systemOption) systemOption.textContent = t('settings.systemLanguage');
-    }
+    renderLanguageOptions();
     applyIconChoice();
     const appleTitle = document.getElementById('appleAppTitle');
-    if (appleTitle) appleTitle.content = lang === 'bg' ? 'Гладуване' : lang === 'es' ? 'Ayuno' : 'Fasting';
+    if (appleTitle) appleTitle.content = meta.appTitle;
     const goalUnit = document.getElementById('goalUnit');
     if (goalUnit) goalUnit.textContent = t('unit.h');
-    document.querySelectorAll('.chip[data-goal]').forEach(chip => { chip.textContent = `${chip.dataset.goal}${t('unit.h')}`; });
+    document.querySelectorAll('.chip[data-goal]').forEach(chip => { chip.textContent = `${formatNumber(Number(chip.dataset.goal))}${t('unit.h')}`; });
   }
 
   function effectiveAppearance() {
@@ -950,19 +1046,55 @@ layout: null
   function cloneDefault() { return JSON.parse(JSON.stringify(defaultData)); }
   function pad(n) { return String(n).padStart(2, '0'); }
   function validDate(value) { if (value == null || value === '') return null; const d = new Date(value); return Number.isFinite(d.getTime()) ? d : null; }
-  function parseLocalizedNumber(value) {
+  function numberSymbols(locale = currentLocale()) {
+    let decimal = '.', group = ',';
+    try {
+      const parts = new Intl.NumberFormat(locale).formatToParts(12345.6);
+      decimal = parts.find(p => p.type === 'decimal')?.value || decimal;
+      group = parts.find(p => p.type === 'group')?.value || group;
+    } catch {}
+    return { decimal, group };
+  }
+  function parseLocalizedNumber(value, locale = currentLocale()) {
     if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
-    let text = String(value ?? '').trim().replace(/\s+/g, '');
+    let text = String(value ?? '').trim().replace(/\u2212/g, '-').replace(/[\s\u00A0\u202F]+/g, '');
     if (!text) return NaN;
-    const lastComma = text.lastIndexOf(','), lastDot = text.lastIndexOf('.');
-    if (lastComma >= 0 && lastDot >= 0) {
-      const decimal = lastComma > lastDot ? ',' : '.';
-      const thousands = decimal === ',' ? '.' : ',';
-      text = text.split(thousands).join('');
+    const { decimal: localeDecimal, group: localeGroup } = numberSymbols(locale);
+    if (localeGroup && localeGroup !== ',' && localeGroup !== '.') text = text.split(localeGroup).join('');
+    const commaCount = (text.match(/,/g) || []).length;
+    const dotCount = (text.match(/\./g) || []).length;
+    if (commaCount && dotCount) {
+      const decimal = text.lastIndexOf(',') > text.lastIndexOf('.') ? ',' : '.';
+      const group = decimal === ',' ? '.' : ',';
+      text = text.split(group).join('');
+      if ((text.match(new RegExp(`\\${decimal}`, 'g')) || []).length !== 1) return NaN;
       if (decimal === ',') text = text.replace(',', '.');
-    } else if (lastComma >= 0) text = text.replace(',', '.');
+    } else if (commaCount || dotCount) {
+      const mark = commaCount ? ',' : '.';
+      const count = commaCount || dotCount;
+      if (count > 1) {
+        const grouped = new RegExp(`^[+-]?\\d{1,3}(?:\\${mark}\\d{3})+$`);
+        if (mark === localeGroup && grouped.test(text)) text = text.split(mark).join('');
+        else return NaN;
+      } else if (mark === localeDecimal) {
+        if (mark === ',') text = text.replace(',', '.');
+      } else if (mark === localeGroup) {
+        const grouped = new RegExp(`^[+-]?\\d{1,3}\\${mark}\\d{3}$`);
+        if (grouped.test(text)) text = text.replace(mark, '');
+        else text = text.replace(mark, '.');
+      } else {
+        text = text.replace(mark, '.');
+      }
+    }
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(text)) return NaN;
     const n = Number(text);
     return Number.isFinite(n) ? n : NaN;
+  }
+  function safeTargetDate(startMs, targetMs) {
+    const value = Number(startMs) + Number(targetMs);
+    if (!Number.isFinite(value) || Math.abs(value) > MAX_DATE_MS) return null;
+    const d = new Date(value);
+    return Number.isFinite(d.getTime()) ? d : null;
   }
   function currentTimeZone() {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
@@ -1153,19 +1285,51 @@ layout: null
     } catch { return []; }
   }
 
+  function setSnapshotProtectionState(status, kept = 0, desired = 0) {
+    snapshotProtectionState = { status, kept: Math.max(0, Number(kept) || 0), desired: Math.max(0, Number(desired) || 0) };
+    if (backupMeta && typeof backupMeta === 'object') {
+      backupMeta.snapshotProtectionStatus = status;
+      backupMeta.snapshotProtectionAt = new Date().toISOString();
+      backupMeta.snapshotStoredCount = snapshotProtectionState.kept;
+      backupMeta.snapshotDesiredCount = snapshotProtectionState.desired;
+      saveBackupMeta();
+    }
+  }
+
+  function isQuotaError(err) {
+    return !!err && (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22 || err.code === 1014);
+  }
+
+  function writeSnapshotList(list) {
+    const json = JSON.stringify(list);
+    localStorage.setItem(SNAPSHOT_KEY, json);
+    const verify = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '[]');
+    return Array.isArray(verify) && verify.length === list.length && (!list[0] || verify[0]?.id === list[0].id);
+  }
+
   function storeSnapshots(snapshots) {
     const limited = pruneSnapshots(snapshots);
+    const desired = limited.length;
     try {
-      localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(limited));
-      const verify = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '[]');
-      return Array.isArray(verify) && verify.length === limited.length && (!limited[0] || verify[0]?.id === limited[0].id);
-    } catch {
-      try {
-        const fallback = limited.slice(0, Math.min(SNAPSHOT_RECENT_KEEP, limited.length));
-        localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(fallback));
-        const verify = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '[]');
-        return Array.isArray(verify) && verify.length === fallback.length;
-      } catch { return false; }
+      if (!writeSnapshotList(limited)) throw new Error('snapshot verification failed');
+      const priorDesired = Math.max(0, Number(snapshotProtectionState.desired) || 0);
+      const stillRecovering = (snapshotProtectionState.status === 'reduced' || snapshotProtectionState.status === 'failed') && priorDesired > limited.length;
+      setSnapshotProtectionState(stillRecovering ? 'reduced' : 'ok', limited.length, stillRecovering ? priorDesired : desired);
+      return true;
+    } catch (err) {
+      if (!isQuotaError(err)) { setSnapshotProtectionState('failed', loadSnapshots().length, desired); return false; }
+      // Preserve the newest recovery points first when local browser storage is tight.
+      const fallbackCounts = [...new Set([Math.min(SNAPSHOT_RECENT_KEEP, desired), Math.min(3, desired), Math.min(1, desired)])].filter(n => n > 0 && n < desired);
+      for (const count of fallbackCounts) {
+        const fallback = limited.slice(0, count);
+        try {
+          if (!writeSnapshotList(fallback)) continue;
+          setSnapshotProtectionState('reduced', fallback.length, desired);
+          return true;
+        } catch {}
+      }
+      setSnapshotProtectionState('failed', loadSnapshots().length, desired);
+      return false;
     }
   }
 
@@ -1182,13 +1346,17 @@ layout: null
       snapshots.unshift(snapshot);
       if (!storeSnapshots(snapshots)) return null;
       return loadSnapshots().some(item => item.id === snapshot.id) ? snapshot : null;
-    } catch { return null; }
+    } catch {
+      setSnapshotProtectionState('failed', loadSnapshots().length, 0);
+      return null;
+    }
   }
 
   function createInternalSnapshot(reason = 'recovery') {
     if (typeof data === 'undefined' || !data) return null;
     const snapshot = pushSnapshotData(data, reason, APP_VERSION);
     if (typeof renderSnapshotStatus === 'function') renderSnapshotStatus();
+    if (typeof renderBackupStatus === 'function') renderBackupStatus();
     return snapshot;
   }
 
@@ -1196,6 +1364,11 @@ layout: null
     if (typeof data === 'undefined' || !data || !hasBackupWorthyData()) return true;
     const snapshot = pushSnapshotData(data, reason, APP_VERSION);
     if (typeof renderSnapshotStatus === 'function') renderSnapshotStatus();
+    if (typeof renderBackupStatus === 'function') renderBackupStatus();
+    if (!snapshot && !automaticSnapshotFailureAlerted) {
+      automaticSnapshotFailureAlerted = true;
+      setTimeout(() => alert(t('backup.autoSnapshotFailed')), 0);
+    }
     return !!snapshot;
   }
 
@@ -1206,10 +1379,15 @@ layout: null
     const first = validDate(meta.firstSeenAt);
     const firstData = validDate(meta.firstDataAt);
     const last = validDate(meta.lastExternalBackupAt);
+    const snapshotAt = validDate(meta.snapshotProtectionAt);
     const normalized = {
       firstSeenAt: first ? first.toISOString() : now,
       firstDataAt: firstData ? firstData.toISOString() : null,
-      lastExternalBackupAt: last ? last.toISOString() : null
+      lastExternalBackupAt: last ? last.toISOString() : null,
+      snapshotProtectionStatus: ['ok','reduced','failed'].includes(meta.snapshotProtectionStatus) ? meta.snapshotProtectionStatus : 'ok',
+      snapshotProtectionAt: snapshotAt ? snapshotAt.toISOString() : null,
+      snapshotStoredCount: Math.max(0, Number(meta.snapshotStoredCount) || 0),
+      snapshotDesiredCount: Math.max(0, Number(meta.snapshotDesiredCount) || 0)
     };
     try { localStorage.setItem(BACKUP_META_KEY, JSON.stringify(normalized)); } catch {}
     return normalized;
@@ -1217,6 +1395,15 @@ layout: null
 
   function saveBackupMeta() {
     try { localStorage.setItem(BACKUP_META_KEY, JSON.stringify(backupMeta)); } catch {}
+  }
+
+  function reloadBackupMetaFromStorage() {
+    backupMeta = loadBackupMeta();
+    snapshotProtectionState = {
+      status: ['ok','reduced','failed'].includes(backupMeta.snapshotProtectionStatus) ? backupMeta.snapshotProtectionStatus : 'ok',
+      kept: Math.max(0, Number(backupMeta.snapshotStoredCount) || 0),
+      desired: Math.max(0, Number(backupMeta.snapshotDesiredCount) || 0)
+    };
   }
 
   function captureVersionTransitionSnapshot() {
@@ -1296,7 +1483,7 @@ layout: null
     if (rawData.records.length > MAX_IMPORT_FASTS || rawData.weights.length > MAX_IMPORT_WEIGHTS) throw new Error('too many records');
     if (!Number.isFinite(parseLocalizedNumber(rawData.goalHours)) || parseLocalizedNumber(rawData.goalHours) <= 0 || parseLocalizedNumber(rawData.goalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid default goal');
     if (!['kg','lb'].includes(rawData.weightUnit)) throw new Error('invalid weight unit');
-    if (!['system','en','bg','es'].includes(rawData.language)) throw new Error('invalid language');
+    if (rawData.language != null && typeof rawData.language !== 'string') throw new Error('invalid language');
     if (!['system','light','dark'].includes(rawData.appearance)) throw new Error('invalid appearance');
     if (rawData.iconChoice != null && !['plate','moon','hourglass','timer'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
     if (typeof rawData.gamificationEnabled !== 'boolean') throw new Error('invalid gamification setting');
@@ -1391,14 +1578,42 @@ layout: null
     }
   }
 
+  function writePrimaryDataWithSnapshotReclaim(serialized) {
+    const writePrimary = () => {
+      localStorage.setItem(DATA_KEY, serialized);
+      if (localStorage.getItem(DATA_KEY) !== serialized) throw new Error('storage verification failed');
+    };
+    try { writePrimary(); return true; }
+    catch (err) {
+      if (!isQuotaError(err)) throw err;
+      const snapshots = loadSnapshots();
+      if (!snapshots.length) throw err;
+      const originalCount = snapshots.length;
+      for (const count of [...new Set([Math.min(5, originalCount), Math.min(3, originalCount), Math.min(1, originalCount), 0])]) {
+        if (count >= originalCount) continue;
+        try {
+          if (count === 0) localStorage.removeItem(SNAPSHOT_KEY);
+          else if (!writeSnapshotList(snapshots.slice(0, count))) continue;
+          writePrimary();
+          setSnapshotProtectionState(count > 0 ? 'reduced' : 'failed', count, originalCount);
+          return true;
+        } catch {}
+      }
+      // If the new primary record still cannot fit, try to restore the newest recovery point.
+      try {
+        if (snapshots[0] && writeSnapshotList([snapshots[0]])) setSnapshotProtectionState('reduced', 1, originalCount);
+      } catch {}
+      throw err;
+    }
+  }
+
   function persistResolvedData(candidate) {
     try {
       const normalized = validateImportedData(candidate);
       normalized.revision = Math.max(0, Number(normalized.revision) || 0) + 1;
       normalized.updatedAt = new Date().toISOString();
       const serialized = JSON.stringify(normalized);
-      localStorage.setItem(DATA_KEY, serialized);
-      if (localStorage.getItem(DATA_KEY) !== serialized) throw new Error('storage verification failed');
+      writePrimaryDataWithSnapshotReclaim(serialized);
       data = normalized;
       lastPersistedDataRaw = serialized;
       recoveryMode = null;
@@ -1429,8 +1644,7 @@ layout: null
       candidate.revision = Math.max(0, Number(candidate.revision) || 0) + 1;
       candidate.updatedAt = new Date().toISOString();
       const serialized = JSON.stringify(candidate);
-      localStorage.setItem(DATA_KEY, serialized);
-      if (localStorage.getItem(DATA_KEY) !== serialized) throw new Error('storage verification failed');
+      writePrimaryDataWithSnapshotReclaim(serialized);
       data = candidate;
       lastPersistedDataRaw = serialized;
       invalidateDerivedCaches();
@@ -1461,9 +1675,9 @@ layout: null
     const days = Math.floor(totalMin / 1440);
     const hours = Math.floor((totalMin % 1440) / 60);
     const minutes = totalMin % 60;
-    if (days > 0) return `${days} ${t(pluralKey('unit.day', days))} ${hours}${t('unit.h')}${includeMinutes ? ` ${minutes}${t('unit.m')}` : ''}`;
-    if (hours > 0) return `${hours}${t('unit.h')}${includeMinutes ? ` ${minutes}${t('unit.m')}` : ''}`;
-    return `${minutes}${t('unit.m')}`;
+    if (days > 0) return `${formatNumber(days)} ${t(pluralKey('unit.day', days))} ${formatNumber(hours)}${t('unit.h')}${includeMinutes ? ` ${formatNumber(minutes)}${t('unit.m')}` : ''}`;
+    if (hours > 0) return `${formatNumber(hours)}${t('unit.h')}${includeMinutes ? ` ${formatNumber(minutes)}${t('unit.m')}` : ''}`;
+    return `${formatNumber(minutes)}${t('unit.m')}`;
   }
 
   function compactDuration(ms) {
@@ -1472,9 +1686,9 @@ layout: null
     const days = Math.floor(totalMin / 1440);
     const hours = Math.floor((totalMin % 1440) / 60);
     const minutes = totalMin % 60;
-    if (days > 0) return `${days}${t('unit.d')} ${hours}${t('unit.h')}`;
-    if (hours > 0) return `${hours}${t('unit.h')} ${minutes}${t('unit.m')}`;
-    return `${minutes}${t('unit.m')}`;
+    if (days > 0) return `${formatNumber(days)}${t('unit.d')} ${formatNumber(hours)}${t('unit.h')}`;
+    if (hours > 0) return `${formatNumber(hours)}${t('unit.h')} ${formatNumber(minutes)}${t('unit.m')}`;
+    return `${formatNumber(minutes)}${t('unit.m')}`;
   }
 
   function dayKey(dateLike, timeZone = currentTimeZone()) {
@@ -1604,9 +1818,9 @@ layout: null
       el('fastProgressTrack').setAttribute('aria-valuenow', String(Math.round(visualPct)));
       el('fastProgressTrack').setAttribute('aria-valuetext', pct >= 100 ? t('fasting.targetReached', {duration:friendlyDuration(Math.max(0, elapsed - targetMs))}) : t('fasting.progress', {pct:formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration:friendlyDuration(Math.max(0, targetMs - elapsed))}));
       const targetMoment = el('targetMoment');
-      const targetAt = new Date(startMs + targetMs);
-      targetMoment.hidden = false;
-      targetMoment.textContent = elapsed >= targetMs
+      const targetAt = safeTargetDate(startMs, targetMs);
+      targetMoment.hidden = !targetAt;
+      if (targetAt) targetMoment.textContent = elapsed >= targetMs
         ? t('fasting.targetTimePassed', {date: localDateTimeLabel(targetAt, data.activeTimeZone)})
         : t('fasting.expectedTargetTime', {date: localDateTimeLabel(targetAt, data.activeTimeZone)});
 
@@ -1970,8 +2184,8 @@ layout: null
     const levelLabel = t('game.levelFull', {n: level.number, name: t(level.nameKey)});
     el('gSummaryLevel').textContent = t('game.level', {n: level.number});
     el('gDetailLevel').textContent = levelLabel;
-    el('gSummaryXP').textContent = `${xp} XP`;
-    el('gXP').textContent = xp;
+    el('gSummaryXP').textContent = `${formatNumber(xp)} XP`;
+    el('gXP').textContent = formatNumber(xp);
 
     let fillPct = 100;
     if (level.next != null) {
@@ -1987,7 +2201,7 @@ layout: null
 
     const weekly = weeklyTargetSuccessRate();
     el('gWeekly').textContent = weekly == null ? '—' : `${weekly}%`;
-    el('gWeightStreak').textContent = weightWeekStreak();
+    el('gWeightStreak').textContent = formatNumber(weightWeekStreak());
 
     const box = el('achievementBadges');
     box.replaceChildren();
@@ -2006,11 +2220,11 @@ layout: null
 
   function renderStats() {
     const ms = data.records.map(recordMs), total = ms.reduce((a, b) => a + b, 0);
-    el('mTotal').textContent = ms.length;
+    el('mTotal').textContent = formatNumber(ms.length);
     el('mAverage').textContent = ms.length ? compactDuration(total / ms.length) : `0${t('unit.h')}`;
     el('mLongest').textContent = ms.length ? compactDuration(Math.max(...ms)) : `0${t('unit.h')}`;
-    el('mGoal').textContent = data.records.filter(recordMetGoal).length;
-    el('mStreak').textContent = currentStreak();
+    el('mGoal').textContent = formatNumber(data.records.filter(recordMetGoal).length);
+    el('mStreak').textContent = formatNumber(currentStreak());
     el('mHours').textContent = total ? compactDuration(total) : `0${t('unit.h')}`;
     drawChart();
     renderGamification();
@@ -2052,7 +2266,7 @@ layout: null
       ctx.fillStyle = accent; ctx.globalAlpha = .85; ctx.fillRect(x0, y, bw, bh); ctx.globalAlpha = 1;
       if (i % 2 === 0 || i === 13) {
         ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'center';
-        ctx.fillText(x.d.getDate(), x0 + bw / 2, cssH - 9);
+        ctx.fillText(formatNumber(x.d.getDate()), x0 + bw / 2, cssH - 9);
       }
     });
     ctx.textAlign = 'start';
@@ -2333,7 +2547,21 @@ layout: null
     return !!data.activeStart || data.records.length > 0 || data.weights.length > 0;
   }
 
+  function normalizeBackupClockSkew() {
+    const nowMs = Date.now();
+    let changed = false;
+    for (const key of ['firstDataAt','lastExternalBackupAt']) {
+      const d = validDate(backupMeta[key]);
+      if (d && d.getTime() > nowMs + FUTURE_TOLERANCE_MS) {
+        backupMeta[key] = new Date(nowMs).toISOString();
+        changed = true;
+      }
+    }
+    if (changed) saveBackupMeta();
+  }
+
   function ensureBackupTrackingStarted() {
+    normalizeBackupClockSkew();
     if (!hasBackupWorthyData()) {
       if (backupMeta.firstDataAt) {
         backupMeta.firstDataAt = null;
@@ -2359,16 +2587,25 @@ layout: null
   }
 
   function renderBackupStatus() {
+    normalizeBackupClockSkew();
     const label = el('lastBackupLabel');
     const banner = el('backupReminder');
+    const titleBox = el('backupReminderTitle');
     const textBox = el('backupReminderText');
     const nextLabel = el('nextBackupLabel');
     if (!label || !banner || !textBox) return;
     const last = validDate(backupMeta.lastExternalBackupAt);
     label.textContent = last ? localDateLabel(last) : t('backup.noneYet');
     const due = backupIsDue();
-    banner.hidden = !due;
-    if (due) textBox.textContent = last ? t('backup.dueLast', {date:localDateLabel(last)}) : t('backup.dueNever');
+    const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
+    banner.hidden = !(due || snapshotAttention);
+    banner.classList.toggle('warn', snapshotAttention);
+    if (titleBox) titleBox.textContent = snapshotAttention ? t('backup.snapshotAttentionTitle') : t('backup.reminderTitle');
+    if (snapshotAttention) {
+      textBox.textContent = snapshotProtectionState.status === 'failed'
+        ? t('backup.autoSnapshotFailed')
+        : t('backup.autoSnapshotReduced', {n:snapshotProtectionState.kept});
+    } else if (due) textBox.textContent = last ? t('backup.dueLast', {date:localDateLabel(last)}) : t('backup.dueNever');
     if (nextLabel) {
       if (!hasBackupWorthyData()) nextLabel.textContent = t('backup.nextStarts');
       else {
@@ -2385,7 +2622,9 @@ layout: null
     const btn = el('restoreSnapshotBtn');
     if (!status || !btn) return;
     const snapshots = loadSnapshots();
-    status.textContent = snapshots.length ? t('backup.rollingPolicy', {n:snapshots.length}) : t('backup.snapshotNone');
+    if (snapshotProtectionState.status === 'failed' && hasBackupWorthyData()) status.textContent = t('backup.snapshotFailedStatus');
+    else if (snapshotProtectionState.status === 'reduced' && hasBackupWorthyData()) status.textContent = t('backup.snapshotReducedStatus', {n:snapshots.length});
+    else status.textContent = snapshots.length ? t('backup.rollingPolicy', {n:snapshots.length}) : t('backup.snapshotNone');
     btn.disabled = snapshots.length === 0;
   }
 
@@ -2441,27 +2680,52 @@ layout: null
     const u = new URL(location.href);
     u.search = ''; u.hash = '';
     u.searchParams.set('icon', normalizeIconChoice(data.iconChoice));
-    const lang = uiLanguage();
-    if (lang === 'bg' || lang === 'es') u.searchParams.set('lang', lang);
+    const pref = normalizeLanguage(data.language);
+    if (pref !== 'system') u.searchParams.set('lang', pref);
     return u.toString();
+  }
+
+  function refreshReinstallLink() {
+    const box = el('reinstallLinkInput');
+    if (box) box.value = selectedIconInstallUrl();
+  }
+
+  function showReinstallLink() {
+    refreshReinstallLink();
+    const tools = el('reinstallLinkTools');
+    if (tools) tools.hidden = false;
+    const status = el('reinstallLinkStatus');
+    if (status) status.textContent = t('iconChange.ready', {icon:t(`icon.${normalizeIconChoice(data.iconChoice)}`)});
+  }
+
+  async function copyReinstallLink() {
+    const input = el('reinstallLinkInput');
+    const status = el('reinstallLinkStatus');
+    if (!input) return;
+    refreshReinstallLink();
+    let copied = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(input.value);
+        copied = true;
+      }
+    } catch {}
+    if (!copied) {
+      try {
+        input.focus(); input.select(); input.setSelectionRange(0, input.value.length);
+        copied = !!document.execCommand?.('copy');
+      } catch {}
+    }
+    if (status) status.textContent = copied ? t('iconChange.copied') : t('iconChange.copyFailed');
+    if (!copied) {
+      try { input.focus(); input.select(); input.setSelectionRange(0, input.value.length); } catch {}
+    }
   }
 
   async function prepareIconChange() {
     const ok = await exportBackup();
     if (!ok) return;
-    const installUrl = selectedIconInstallUrl();
-    let copied = false;
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(installUrl);
-        copied = true;
-      }
-    } catch {}
-    if (copied) {
-      alert(t('iconChange.readyCopied', {icon:t(`icon.${normalizeIconChoice(data.iconChoice)}`)}));
-    } else {
-      prompt(t('iconChange.readyPrompt', {icon:t(`icon.${normalizeIconChoice(data.iconChoice)}`)}), installUrl);
-    }
+    showReinstallLink();
   }
 
   function visibleModal() {
@@ -2760,7 +3024,7 @@ layout: null
 
   function requestGoalChange(value) {
     const parsed = parseLocalizedNumber(value);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
+    if (!Number.isFinite(parsed) || parsed <= 0 || parsed > MAX_SAFE_GOAL_HOURS) {
       alert(t('error.goal'));
       goalHours.value = formatNumber(data.goalHours, 0, 3);
       return;
@@ -2782,6 +3046,7 @@ layout: null
     if (!save()) { renderAll(); return; }
     applyLanguage();
     renderAll();
+    if (!el('reinstallLinkTools').hidden) refreshReinstallLink();
     checkForUpdates({ quiet: false });
   });
 
@@ -2796,8 +3061,10 @@ layout: null
     data.iconChoice = normalizeIconChoice(btn.dataset.iconChoice);
     if (!save()) { renderAll(); return; }
     applyIconChoice();
+    if (!el('reinstallLinkTools').hidden) refreshReinstallLink();
   }));
   el('prepareIconChangeBtn').addEventListener('click', prepareIconChange);
+  el('copyReinstallLinkBtn').addEventListener('click', copyReinstallLink);
   if (systemThemeQuery.addEventListener) systemThemeQuery.addEventListener('change', () => { if (normalizeAppearance(data.appearance)==='system') { applyAppearance(); drawChart(); drawWeightChart(); } });
 
   goalHours.addEventListener('change', () => requestGoalChange(goalHours.value));
@@ -2923,7 +3190,9 @@ layout: null
       data = cloneDefault();
       if (!save()) { renderAll(); return; }
       try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); } catch {}
-      backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null };
+      backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null, snapshotProtectionStatus: 'ok', snapshotProtectionAt: null, snapshotStoredCount: 0, snapshotDesiredCount: 0 };
+      snapshotProtectionState = { status: 'ok', kept: 0, desired: 0 };
+      automaticSnapshotFailureAlerted = false;
       saveBackupMeta();
       renderAll();
     }
@@ -2954,16 +3223,28 @@ layout: null
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('offline', () => setUpdateUI('offline', t('update.offlineExplicit')));
   window.addEventListener('storage', event => {
-    if (event.key !== DATA_KEY || event.storageArea !== localStorage) return;
-    if (event.newValue === lastPersistedDataRaw) return;
-    syncFromStoredRaw(event.newValue, { notify: false });
+    if (event.storageArea !== localStorage) return;
+    if (event.key === DATA_KEY) {
+      if (event.newValue === lastPersistedDataRaw) return;
+      syncFromStoredRaw(event.newValue, { notify: false });
+      return;
+    }
+    if (event.key === BACKUP_META_KEY) {
+      reloadBackupMetaFromStorage();
+      renderBackupStatus(); renderSnapshotStatus(); renderGamification();
+      return;
+    }
+    if (event.key === SNAPSHOT_KEY) {
+      renderSnapshotStatus(); renderBackupStatus();
+    }
   });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderAll(); if (!emergencyBoot) checkForUpdates({ quiet: true }); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { reloadBackupMetaFromStorage(); renderAll(); if (!emergencyBoot) checkForUpdates({ quiet: true }); } });
 
   el('installStorageDismiss').addEventListener('click', () => { try { localStorage.setItem(INSTALL_NOTICE_KEY, '1'); } catch {} renderInstallStorageNotice(); });
   el('storageProtectBtn').addEventListener('click', () => refreshStorageProtection({ request: true }));
 
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
+  el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;
   persistUrlLanguageOverride();
   persistUrlIconOverride();
   applyLanguage();

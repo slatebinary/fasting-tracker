@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.5.0','version must be 1.5.0')
+ok(ver.get('version')=='1.6.0','version must be 1.6.0')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -59,7 +59,7 @@ ok("'backup.noneYet':'No external backup yet'" in index,'missing first-backup em
 ok('function hasBackupWorthyData()' in index and 'if (!hasBackupWorthyData()) return false;' in index,'empty installations must not show backup reminder')
 ok('firstDataAt' in index,'backup reminder must track first meaningful data')
 ok('<meta name="referrer" content="no-referrer"' in index,'index referrer policy missing')
-for rel in ['about.html','privacy.html','404.html','en/index.html','bg/index.html','es/index.html']:
+for rel in ['about.html','privacy.html','branding.html','license.html','404.html','en/index.html','bg/index.html','es/index.html']:
     txt=(ROOT/rel).read_text(); ok('<meta name="referrer" content="no-referrer"' in txt,f'{rel} referrer policy missing')
 ok('Safari and an installed Home Screen web app can use separate local storage' in (ROOT/'privacy.html').read_text(),'privacy storage-separation disclosure missing')
 ok((ROOT/'LICENSE').is_file(),'LICENSE missing')
@@ -69,7 +69,22 @@ ok((ROOT/'BRANDING.md').is_file(),'BRANDING.md missing')
 branding_text=(ROOT/'BRANDING.md').read_text()
 ok('not licensed for reuse under the MIT License' in branding_text and 'No trademark, service-mark, trade-name, logo, or other brand rights are granted' in branding_text,'reserved-branding policy missing')
 about_text=(ROOT/'about.html').read_text()
+privacy_text=(ROOT/'privacy.html').read_text()
 ok('License &amp; branding' in about_text and 'Лиценз и брандинг' in about_text and 'Licencia y marca' in about_text,'localized licensing section missing from About')
+ok('data-set-lang' not in about_text and 'fastingTrackerPublicLang' not in about_text,'About must not have an independent language switcher')
+ok('data-set-lang' not in privacy_text and 'fastingTrackerPublicLang' not in privacy_text,'Privacy must not have an independent language switcher')
+ok('href="branding.html"' in about_text and 'href="license.html"' in about_text, 'About must use navigable Branding/License pages')
+ok('href="BRANDING.md"' not in about_text and 'href="LICENSE"' not in about_text, 'About must not navigate users to raw legal text files')
+for rel in ['about.html','privacy.html','branding.html','license.html']:
+    txt=(ROOT/rel).read_text()
+    ok('id="backAppLink"' in txt and 'Back to Fasting Tracker' in txt, f'{rel} missing explicit return-to-app control')
+ok("explicitAppLang || (appPref==='system'?systemLang" in about_text,'About must follow the application language')
+ok("explicitAppLang || (appPref==='system'?systemLang" in privacy_text,'Privacy must follow the application language')
+ok('navigator.languages[0]' in index and "return SUPPORTED_LANGUAGES.includes(base) ? base : 'en';" in index, 'main app must use primary host language and fall back to English')
+for rel in ['about.html','privacy.html','branding.html','license.html','404.html']:
+    txt=(ROOT/rel).read_text()
+    fallback_ok=("allowed.includes(base)?base:'en'" in txt) or ("allowed.includes(systemBase)?systemBase:'en'" in txt)
+    ok('navigator.languages[0]' in txt and fallback_ok, f'{rel} must fall back to English when primary host language is unsupported')
 # manifests
 for rel in ['manifest.webmanifest','manifest-bg.webmanifest','manifest-es.webmanifest']:
     json.loads((ROOT/rel).read_text())
@@ -105,7 +120,7 @@ refs=set(re.findall(r"\bel\('([^']+)'\)",index))
 missing=sorted(refs-ids)
 ok(not missing,'missing DOM IDs: '+','.join(missing[:10]))
 # No indexing restrictions
-allhtml='\n'.join((ROOT/p).read_text() for p in ['index.html','about.html','privacy.html','404.html','en/index.html','bg/index.html','es/index.html'])
+allhtml='\n'.join((ROOT/p).read_text() for p in ['index.html','about.html','privacy.html','branding.html','license.html','404.html','en/index.html','bg/index.html','es/index.html'])
 ok('noindex' not in allhtml.lower() and 'nofollow' not in allhtml.lower(),'noindex/nofollow remains')
 # Core algorithm tests using actual extracted function declarations.
 def extract_func(name):
@@ -118,16 +133,22 @@ def extract_func(name):
             depth-=1
             if depth==0: return main[pos:i+1]
     raise RuntimeError(name)
-fnames=['validDate','pad','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','zonedLocalToDate','dayKey','nextZonedDayBoundary','addIntervalToDayMap','compareVersions']
+fnames=['validDate','pad','numberSymbols','parseLocalizedNumber','safeTargetDate','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','zonedLocalToDate','dayKey','nextZonedDayBoundary','addIntervalToDayMap','compareVersions']
 try:
     extracted='\n'.join(extract_func(n) for n in fnames)
-    node_test=extracted+r'''
+    node_test='const MAX_DATE_MS=8.64e15;\n'+extracted+r'''
 function assert(c,m){if(!c)throw new Error(m)}
 assert(validDate(null)===null,'null date must not become Unix epoch');
 assert(validDate('')===null,'empty date must be invalid');
-assert(parseLocalizedNumber('80,5')===80.5,'comma decimal');
-assert(parseLocalizedNumber('1.234,5')===1234.5,'EU grouped decimal');
-assert(parseLocalizedNumber('1,234.5')===1234.5,'US grouped decimal');
+assert(parseLocalizedNumber('1,234','en-US')===1234,'English grouping must stay grouping');
+assert(parseLocalizedNumber('80,5','en-US')===80.5,'alternate comma decimal');
+assert(parseLocalizedNumber('1.234,5','de-DE')===1234.5,'EU grouped decimal');
+assert(parseLocalizedNumber('1,234.5','en-US')===1234.5,'US grouped decimal');
+assert(parseLocalizedNumber('1.234','es-ES')===1234,'Spanish grouping');
+assert(parseLocalizedNumber('72.5','es-ES')===72.5,'Spanish alternate dot decimal');
+assert(parseLocalizedNumber('1 234,5','bg-BG')===1234.5,'Bulgarian spaced grouping');
+assert(safeTargetDate(Date.now(),2000000000*3600000) instanceof Date,'supported extreme target date');
+assert(safeTargetDate(8.63e15,2e13)===null,'target date overflow guard');
 assert(zonedLocalToDate('2026-01-15T12:00','Europe/Sofia') instanceof Date,'normal Sofia time');
 assert(zonedLocalToDate('2026-03-29T03:30','Europe/Sofia')===null,'spring DST gap');
 assert(zonedLocalToDate('2026-10-25T03:30','Europe/Sofia')===null,'autumn DST ambiguity');
@@ -164,10 +185,6 @@ for key in ("data-icon-choice=\"plate\"","data-icon-choice=\"moon\"","data-icon-
 ok("iconChoice: 'plate'" in html_text, 'default icon choice missing')
 ok('function applyIconChoice()' in html_text, 'applyIconChoice missing')
 
-if errors:
-    print('FAIL')
-    for e in errors: print(' -',e)
-    sys.exit(1)
 ok("'help.installAndroid'" in index and "'help.installIOS'" in index, 'separate iOS/Android installation localization missing')
 for mf in ['manifest.webmanifest','manifest-bg.webmanifest','manifest-es.webmanifest','manifest-moon.webmanifest','manifest-hourglass.webmanifest','manifest-timer.webmanifest']:
     mm=json.loads((ROOT/mf).read_text())
@@ -182,14 +199,144 @@ ok('id="nextBackupLabel"' in index and 'backup.nextReminder' in index, 'next ext
 privacy_text=(ROOT/'privacy.html').read_text()
 ok('5 recent, 7 daily, 4 weekly and 6 monthly' in privacy_text and '5 последни, 7 дневни, 4 седмични и 6 месечни' in privacy_text and '5 recientes, 7 diarias, 4 semanales y 6 mensuales' in privacy_text, 'localized rolling-backup privacy explanations missing')
 
-print('PASS: release, integrity, localization, DOM, storage/privacy and algorithm regression checks')
 
 # iPhone button-layout regression checks
 index_text=(ROOT/'index.html').read_text(encoding='utf-8')
-ok('white-space: nowrap' in index_text and '#settings .row > button' in index_text, 'Settings action buttons must not split words')
+ok('white-space: normal' in index_text and 'word-break: normal' in index_text and '#settings .row > button' in index_text, 'Settings action buttons must wrap at word boundaries without splitting words')
 ok('@media (max-width: 520px)' in index_text, 'Settings rows should be allowed to wrap on iPhone widths')
 
 # Active-fast target clock-time feature
 ok('id="targetMoment"' in index, 'target moment element missing')
 ok('fasting.expectedTargetTime' in index and 'fasting.targetTimePassed' in index, 'target-time translations missing')
-ok('new Date(startMs + targetMs)' in index, 'target time calculation missing')
+ok('safeTargetDate(startMs, targetMs)' in index, 'safe target time calculation missing')
+ok('id="appFooterVersion"' in index, 'dynamic footer version element missing')
+ok("el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;" in index, 'footer version is not driven by APP_VERSION')
+ok('Fasting Tracker v1.2.0' not in index and '>v1.2.0<' not in index, 'stale hard-coded v1.2.0 label remains')
+
+# Snapshot-pressure and warning regression checks
+ok('function setSnapshotProtectionState(' in index and 'function isQuotaError(' in index, 'snapshot protection health tracking missing')
+ok("setSnapshotProtectionState('reduced'" in index and "setSnapshotProtectionState('failed'" in index, 'snapshot storage degradation states missing')
+ok('function writePrimaryDataWithSnapshotReclaim(' in index, 'primary data does not reclaim snapshot space under quota pressure')
+ok("'backup.autoSnapshotFailed'" in index and "'backup.autoSnapshotReduced'" in index, 'snapshot failure/reduced localization missing')
+ok('backupReminderTitle' in index and "banner.classList.toggle('warn', snapshotAttention)" in index, 'persistent one-tap snapshot warning banner missing')
+ok('One is created automatically after the first meaningful fasting or weight change.' in index, 'outdated recovery-snapshot empty-state wording remains')
+ok('v1.0.0 — FIRST DEPLOYMENT' not in (ROOT/'FIRST-DEPLOYMENT-CHECKLIST.txt').read_text(), 'deployment checklist still tied to v1.0.0')
+ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guide still contains obsolete release example')
+
+# Simulate quota pressure with the actual snapshot/reclaim functions.
+try:
+    pressure_funcs='\n'.join(extract_func(n) for n in ['setSnapshotProtectionState','isQuotaError','writeSnapshotList','storeSnapshots','writePrimaryDataWithSnapshotReclaim'])
+    pressure_test=r'''
+const DATA_KEY='data', SNAPSHOT_KEY='snaps', SNAPSHOT_RECENT_KEEP=5;
+let snapshotProtectionState={status:'ok',kept:0,desired:0}; let backupMeta={};
+function saveBackupMeta(){}
+function pruneSnapshots(x){return x;}
+function loadSnapshots(){try{return JSON.parse(localStorage.getItem(SNAPSHOT_KEY)||'[]')}catch{return []}}
+class FakeStorage {
+  constructor(limit){this.limit=limit;this.m=new Map()}
+  totalWith(k,v){let n=0;for(const [kk,vv] of this.m)n += kk===k?0:String(kk).length+String(vv).length; return n+String(k).length+String(v).length}
+  setItem(k,v){if(this.totalWith(k,v)>this.limit){const e=new Error('quota');e.name='QuotaExceededError';throw e}this.m.set(k,String(v))}
+  getItem(k){return this.m.has(k)?this.m.get(k):null}
+  removeItem(k){this.m.delete(k)}
+}
+function assert(c,m){if(!c)throw new Error(m)}
+const localStorage=new FakeStorage(1550);
+localStorage.setItem(DATA_KEY,'x'.repeat(350));
+const snaps=Array.from({length:8},(_,i)=>({id:'s'+i,payload:'y'.repeat(95)}));
+localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snaps));
+writePrimaryDataWithSnapshotReclaim('z'.repeat(850));
+assert(localStorage.getItem(DATA_KEY)==='z'.repeat(850),'primary data did not save after snapshot reclaim');
+assert(snapshotProtectionState.status==='reduced'||snapshotProtectionState.status==='failed','snapshot pressure not reported');
+console.log('quota pressure simulation passed');
+'''
+    with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
+        f.write(pressure_funcs+'\n'+pressure_test); pf=f.name
+    cp=subprocess.run(['node',pf],capture_output=True,text=True)
+    ok(cp.returncode==0,'snapshot quota-pressure simulation failed: '+cp.stderr)
+except Exception as e:
+    errors.append('could not run snapshot quota-pressure simulation: '+str(e))
+
+
+# Internationalization-readiness regression checks
+ok('const I18N_SOURCE_REVISION = 3;' in index, 'canonical i18n source revision missing')
+ok('const LANGUAGE_META = Object.freeze({' in index and 'const SUPPORTED_LANGUAGES' in index, 'central language metadata missing')
+ok('new Intl.PluralRules(currentLocale()).select' in index, 'Intl.PluralRules pluralization missing')
+ok('function resolveSystemLanguage()' in index and 'navigator.languages' in index, 'system-language resolution is not future-ready')
+ok("document.documentElement.dir = meta.dir" in index, 'app direction is not driven by language metadata')
+ok('padding-inline-start' in index and 'margin-inline-start' in index and 'text-align: end' in index, 'logical CSS properties for RTL readiness missing')
+ok('I18N-GUIDE.md' in [p.name for p in ROOT.iterdir()], 'I18N-GUIDE.md missing')
+ok((ROOT/'i18n-source.json').is_file() and (ROOT/'tools/export_i18n_source.py').is_file(), 'canonical i18n source/export tool missing')
+ok("if (rawData.language != null && typeof rawData.language !== 'string')" in index, 'future-language backup tolerance missing')
+ok("if (!['system','en','bg','es'].includes(rawData.language))" not in index, 'backup import still rejects future language codes')
+ok("manifestSuffix" in index and 'function manifestFor(lang, icon)' in index, 'manifest selection is not metadata-driven')
+ok("sel.replaceChildren()" in index and 'LANGUAGE_META[code].label' in index, 'language selector options are not metadata-driven')
+ok('lang === \'bg\' ?' not in index and "lang === 'es' ?" not in index, 'hard-coded language ternary remains in app logic')
+# User-visible dynamic messages must use t(...) rather than direct alert/confirm/prompt literals.
+main_src=main or ''
+ok(not re.search(r"\b(?:alert|confirm|prompt)\(\s*['\"]", main_src), 'hard-coded alert/confirm/prompt user text remains')
+# Existing translations must remain exact-key complete and all referenced keys must exist.
+ok(len(langs['en']) >= 300, 'unexpectedly small canonical translation dictionary')
+# Evaluate the actual JS dictionaries to verify placeholders and the frozen English source.
+try:
+    ia=main.index('  const I18N = {'); ib=main.index('\n  };',ia)+5
+    i18n_block=main[ia:ib]
+    with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
+        f.write(i18n_block+'\nconsole.log(JSON.stringify(I18N));\n'); i18n_js=f.name
+    evaluated=json.loads(subprocess.check_output(['node',i18n_js],text=True))
+    canonical=evaluated['en']
+    ph=lambda value:set(re.findall(r'\{([A-Za-z0-9_]+)\}',str(value)))
+    for key,value in canonical.items():
+        for lang in ('bg','es'):
+            ok(ph(evaluated[lang][key])==ph(value), f'placeholder mismatch {lang}:{key}')
+    plural_bases=['backup.snapshotWord','fasting.fastCount','import.fast','import.weight','unit.day','unit.hour']
+    plural_categories=['zero','one','two','few','many','other']
+    for base in plural_bases:
+        for cat in plural_categories:
+            for lang in ('en','bg','es'):
+                ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
+    source=json.loads((ROOT/'i18n-source.json').read_text())
+    ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
+    ok(source.get('appVersion')=='1.6.0', 'i18n source app version mismatch')
+    ok(source.get('language')=='en', 'i18n source language must be en')
+    ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
+except Exception as e:
+    errors.append('could not validate evaluated translation dictionaries: '+str(e))
+# Current locale must not force English to GB or Spanish to Spain; region comes from matching browser locale.
+ok("'en-GB'" not in index and "'es-ES'" not in index and "'bg-BG'" not in index, 'UI language still forces a country-specific locale')
+# Public informational pages must follow app/system language and set document direction from metadata.
+for rel in ['about.html','privacy.html']:
+    txt=(ROOT/rel).read_text()
+    ok('navigator.languages' in txt and 'document.documentElement.dir=m.dir' in txt, f'{rel} not language/direction future-ready')
+    ok('document.title=m.title' in txt and 'meta[name=\"description\"]' in txt, f'{rel} localized document metadata missing')
+notfound=(ROOT/'404.html').read_text()
+ok('navigator.languages' in notfound and 'document.documentElement.dir=meta[lang].dir' in notfound and 'document.title=meta[lang].title' in notfound, '404 language/direction metadata not future-ready')
+# Machine backup vocabulary remains stable and untranslated.
+ok("const BACKUP_FORMAT = 'fasting-tracker-backup';" in index and "backupVersion: BACKUP_VERSION" in index, 'backup format identity changed')
+ok("format: BACKUP_FORMAT" in index and "exportedAt: new Date().toISOString()" in index, 'backup payload no longer uses stable machine fields')
+
+# v1.6.0 intermittent-fasting education regressions
+ok('id="ifBasicsCard"' in index and 'data-i18n="if.title"' in index, 'intermittent-fasting basics card missing')
+for key in ['if.what','if.examples','if.benefits','if.limits','if.safety','if.src1','if.src2','if.src3','if.src4']:
+    ok(key in langs['en'], f'missing intermittent-fasting translation key {key}')
+ok('https://www.bmj.com/content/389/bmj-2024-082007' in index, 'BMJ 2025 intermittent-fasting evidence source missing')
+ok('https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits' in index, 'NIA intermittent-fasting source missing')
+ok('https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome' in index, 'NIH time-restricted-eating source missing')
+ok('https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting' in index, 'NIDDK diabetes safety source missing')
+ok('What is intermittent fasting?' in about_text and 'Какво е интермитентното гладуване?' in about_text and '¿Qué es el ayuno intermitente?' in about_text, 'localized public intermittent-fasting explanation missing')
+
+# v1.6.0 reliability regressions
+ok("if (pref !== 'system') u.searchParams.set('lang', pref);" in index, 'reinstall link must preserve explicit English and other explicit languages')
+ok('id="copyReinstallLinkBtn"' in index and "copyReinstallLinkBtn').addEventListener('click', copyReinstallLink)" in index, 'copy reinstall-link button missing')
+ok('navigator.clipboard?.writeText' in index and "document.execCommand?.('copy')" in index, 'reinstall-link copy fallbacks missing')
+ok("event.key === BACKUP_META_KEY" in index and "event.key === SNAPSHOT_KEY" in index, 'backup/snapshot cross-tab synchronization missing')
+ok('function reloadBackupMetaFromStorage()' in index, 'backup metadata reload helper missing')
+ok('function numberSymbols(' in index and 'formatToParts(12345.6)' in index, 'locale-aware number symbols missing')
+ok('const MAX_DATE_MS = 8.64e15;' in index and 'function safeTargetDate(' in index, 'extreme target-date guard missing')
+ok('parsed > MAX_SAFE_GOAL_HOURS' in index, 'extreme goal input is not rejected')
+ok('function normalizeBackupClockSkew()' in index and "['firstDataAt','lastExternalBackupAt']" in index, 'backup reminder clock-skew hardening missing')
+
+if errors:
+    print('FAIL')
+    for e in errors: print(' -',e)
+    sys.exit(1)
+print('PASS: release, integrity, localization, DOM, storage/privacy, backup-pressure and algorithm regression checks')
