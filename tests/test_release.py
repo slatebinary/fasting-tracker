@@ -30,8 +30,8 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.0.0','version must be 1.0.0')
-ok(ver.get('released')=='2026-09-28','release date must be 2026-09-28')
+ok(ver.get('version')=='1.0.1','version must be 1.0.1')
+ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
 for item in ver.get('shell',[]):
@@ -55,6 +55,9 @@ ok('validateImportedData(JSON.parse(raw))' in index,'live stored data is not str
 ok('data = validateImportedData(selected.data);' in index,'recovery snapshot restore is not strictly validated')
 ok('navigator.storage.persisted' in index and 'storageProtectionStatus' in index,'storage protection UI missing')
 ok('installStorageNotice' in index and 'isStandaloneApp' in index,'Safari/Home Screen storage warning missing')
+ok("'backup.noneYet':'No external backup yet'" in index,'missing first-backup empty-state label')
+ok('function hasBackupWorthyData()' in index and 'if (!hasBackupWorthyData()) return false;' in index,'empty installations must not show backup reminder')
+ok('firstDataAt' in index,'backup reminder must track first meaningful data')
 ok('<meta name="referrer" content="no-referrer"' in index,'index referrer policy missing')
 for rel in ['about.html','privacy.html','404.html','en/index.html','bg/index.html','es/index.html']:
     txt=(ROOT/rel).read_text(); ok('<meta name="referrer" content="no-referrer"' in txt,f'{rel} referrer policy missing')
@@ -115,11 +118,13 @@ def extract_func(name):
             depth-=1
             if depth==0: return main[pos:i+1]
     raise RuntimeError(name)
-fnames=['pad','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','zonedLocalToDate','dayKey','nextZonedDayBoundary','addIntervalToDayMap','compareVersions']
+fnames=['validDate','pad','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','zonedLocalToDate','dayKey','nextZonedDayBoundary','addIntervalToDayMap','compareVersions']
 try:
     extracted='\n'.join(extract_func(n) for n in fnames)
     node_test=extracted+r'''
 function assert(c,m){if(!c)throw new Error(m)}
+assert(validDate(null)===null,'null date must not become Unix epoch');
+assert(validDate('')===null,'empty date must be invalid');
 assert(parseLocalizedNumber('80,5')===80.5,'comma decimal');
 assert(parseLocalizedNumber('1.234,5')===1234.5,'EU grouped decimal');
 assert(parseLocalizedNumber('1,234.5')===1234.5,'US grouped decimal');

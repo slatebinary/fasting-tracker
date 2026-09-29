@@ -2,7 +2,7 @@ title: Fasting Tracker
 description: Intermittent fasting and weight tracker with multi-day fasting, science notes and local-first privacy.
 lang: en
 exclude:
-  - README.txt
+  - README.md
   - FIRST-DEPLOYMENT-CHECKLIST.txt
   - RELEASE-GUIDE.txt
   - tests
