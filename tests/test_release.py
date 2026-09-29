@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.6.3','version must be 1.6.3')
+ok(ver.get('version')=='1.6.4','version must be 1.6.4')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -296,7 +296,7 @@ try:
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.6.3', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.6.4', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -363,7 +363,13 @@ ok('id="recoveryDiagnostic"' in index and "recoveryMode.error" in index, 'Recove
 for rel in ['about.html','privacy.html','branding.html','license.html']:
     txt=(ROOT/rel).read_text()
     ok("const DOC_RETURN_KEY='fastingTracker.documentReturnUrl'" in txt and 'sessionStorage.getItem(DOC_RETURN_KEY)' in txt, f'{rel} exact app-return session state missing')
-    ok('back.href=exactReturn||fallbackReturn()' in txt, f'{rel} does not prefer exact originating app URL')
+    ok("const DOC_FROM_PARAM='fromDoc'" in txt and 'previousDocument||exactReturn||fallbackReturn()' in txt, f'{rel} does not prefer the immediately originating document')
+    ok('u.searchParams.set(DOC_FROM_PARAM,currentDocumentUrl())' in txt, f'{rel} does not propagate its own URL to child documents')
+
+# v1.6.4 immediate documentation-return regression:
+# Settings -> About -> License/Branding -> Back must return to About first,
+# while About -> Back still returns to the originating app screen.
+ok('href="license.html"' in about_text and 'href="branding.html"' in about_text, 'About child-document links missing')
 
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
