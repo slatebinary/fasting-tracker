@@ -4,6 +4,8 @@ A privacy-focused Progressive Web App (PWA) for tracking intermittent and extend
 
 Fasting Tracker is designed to work locally on your device, including offline after installation. It does not require an account and does not use an application backend to store your fasting or weight records.
 
+- **Selectable app icons** — choose from Plate & clock, Moon & utensils, Hourglass & leaf, or F timer before installation on iPhone/iPad or Android. Android manifests include dedicated maskable icon variants for launcher compatibility.
+
 ## Features
 
 - Start and stop fasting with a live timer
@@ -23,19 +25,23 @@ Fasting Tracker is designed to work locally on your device, including offline af
 - Privacy-focused local storage model
 - Accessibility improvements for keyboard and assistive technologies
 
-## Install on iPhone
+## Install on iPhone / iPad
 
-When the app is hosted on an HTTPS website such as GitHub Pages:
-
-1. Open the app in **Safari**.
+1. Open the public Fasting Tracker URL in **Safari**.
 2. Tap **Share**.
 3. Choose **Add to Home Screen**.
-4. Keep **Open as Web App** enabled if iOS shows the option.
-5. Tap **Add**.
+4. Keep **Open as Web App** enabled if iOS shows it, then tap **Add**.
 
-The installed Home Screen app can work offline after its files have been cached.
+The Home Screen app can work offline after its files have been cached. Safari and an installed Home Screen web app may use separate local storage. If you already entered data in Safari, use **Export** in Safari and **Import** in the installed app to transfer it.
 
-> Safari and an installed Home Screen web app may use separate local storage. If you have already entered data in Safari, use **Export** in Safari and **Import** in the installed app to transfer it.
+## Install on Android
+
+1. Open the public Fasting Tracker URL in **Chrome** or another browser that supports PWA installation.
+2. Open the browser menu.
+3. Choose **Install app** or **Add to Home screen**.
+4. Confirm the installation.
+
+Fasting Tracker then appears on the Home screen/app launcher and can work offline after its files have been cached.
 
 ## Privacy
 

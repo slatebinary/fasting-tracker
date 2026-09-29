@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.1.1','version must be 1.1.1')
+ok(ver.get('version')=='1.3.0','version must be 1.3.0')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -150,10 +150,28 @@ ok('function saveBackdatedActiveFast()' in index and 'function setBackdatePreset
 ok("'backdate.errOverlap'" in index and "'fasting.startEarlier'" in index,'backdated active-fast localization missing')
 ok('data.activeStart = start.toISOString();' in index and 'data.activeGoalHours = data.goalHours;' in index,'backdated active fast must persist start and locked target')
 
+
+# Selectable app-icon regression checks
+for icon in ('plate','moon','hourglass','timer'):
+    for name in ('icon-192.png','icon-512.png','apple-touch-icon.png','favicon-32.png'):
+        ok((ROOT/'icons'/icon/name).is_file(), f'missing icon variant {icon}/{name}')
+for icon in ('moon','hourglass','timer'):
+    for suffix in ('','-bg','-es'):
+        ok((ROOT/f'manifest-{icon}{suffix}.webmanifest').is_file(), f'missing manifest for {icon}{suffix}')
+html_text=(ROOT/'index.html').read_text(encoding='utf-8')
+for key in ("data-icon-choice=\"plate\"","data-icon-choice=\"moon\"","data-icon-choice=\"hourglass\"","data-icon-choice=\"timer\""):
+    ok(key in html_text, f'missing icon selector {key}')
+ok("iconChoice: 'plate'" in html_text, 'default icon choice missing')
+ok('function applyIconChoice()' in html_text, 'applyIconChoice missing')
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)
     sys.exit(1)
+ok("'help.installAndroid'" in index and "'help.installIOS'" in index, 'separate iOS/Android installation localization missing')
+for mf in ['manifest.webmanifest','manifest-bg.webmanifest','manifest-es.webmanifest','manifest-moon.webmanifest','manifest-hourglass.webmanifest','manifest-timer.webmanifest']:
+    mm=json.loads((ROOT/mf).read_text())
+    ok(any(i.get('purpose')=='maskable' for i in mm.get('icons',[])), f'maskable Android icon missing in {mf}')
 print('PASS: release, integrity, localization, DOM, storage/privacy and algorithm regression checks')
 
 # iPhone button-layout regression checks

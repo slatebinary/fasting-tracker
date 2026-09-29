@@ -23,3 +23,6 @@ If you redistribute a modified or repackaged version of the software, use a diff
 This policy does not claim that any mark is registered. Rights in names, logos, and other brand identifiers may arise under applicable trademark, unfair-competition, copyright, or other laws depending on jurisdiction.
 
 The health, safety, and privacy notices included with the application are separate from the software license and remain applicable to the official Fasting Tracker application.
+
+
+All bundled icon variants (Plate & clock, Moon & utensils, Hourglass & leaf, and F timer) are part of the reserved Fasting Tracker branding and are not licensed for reuse as branding for modified or redistributed applications without separate permission.

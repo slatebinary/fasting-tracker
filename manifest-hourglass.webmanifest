@@ -1,35 +1,35 @@
 {
   "id": "./",
-  "name": "Fasting Tracker — ayuno y peso",
-  "short_name": "Ayuno",
-  "description": "Seguimiento de ayuno intermitente y peso, estadísticas, notas científicas y almacenamiento local",
-  "lang": "es",
-  "start_url": "./?lang=es",
+  "name": "Fasting Tracker",
+  "short_name": "Fasting",
+  "description": "Intermittent fasting and weight tracker with multi-day fasting, science notes and optional consistency achievements",
+  "lang": "en",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f5f5f7",
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "./icons/plate/icon-192.png",
+      "src": "./icons/hourglass/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/plate/icon-512.png",
+      "src": "./icons/hourglass/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/plate/icon-maskable-192.png",
+      "src": "./icons/hourglass/icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "./icons/plate/icon-maskable-512.png",
+      "src": "./icons/hourglass/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
