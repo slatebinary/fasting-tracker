@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.6.4" />
+  <meta name="ft-app-version" content="1.7.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -134,6 +134,39 @@ layout: null
     .progressDetail.good { color: var(--good); }
     .progressTrack { height: 12px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 14px 0 8px; }
     .progressFill { height: 100%; background: var(--accent); width: 0; border-radius: inherit; transition: width .25s ease; }
+    .fastRing { --fast-progress-angle:0deg; width:min(228px,68vw); aspect-ratio:1; margin:18px auto 12px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(var(--accent) var(--fast-progress-angle), var(--line) 0); transition:background .25s ease, box-shadow .25s ease; position:relative; }
+    .fastRing.reached { box-shadow:0 0 0 5px color-mix(in srgb, var(--good) 14%, transparent); }
+    .fastRingInner { width:calc(100% - 18px); height:calc(100% - 18px); border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
+    .fastRing .friendlyTimer { font-size:clamp(31px,9vw,48px); margin:0 0 3px; }
+    .fastRing .exactTimer { margin:0; font-size:16px; }
+    .vizSwitcher { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; padding:4px; border-radius:13px; background:var(--line); margin:4px 0 14px; }
+    .vizSwitcher button { padding:9px 5px; border-radius:10px; background:transparent; color:var(--text); font-size:12px; min-width:0; }
+    .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    .statsVizView[hidden] { display:none !important; }
+    .statsVizView canvas { width:100%; display:block; }
+    .calendarHeader { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:4px 0 10px; }
+    .calendarHeader button { padding:8px 11px; min-width:42px; }
+    .calendarMonthTitle { font-weight:750; text-align:center; flex:1; }
+    .calendarWeekdays, .fastCalendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
+    .calendarWeekdays { margin-bottom:5px; }
+    .calendarWeekday { color:var(--muted); font-size:10px; text-align:center; padding:2px 0; }
+    .calendarDay { min-height:54px; padding:6px 3px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--text); text-align:center; font-size:12px; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+    .calendarDay .calendarHours { font-size:9px; color:var(--muted); font-weight:600; }
+    .calendarDay.level1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
+    .calendarDay.level2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
+    .calendarDay.level3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
+    .calendarDay.level4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); color:var(--text); }
+    .calendarDay.outside { opacity:.38; }
+    .calendarDay.future { opacity:.28; }
+    .calendarDay.selected { outline:2px solid var(--accent); outline-offset:1px; }
+    .calendarDay:disabled { cursor:default; }
+    .vizLegend { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; margin-top:9px; flex-wrap:wrap; }
+    .legendSwatch { width:14px; height:10px; border-radius:3px; border:1px solid var(--line); }
+    .legendSwatch.l1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
+    .legendSwatch.l2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
+    .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
+    .legendSwatch.l4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); }
+    @media (max-width:380px) { .vizSwitcher button { font-size:11px; padding:8px 2px; } .calendarDay { min-height:48px; } }
     button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
     .primary { width: 100%; background: var(--accent); color: white; font-size: 18px; }
@@ -331,9 +364,12 @@ layout: null
     </div>
     <div class="card hero">
       <div class="eyebrow" id="statusText" data-i18n="fasting.ready">Ready to start</div>
-      <div class="friendlyTimer" id="friendlyTimer">—</div>
-      <div class="exactTimer" id="timer">00:00:00</div>
-      <div class="progressTrack" id="fastProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Fasting target progress" data-i18n-aria="a11y.fastProgress"><div class="progressFill" id="progressFill"></div></div>
+      <div class="fastRing" id="fastProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Fasting target progress" data-i18n-aria="a11y.fastProgress">
+        <div class="fastRingInner">
+          <div class="friendlyTimer" id="friendlyTimer">—</div>
+          <div class="exactTimer" id="timer">00:00:00</div>
+        </div>
+      </div>
       <div class="goal" id="goalText">—</div>
       <div class="progressDetail" id="progressDetail" data-i18n="fasting.zeroProgress">0% complete</div>
       <div class="targetMoment" id="targetMoment" hidden></div>
@@ -448,9 +484,37 @@ layout: null
       <div class="metric"><div class="value" id="mHours">0h</div><div class="label" data-i18n="stats.total">Total fasting</div></div>
     </div>
     <div class="card" style="margin-top:14px">
-      <h2 data-i18n="stats.last14">Last 14 days</h2>
-      <canvas id="chart" width="660" height="220" role="img" aria-label="Fasting hours chart for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
-      <div class="small" data-i18n="stats.chartHelp">Bars show the actual time spent fasting within each calendar day, including an active fast. Multi-day fasts are split across the days they span.</div>
+      <div class="sectionHeader"><h2 data-i18n="stats.patterns">Fasting patterns</h2><span class="small" data-i18n="stats.interactive">Interactive</span></div>
+      <div class="vizSwitcher" id="statsVizSwitcher" role="tablist" aria-label="Statistics visualization" data-i18n-aria="stats.visualizationAria">
+        <button type="button" class="active" data-viz="timeline" role="tab" aria-selected="true" data-i18n="stats.vizTimeline">Timeline</button>
+        <button type="button" data-viz="calendar" role="tab" aria-selected="false" data-i18n="stats.vizCalendar">Calendar</button>
+        <button type="button" data-viz="trend" role="tab" aria-selected="false" data-i18n="stats.vizTrend">Trend</button>
+        <button type="button" data-viz="weeks" role="tab" aria-selected="false" data-i18n="stats.vizWeeks">Weeks</button>
+      </div>
+      <div class="statsVizView" id="statsTimelineView">
+        <canvas id="chart" width="660" height="280" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsCalendarView" hidden>
+        <div class="calendarHeader">
+          <button id="calendarPrevBtn" class="secondary" type="button" aria-label="Previous month" data-i18n-aria="stats.prevMonth">‹</button>
+          <div class="calendarMonthTitle" id="calendarMonthTitle"></div>
+          <button id="calendarNextBtn" class="secondary" type="button" aria-label="Next month" data-i18n-aria="stats.nextMonth">›</button>
+        </div>
+        <div class="calendarWeekdays" id="calendarWeekdays"></div>
+        <div class="fastCalendar" id="fastCalendar"></div>
+        <div class="vizLegend"><span data-i18n="stats.less">Less</span><span class="legendSwatch"></span><span class="legendSwatch l1"></span><span class="legendSwatch l2"></span><span class="legendSwatch l3"></span><span class="legendSwatch l4"></span><span data-i18n="stats.more">More</span></div>
+      </div>
+      <div class="statsVizView" id="statsTrendView" hidden>
+        <canvas id="fastTrendChart" width="660" height="260" role="img" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsWeeksView" hidden>
+        <canvas id="fastWeeksChart" width="660" height="260" role="img" aria-label="Weekly fasting hours for the last 8 weeks" data-i18n-aria="a11y.fastWeeksChart"></canvas>
+      </div>
+      <div class="notice" id="chartDetailBox" style="margin-top:10px;padding:12px 14px">
+        <strong id="chartDetailTitle" data-i18n="stats.chartDetailDefaultTitle">Chart details</strong>
+        <div class="small" id="chartDetailText" data-i18n="stats.chartDetailDefaultText" style="margin-top:6px">Tap a date, segment, point or week for details.</div>
+      </div>
+      <div class="small" id="statsVizHelp" data-i18n="stats.timelineHelp">Timeline shows each day's 24 hours vertically: colored sections are fasting and gaps are eating/non-fasting time.</div>
     </div>
     <div class="card gamificationDetail" id="gamificationDetail" style="margin-top:14px">
       <div class="sectionHeader"><h2 data-i18n="game.progress">Progress &amp; achievements</h2><span class="levelPill" id="gDetailLevel">Level 1</span></div>
@@ -754,7 +818,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.6.4';
+  const APP_VERSION = '1.7.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -799,7 +863,7 @@ layout: null
   const statusText = el('statusText');
   const toggleFast = el('toggleFast');
   const startEarlierBtn = el('startEarlierBtn');
-  const progressFill = el('progressFill');
+  const fastProgressTrack = el('fastProgressTrack');
   const progressDetail = el('progressDetail');
   const goalText = el('goalText');
   const goalHours = el('goalHours');
@@ -818,6 +882,15 @@ layout: null
   let historyVisibleCount = HISTORY_PAGE_SIZE;
   let weightVisibleCount = HISTORY_PAGE_SIZE;
   let fastActionLocked = false;
+  let chartInteractiveLayout = [];
+  let chartSelectedTarget = null;
+  let statsVizMode = 'timeline';
+  let statsCalendarMonthOffset = 0;
+  let statsDetailOverride = null;
+  let trendInteractiveLayout = [];
+  let weekInteractiveLayout = [];
+  let trendSelectedDayKey = null;
+  let weekSelectedKey = null;
   const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 
@@ -848,7 +921,7 @@ layout: null
       'fasting.startEarlier':'Started earlier','backdate.title':'Start an ongoing fast','backdate.help':'Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.','backdate.start':'Started at','backdate.target':'Target: {goal} • locked for this fast','backdate.targetHelp':'This target is locked to the active fast. Changing Settings later will not change it.','backdate.startFast':'Start fast','backdate.quickAria':'Quick start times','backdate.1h':'1h ago','backdate.2h':'2h ago','backdate.3h':'3h ago','backdate.4h':'4h ago','backdate.6h':'6h ago','backdate.12h':'12h ago','backdate.errStart':'Enter a valid start date and time.','backdate.errFuture':'The start time cannot be in the future.','backdate.errGoal':'Enter a target greater than 0 hours.','backdate.errOverlap':'This ongoing fast would overlap a completed fasting record.','backdate.conflictTitle':'Conflicts with an existing fast','backdate.conflictTitleMany':'Conflicts with {n} existing fasts','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Your ongoing fast cannot begin before {time}.','backdate.startAfter':'Start at {time}','backdate.editConflict':'Edit existing record','backdate.deleteConflict':'Delete conflicting record & start','backdate.deleteConfirm':'Delete this completed fasting record and start the ongoing fast from your selected time? This cannot be undone unless you have a backup.',
       'history.add':'Add entry','history.start':'Start','history.end':'End','history.targetHours':'Target hours','history.overlapHelp':'Manual entries cannot overlap another saved fast or the current active fast.','history.empty':'No completed fasts yet. Tap Add entry to enter one manually.','history.target':'Target: {goal}','history.targetReached':'Target reached','history.deleteConfirm':'Delete this fasting record?','history.addTitle':'Add fasting entry','history.editTitle':'Edit fasting entry','history.errDates':'Enter a valid start and end date/time.','history.errEndAfter':'End time must be after start time.','history.errFuture':'End time cannot be in the future.','history.errMinute':'A manual fasting entry must be at least one minute long.','history.errGoal':'Enter a target greater than 0 hours.','history.errOverlap':'This interval overlaps another saved fast or the current active fast.',
       'weight.add':'Add weight','weight.intro':'Track body weight alongside your fasting history.','weight.latest':'Latest weight','weight.change':'Change since first','weight.target':'Target weight','weight.toTarget':'Difference to target','weight.targetHelp':'Optional. Leave blank if you only want to track the trend.','weight.trend':'Weight trend','weight.chartHelp':'Last 30 weigh-ins. A target line appears when a target weight is set.','weight.dateTime':'Date & time','weight.empty':'No weight entries yet. Tap Add weight to record your first measurement.','weight.addChart':'Add weight entries to see your trend.','weight.editTitle':'Edit weight','weight.addTitle':'Add weight','weight.deleteConfirm':'Delete this weight entry?','weight.errDate':'Enter a valid date and time.','weight.errFuture':'Weight date/time cannot be in the future.','weight.errValue':'Enter a valid weight greater than 0 {unit}.','weight.errTarget':'Enter a valid target weight greater than 0 {unit}, or leave it blank.',
-      'stats.completed':'Completed fasts','stats.average':'Average duration','stats.longest':'Longest fast','stats.reached':'Reached target','stats.total':'Total fasting','stats.last14':'Last 14 days','stats.chartHelp':'Bars show the actual time spent fasting within each calendar day, including an active fast. Multi-day fasts are split across the days they span.',
+      'stats.completed':'Completed fasts','stats.average':'Average duration','stats.longest':'Longest fast','stats.reached':'Reached target','stats.total':'Total fasting','stats.last14':'Last 14 days','stats.chartHelp':'Each vertical day bar shows the day\'s 24 hours. Colored sections are fasting time; gaps are non-fasting time.','stats.patterns':'Fasting patterns','stats.interactive':'Interactive','stats.visualizationAria':'Statistics visualization','stats.vizTimeline':'Timeline','stats.vizCalendar':'Calendar','stats.vizTrend':'Trend','stats.vizWeeks':'Weeks','stats.prevMonth':'Previous month','stats.nextMonth':'Next month','stats.less':'Less','stats.more':'More','stats.timelineHelp':'Timeline shows each day\'s 24 hours vertically: colored sections are fasting and gaps are eating/non-fasting time.','stats.calendarHelp':'Calendar intensity shows how much of each day was spent fasting. Tap any day for its total.','stats.trendHelp':'Trend shows daily fasting hours over the last 30 days. Tap a point for that day\'s total.','stats.weeksHelp':'Weeks compares total fasting time across the last 8 calendar weeks. Tap a week for details.','stats.chartDetailDefaultTitle':'Chart details','stats.chartDetailDefaultText':'Tap a date, segment, point or week for details.','stats.detailTotal':'Total fasting: {duration}. Fasting sections: {count}.','stats.detailFast':'Fasting: {start}–{end} ({duration}).','stats.detailGap':'Non-fasting gap: {start}–{end} ({duration}).','stats.weekOf':'Week of {date}','stats.detailWeek':'Total fasting: {duration}. Days containing fasting: {days}/7.',
       'game.consistency':'Consistency','game.progress':'Progress & achievements','game.xp':'Consistency XP','game.weekly':"Target success rate this week",'game.weightStreak':'Weekly weigh-in streak','game.summaryHelp':'XP rewards completing your chosen target and logging weight consistently. Fasting beyond the target earns no extra XP.','game.rule':'10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. No extra XP is awarded for fasting past the target.','game.consistencyAchievements':'Consistency & achievements','game.settingsHelp':'Optional gamification. Rewards meeting your own target and regular weight logging—not longer fasting.','game.enable':'Enable consistency gamification','game.level':'Level {n}','game.levelFull':'Level {n} • {name}','game.next':'{xp} XP to next level','game.highest':'Highest level reached','game.level1':'Getting started','game.level2':'Building consistency','game.level3':'Established routine','game.level4':'Long-term tracking',
       'game.ach1':'First target','game.ach1d':'Complete 1 fast that reaches its target','game.ach5':'Building rhythm','game.ach5d':'Complete 5 target fasts','game.ach10':'Consistency 10','game.ach10d':'Complete 10 target fasts','game.ach25':'Consistency 25','game.ach25d':'Complete 25 target fasts','game.ach50':'Consistency 50','game.ach50d':'Complete 50 target fasts','game.comeback':'Comeback','game.comebackd':'Reach your target after a missed target','game.weightHabit':'Weight habit','game.weightHabitd':'Log weight in 4 consecutive weeks','game.backupKeeper':'Backup keeper','game.backupKeeperd':'Keep an external backup within 7 days',
       'science.title':'Autophagy & fasting science','science.notFasting':'Not fasting','science.limited':'Human evidence: limited','science.idle':'Autophagy is active at basal levels even when you are not fasting. Human research has not established a universal hour when fasting-induced autophagy “starts.”','science.caution':'This indicator is educational, not a measurement of autophagy and not a reason to prolong a fast. Fasting responses vary by tissue, activity, prior diet, glycogen status and other factors.','science.sources':'Scientific basis & sources',
@@ -861,7 +934,7 @@ layout: null
       'backup.reason.firstLaunch':'before first launch of v{version}','backup.reason.restore':'before restoring another snapshot','backup.reason.update':'before updating from v{from} to v{to}','backup.reason.import':'before importing an external backup',
       'common.dismiss':'Dismiss','installStorage.title':'Using Safari on iPhone?','installStorage.text':'Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.','storage.title':'Storage protection','storage.checking':'Checking storage protection…','storage.protected':'Persistent storage: Protected','storage.bestEffort':'Persistent storage: Best effort','storage.unavailable':'Persistent storage status unavailable','storage.help':'Persistent storage can reduce the chance that the browser removes local app data under storage pressure. External backups are still recommended.','storage.request':'Request protection','storage.requestDenied':'Protection was not granted. Keep recent external backups.','storage.usage':'Using {used} of {quota} available storage.','storage.usageUnknown':'Storage usage information is unavailable.',
       'safety.longFastTitle':'Extended fasting target','safety.longFastText':'You selected {goal}. Extended fasting of 72 hours or more can carry additional risks and is not appropriate for everyone. Fasting Tracker records your choice; it does not recommend this duration. Review the health & safety information before continuing.','safety.continue':'Use this target',
-      'a11y.fastProgress':'Fasting target progress','a11y.xpProgress':'Consistency level progress','a11y.weightUnit':'Weight unit','a11y.fastChart':'Fasting hours chart for the last 14 days','a11y.weightChart':'Weight trend chart',
+      'a11y.fastProgress':'Fasting target progress','a11y.fastTrendChart':'Daily fasting hours trend for the last 30 days','a11y.fastWeeksChart':'Weekly fasting hours for the last 8 weeks','a11y.xpProgress':'Consistency level progress','a11y.weightUnit':'Weight unit','a11y.fastChart':'Fasting hours chart for the last 14 days','a11y.weightChart':'Weight trend chart',
       'unit.day.one':'day','unit.day.other':'days','unit.day.zero':'days','unit.day.two':'days','unit.day.few':'days','unit.day.many':'days','unit.d':'d','unit.h':'h','unit.m':'m','unit.hour.one':'hour','unit.hour.other':'hours','unit.hour.zero':'hours','unit.hour.two':'hours','unit.hour.few':'hours','unit.hour.many':'hours'
     },
     bg: {
@@ -890,7 +963,7 @@ layout: null
       'fasting.startEarlier':'Започнало по-рано','backdate.title':'Започни текущо гладуване','backdate.help':'Изберете кога всъщност е започнало това гладуване. То ще остане активно и ще продължи да се отчита, докато натиснете „Спри гладуването“.','backdate.start':'Начало','backdate.target':'Цел: {goal} • заключена за това гладуване','backdate.targetHelp':'Тази цел се заключва за текущото гладуване. По-късна промяна в Настройки няма да я промени.','backdate.startFast':'Започни гладуването','backdate.quickAria':'Бърз избор на начален час','backdate.1h':'преди 1ч','backdate.2h':'преди 2ч','backdate.3h':'преди 3ч','backdate.4h':'преди 4ч','backdate.6h':'преди 6ч','backdate.12h':'преди 12ч','backdate.errStart':'Въведете валидни дата и час за начало.','backdate.errFuture':'Началният час не може да бъде в бъдещето.','backdate.errGoal':'Въведете цел над 0 часа.','backdate.errOverlap':'Това текущо гладуване би се застъпило със завършен запис за гладуване.','backdate.conflictTitle':'Застъпване със съществуващо гладуване','backdate.conflictTitleMany':'Застъпване с {n} съществуващи гладувания','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Текущото гладуване не може да започне преди {time}.','backdate.startAfter':'Започни в {time}','backdate.editConflict':'Редактирай съществуващия запис','backdate.deleteConflict':'Изтрий застъпващия се запис и започни','backdate.deleteConfirm':'Да се изтрие ли този завършен запис за гладуване и да се започне текущото гладуване от избрания час? Това не може да бъде отменено без резервно копие.',
       'history.add':'Добави запис','history.start':'Начало','history.end':'Край','history.targetHours':'Целеви часове','history.overlapHelp':'Ръчните записи не могат да се застъпват с друго запазено или текущо гладуване.','history.empty':'Все още няма завършени гладувания. Натиснете „Добави запис“, за да въведете едно ръчно.','history.target':'Цел: {goal}','history.targetReached':'Целта е достигната','history.deleteConfirm':'Да се изтрие ли този запис за гладуване?','history.addTitle':'Добавяне на гладуване','history.editTitle':'Редактиране на гладуване','history.errDates':'Въведете валидни дата и час за начало и край.','history.errEndAfter':'Крайният час трябва да е след началния.','history.errFuture':'Крайният час не може да бъде в бъдещето.','history.errMinute':'Ръчният запис трябва да е с продължителност поне една минута.','history.errGoal':'Въведете цел над 0 часа.','history.errOverlap':'Този интервал се застъпва с друго запазено или текущо гладуване.',
       'weight.add':'Добави тегло','weight.intro':'Следете телесното тегло заедно с историята на гладуването.','weight.latest':'Последно тегло','weight.change':'Промяна от първото измерване','weight.target':'Целево тегло','weight.toTarget':'Разлика до целта','weight.targetHelp':'По избор. Оставете празно, ако искате само да следите тенденцията.','weight.trend':'Тенденция на теглото','weight.chartHelp':'Последните 30 измервания. При зададено целево тегло се показва линия на целта.','weight.dateTime':'Дата и час','weight.empty':'Все още няма записи за тегло. Натиснете „Добави тегло“ за първото измерване.','weight.addChart':'Добавете измервания на теглото, за да видите тенденцията.','weight.editTitle':'Редактиране на тегло','weight.addTitle':'Добавяне на тегло','weight.deleteConfirm':'Да се изтрие ли този запис за тегло?','weight.errDate':'Въведете валидни дата и час.','weight.errFuture':'Датата/часът на теглото не може да е в бъдещето.','weight.errValue':'Въведете валидно тегло над 0 {unit}.','weight.errTarget':'Въведете валидно целево тегло над 0 {unit} или оставете полето празно.',
-      'stats.completed':'Завършени гладувания','stats.average':'Средна продължителност','stats.longest':'Най-дълго гладуване','stats.reached':'Постигната цел','stats.total':'Общо време в гладуване','stats.last14':'Последните 14 дни','stats.chartHelp':'Колоните показват действителното време в гладуване за всеки календарен ден, включително текущо гладуване. Многодневните гладувания се разпределят по дните, през които протичат.',
+      'stats.completed':'Завършени гладувания','stats.average':'Средна продължителност','stats.longest':'Най-дълго гладуване','stats.reached':'Постигната цел','stats.total':'Общо време в гладуване','stats.last14':'Последните 14 дни','stats.chartHelp':'Всяка вертикална дневна колона показва 24-те часа на деня. Оцветените части са време в гладуване, а прекъсванията са време извън гладуване.','stats.patterns':'Модели на гладуване','stats.interactive':'Интерактивно','stats.visualizationAria':'Визуализация на статистиката','stats.vizTimeline':'Времева линия','stats.vizCalendar':'Календар','stats.vizTrend':'Тенденция','stats.vizWeeks':'Седмици','stats.prevMonth':'Предишен месец','stats.nextMonth':'Следващ месец','stats.less':'По-малко','stats.more':'Повече','stats.timelineHelp':'Времевата линия показва 24-те часа на всеки ден вертикално: оцветените части са гладуване, а прекъсванията са хранене/време без гладуване.','stats.calendarHelp':'Интензитетът в календара показва каква част от деня е била в гладуване. Докоснете ден за общото време.','stats.trendHelp':'Тенденцията показва дневните часове гладуване за последните 30 дни. Докоснете точка за общото време за деня.','stats.weeksHelp':'Седмиците сравняват общото време в гладуване през последните 8 календарни седмици. Докоснете седмица за подробности.','stats.chartDetailDefaultTitle':'Детайли за графиката','stats.chartDetailDefaultText':'Докоснете дата, секция, точка или седмица за подробности.','stats.detailTotal':'Общо гладуване: {duration}. Секции на гладуване: {count}.','stats.detailFast':'Гладуване: {start}–{end} ({duration}).','stats.detailGap':'Пауза без гладуване: {start}–{end} ({duration}).','stats.weekOf':'Седмица от {date}','stats.detailWeek':'Общо гладуване: {duration}. Дни с гладуване: {days}/7.',
       'game.consistency':'Постоянство','game.progress':'Напредък и постижения','game.xp':'XP за постоянство','game.weekly':'Успеваемост по целта тази седмица','game.weightStreak':'Поредица от седмици с измерване','game.summaryHelp':'XP се дават за изпълнение на избраната цел и редовно записване на теглото. Гладуване над целта не носи допълнителни XP.','game.rule':'10 XP за завършено гладуване, достигнало избраната цел + 2 XP за всеки отделен ден със запис на тегло. Гладуване след достигане на целта не носи допълнителни XP.','game.consistencyAchievements':'Постоянство и постижения','game.settingsHelp':'Геймификация по избор. Награждава изпълнението на собствената ви цел и редовното записване на теглото, а не по-дългото гладуване.','game.enable':'Включи геймификацията за постоянство','game.level':'Ниво {n}','game.levelFull':'Ниво {n} • {name}','game.next':'Остават {xp} XP до следващото ниво','game.highest':'Достигнато е най-високото ниво','game.level1':'Начало','game.level2':'Изграждане на постоянство','game.level3':'Установен режим','game.level4':'Дългосрочно проследяване',
       'game.ach1':'Първа цел','game.ach1d':'Завършете 1 гладуване с постигната цел','game.ach5':'Изграждане на ритъм','game.ach5d':'Завършете 5 гладувания с постигната цел','game.ach10':'Постоянство 10','game.ach10d':'Завършете 10 гладувания с постигната цел','game.ach25':'Постоянство 25','game.ach25d':'Завършете 25 гладувания с постигната цел','game.ach50':'Постоянство 50','game.ach50d':'Завършете 50 гладувания с постигната цел','game.comeback':'Завръщане','game.comebackd':'Постигнете целта след предходна непостигната цел','game.weightHabit':'Навик за теглото','game.weightHabitd':'Записвайте тегло 4 последователни седмици','game.backupKeeper':'Пазител на архива','game.backupKeeperd':'Поддържайте външен архив на не повече от 7 дни',
       'science.title':'Автофагия и наука за гладуването','science.notFasting':'Не гладувате','science.limited':'Данни при хора: ограничени','science.idle':'Автофагията протича на базово ниво и когато не гладувате. Изследванията при хора не са установили универсален час, в който автофагията, предизвикана от гладуване, „започва“.','science.caution':'Този индикатор е с образователна цел, не измерва автофагията и не е причина да удължавате гладуването. Реакциите зависят от тъканите, активността, предходното хранене, запасите от гликоген и други фактори.','science.sources':'Научна основа и източници',
@@ -903,7 +976,7 @@ layout: null
       'backup.reason.firstLaunch':'преди първото стартиране на v{version}','backup.reason.restore':'преди възстановяване на друго копие','backup.reason.update':'преди обновяване от v{from} към v{to}','backup.reason.import':'преди импорт на външен архив',
       'common.dismiss':'Затвори','installStorage.title':'Използвате Safari на iPhone?','installStorage.text':'Safari и уеб приложението на началния екран могат да използват отделни локални хранилища. Ако ще използвате приложението от началния екран, инсталирайте го преди да въвеждате данни. За да преместите съществуващи записи от Safari, експортирайте архив тук, инсталирайте приложението и после импортирайте архива там.','storage.title':'Защита на хранилището','storage.checking':'Проверка на защитата на хранилището…','storage.protected':'Постоянно хранилище: Защитено','storage.bestEffort':'Постоянно хранилище: Най-добро усилие','storage.unavailable':'Статусът на постоянното хранилище не е наличен','storage.help':'Постоянното хранилище може да намали вероятността браузърът да премахне локалните данни при недостиг на място. Външните архиви все още са препоръчителни.','storage.request':'Поискай защита','storage.requestDenied':'Защитата не беше предоставена. Пазете актуални външни архиви.','storage.usage':'Използвани {used} от {quota} налично място.','storage.usageUnknown':'Информацията за използваното място не е налична.',
       'safety.longFastTitle':'Цел за продължително гладуване','safety.longFastText':'Избрахте {goal}. Продължителното гладуване от 72 часа или повече може да носи допълнителни рискове и не е подходящо за всеки. Fasting Tracker записва избора ви, но не препоръчва тази продължителност. Прегледайте информацията за здраве и безопасност, преди да продължите.','safety.continue':'Използвай тази цел',
-      'a11y.fastProgress':'Напредък към целта за гладуване','a11y.xpProgress':'Напредък на нивото за постоянство','a11y.weightUnit':'Мерна единица за тегло','a11y.fastChart':'Графика на часовете гладуване за последните 14 дни','a11y.weightChart':'Графика на теглото',
+      'a11y.fastProgress':'Напредък към целта за гладуване','a11y.fastTrendChart':'Тенденция на дневните часове гладуване за последните 30 дни','a11y.fastWeeksChart':'Седмични часове гладуване за последните 8 седмици','a11y.xpProgress':'Напредък на нивото за постоянство','a11y.weightUnit':'Мерна единица за тегло','a11y.fastChart':'Графика на часовете гладуване за последните 14 дни','a11y.weightChart':'Графика на теглото',
       'unit.day.one':'ден','unit.day.other':'дни','unit.day.zero':'дни','unit.day.two':'дни','unit.day.few':'дни','unit.day.many':'дни','unit.d':'д','unit.h':'ч','unit.m':'мин','unit.hour.one':'час','unit.hour.other':'часа','unit.hour.zero':'часа','unit.hour.two':'часа','unit.hour.few':'часа','unit.hour.many':'часа'
     },
     es: {
@@ -932,7 +1005,7 @@ layout: null
       'fasting.startEarlier':'Empezó antes','backdate.title':'Iniciar un ayuno en curso','backdate.help':'Elige cuándo empezó realmente este ayuno. Seguirá activo y contando hasta que pulses Detener ayuno.','backdate.start':'Empezó a las','backdate.target':'Objetivo: {goal} • fijado para este ayuno','backdate.targetHelp':'Este objetivo queda fijado para el ayuno activo. Cambiar Ajustes más tarde no lo modificará.','backdate.startFast':'Iniciar ayuno','backdate.quickAria':'Horas de inicio rápidas','backdate.1h':'hace 1h','backdate.2h':'hace 2h','backdate.3h':'hace 3h','backdate.4h':'hace 4h','backdate.6h':'hace 6h','backdate.12h':'hace 12h','backdate.errStart':'Introduce una fecha y hora de inicio válidas.','backdate.errFuture':'La hora de inicio no puede estar en el futuro.','backdate.errGoal':'Introduce un objetivo superior a 0 horas.','backdate.errOverlap':'Este ayuno en curso se solaparía con un registro de ayuno completado.','backdate.conflictTitle':'Conflicto con un ayuno existente','backdate.conflictTitleMany':'Conflicto con {n} ayunos existentes','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'El ayuno en curso no puede comenzar antes de {time}.','backdate.startAfter':'Empezar a las {time}','backdate.editConflict':'Editar registro existente','backdate.deleteConflict':'Eliminar registro en conflicto e iniciar','backdate.deleteConfirm':'¿Eliminar este registro de ayuno completado e iniciar el ayuno en curso desde la hora seleccionada? No se puede deshacer salvo que tengas una copia de seguridad.',
       'history.add':'Añadir registro','history.start':'Inicio','history.end':'Fin','history.targetHours':'Horas objetivo','history.overlapHelp':'Los registros manuales no pueden solaparse con otro ayuno guardado ni con el ayuno activo.','history.empty':'Aún no hay ayunos completados. Pulsa Añadir registro para introducir uno manualmente.','history.target':'Objetivo: {goal}','history.targetReached':'Objetivo alcanzado','history.deleteConfirm':'¿Eliminar este registro de ayuno?','history.addTitle':'Añadir registro de ayuno','history.editTitle':'Editar registro de ayuno','history.errDates':'Introduce una fecha y hora válidas de inicio y fin.','history.errEndAfter':'La hora de fin debe ser posterior a la de inicio.','history.errFuture':'La hora de fin no puede estar en el futuro.','history.errMinute':'Un registro manual de ayuno debe durar al menos un minuto.','history.errGoal':'Introduce un objetivo superior a 0 horas.','history.errOverlap':'Este intervalo se solapa con otro ayuno guardado o con el ayuno activo.',
       'weight.add':'Añadir peso','weight.intro':'Registra el peso corporal junto con tu historial de ayuno.','weight.latest':'Último peso','weight.change':'Cambio desde el primero','weight.target':'Peso objetivo','weight.toTarget':'Diferencia hasta el objetivo','weight.targetHelp':'Opcional. Déjalo en blanco si solo quieres seguir la tendencia.','weight.trend':'Tendencia del peso','weight.chartHelp':'Últimos 30 pesajes. Aparece una línea objetivo cuando se establece un peso objetivo.','weight.dateTime':'Fecha y hora','weight.empty':'Aún no hay registros de peso. Pulsa Añadir peso para guardar tu primera medición.','weight.addChart':'Añade registros de peso para ver la tendencia.','weight.editTitle':'Editar peso','weight.addTitle':'Añadir peso','weight.deleteConfirm':'¿Eliminar este registro de peso?','weight.errDate':'Introduce una fecha y hora válidas.','weight.errFuture':'La fecha/hora del peso no puede estar en el futuro.','weight.errValue':'Introduce un peso válido superior a 0 {unit}.','weight.errTarget':'Introduce un peso objetivo válido superior a 0 {unit}, o déjalo en blanco.',
-      'stats.completed':'Ayunos completados','stats.average':'Duración media','stats.longest':'Ayuno más largo','stats.reached':'Objetivo alcanzado','stats.total':'Ayuno total','stats.last14':'Últimos 14 días','stats.chartHelp':'Las barras muestran el tiempo real de ayuno dentro de cada día natural, incluido un ayuno activo. Los ayunos de varios días se reparten entre los días que abarcan.',
+      'stats.completed':'Ayunos completados','stats.average':'Duración media','stats.longest':'Ayuno más largo','stats.reached':'Objetivo alcanzado','stats.total':'Ayuno total','stats.last14':'Últimos 14 días','stats.chartHelp':'Cada barra vertical diaria muestra las 24 horas del día. Las secciones coloreadas son tiempo de ayuno y los huecos son tiempo sin ayuno.','stats.patterns':'Patrones de ayuno','stats.interactive':'Interactivo','stats.visualizationAria':'Visualización de estadísticas','stats.vizTimeline':'Cronología','stats.vizCalendar':'Calendario','stats.vizTrend':'Tendencia','stats.vizWeeks':'Semanas','stats.prevMonth':'Mes anterior','stats.nextMonth':'Mes siguiente','stats.less':'Menos','stats.more':'Más','stats.timelineHelp':'La cronología muestra verticalmente las 24 horas de cada día: las secciones coloreadas son ayuno y los huecos son tiempo de comida/no ayuno.','stats.calendarHelp':'La intensidad del calendario muestra qué parte de cada día se pasó en ayuno. Toca un día para ver el total.','stats.trendHelp':'La tendencia muestra las horas de ayuno diarias de los últimos 30 días. Toca un punto para ver el total de ese día.','stats.weeksHelp':'Semanas compara el tiempo total de ayuno durante las últimas 8 semanas naturales. Toca una semana para ver detalles.','stats.chartDetailDefaultTitle':'Detalles del gráfico','stats.chartDetailDefaultText':'Toca una fecha, sección, punto o semana para ver detalles.','stats.detailTotal':'Ayuno total: {duration}. Secciones de ayuno: {count}.','stats.detailFast':'Ayuno: {start}–{end} ({duration}).','stats.detailGap':'Hueco sin ayuno: {start}–{end} ({duration}).','stats.weekOf':'Semana del {date}','stats.detailWeek':'Ayuno total: {duration}. Días con ayuno: {days}/7.',
       'game.consistency':'Constancia','game.progress':'Progreso y logros','game.xp':'XP de constancia','game.weekly':'Tasa de objetivos alcanzados esta semana','game.weightStreak':'Racha semanal de pesajes','game.summaryHelp':'Los XP premian cumplir tu objetivo elegido y registrar el peso con constancia. Ayunar más allá del objetivo no da XP extra.','game.rule':'10 XP por cada ayuno completado que alcanza su objetivo + 2 XP por cada día distinto con un registro de peso. No se otorgan XP extra por ayunar más allá del objetivo.','game.consistencyAchievements':'Constancia y logros','game.settingsHelp':'Gamificación opcional. Premia cumplir tu propio objetivo y registrar el peso con regularidad, no ayunar más tiempo.','game.enable':'Activar gamificación de constancia','game.level':'Nivel {n}','game.levelFull':'Nivel {n} • {name}','game.next':'{xp} XP para el siguiente nivel','game.highest':'Nivel máximo alcanzado','game.level1':'Primeros pasos','game.level2':'Creando constancia','game.level3':'Rutina establecida','game.level4':'Seguimiento a largo plazo',
       'game.ach1':'Primer objetivo','game.ach1d':'Completa 1 ayuno que alcance su objetivo','game.ach5':'Creando ritmo','game.ach5d':'Completa 5 ayunos con objetivo','game.ach10':'Constancia 10','game.ach10d':'Completa 10 ayunos con objetivo','game.ach25':'Constancia 25','game.ach25d':'Completa 25 ayunos con objetivo','game.ach50':'Constancia 50','game.ach50d':'Completa 50 ayunos con objetivo','game.comeback':'Retorno','game.comebackd':'Alcanza tu objetivo después de no alcanzarlo en el ayuno anterior','game.weightHabit':'Hábito de peso','game.weightHabitd':'Registra el peso durante 4 semanas consecutivas','game.backupKeeper':'Copia al día','game.backupKeeperd':'Mantén una copia externa de menos de 7 días',
       'science.title':'Autofagia y ciencia del ayuno','science.notFasting':'Sin ayuno activo','science.limited':'Evidencia en humanos: limitada','science.idle':'La autofagia está activa a nivel basal incluso cuando no ayunas. La investigación en humanos no ha establecido una hora universal en la que la autofagia inducida por el ayuno “empiece”.','science.caution':'Este indicador es educativo, no una medición de la autofagia ni una razón para prolongar un ayuno. Las respuestas varían según el tejido, la actividad, la dieta previa, el glucógeno y otros factores.','science.sources':'Base científica y fuentes',
@@ -945,7 +1018,7 @@ layout: null
       'backup.reason.firstLaunch':'antes del primer inicio de v{version}','backup.reason.restore':'antes de restaurar otra copia','backup.reason.update':'antes de actualizar de v{from} a v{to}','backup.reason.import':'antes de importar una copia externa',
       'common.dismiss':'Cerrar','installStorage.title':'¿Usas Safari en iPhone?','installStorage.text':'Safari y una app web de la pantalla de inicio pueden usar almacenamiento local separado. Si piensas usar la app de la pantalla de inicio, instálala antes de introducir datos. Para mover registros existentes de Safari, exporta una copia aquí, instala la app y luego importa la copia allí.','storage.title':'Protección del almacenamiento','storage.checking':'Comprobando la protección del almacenamiento…','storage.protected':'Almacenamiento persistente: Protegido','storage.bestEffort':'Almacenamiento persistente: Mejor esfuerzo','storage.unavailable':'Estado del almacenamiento persistente no disponible','storage.help':'El almacenamiento persistente puede reducir la posibilidad de que el navegador elimine los datos locales por falta de espacio. Aun así, se recomiendan copias externas.','storage.request':'Solicitar protección','storage.requestDenied':'No se concedió la protección. Mantén copias externas recientes.','storage.usage':'Usando {used} de {quota} de almacenamiento disponible.','storage.usageUnknown':'La información de uso del almacenamiento no está disponible.',
       'safety.longFastTitle':'Objetivo de ayuno prolongado','safety.longFastText':'Has seleccionado {goal}. El ayuno prolongado de 72 horas o más puede implicar riesgos adicionales y no es adecuado para todo el mundo. Fasting Tracker registra tu elección; no recomienda esta duración. Revisa la información de salud y seguridad antes de continuar.','safety.continue':'Usar este objetivo',
-      'a11y.fastProgress':'Progreso hacia el objetivo de ayuno','a11y.xpProgress':'Progreso del nivel de constancia','a11y.weightUnit':'Unidad de peso','a11y.fastChart':'Gráfico de horas de ayuno de los últimos 14 días','a11y.weightChart':'Gráfico de tendencia del peso',
+      'a11y.fastProgress':'Progreso hacia el objetivo de ayuno','a11y.fastTrendChart':'Tendencia de horas de ayuno diarias de los últimos 30 días','a11y.fastWeeksChart':'Horas de ayuno semanales de las últimas 8 semanas','a11y.xpProgress':'Progreso del nivel de constancia','a11y.weightUnit':'Unidad de peso','a11y.fastChart':'Gráfico de horas de ayuno de los últimos 14 días','a11y.weightChart':'Gráfico de tendencia del peso',
       'unit.day.one':'día','unit.day.other':'días','unit.day.zero':'días','unit.day.two':'días','unit.day.few':'días','unit.day.many':'días','unit.d':'d','unit.h':'h','unit.m':'min','unit.hour.one':'hora','unit.hour.other':'horas','unit.hour.zero':'horas','unit.hour.two':'horas','unit.hour.few':'horas','unit.hour.many':'horas'
     }
   };
@@ -1935,9 +2008,10 @@ layout: null
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
       const visualPct = Math.min(100, Math.max(0, pct));
-      progressFill.style.width = `${visualPct}%`;
-      el('fastProgressTrack').setAttribute('aria-valuenow', String(Math.round(visualPct)));
-      el('fastProgressTrack').setAttribute('aria-valuetext', pct >= 100 ? t('fasting.targetReached', {duration:friendlyDuration(Math.max(0, elapsed - targetMs))}) : t('fasting.progress', {pct:formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration:friendlyDuration(Math.max(0, targetMs - elapsed))}));
+      fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
+      fastProgressTrack.classList.toggle('reached', pct >= 100);
+      fastProgressTrack.setAttribute('aria-valuenow', String(Math.round(visualPct)));
+      fastProgressTrack.setAttribute('aria-valuetext', pct >= 100 ? t('fasting.targetReached', {duration:friendlyDuration(Math.max(0, elapsed - targetMs))}) : t('fasting.progress', {pct:formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration:friendlyDuration(Math.max(0, targetMs - elapsed))}));
       const targetMoment = el('targetMoment');
       const targetAt = safeTargetDate(startMs, targetMs);
       targetMoment.hidden = !targetAt;
@@ -1961,9 +2035,10 @@ layout: null
       toggleFast.textContent = t('fasting.start');
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
-      progressFill.style.width = '0%';
-      el('fastProgressTrack').setAttribute('aria-valuenow', '0');
-      el('fastProgressTrack').setAttribute('aria-valuetext', t('fasting.zeroProgress'));
+      fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
+      fastProgressTrack.classList.remove('reached');
+      fastProgressTrack.setAttribute('aria-valuenow', '0');
+      fastProgressTrack.setAttribute('aria-valuetext', t('fasting.zeroProgress'));
       progressDetail.textContent = t('fasting.zeroProgress');
       progressDetail.classList.remove('good');
       el('targetMoment').hidden = true;
@@ -2347,51 +2422,313 @@ layout: null
     el('mGoal').textContent = formatNumber(data.records.filter(recordMetGoal).length);
     el('mStreak').textContent = formatNumber(currentStreak());
     el('mHours').textContent = total ? compactDuration(total) : `0${t('unit.h')}`;
-    drawChart();
+    renderStatsVisualizations();
     renderGamification();
+  }
+
+  function allFastingIntervals() {
+    const intervals = data.records.map(r => ({ start: new Date(r.start).getTime(), end: new Date(r.end).getTime() }));
+    if (data.activeStart) intervals.push({ start: new Date(data.activeStart).getTime(), end: Date.now() });
+    return intervals.filter(item => Number.isFinite(item.start) && Number.isFinite(item.end) && item.end > item.start).sort((a, b) => a.start - b.start);
+  }
+
+  function buildInteractiveChartDays(dayCount = 14, timeZone = currentTimeZone()) {
+    const tz = normalizeTimeZone(timeZone);
+    const intervals = allFastingIntervals();
+    const days = [];
+    for (let i = dayCount - 1; i >= 0; i--) {
+      const anchor = new Date();
+      anchor.setHours(12, 0, 0, 0);
+      anchor.setDate(anchor.getDate() - i);
+      const key = dayKey(anchor, tz);
+      const start = zonedLocalToDate(`${key}T00:00`, tz);
+      if (!start) continue;
+      const startMs = start.getTime();
+      const endMs = nextZonedDayBoundary(startMs, tz);
+      const segments = [];
+      let cursor = startMs;
+      let fastCount = 0;
+      let totalFastMs = 0;
+      for (const interval of intervals) {
+        if (interval.end <= startMs) continue;
+        if (interval.start >= endMs) break;
+        const segStart = Math.max(startMs, interval.start);
+        const segEnd = Math.min(endMs, interval.end);
+        if (segStart > cursor) {
+          segments.push({ type: 'gap', start: cursor, end: segStart, index: segments.length });
+        }
+        if (segEnd > segStart) {
+          segments.push({ type: 'fast', start: segStart, end: segEnd, index: segments.length });
+          totalFastMs += segEnd - segStart;
+          fastCount += 1;
+        }
+        cursor = Math.max(cursor, segEnd);
+      }
+      if (cursor < endMs) segments.push({ type: 'gap', start: cursor, end: endMs, index: segments.length });
+      days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz, label: localDateLabel(startMs, tz) });
+    }
+    return days;
+  }
+
+  function chartTimeWithinDayLabel(ms, dayEndMs, timeZone) {
+    if (Math.abs(ms - dayEndMs) < 1000) return '24:00';
+    const parts = zonedParts(ms, timeZone);
+    return `${pad(parts.hour)}:${pad(parts.minute)}`;
+  }
+
+  function chartSelectionDetail(days) {
+    if (!chartSelectedTarget) return null;
+    const day = days.find(item => item.key === chartSelectedTarget.dayKey);
+    if (!day) return null;
+    if (chartSelectedTarget.kind === 'day') {
+      return {
+        title: day.label,
+        text: t('stats.detailTotal', { duration: compactDuration(day.totalFastMs), count: formatNumber(day.fastCount) })
+      };
+    }
+    const segment = day.segments[chartSelectedTarget.segmentIndex];
+    if (!segment) return null;
+    const start = chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone);
+    const end = chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone);
+    return {
+      title: day.label,
+      text: t(segment.type === 'fast' ? 'stats.detailFast' : 'stats.detailGap', { start, end, duration: compactDuration(segment.end - segment.start) })
+    };
+  }
+
+  function renderChartDetail(days = null) {
+    if (statsVizMode === 'timeline') renderChartDetailForMode(days);
+  }
+
+  function hitTestChart(clientX, clientY) {
+    const c = el('chart');
+    const rect = c.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    for (let i = chartInteractiveLayout.length - 1; i >= 0; i--) {
+      const hit = chartInteractiveLayout[i];
+      if (x >= hit.x && x <= hit.x + hit.w && y >= hit.y && y <= hit.y + hit.h) return hit;
+    }
+    return null;
+  }
+
+  function handleChartPointer(event) {
+    const point = event.touches?.[0] || event;
+    const hit = hitTestChart(point.clientX, point.clientY);
+    if (!hit) return;
+    statsDetailOverride = null;
+    if (hit.kind === 'day') chartSelectedTarget = { kind: 'day', dayKey: hit.dayKey };
+    else chartSelectedTarget = { kind: 'segment', dayKey: hit.dayKey, segmentIndex: hit.segmentIndex };
+    drawChart();
   }
 
   function drawChart() {
     const c = el('chart'), ctx = c.getContext('2d');
     const ratio = window.devicePixelRatio || 1;
-    const cssW = c.clientWidth || 660, cssH = 220;
+    const cssW = c.clientWidth || 660, cssH = 280;
     c.width = Math.floor(cssW * ratio); c.height = Math.floor(cssH * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
+    c.style.touchAction = 'manipulation';
 
-    const days = [], storedDayMap = fastingByStoredCalendarDay();
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - i);
-      days.push({ d, hours: (storedDayMap.get(dayKey(d,currentTimeZone())) || 0) / 3600000 });
-    }
-
-    const maxH = Math.max(24, ...days.map(x => x.hours), 1);
-    const top = 18, bottom = 28, left = 8, right = 8, w = cssW - left - right, h = cssH - top - bottom;
+    const days = buildInteractiveChartDays(14);
+    const top = 18, bottom = 34, left = 34, right = 8;
+    const w = cssW - left - right, h = cssH - top - bottom;
+    const gap = 6, bw = (w - gap * 13) / 14;
     const style = getComputedStyle(document.documentElement);
     const line = style.getPropertyValue('--line').trim();
     const accent = style.getPropertyValue('--accent').trim();
     const muted = style.getPropertyValue('--muted').trim();
+    const card = style.getPropertyValue('--card').trim();
+    chartInteractiveLayout = [];
 
     ctx.strokeStyle = line; ctx.lineWidth = 1;
-    [0.5, 1].forEach(frac => {
-      const y = top + h - h * frac;
+    ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'right';
+    [0, 6, 12, 18, 24].forEach(hour => {
+      const frac = hour / 24;
+      const y = top + h * frac;
       ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(cssW - right, y); ctx.stroke();
-      ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'left';
-      ctx.fillText(`${(maxH * frac).toLocaleString(currentLocale(), { maximumFractionDigits: 1 })}${t('unit.h')}`, left + 2, Math.max(10, y - 3));
+      ctx.fillText(`${pad(hour)}:00`, left - 4, Math.max(10, y + (hour === 0 ? 0 : 3)));
     });
 
-    const gap = 4, bw = (w - gap * 13) / 14;
-    days.forEach((x, i) => {
-      const bh = Math.min(h, (x.hours / maxH) * h);
-      const x0 = left + i * (bw + gap), y = top + h - bh;
-      ctx.fillStyle = accent; ctx.globalAlpha = .85; ctx.fillRect(x0, y, bw, bh); ctx.globalAlpha = 1;
-      if (i % 2 === 0 || i === 13) {
-        ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'center';
-        ctx.fillText(formatNumber(x.d.getDate()), x0 + bw / 2, cssH - 9);
-      }
+    days.forEach((day, i) => {
+      const x0 = left + i * (bw + gap);
+      const isDaySelected = chartSelectedTarget && chartSelectedTarget.kind === 'day' && chartSelectedTarget.dayKey === day.key;
+      ctx.fillStyle = card;
+      ctx.fillRect(x0, top, bw, h);
+      ctx.strokeStyle = isDaySelected ? accent : line;
+      ctx.lineWidth = isDaySelected ? 2 : 1;
+      ctx.strokeRect(x0, top, bw, h);
+      chartInteractiveLayout.push({ kind: 'day', dayKey: day.key, x: x0, y: cssH - bottom + 4, w: bw, h: bottom - 4 });
+
+      day.segments.forEach((segment, segIndex) => {
+        const segTop = top + ((segment.start - day.startMs) / (day.endMs - day.startMs)) * h;
+        const segHeight = Math.max(2, ((segment.end - segment.start) / (day.endMs - day.startMs)) * h);
+        const rectY = Math.min(top + h - 2, segTop);
+        const rectH = Math.min(h, segHeight);
+        chartInteractiveLayout.push({ kind: 'segment', dayKey: day.key, segmentIndex: segIndex, x: x0, y: rectY, w: bw, h: rectH });
+        if (segment.type === 'fast') {
+          ctx.fillStyle = accent;
+          ctx.globalAlpha = .88;
+          ctx.fillRect(x0 + 1, rectY + 1, Math.max(1, bw - 2), Math.max(1, rectH - 2));
+          ctx.globalAlpha = 1;
+        }
+        const isSelected = chartSelectedTarget && chartSelectedTarget.kind === 'segment' && chartSelectedTarget.dayKey === day.key && chartSelectedTarget.segmentIndex === segIndex;
+        if (isSelected) {
+          ctx.strokeStyle = accent;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x0 + 1, rectY + 1, Math.max(1, bw - 2), Math.max(1, rectH - 2));
+        }
+      });
+
+      const d = new Date(day.startMs);
+      ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'center';
+      ctx.fillText(formatNumber(d.getDate()), x0 + bw / 2, cssH - 10);
     });
     ctx.textAlign = 'start';
+    renderChartDetail(days);
   }
+
+  function setStatsDetail(title, text) {
+    statsDetailOverride = title || text ? { title: title || t('stats.chartDetailDefaultTitle'), text: text || '' } : null;
+    renderChartDetailForMode();
+  }
+
+  function defaultStatsHelpKey() {
+    return statsVizMode === 'calendar' ? 'stats.calendarHelp' : statsVizMode === 'trend' ? 'stats.trendHelp' : statsVizMode === 'weeks' ? 'stats.weeksHelp' : 'stats.timelineHelp';
+  }
+
+  function renderChartDetailForMode(days = null) {
+    const title = el('chartDetailTitle'), text = el('chartDetailText');
+    if (!title || !text) return;
+    let detail = statsDetailOverride;
+    if (!detail && statsVizMode === 'timeline' && days) detail = chartSelectionDetail(days);
+    title.textContent = detail?.title || t('stats.chartDetailDefaultTitle');
+    text.textContent = detail?.text || t('stats.chartDetailDefaultText');
+    const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
+  }
+
+  function setStatsVizMode(mode) {
+    const allowed = ['timeline','calendar','trend','weeks'];
+    statsVizMode = allowed.includes(mode) ? mode : 'timeline';
+    statsDetailOverride = null;
+    document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(btn => {
+      const active = btn.dataset.viz === statsVizMode;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', String(active));
+    });
+    const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView' };
+    for (const [key,id] of Object.entries(map)) el(id).hidden = key !== statsVizMode;
+    renderStatsVisualizations();
+  }
+
+  function renderStatsVisualizations() {
+    if (statsVizMode === 'calendar') renderFastCalendar();
+    else if (statsVizMode === 'trend') drawFastTrendChart();
+    else if (statsVizMode === 'weeks') drawFastWeeksChart();
+    else drawChart();
+    renderChartDetailForMode(statsVizMode === 'timeline' ? buildInteractiveChartDays(14) : null);
+  }
+
+  function monthAnchor(offset = 0) {
+    const d = new Date(); d.setHours(12,0,0,0); d.setDate(1); d.setMonth(d.getMonth() + offset); return d;
+  }
+
+  function chartDayForAnchor(anchor, timeZone = currentTimeZone(), intervals = allFastingIntervals()) {
+    const tz = normalizeTimeZone(timeZone), key = dayKey(anchor, tz);
+    const start = zonedLocalToDate(`${key}T00:00`, tz);
+    if (!start) return null;
+    const startMs=start.getTime(), endMs=nextZonedDayBoundary(startMs,tz);
+    const segments=[]; let cursor=startMs, totalFastMs=0, fastCount=0;
+    for (const interval of intervals) {
+      if (interval.end <= startMs) continue;
+      if (interval.start >= endMs) break;
+      const segStart=Math.max(startMs,interval.start), segEnd=Math.min(endMs,interval.end);
+      if (segStart > cursor) segments.push({type:'gap',start:cursor,end:segStart,index:segments.length});
+      if (segEnd > segStart) { segments.push({type:'fast',start:segStart,end:segEnd,index:segments.length}); totalFastMs += segEnd-segStart; fastCount += 1; }
+      cursor=Math.max(cursor,segEnd);
+    }
+    if (cursor < endMs) segments.push({type:'gap',start:cursor,end:endMs,index:segments.length});
+    return {key,startMs,endMs,totalFastMs,fastCount,segments,timeZone:tz,label:localDateLabel(startMs,tz)};
+  }
+
+  function calendarLevel(ms) {
+    const hours = Math.max(0, ms) / 3600000;
+    if (hours <= 0) return 0;
+    if (hours < 6) return 1;
+    if (hours < 12) return 2;
+    if (hours < 18) return 3;
+    return 4;
+  }
+
+  function weekdayLabelsMondayFirst() {
+    const base = new Date(2026, 0, 5, 12, 0, 0, 0); // Monday
+    return Array.from({length:7},(_,i)=>new Date(base.getTime()+i*86400000).toLocaleDateString(currentLocale(),{weekday:'narrow'}));
+  }
+
+  function renderFastCalendar() {
+    const title=el('calendarMonthTitle'), grid=el('fastCalendar'), heads=el('calendarWeekdays');
+    if (!title || !grid || !heads) return;
+    const month=monthAnchor(statsCalendarMonthOffset), monthIndex=month.getMonth(), now=new Date();
+    title.textContent=month.toLocaleDateString(currentLocale(),{month:'long',year:'numeric'});
+    el('calendarNextBtn').disabled = statsCalendarMonthOffset >= 0;
+    heads.replaceChildren();
+    for (const label of weekdayLabelsMondayFirst()) { const node=document.createElement('div'); node.className='calendarWeekday'; node.textContent=label; heads.append(node); }
+    const first=new Date(month); const shift=(first.getDay()+6)%7; first.setDate(first.getDate()-shift);
+    const intervals=allFastingIntervals(), tz=currentTimeZone(); grid.replaceChildren();
+    for (let i=0;i<42;i++) {
+      const d=new Date(first); d.setDate(first.getDate()+i); d.setHours(12,0,0,0);
+      const day=chartDayForAnchor(d,tz,intervals); if (!day) continue;
+      const btn=document.createElement('button'); btn.type='button'; btn.className=`calendarDay level${calendarLevel(day.totalFastMs)}`;
+      const outside=d.getMonth()!==monthIndex, future=d.getTime()>now.getTime()+12*3600000;
+      if (outside) btn.classList.add('outside'); if (future) btn.classList.add('future');
+      if (statsDetailOverride?.dayKey===day.key) btn.classList.add('selected');
+      btn.disabled=future; btn.dataset.dayKey=day.key;
+      const n=document.createElement('span'); n.textContent=formatNumber(d.getDate());
+      const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? compactDuration(day.totalFastMs) : '—';
+      btn.append(n,h);
+      btn.setAttribute('aria-label',`${day.label}: ${compactDuration(day.totalFastMs)}`);
+      btn.addEventListener('click',()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:compactDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; renderFastCalendar(); renderChartDetailForMode(); });
+      grid.append(btn);
+    }
+    renderChartDetailForMode();
+  }
+
+  function drawFastTrendChart() {
+    const c=el('fastTrendChart'), ctx=c.getContext('2d'), ratio=window.devicePixelRatio||1;
+    const cssW=c.clientWidth||660, cssH=260; c.width=Math.floor(cssW*ratio); c.height=Math.floor(cssH*ratio); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,cssW,cssH);
+    const days=buildInteractiveChartDays(30), top=18,bottom=34,left=34,right=10,w=cssW-left-right,h=cssH-top-bottom;
+    const style=getComputedStyle(document.documentElement), line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();
+    ctx.strokeStyle=line; ctx.fillStyle=muted; ctx.font='10px -apple-system'; ctx.textAlign='right';
+    [0,6,12,18,24].forEach(hour=>{const y=top+h-(hour/24)*h;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillText(`${hour}${t('unit.h')}`,left-5,y+3);});
+    trendInteractiveLayout=[]; ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.beginPath();
+    days.forEach((day,i)=>{const x=left+(i/(Math.max(1,days.length-1)))*w,y=top+h-(Math.min(24,day.totalFastMs/3600000)/24)*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}); ctx.stroke();
+    days.forEach((day,i)=>{const x=left+(i/(Math.max(1,days.length-1)))*w,y=top+h-(Math.min(24,day.totalFastMs/3600000)/24)*h;ctx.fillStyle=accent;ctx.beginPath();ctx.arc(x,y,trendSelectedDayKey===day.key?4.5:3,0,Math.PI*2);ctx.fill();trendInteractiveLayout.push({day,x,y,r:12}); if(i%5===0||i===days.length-1){ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='center';ctx.fillText(formatNumber(new Date(day.startMs).getDate()),x,cssH-10);}});
+    renderChartDetailForMode();
+  }
+
+  function handleTrendPointer(event) {
+    const c=el('fastTrendChart'), rect=c.getBoundingClientRect(), x=event.clientX-rect.left,y=event.clientY-rect.top;
+    let best=null,bestD=Infinity; for(const hit of trendInteractiveLayout){const d=Math.hypot(x-hit.x,y-hit.y);if(d<bestD){bestD=d;best=hit;}}
+    if(!best||bestD>18)return; trendSelectedDayKey=best.day.key; statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailTotal',{duration:compactDuration(best.day.totalFastMs),count:formatNumber(best.day.fastCount)})}; drawFastTrendChart();
+  }
+
+  function startOfWeekMonday(date) { const d=new Date(date); d.setHours(12,0,0,0); const shift=(d.getDay()+6)%7; d.setDate(d.getDate()-shift); return d; }
+
+  function buildWeeklySummaries() {
+    const tz=currentTimeZone(), intervals=allFastingIntervals(), thisMonday=startOfWeekMonday(new Date()), weeks=[];
+    for(let wi=7;wi>=0;wi--){const start=new Date(thisMonday);start.setDate(start.getDate()-wi*7);let total=0,daysWithFast=0;for(let di=0;di<7;di++){const d=new Date(start);d.setDate(start.getDate()+di);const day=chartDayForAnchor(d,tz,intervals);if(day){total+=day.totalFastMs;if(day.totalFastMs>0)daysWithFast++;}}const key=dayKey(start,tz);weeks.push({key,start,totalFastMs:total,daysWithFast,label:start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'})});} return weeks;
+  }
+
+  function drawFastWeeksChart() {
+    const c=el('fastWeeksChart'),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
+    const weeks=buildWeeklySummaries(),top=18,bottom=34,left=38,right=8,w=cssW-left-right,h=cssH-top-bottom,maxH=Math.max(24,...weeks.map(x=>x.totalFastMs/3600000));
+    const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
+    [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(maxH*frac,0,0)}${t('unit.h')}`,left-5,y+3);});
+    const gap=8,bw=(w-gap*7)/8;weekInteractiveLayout=[];weeks.forEach((week,i)=>{const hours=week.totalFastMs/3600000,bh=(hours/maxH)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(weekSelectedKey===week.key){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));}ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(week.label,x+bw/2,cssH-10);weekInteractiveLayout.push({week,x,y:top,w:bw,h});});renderChartDetailForMode();
+  }
+
+  function handleWeeksPointer(event) { const c=el('fastWeeksChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=weekInteractiveLayout.find(item=>x>=item.x&&x<=item.x+item.w&&y>=item.y&&y<=item.y+item.h);if(!hit)return;weekSelectedKey=hit.week.key;statsDetailOverride={dayKey:hit.week.key,title:t('stats.weekOf',{date:hit.week.label}),text:t('stats.detailWeek',{duration:compactDuration(hit.week.totalFastMs),days:formatNumber(hit.week.daysWithFast)})};drawFastWeeksChart(); }
 
   function toLocalInputValue(dateLike, timeZone = currentTimeZone()) {
     const d = new Date(dateLike); if (!Number.isFinite(d.getTime())) return '';
@@ -3238,7 +3575,7 @@ layout: null
       next.hash = target === 'fasting' ? '' : target;
       history.replaceState(history.state, '', next);
     }
-    if (target === 'stats') setTimeout(drawChart, 0);
+    if (target === 'stats') setTimeout(renderStatsVisualizations, 0);
     if (target === 'weight') setTimeout(drawWeightChart, 0);
   }
 
@@ -3372,7 +3709,13 @@ layout: null
     installUpdate();
   });
 
-  window.addEventListener('resize', () => { if (el('stats').classList.contains('active')) drawChart(); if (el('weight').classList.contains('active')) drawWeightChart(); });
+  el('chart').addEventListener('pointerdown', handleChartPointer);
+  document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(btn => btn.addEventListener('click', () => setStatsVizMode(btn.dataset.viz)));
+  el('calendarPrevBtn').addEventListener('click', () => { statsCalendarMonthOffset -= 1; statsDetailOverride = null; renderFastCalendar(); });
+  el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
+  el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);
+  el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer);
+  window.addEventListener('resize', () => { if (el('stats').classList.contains('active')) renderStatsVisualizations(); if (el('weight').classList.contains('active')) drawWeightChart(); });
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('offline', () => setUpdateUI('offline', t('update.offlineExplicit')));
   window.addEventListener('storage', event => {

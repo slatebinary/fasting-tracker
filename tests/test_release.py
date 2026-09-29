@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.6.4','version must be 1.6.4')
+ok(ver.get('version')=='1.7.0','version must be 1.7.0')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -296,7 +296,7 @@ try:
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.6.4', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.7.0', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -366,10 +366,20 @@ for rel in ['about.html','privacy.html','branding.html','license.html']:
     ok("const DOC_FROM_PARAM='fromDoc'" in txt and 'previousDocument||exactReturn||fallbackReturn()' in txt, f'{rel} does not prefer the immediately originating document')
     ok('u.searchParams.set(DOC_FROM_PARAM,currentDocumentUrl())' in txt, f'{rel} does not propagate its own URL to child documents')
 
-# v1.6.4 immediate documentation-return regression:
+# v1.6.4 documentation-chain regression:
 # Settings -> About -> License/Branding -> Back must return to About first,
 # while About -> Back still returns to the originating app screen.
 ok('href="license.html"' in about_text and 'href="branding.html"' in about_text, 'About child-document links missing')
+
+# v1.7.0 visualization regression checks
+ok('class="fastRing" id="fastProgressTrack"' in index and "--fast-progress-angle" in index, 'circular fasting progress ring missing')
+ok("fastProgressTrack.style.setProperty('--fast-progress-angle'" in index, 'progress ring is not driven by live fasting progress')
+for ident in ['statsTimelineView','statsCalendarView','statsTrendView','statsWeeksView','fastCalendar','fastTrendChart','fastWeeksChart']:
+    ok(f'id="{ident}"' in index, f'missing statistics visualization element {ident}')
+ok('data-viz="timeline"' in index and 'data-viz="calendar"' in index and 'data-viz="trend"' in index and 'data-viz="weeks"' in index, 'statistics visualization switcher incomplete')
+ok('function renderFastCalendar()' in index and 'function drawFastTrendChart()' in index and 'function drawFastWeeksChart()' in index, 'statistics visualization renderers missing')
+ok("el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer)" in index and "el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer)" in index, 'trend/week chart interactions missing')
+ok("el('calendarPrevBtn').addEventListener('click'" in index and "el('calendarNextBtn').addEventListener('click'" in index, 'calendar month navigation missing')
 
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
