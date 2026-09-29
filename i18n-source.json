@@ -1,6 +1,6 @@
 {
   "sourceRevision": 3,
-  "appVersion": "1.6.1",
+  "appVersion": "1.6.2",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -329,6 +329,7 @@
     "help.versionHelp": "Useful when checking which release is installed",
     "recovery.title": "Recovery mode",
     "recovery.text": "Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten. Export the raw data or restore a recovery snapshot before continuing.",
+    "recovery.reason": "Reason",
     "recovery.exportRaw": "Export raw data",
     "recovery.snapshots": "Recovery snapshots",
     "recovery.importBackup": "Import backup",

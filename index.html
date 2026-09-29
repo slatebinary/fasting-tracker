@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.6.1" />
+  <meta name="ft-app-version" content="1.6.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -306,6 +306,7 @@ layout: null
   <div class="card recoveryCard" id="recoveryBanner" role="alert" hidden>
     <h2 data-i18n="recovery.title">Recovery mode</h2>
     <div class="small" data-i18n="recovery.text">Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten.</div>
+    <div class="small" id="recoveryDiagnostic" style="margin-top:8px"></div>
     <div class="recoveryActions">
       <button id="recoveryExportBtn" class="secondary" data-i18n="recovery.exportRaw">Export raw data</button>
       <button id="recoverySnapshotsBtn" class="secondary" data-i18n="recovery.snapshots">Recovery snapshots</button>
@@ -741,6 +742,7 @@ layout: null
   const APP_META_KEY = 'fastingTracker.appMeta';
   const INSTALL_NOTICE_KEY = 'fastingTracker.installStorageNoticeDismissed';
   const LONG_FAST_NOTICE_KEY = 'fastingTracker.longFastNoticeSeen';
+  const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';
   const DATA_VERSION = 1;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
@@ -752,7 +754,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.6.1';
+  const APP_VERSION = '1.6.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -851,7 +853,7 @@ layout: null
       'backup.reminderTitle':'External backup reminder','backup.now':'Back up now','backup.exportTitle':'Export backup','backup.exportHelp':'Save/share your data as a JSON file','backup.last':'Last external backup','backup.lastHelp':'A reminder appears after 7 days without one.','backup.noneYet':'No external backup yet','backup.snapshots':'Automatic internal JSON snapshots','backup.importTitle':'Import backup','backup.importHelp':'Restore from an exported JSON file','backup.snapshotsHelp':'These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. If local storage becomes limited, it may keep fewer snapshots and will warn you. They do not replace an external backup.','backup.shareTitle':'Fasting Tracker backup','backup.errCreate':'The backup could not be created. Try again before updating.','backup.snapshotFailed':'A recovery snapshot could not be saved. The operation has been stopped to protect your current data. Export a backup and check available device storage, then try again.','backup.dueLast':'Your last external backup was {date}. Save a fresh copy to Files, iCloud Drive, Google Drive, or another secure location.','backup.dueNever':'Your fasting or weight data has not been externally backed up for at least 7 days. Save a copy to Files, iCloud Drive, Google Drive, or another secure location.','backup.snapshotCount':'{n} of {max} rolling {word} stored locally.','backup.snapshotWord.one':'snapshot','backup.snapshotWord.other':'snapshots','backup.snapshotWord.zero':'snapshots','backup.snapshotWord.two':'snapshots','backup.snapshotWord.few':'snapshots','backup.snapshotWord.many':'snapshots','backup.snapshotNone':'No recovery snapshots yet. One is created automatically after the first meaningful fasting or weight change.','backup.snapshotUnavailable':'That recovery snapshot is no longer available.','backup.snapshotRestoreConfirm':'Restore the recovery snapshot from {date}? This will replace the fasting and weight data currently on this device.','backup.snapshotRestored':'Recovery snapshot restored.','backup.snapshotEmpty':'No internal recovery snapshots are available yet.','backup.snapshotTitle':'Recovery snapshot','backup.snapshotFrom':'From {version} • {reason}','backup.unencrypted':'Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.',
       'update.newVersion':'New version available','update.releaseReady':'A newer Fasting Tracker release is ready.','update.update':'Update','update.updates':'Updates','update.check':'Check','update.checking':'Checking for updates…','update.checkingBtn':'Checking…','update.available':'Version v{version} is available.','update.updateNow':'Update now','update.ready':'Fasting Tracker v{version} is ready.','update.installing':'Installing the latest version…','update.updating':'Updating…','update.installingShort':'Installing update…','update.offline':'Could not check. Connect to the internet and try again.','update.offlineExplicit':'Offline — connect to the internet to check for updates.','update.failed':'Update check failed. Try again when you have a connection.','update.current':'Up to date — v{version}.','update.install':'Install update','update.withoutBackup':'Update without backup','update.backupUpdate':'Backup & Update','update.modalText':'Fasting Tracker v{version} is available. An internal recovery snapshot will be created automatically before installation.','update.failedInstall':'Update failed. Check your connection and try again.','update.preparing':'Preparing backup…',
       'help.title':'About & Help','help.installIOS':'Install on iPhone / iPad','help.installIOS1':"Open the app's web address in Safari.",'help.installIOS2':'Tap Share, then <strong>Add to Home Screen</strong>.','help.installIOS3':'Keep <strong>Open as Web App</strong> enabled if iOS shows that option, then tap Add.','help.installAndroid':'Install on Android','help.installAndroid1':"Open the app's web address in Chrome or another browser that supports PWA installation.",'help.installAndroid2':'Open the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.','help.installAndroid3':'Confirm the installation. Fasting Tracker will appear on the Home screen/app launcher and can work offline after its files are cached.','help.backup':'Backup & restore','help.backupText':'The app automatically keeps rolling internal JSON snapshots after meaningful changes and reminds you every 7 days to use <strong>Back up now</strong> for an external JSON copy in Files, iCloud Drive, Google Drive, or another secure location. When enough history exists it keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points. Internal snapshots are lost if this installation is removed. Before reinstalling to change the Home Screen icon, create an external backup; after reinstalling, use <strong>Import</strong> to restore it.','help.privacy':'Privacy & storage','help.privacyText':"Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each friend who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.",'help.timeZoneTitle':'Historical time zones','help.timeZoneText':'Fasts and weight entries remember the time zone in which they were created, so historical clock times and calendar-day charts do not shift if you later travel to another time zone.','help.autophagy':'Autophagy indicator','help.autophagyText':'The science card deliberately does not claim that autophagy starts at a fixed hour. Autophagy occurs continuously at a basal level, and current human studies do not support a universal fasting-duration threshold. The card separates well-established metabolic timing from more uncertain autophagy evidence and links to the studies used.','help.consistency':'Consistency system','help.consistencyText':'Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.','help.appVersion':'App version','help.versionHelp':'Useful when checking which release is installed',
-      'recovery.title':'Recovery mode','recovery.text':'Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten. Export the raw data or restore a recovery snapshot before continuing.','recovery.exportRaw':'Export raw data','recovery.snapshots':'Recovery snapshots','recovery.importBackup':'Import backup','recovery.startFresh':'Start fresh','recovery.resetConfirm':'Start with fresh empty data? The unreadable raw data will be replaced. Export it first if you may need it later.','recovery.writeBlocked':'Changes are blocked while Recovery mode is active. Resolve the stored-data problem first.','sync.conflict':'Fasting Tracker changed in another tab or app window. The latest saved data has been loaded; please repeat your action.','backup.downloadConfirm':'A backup download was started. After you verify the JSON file is saved, tap OK to mark the external backup as complete.','game.unlocked':'Unlocked','game.locked':'Locked','update.emergencyRecovery':'The cached app release was damaged. Fasting Tracker is repairing it after protecting your local data.','error.save':'Fasting Tracker could not save your data. Export a backup and check available device storage.','error.goal':'Enter a target greater than 0 hours and within the supported date range.','import.confirm':'Import {fasts} fasting {fastWord} and {weights} weight {weightWord} and replace the data currently on this device?','import.fast.one':'record','import.fast.other':'records','import.fast.zero':'records','import.fast.two':'records','import.fast.few':'records','import.fast.many':'records','import.weight.one':'entry','import.weight.other':'entries','import.weight.zero':'entries','import.weight.two':'entries','import.weight.few':'entries','import.weight.many':'entries','import.done':'Backup imported.','import.invalid':'That file is not a valid Fasting Tracker v1 backup, or its records are inconsistent.','reset.confirm':'Delete all fasting history, weight history, settings, and internal recovery snapshots from this device? This cannot be undone unless you have an external backup.',
+      'recovery.title':'Recovery mode','recovery.text':'Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten. Export the raw data or restore a recovery snapshot before continuing.','recovery.reason':'Reason','recovery.exportRaw':'Export raw data','recovery.snapshots':'Recovery snapshots','recovery.importBackup':'Import backup','recovery.startFresh':'Start fresh','recovery.resetConfirm':'Start with fresh empty data? The unreadable raw data will be replaced. Export it first if you may need it later.','recovery.writeBlocked':'Changes are blocked while Recovery mode is active. Resolve the stored-data problem first.','sync.conflict':'Fasting Tracker changed in another tab or app window. The latest saved data has been loaded; please repeat your action.','backup.downloadConfirm':'A backup download was started. After you verify the JSON file is saved, tap OK to mark the external backup as complete.','game.unlocked':'Unlocked','game.locked':'Locked','update.emergencyRecovery':'The cached app release was damaged. Fasting Tracker is repairing it after protecting your local data.','error.save':'Fasting Tracker could not save your data. Export a backup and check available device storage.','error.goal':'Enter a target greater than 0 hours and within the supported date range.','import.confirm':'Import {fasts} fasting {fastWord} and {weights} weight {weightWord} and replace the data currently on this device?','import.fast.one':'record','import.fast.other':'records','import.fast.zero':'records','import.fast.two':'records','import.fast.few':'records','import.fast.many':'records','import.weight.one':'entry','import.weight.other':'entries','import.weight.zero':'entries','import.weight.two':'entries','import.weight.few':'entries','import.weight.many':'entries','import.done':'Backup imported.','import.invalid':'That file is not a valid Fasting Tracker v1 backup, or its records are inconsistent.','reset.confirm':'Delete all fasting history, weight history, settings, and internal recovery snapshots from this device? This cannot be undone unless you have an external backup.',
       'backup.reason.firstLaunch':'before first launch of v{version}','backup.reason.restore':'before restoring another snapshot','backup.reason.update':'before updating from v{from} to v{to}','backup.reason.import':'before importing an external backup',
       'common.dismiss':'Dismiss','installStorage.title':'Using Safari on iPhone?','installStorage.text':'Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.','storage.title':'Storage protection','storage.checking':'Checking storage protection…','storage.protected':'Persistent storage: Protected','storage.bestEffort':'Persistent storage: Best effort','storage.unavailable':'Persistent storage status unavailable','storage.help':'Persistent storage can reduce the chance that the browser removes local app data under storage pressure. External backups are still recommended.','storage.request':'Request protection','storage.requestDenied':'Protection was not granted. Keep recent external backups.','storage.usage':'Using {used} of {quota} available storage.','storage.usageUnknown':'Storage usage information is unavailable.',
       'safety.longFastTitle':'Extended fasting target','safety.longFastText':'You selected {goal}. Extended fasting of 72 hours or more can carry additional risks and is not appropriate for everyone. Fasting Tracker records your choice; it does not recommend this duration. Review the health & safety information before continuing.','safety.continue':'Use this target',
@@ -893,7 +895,7 @@ layout: null
       'backup.reminderTitle':'Напомняне за външен архив','backup.now':'Архивирай сега','backup.exportTitle':'Експорт на архив','backup.exportHelp':'Запазете/споделете данните като JSON файл','backup.last':'Последен външен архив','backup.lastHelp':'След 7 дни без архив се показва напомняне.','backup.noneYet':'Все още няма външен архив','backup.snapshots':'Автоматични вътрешни JSON копия','backup.importTitle':'Импорт на архив','backup.importHelp':'Възстановяване от експортиран JSON файл','backup.snapshotsHelp':'Тези автоматични JSON копия се пазят само на това устройство. При достатъчно история приложението пази 5 последни, 7 дневни, 4 седмични и 6 месечни точки за възстановяване. Ако локалното пространство се ограничи, приложението може да пази по-малко копия и ще ви предупреди. Те не заменят външен архив.','backup.shareTitle':'Архив на Fasting Tracker','backup.errCreate':'Архивът не можа да бъде създаден. Опитайте отново преди обновяване.','backup.snapshotFailed':'Не можа да бъде запазено възстановително копие. Операцията е спряна, за да се защитят текущите ви данни. Експортирайте архив, проверете свободното място и опитайте отново.','backup.dueLast':'Последният ви външен архив е от {date}. Запазете ново копие във Files, iCloud Drive, Google Drive или друго сигурно място.','backup.dueNever':'Данните ви за гладуване или тегло не са архивирани външно поне 7 дни. Запазете копие във Files, iCloud Drive, Google Drive или друго сигурно място.','backup.snapshotCount':'{n} от {max} поредни {word} се пазят локално.','backup.snapshotWord.one':'копие','backup.snapshotWord.other':'копия','backup.snapshotWord.zero':'копия','backup.snapshotWord.two':'копия','backup.snapshotWord.few':'копия','backup.snapshotWord.many':'копия','backup.snapshotNone':'Все още няма възстановителни копия. Такова се създава автоматично след първата съществена промяна в данните за гладуване или тегло.','backup.snapshotUnavailable':'Това възстановително копие вече не е налично.','backup.snapshotRestoreConfirm':'Да се възстанови ли копието от {date}? Това ще замени текущите данни за гладуване и тегло на устройството.','backup.snapshotRestored':'Възстановителното копие е заредено.','backup.snapshotEmpty':'Все още няма налични вътрешни възстановителни копия.','backup.snapshotTitle':'Възстановително копие','backup.snapshotFrom':'От {version} • {reason}','backup.unencrypted':'Експортираните JSON архиви са обикновени, некриптирани файлове. Съхранявайте ги на място, което считате за сигурно.',
       'update.newVersion':'Има нова версия','update.releaseReady':'Налична е по-нова версия на Fasting Tracker.','update.update':'Обнови','update.updates':'Обновявания','update.check':'Провери','update.checking':'Проверка за обновявания…','update.checkingBtn':'Проверка…','update.available':'Налична е версия v{version}.','update.updateNow':'Обнови сега','update.ready':'Fasting Tracker v{version} е готова.','update.installing':'Инсталиране на най-новата версия…','update.updating':'Обновяване…','update.installingShort':'Инсталиране на обновяване…','update.offline':'Проверката не бе успешна. Свържете се с интернет и опитайте отново.','update.offlineExplicit':'Офлайн — свържете се с интернет, за да проверите за обновявания.','update.failed':'Проверката за обновяване не бе успешна. Опитайте отново при интернет връзка.','update.current':'Версията е актуална — v{version}.','update.install':'Инсталиране на обновяване','update.withoutBackup':'Обнови без външен архив','update.backupUpdate':'Архивирай и обнови','update.modalText':'Налична е Fasting Tracker v{version}. Преди инсталирането автоматично ще бъде създадено вътрешно възстановително копие.','update.failedInstall':'Обновяването не бе успешно. Проверете връзката и опитайте отново.','update.preparing':'Подготовка на архив…',
       'help.title':'За приложението и помощ','help.installIOS':'Инсталиране на iPhone / iPad','help.installIOS1':'Отворете уеб адреса на приложението в Safari.','help.installIOS2':'Натиснете Share, след това <strong>Add to Home Screen</strong>.','help.installIOS3':'Оставете <strong>Open as Web App</strong> включено, ако iOS показва тази опция, след което натиснете Add.','help.installAndroid':'Инсталиране на Android','help.installAndroid1':'Отворете уеб адреса на приложението в Chrome или друг браузър, който поддържа инсталиране на PWA.','help.installAndroid2':'Отворете менюто на браузъра и изберете <strong>Install app</strong> или <strong>Add to Home screen</strong>.','help.installAndroid3':'Потвърдете инсталирането. Fasting Tracker ще се появи на началния екран/в списъка с приложения и може да работи офлайн, след като файловете му бъдат кеширани.','help.backup':'Архивиране и възстановяване','help.backupText':'Приложението автоматично пази вътрешни JSON копия след съществени промени и на всеки 7 дни напомня да използвате <strong>Архивирай сега</strong> за външно JSON копие във Files, iCloud Drive, Google Drive или друго сигурно място. При достатъчно история пази 5 последни, 7 дневни, 4 седмични и 6 месечни точки за възстановяване. Вътрешните копия се губят при премахване на тази инсталация. Преди преинсталиране за смяна на иконата създайте външен архив; след това използвайте <strong>Импорт</strong> за възстановяване.','help.privacy':'Поверителност и съхранение','help.privacyText':'Данните за гладуването и теглото остават в локалното хранилище на това устройство. Хостваният сайт съдържа само файловете на приложението и не получава вашата история. Всеки човек, който инсталира приложението, има отделни локални данни. Изчистването на данните на браузъра или сайта може да премахне локалните записи, затова пазете актуален архив.','help.timeZoneTitle':'Исторически часови зони','help.timeZoneText':'Записите за гладуване и тегло запомнят часовата зона, в която са създадени, така че историческите часове и дневните графики да не се изместват, ако по-късно пътувате в друга часова зона.','help.autophagy':'Индикатор за автофагия','help.autophagyText':'Научната карта нарочно не твърди, че автофагията започва в точно определен час. Тя протича непрекъснато на базово ниво, а сегашните изследвания при хора не подкрепят универсален праг според продължителността на гладуването. Картата отделя добре установената метаболитна времева рамка от по-несигурните данни за автофагията и съдържа връзки към използваните изследвания.','help.consistency':'Система за постоянство','help.consistencyText':'Геймификацията е по избор. Гладуване, което достига избраната цел, носи 10 XP независимо дали приключва точно на целта или продължава много по-дълго. Записването на тегло носи 2 XP за отделен календарен ден. Системата умишлено не награждава екстремна продължителност на гладуването.','help.appVersion':'Версия на приложението','help.versionHelp':'Полезно при проверка коя версия е инсталирана',
-      'recovery.title':'Режим за възстановяване','recovery.text':'Съхранените данни на приложението не могат да бъдат прочетени безопасно. Обичайните промени са блокирани, за да не бъдат презаписани първоначалните данни. Експортирайте суровите данни или възстановете копие, преди да продължите.','recovery.exportRaw':'Експортирай суровите данни','recovery.snapshots':'Възстановителни копия','recovery.importBackup':'Импортирай архив','recovery.startFresh':'Започни начисто','recovery.resetConfirm':'Да се започне с нови празни данни? Непрочитаемите сурови данни ще бъдат заменени. Първо ги експортирайте, ако може да са ви нужни.','recovery.writeBlocked':'Промените са блокирани, докато е активен режимът за възстановяване. Първо разрешете проблема със съхранените данни.','sync.conflict':'Fasting Tracker е променен в друг раздел или прозорец на приложението. Заредени са последните записани данни; повторете действието си.','backup.downloadConfirm':'Стартирано е изтегляне на архив. След като проверите, че JSON файлът е запазен, натиснете OK, за да бъде отчетен външният архив като завършен.','game.unlocked':'Отключено','game.locked':'Заключено','update.emergencyRecovery':'Кешираната версия на приложението е повредена. Fasting Tracker я възстановява, след като защити локалните ви данни.','error.save':'Fasting Tracker не можа да запази данните. Експортирайте архив и проверете свободното място на устройството.','error.goal':'Въведете цел над 0 часа и в рамките на поддържания диапазон за дати.','import.confirm':'Да се импортират ли {fasts} {fastWord} и {weights} {weightWord} и да се заменят текущите данни на това устройство?','import.fast.one':'запис за гладуване','import.fast.other':'записа за гладуване','import.fast.zero':'записа за гладуване','import.fast.two':'записа за гладуване','import.fast.few':'записа за гладуване','import.fast.many':'записа за гладуване','import.weight.one':'запис за тегло','import.weight.other':'записа за тегло','import.weight.zero':'записа за тегло','import.weight.two':'записа за тегло','import.weight.few':'записа за тегло','import.weight.many':'записа за тегло','import.done':'Архивът е импортиран.','import.invalid':'Файлът не е валиден архив на Fasting Tracker v1 или записите в него са несъвместими.','reset.confirm':'Да се изтрият ли цялата история на гладуването, историята на теглото, настройките и вътрешните възстановителни копия от това устройство? Това не може да се отмени без външен архив.',
+      'recovery.title':'Режим за възстановяване','recovery.text':'Съхранените данни на приложението не могат да бъдат прочетени безопасно. Обичайните промени са блокирани, за да не бъдат презаписани първоначалните данни. Експортирайте суровите данни или възстановете копие, преди да продължите.','recovery.reason':'Причина','recovery.exportRaw':'Експортирай суровите данни','recovery.snapshots':'Възстановителни копия','recovery.importBackup':'Импортирай архив','recovery.startFresh':'Започни начисто','recovery.resetConfirm':'Да се започне с нови празни данни? Непрочитаемите сурови данни ще бъдат заменени. Първо ги експортирайте, ако може да са ви нужни.','recovery.writeBlocked':'Промените са блокирани, докато е активен режимът за възстановяване. Първо разрешете проблема със съхранените данни.','sync.conflict':'Fasting Tracker е променен в друг раздел или прозорец на приложението. Заредени са последните записани данни; повторете действието си.','backup.downloadConfirm':'Стартирано е изтегляне на архив. След като проверите, че JSON файлът е запазен, натиснете OK, за да бъде отчетен външният архив като завършен.','game.unlocked':'Отключено','game.locked':'Заключено','update.emergencyRecovery':'Кешираната версия на приложението е повредена. Fasting Tracker я възстановява, след като защити локалните ви данни.','error.save':'Fasting Tracker не можа да запази данните. Експортирайте архив и проверете свободното място на устройството.','error.goal':'Въведете цел над 0 часа и в рамките на поддържания диапазон за дати.','import.confirm':'Да се импортират ли {fasts} {fastWord} и {weights} {weightWord} и да се заменят текущите данни на това устройство?','import.fast.one':'запис за гладуване','import.fast.other':'записа за гладуване','import.fast.zero':'записа за гладуване','import.fast.two':'записа за гладуване','import.fast.few':'записа за гладуване','import.fast.many':'записа за гладуване','import.weight.one':'запис за тегло','import.weight.other':'записа за тегло','import.weight.zero':'записа за тегло','import.weight.two':'записа за тегло','import.weight.few':'записа за тегло','import.weight.many':'записа за тегло','import.done':'Архивът е импортиран.','import.invalid':'Файлът не е валиден архив на Fasting Tracker v1 или записите в него са несъвместими.','reset.confirm':'Да се изтрият ли цялата история на гладуването, историята на теглото, настройките и вътрешните възстановителни копия от това устройство? Това не може да се отмени без външен архив.',
       'backup.reason.firstLaunch':'преди първото стартиране на v{version}','backup.reason.restore':'преди възстановяване на друго копие','backup.reason.update':'преди обновяване от v{from} към v{to}','backup.reason.import':'преди импорт на външен архив',
       'common.dismiss':'Затвори','installStorage.title':'Използвате Safari на iPhone?','installStorage.text':'Safari и уеб приложението на началния екран могат да използват отделни локални хранилища. Ако ще използвате приложението от началния екран, инсталирайте го преди да въвеждате данни. За да преместите съществуващи записи от Safari, експортирайте архив тук, инсталирайте приложението и после импортирайте архива там.','storage.title':'Защита на хранилището','storage.checking':'Проверка на защитата на хранилището…','storage.protected':'Постоянно хранилище: Защитено','storage.bestEffort':'Постоянно хранилище: Най-добро усилие','storage.unavailable':'Статусът на постоянното хранилище не е наличен','storage.help':'Постоянното хранилище може да намали вероятността браузърът да премахне локалните данни при недостиг на място. Външните архиви все още са препоръчителни.','storage.request':'Поискай защита','storage.requestDenied':'Защитата не беше предоставена. Пазете актуални външни архиви.','storage.usage':'Използвани {used} от {quota} налично място.','storage.usageUnknown':'Информацията за използваното място не е налична.',
       'safety.longFastTitle':'Цел за продължително гладуване','safety.longFastText':'Избрахте {goal}. Продължителното гладуване от 72 часа или повече може да носи допълнителни рискове и не е подходящо за всеки. Fasting Tracker записва избора ви, но не препоръчва тази продължителност. Прегледайте информацията за здраве и безопасност, преди да продължите.','safety.continue':'Използвай тази цел',
@@ -935,7 +937,7 @@ layout: null
       'backup.reminderTitle':'Recordatorio de copia externa','backup.now':'Hacer copia ahora','backup.exportTitle':'Exportar copia','backup.exportHelp':'Guarda/compartir tus datos como archivo JSON','backup.last':'Última copia externa','backup.lastHelp':'Aparece un recordatorio tras 7 días sin copia.','backup.noneYet':'Aún no hay una copia externa','backup.snapshots':'Copias JSON internas automáticas','backup.importTitle':'Importar copia','backup.importHelp':'Restaurar desde un archivo JSON exportado','backup.snapshotsHelp':'Estas copias JSON automáticas se guardan solo en este dispositivo. Con suficiente historial, la app conserva 5 recientes, 7 diarias, 4 semanales y 6 mensuales. Si el almacenamiento local se limita, puede conservar menos copias y te avisará. No sustituyen una copia externa.','backup.shareTitle':'Copia de Fasting Tracker','backup.errCreate':'No se pudo crear la copia. Inténtalo de nuevo antes de actualizar.','backup.snapshotFailed':'No se pudo guardar una copia interna de recuperación. La operación se ha detenido para proteger tus datos actuales. Exporta una copia, comprueba el espacio disponible e inténtalo de nuevo.','backup.dueLast':'Tu última copia externa fue el {date}. Guarda una copia nueva en Archivos, iCloud Drive, Google Drive u otra ubicación segura.','backup.dueNever':'Tus datos de ayuno o peso no se han guardado en una copia externa durante al menos 7 días. Guarda una copia en Archivos, iCloud Drive, Google Drive u otra ubicación segura.','backup.snapshotCount':'{n} de {max} {word} rotativas guardadas localmente.','backup.snapshotWord.one':'copia','backup.snapshotWord.other':'copias','backup.snapshotWord.zero':'copias','backup.snapshotWord.two':'copias','backup.snapshotWord.few':'copias','backup.snapshotWord.many':'copias','backup.snapshotNone':'Aún no hay copias de recuperación. Se crea una automáticamente después del primer cambio significativo en los datos de ayuno o peso.','backup.snapshotUnavailable':'Esa copia de recuperación ya no está disponible.','backup.snapshotRestoreConfirm':'¿Restaurar la copia de recuperación del {date}? Sustituirá los datos actuales de ayuno y peso de este dispositivo.','backup.snapshotRestored':'Copia de recuperación restaurada.','backup.snapshotEmpty':'Aún no hay copias internas de recuperación disponibles.','backup.snapshotTitle':'Copia de recuperación','backup.snapshotFrom':'De {version} • {reason}','backup.unencrypted':'Las copias JSON exportadas son archivos de texto sin cifrar. Guárdalas en un lugar que consideres seguro.',
       'update.newVersion':'Nueva versión disponible','update.releaseReady':'Hay una versión más reciente de Fasting Tracker.','update.update':'Actualizar','update.updates':'Actualizaciones','update.check':'Comprobar','update.checking':'Buscando actualizaciones…','update.checkingBtn':'Comprobando…','update.available':'Está disponible la versión v{version}.','update.updateNow':'Actualizar ahora','update.ready':'Fasting Tracker v{version} está lista.','update.installing':'Instalando la versión más reciente…','update.updating':'Actualizando…','update.installingShort':'Instalando actualización…','update.offline':'No se pudo comprobar. Conéctate a Internet e inténtalo de nuevo.','update.offlineExplicit':'Sin conexión — conéctate a Internet para buscar actualizaciones.','update.failed':'Falló la comprobación. Inténtalo de nuevo cuando tengas conexión.','update.current':'Actualizado — v{version}.','update.install':'Instalar actualización','update.withoutBackup':'Actualizar sin copia','update.backupUpdate':'Copia y actualizar','update.modalText':'Está disponible Fasting Tracker v{version}. Se creará automáticamente una copia interna de recuperación antes de la instalación.','update.failedInstall':'La actualización falló. Comprueba la conexión e inténtalo de nuevo.','update.preparing':'Preparando copia…',
       'help.title':'Acerca de y ayuda','help.installIOS':'Instalar en iPhone / iPad','help.installIOS1':'Abre la dirección web de la app en Safari.','help.installIOS2':'Pulsa Compartir y luego <strong>Añadir a pantalla de inicio</strong>.','help.installIOS3':'Mantén <strong>Abrir como app web</strong> activado si iOS muestra esa opción y después pulsa Añadir.','help.installAndroid':'Instalar en Android','help.installAndroid1':'Abre la dirección web de la app en Chrome u otro navegador compatible con la instalación de PWA.','help.installAndroid2':'Abre el menú del navegador y elige <strong>Instalar app</strong> o <strong>Añadir a pantalla de inicio</strong>.','help.installAndroid3':'Confirma la instalación. Fasting Tracker aparecerá en la pantalla de inicio/lanzador de apps y podrá funcionar sin conexión cuando sus archivos estén guardados en caché.','help.backup':'Copia y restauración','help.backupText':'La app conserva automáticamente copias JSON internas rotativas después de cambios importantes y te recuerda cada 7 días usar <strong>Hacer copia ahora</strong> para guardar una copia JSON externa en Archivos, iCloud Drive, Google Drive u otro lugar seguro. Con suficiente historial conserva 5 recientes, 7 diarias, 4 semanales y 6 mensuales. Las copias internas se pierden al eliminar esta instalación. Antes de reinstalar para cambiar el icono, crea una copia externa; después usa <strong>Importar</strong> para restaurarla.','help.privacy':'Privacidad y almacenamiento','help.privacyText':'Tus registros de ayuno y peso permanecen en el almacenamiento local de este dispositivo. El sitio alojado contiene solo los archivos de la app y no recibe tu historial. Cada persona que instala la app tiene sus propios datos locales. Borrar los datos del navegador o del sitio puede eliminar los registros locales, así que conserva una copia reciente.','help.timeZoneTitle':'Zonas horarias históricas','help.timeZoneText':'Los ayunos y registros de peso recuerdan la zona horaria en la que se crearon, para que las horas históricas y los gráficos por día no cambien si después viajas a otra zona horaria.','help.autophagy':'Indicador de autofagia','help.autophagyText':'La tarjeta científica evita afirmar que la autofagia empiece a una hora fija. La autofagia ocurre continuamente a nivel basal y los estudios humanos actuales no respaldan un umbral universal basado en la duración del ayuno. La tarjeta separa la cronología metabólica bien establecida de la evidencia más incierta sobre autofagia y enlaza los estudios utilizados.','help.consistency':'Sistema de constancia','help.consistencyText':'La gamificación es opcional. Un ayuno que alcanza su objetivo elegido gana 10 XP, tanto si termina exactamente en el objetivo como si continúa mucho más. Registrar el peso da 2 XP por día natural distinto. El sistema no recompensa deliberadamente duraciones extremas de ayuno.','help.appVersion':'Versión de la app','help.versionHelp':'Útil para comprobar qué versión está instalada',
-      'recovery.title':'Modo de recuperación','recovery.text':'Los datos guardados de la app no se pudieron leer de forma segura. Los cambios normales están bloqueados para no sobrescribir los datos originales. Exporta los datos sin procesar o restaura una copia de recuperación antes de continuar.','recovery.exportRaw':'Exportar datos sin procesar','recovery.snapshots':'Copias de recuperación','recovery.importBackup':'Importar copia','recovery.startFresh':'Empezar de nuevo','recovery.resetConfirm':'¿Empezar con datos nuevos y vacíos? Los datos ilegibles se sustituirán. Expórtalos primero si puedes necesitarlos después.','recovery.writeBlocked':'Los cambios están bloqueados mientras el modo de recuperación está activo. Resuelve primero el problema de los datos guardados.','sync.conflict':'Fasting Tracker cambió en otra pestaña o ventana de la app. Se han cargado los datos guardados más recientes; repite tu acción.','backup.downloadConfirm':'Se inició la descarga de una copia. Cuando compruebes que el archivo JSON está guardado, pulsa Aceptar para marcar la copia externa como completada.','game.unlocked':'Desbloqueado','game.locked':'Bloqueado','update.emergencyRecovery':'La versión en caché de la app estaba dañada. Fasting Tracker la está reparando después de proteger tus datos locales.','error.save':'Fasting Tracker no pudo guardar tus datos. Exporta una copia y comprueba el espacio disponible del dispositivo.','error.goal':'Introduce un objetivo superior a 0 horas y dentro del intervalo de fechas admitido.','import.confirm':'¿Importar {fasts} {fastWord} y {weights} {weightWord} y sustituir los datos actuales de este dispositivo?','import.fast.one':'registro de ayuno','import.fast.other':'registros de ayuno','import.fast.zero':'registros de ayuno','import.fast.two':'registros de ayuno','import.fast.few':'registros de ayuno','import.fast.many':'registros de ayuno','import.weight.one':'registro de peso','import.weight.other':'registros de peso','import.weight.zero':'registros de peso','import.weight.two':'registros de peso','import.weight.few':'registros de peso','import.weight.many':'registros de peso','import.done':'Copia importada.','import.invalid':'Ese archivo no es una copia válida de Fasting Tracker v1 o contiene registros incoherentes.','reset.confirm':'¿Eliminar todo el historial de ayuno, el historial de peso, los ajustes y las copias internas de recuperación de este dispositivo? No se puede deshacer salvo que tengas una copia externa.',
+      'recovery.title':'Modo de recuperación','recovery.text':'Los datos guardados de la app no se pudieron leer de forma segura. Los cambios normales están bloqueados para no sobrescribir los datos originales. Exporta los datos sin procesar o restaura una copia de recuperación antes de continuar.','recovery.reason':'Motivo','recovery.exportRaw':'Exportar datos sin procesar','recovery.snapshots':'Copias de recuperación','recovery.importBackup':'Importar copia','recovery.startFresh':'Empezar de nuevo','recovery.resetConfirm':'¿Empezar con datos nuevos y vacíos? Los datos ilegibles se sustituirán. Expórtalos primero si puedes necesitarlos después.','recovery.writeBlocked':'Los cambios están bloqueados mientras el modo de recuperación está activo. Resuelve primero el problema de los datos guardados.','sync.conflict':'Fasting Tracker cambió en otra pestaña o ventana de la app. Se han cargado los datos guardados más recientes; repite tu acción.','backup.downloadConfirm':'Se inició la descarga de una copia. Cuando compruebes que el archivo JSON está guardado, pulsa Aceptar para marcar la copia externa como completada.','game.unlocked':'Desbloqueado','game.locked':'Bloqueado','update.emergencyRecovery':'La versión en caché de la app estaba dañada. Fasting Tracker la está reparando después de proteger tus datos locales.','error.save':'Fasting Tracker no pudo guardar tus datos. Exporta una copia y comprueba el espacio disponible del dispositivo.','error.goal':'Introduce un objetivo superior a 0 horas y dentro del intervalo de fechas admitido.','import.confirm':'¿Importar {fasts} {fastWord} y {weights} {weightWord} y sustituir los datos actuales de este dispositivo?','import.fast.one':'registro de ayuno','import.fast.other':'registros de ayuno','import.fast.zero':'registros de ayuno','import.fast.two':'registros de ayuno','import.fast.few':'registros de ayuno','import.fast.many':'registros de ayuno','import.weight.one':'registro de peso','import.weight.other':'registros de peso','import.weight.zero':'registros de peso','import.weight.two':'registros de peso','import.weight.few':'registros de peso','import.weight.many':'registros de peso','import.done':'Copia importada.','import.invalid':'Ese archivo no es una copia válida de Fasting Tracker v1 o contiene registros incoherentes.','reset.confirm':'¿Eliminar todo el historial de ayuno, el historial de peso, los ajustes y las copias internas de recuperación de este dispositivo? No se puede deshacer salvo que tengas una copia externa.',
       'backup.reason.firstLaunch':'antes del primer inicio de v{version}','backup.reason.restore':'antes de restaurar otra copia','backup.reason.update':'antes de actualizar de v{from} a v{to}','backup.reason.import':'antes de importar una copia externa',
       'common.dismiss':'Cerrar','installStorage.title':'¿Usas Safari en iPhone?','installStorage.text':'Safari y una app web de la pantalla de inicio pueden usar almacenamiento local separado. Si piensas usar la app de la pantalla de inicio, instálala antes de introducir datos. Para mover registros existentes de Safari, exporta una copia aquí, instala la app y luego importa la copia allí.','storage.title':'Protección del almacenamiento','storage.checking':'Comprobando la protección del almacenamiento…','storage.protected':'Almacenamiento persistente: Protegido','storage.bestEffort':'Almacenamiento persistente: Mejor esfuerzo','storage.unavailable':'Estado del almacenamiento persistente no disponible','storage.help':'El almacenamiento persistente puede reducir la posibilidad de que el navegador elimine los datos locales por falta de espacio. Aun así, se recomiendan copias externas.','storage.request':'Solicitar protección','storage.requestDenied':'No se concedió la protección. Mantén copias externas recientes.','storage.usage':'Usando {used} de {quota} de almacenamiento disponible.','storage.usageUnknown':'La información de uso del almacenamiento no está disponible.',
       'safety.longFastTitle':'Objetivo de ayuno prolongado','safety.longFastText':'Has seleccionado {goal}. El ayuno prolongado de 72 horas o más puede implicar riesgos adicionales y no es adecuado para todo el mundo. Fasting Tracker registra tu elección; no recomienda esta duración. Revisa la información de salud y seguridad antes de continuar.','safety.continue':'Usar este objetivo',
@@ -1478,50 +1480,104 @@ layout: null
     if (!rawData || typeof rawData !== 'object' || Array.isArray(rawData)) throw new Error('invalid data');
     const candidate = JSON.parse(JSON.stringify(rawData));
     let changed = false;
-    const setMissing = (key, value) => {
-      if (candidate[key] == null) { candidate[key] = value; changed = true; }
+    const mark = (key, value) => {
+      if (candidate[key] !== value) { candidate[key] = value; changed = true; }
     };
 
-    // dataVersion identifies the machine format. Never guess it: unsupported or
-    // damaged formats must still enter Recovery mode. The defaults below cover
-    // fields that were added while dataVersion 1 remained the persisted format.
+    // dataVersion identifies the machine format. v1 has intentionally remained
+    // backward compatible while optional metadata has evolved. Repair metadata
+    // here; reserve Recovery mode for unreadable/unsupported data or damaged
+    // core history values (timestamps, durations and weights).
     if (Number(candidate.dataVersion) !== DATA_VERSION) return { data: candidate, changed };
+    if (candidate.dataVersion !== DATA_VERSION) mark('dataVersion', DATA_VERSION);
     if (candidate.records === undefined) { candidate.records = []; changed = true; }
     if (candidate.weights === undefined) { candidate.weights = []; changed = true; }
-    setMissing('weightUnit', 'kg');
-    setMissing('gamificationEnabled', true);
-    setMissing('language', 'system');
-    setMissing('appearance', 'system');
-    setMissing('iconChoice', 'plate');
+
+    if (candidate.revision != null && (!Number.isInteger(candidate.revision) || candidate.revision < 0)) mark('revision', 0);
+    if (candidate.updatedAt != null && !validDate(candidate.updatedAt)) mark('updatedAt', null);
+
+    const parsedGoal = parseLocalizedNumber(candidate.goalHours);
+    const fallbackGoal = Number.isFinite(parsedGoal) && parsedGoal > 0 && parsedGoal <= MAX_SAFE_GOAL_HOURS
+      ? sanitizeGoal(candidate.goalHours, 16) : 16;
+    if (candidate.goalHours !== fallbackGoal) mark('goalHours', fallbackGoal);
+
+    const weightUnit = normalizeWeightUnit(candidate.weightUnit);
+    if (candidate.weightUnit !== weightUnit) mark('weightUnit', weightUnit);
+    const language = normalizeLanguage(candidate.language);
+    if (candidate.language !== language) mark('language', language);
+    const appearance = normalizeAppearance(candidate.appearance);
+    if (candidate.appearance !== appearance) mark('appearance', appearance);
+    const iconChoice = normalizeIconChoice(candidate.iconChoice);
+    if (candidate.iconChoice !== iconChoice) mark('iconChoice', iconChoice);
+    if (typeof candidate.gamificationEnabled !== 'boolean') mark('gamificationEnabled', true);
+    if (candidate.targetWeightKg != null) {
+      const target = sanitizeWeightKg(candidate.targetWeightKg, null);
+      if (target == null) mark('targetWeightKg', null);
+      else if (candidate.targetWeightKg !== target) mark('targetWeightKg', target);
+    }
 
     const fallbackZone = currentTimeZone();
-    const fallbackGoal = Number.isFinite(parseLocalizedNumber(candidate.goalHours)) && parseLocalizedNumber(candidate.goalHours) > 0
-      ? candidate.goalHours : 16;
-
+    const usedFastIds = new Set();
     if (Array.isArray(candidate.records)) {
       candidate.records = candidate.records.map((record, index) => {
         if (!record || typeof record !== 'object' || Array.isArray(record)) return record;
         const next = {...record};
-        if (next.id == null) { next.id = `legacy-fast-${index + 1}-${Date.parse(next.start) || index}`.slice(0, 120); changed = true; }
-        if (next.goalHours == null) { next.goalHours = fallbackGoal; changed = true; }
-        if (next.timeZone == null) { next.timeZone = fallbackZone; changed = true; }
+        const start = validDate(next.start), end = validDate(next.end);
+        const baseId = `legacy-fast-${index + 1}-${start ? start.getTime() : index}`.slice(0, 110);
+        let id = typeof next.id === 'string' && next.id && next.id.length <= 120 ? next.id : baseId;
+        if (usedFastIds.has(id)) {
+          let suffix = 2;
+          while (usedFastIds.has(`${baseId}-${suffix}`)) suffix++;
+          id = `${baseId}-${suffix}`.slice(0, 120);
+        }
+        usedFastIds.add(id);
+        if (next.id !== id) { next.id = id; changed = true; }
+        const goal = sanitizeGoal(next.goalHours, fallbackGoal);
+        if (next.goalHours !== goal) { next.goalHours = goal; changed = true; }
+        const zone = normalizeTimeZone(next.timeZone, fallbackZone);
+        if (next.timeZone !== zone) { next.timeZone = zone; changed = true; }
+        // Canonicalize valid timestamps without guessing damaged core dates.
+        if (start && next.start !== start.toISOString()) { next.start = start.toISOString(); changed = true; }
+        if (end && next.end !== end.toISOString()) { next.end = end.toISOString(); changed = true; }
         return next;
       });
     }
 
+    const usedWeightIds = new Set();
     if (Array.isArray(candidate.weights)) {
       candidate.weights = candidate.weights.map((weight, index) => {
         if (!weight || typeof weight !== 'object' || Array.isArray(weight)) return weight;
         const next = {...weight};
-        if (next.id == null) { next.id = `legacy-weight-${index + 1}-${Date.parse(next.when) || index}`.slice(0, 120); changed = true; }
-        if (next.timeZone == null) { next.timeZone = fallbackZone; changed = true; }
+        const when = validDate(next.when);
+        const baseId = `legacy-weight-${index + 1}-${when ? when.getTime() : index}`.slice(0, 110);
+        let id = typeof next.id === 'string' && next.id && next.id.length <= 120 ? next.id : baseId;
+        if (usedWeightIds.has(id)) {
+          let suffix = 2;
+          while (usedWeightIds.has(`${baseId}-${suffix}`)) suffix++;
+          id = `${baseId}-${suffix}`.slice(0, 120);
+        }
+        usedWeightIds.add(id);
+        if (next.id !== id) { next.id = id; changed = true; }
+        const zone = normalizeTimeZone(next.timeZone, fallbackZone);
+        if (next.timeZone !== zone) { next.timeZone = zone; changed = true; }
+        if (when && next.when !== when.toISOString()) { next.when = when.toISOString(); changed = true; }
+        const kg = sanitizeWeightKg(next.kg, null);
+        if (kg != null && next.kg !== kg) { next.kg = kg; changed = true; }
         return next;
       });
     }
 
     if (candidate.activeStart != null) {
-      if (candidate.activeGoalHours == null) { candidate.activeGoalHours = fallbackGoal; changed = true; }
-      if (candidate.activeTimeZone == null) { candidate.activeTimeZone = fallbackZone; changed = true; }
+      const active = validDate(candidate.activeStart);
+      if (active && candidate.activeStart !== active.toISOString()) mark('activeStart', active.toISOString());
+      const activeGoal = sanitizeGoal(candidate.activeGoalHours, fallbackGoal);
+      if (candidate.activeGoalHours !== activeGoal) mark('activeGoalHours', activeGoal);
+      const activeZone = normalizeTimeZone(candidate.activeTimeZone, fallbackZone);
+      if (candidate.activeTimeZone !== activeZone) mark('activeTimeZone', activeZone);
+    } else {
+      if (candidate.activeStart !== null) mark('activeStart', null);
+      if (candidate.activeGoalHours != null) mark('activeGoalHours', null);
+      if (candidate.activeTimeZone != null) mark('activeTimeZone', null);
     }
     return { data: candidate, changed };
   }
@@ -1562,10 +1618,9 @@ layout: null
       return normalized;
     });
     if (new Set(records.map(r => r.id)).size !== records.length) throw new Error('duplicate fasting ids');
-    const sorted = [...records].sort((a,b) => new Date(a.start) - new Date(b.start));
-    for (let i = 1; i < sorted.length; i++) {
-      if (new Date(sorted[i].start) < new Date(sorted[i-1].end)) throw new Error('overlapping fasting records');
-    }
+    // Legacy overlap is a semantic conflict, not unreadable storage. Preserve it
+    // instead of trapping the whole app in Recovery mode; editing/backdating UI
+    // continues to prevent creation of new overlaps.
 
     const weights = rawData.weights.map(w => {
       if (!w || typeof w !== 'object' || typeof w.id !== 'string' || !w.id || w.id.length > 120) throw new Error('invalid weight id');
@@ -1578,11 +1633,8 @@ layout: null
     if (new Set(weights.map(w => w.id)).size !== weights.length) throw new Error('duplicate weight ids');
 
     const normalized = normalizeData(rawData);
-    if (normalized.activeStart) {
-      const activeStart = new Date(normalized.activeStart);
-      const now = new Date();
-      if (records.some(r => activeStart < new Date(r.end) && now > new Date(r.start))) throw new Error('active fast overlaps history');
-    }
+    // Preserve legacy active/history overlap as-is. Recovery mode is for data that
+    // cannot be read safely, not for a correctable historical business-rule clash.
     normalized.records = records;
     normalized.weights = weights;
     return normalized;
@@ -1615,7 +1667,7 @@ layout: null
   function syncFromStoredRaw(raw, { notify = false } = {}) {
     if (recoveryMode) return false;
     try {
-      const next = raw ? validateImportedData(JSON.parse(raw)) : cloneDefault();
+      const next = raw ? validateCompatibleData(JSON.parse(raw)).data : cloneDefault();
       const openModal = visibleModal();
       const activeField = document.activeElement;
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
@@ -1674,7 +1726,7 @@ layout: null
 
   function persistResolvedData(candidate) {
     try {
-      const normalized = validateImportedData(candidate);
+      const normalized = validateCompatibleData(candidate).data;
       normalized.revision = Math.max(0, Number(normalized.revision) || 0) + 1;
       normalized.updatedAt = new Date().toISOString();
       const serialized = JSON.stringify(normalized);
@@ -1705,7 +1757,7 @@ layout: null
     }
     const previousData = data;
     try {
-      const candidate = JSON.parse(JSON.stringify(data));
+      const candidate = validateCompatibleData(JSON.parse(JSON.stringify(data))).data;
       candidate.revision = Math.max(0, Number(candidate.revision) || 0) + 1;
       candidate.updatedAt = new Date().toISOString();
       const serialized = JSON.stringify(candidate);
@@ -1717,7 +1769,7 @@ layout: null
       return true;
     } catch {
       data = previousData;
-      try { data = lastPersistedDataRaw ? validateImportedData(JSON.parse(lastPersistedDataRaw)) : cloneDefault(); }
+      try { data = lastPersistedDataRaw ? validateCompatibleData(JSON.parse(lastPersistedDataRaw)).data : cloneDefault(); }
       catch { data = cloneDefault(); }
       invalidateDerivedCaches();
       alert(t('error.save'));
@@ -3028,6 +3080,8 @@ layout: null
     const active = !!recoveryMode;
     const banner = el('recoveryBanner');
     if (banner) banner.hidden = !active;
+    const diagnostic = el('recoveryDiagnostic');
+    if (diagnostic) diagnostic.textContent = active ? `${t('recovery.reason')}: ${recoveryMode.error} • v${APP_VERSION}` : '';
     document.body.classList.toggle('recoveryMode', active);
     document.querySelectorAll('.screen, nav').forEach(node => { node.inert = active; });
     toggleFast.disabled = active || fastActionLocked;
@@ -3149,6 +3203,22 @@ layout: null
     if (!save()) { renderAll(); return; }
     renderGamification();
   });
+
+  const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html']);
+  function rememberDocumentReturn(event) {
+    const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
+    if (!anchor) return;
+    let target;
+    try { target = new URL(anchor.href, location.href); } catch { return; }
+    if (target.origin !== location.origin) return;
+    const name = target.pathname.split('/').pop();
+    if (!APP_DOC_PATHS.includes(name)) return;
+    try { sessionStorage.setItem(DOC_RETURN_KEY, location.href); } catch {}
+  }
+  // Capture before navigation starts. sessionStorage belongs to this exact PWA/tab
+  // browsing context, so a chain such as Settings -> About -> License can return
+  // to the screen that originally opened the documentation.
+  document.addEventListener('click', rememberDocumentReturn, true);
 
   const APP_SCREENS = Object.freeze(['fasting','history','weight','stats','settings']);
   function activateScreen(screen, { updateHash = true } = {}) {

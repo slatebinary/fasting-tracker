@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.6.1','version must be 1.6.1')
+ok(ver.get('version')=='1.6.2','version must be 1.6.2')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -296,7 +296,7 @@ try:
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.6.1', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.6.2', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -336,7 +336,7 @@ ok('parsed > MAX_SAFE_GOAL_HOURS' in index, 'extreme goal input is not rejected'
 ok('function normalizeBackupClockSkew()' in index and "['firstDataAt','lastExternalBackupAt']" in index, 'backup reminder clock-skew hardening missing')
 
 # v1.6.1 recovery/navigation regressions
-ok('function prepareCompatibleData(rawData)' in index and "setMissing('appearance', 'system')" in index and "setMissing('gamificationEnabled', true)" in index, 'legacy v1 compatibility migration missing')
+ok('function prepareCompatibleData(rawData)' in index and "normalizeAppearance(candidate.appearance)" in index and "typeof candidate.gamificationEnabled !== 'boolean'" in index and "usedFastIds" in index, 'legacy v1 compatibility repair missing')
 ok('const compatible = validateCompatibleData(JSON.parse(raw));' in index and 'localStorage.setItem(DATA_KEY, serialized);' in index, 'compatible stored data is not upgraded in place')
 ok('const APP_SCREENS' in index and 'activateScreen(location.hash.slice(1), { updateHash: false });' in index, 'return-to-tab routing missing')
 ok('target="_blank" rel="noopener" data-i18n="public.privacy"' not in index and 'privacy.html?return=settings' in index, 'Settings privacy link must stay in app context and remember Settings')
@@ -344,6 +344,48 @@ ok('about.html?return=fasting#health' in index and 'about.html?return=settings' 
 for rel in ['about.html','privacy.html','branding.html','license.html']:
     txt=(ROOT/rel).read_text()
     ok("u.searchParams.set('return',returnScreen)" in txt and "u.hash=returnScreen==='fasting'?'':returnScreen" in txt, f'{rel} does not preserve return screen')
+
+# v1.6.2 recovery hardening + exact documentation return regressions
+ok("const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';" in index and 'sessionStorage.setItem(DOC_RETURN_KEY, location.href)' in index, 'exact documentation return capture missing')
+ok('validateCompatibleData(JSON.parse(JSON.stringify(data))).data' in index, 'save must canonicalize data before persistence')
+ok('const next = raw ? validateCompatibleData(JSON.parse(raw)).data : cloneDefault();' in index, 'cross-context storage sync must use compatibility repair')
+ok("throw new Error('overlapping fasting records')" not in index and "throw new Error('active fast overlaps history')" not in index, 'legacy semantic overlap must not force Recovery mode')
+ok('id="recoveryDiagnostic"' in index and "recoveryMode.error" in index, 'Recovery mode diagnostic reason missing')
+for rel in ['about.html','privacy.html','branding.html','license.html']:
+    txt=(ROOT/rel).read_text()
+    ok("const DOC_RETURN_KEY='fastingTracker.documentReturnUrl'" in txt and 'sessionStorage.getItem(DOC_RETURN_KEY)' in txt, f'{rel} exact app-return session state missing')
+    ok('back.href=exactReturn||fallbackReturn()' in txt, f'{rel} does not prefer exact originating app URL')
+
+# Execute the actual v1 compatibility/validation functions against data shapes that
+# previously could cause a false Recovery mode. Core timestamp corruption must still fail.
+try:
+    compat_names=['normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','migrateData','normalizeRecord','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
+    compat_funcs='\n'.join(extract_func(n) for n in compat_names)
+    compat_test=r'''
+const DATA_VERSION=1, SUPPORTED_LANGUAGES=['en','bg','es'];
+const FUTURE_TOLERANCE_MS=60*1000, MAX_SAFE_GOAL_HOURS=2_000_000_000;
+const MAX_IMPORT_FASTS=10000, MAX_IMPORT_WEIGHTS=10000;
+function currentLocale(){return 'en-US'}
+'''+compat_funcs+r'''
+function assert(c,m){if(!c)throw new Error(m)}
+const legacy={dataVersion:'1',revision:'bad',updatedAt:'not-a-date',goalHours:'16',activeStart:null,activeGoalHours:16,activeTimeZone:'Bad/Zone',records:[{id:'dup',start:'2026-09-25T06:00:00Z',end:'2026-09-25T22:00:00Z',goalHours:null,timeZone:''},{id:'dup',start:'2026-09-25T20:00:00Z',end:'2026-09-26T12:00:00Z',goalHours:'16',timeZone:'Bad/Zone'}],weights:[{id:'dupw',when:'2026-09-25T08:00:00Z',kg:'80,5',timeZone:''},{id:'dupw',when:'2026-09-26T08:00:00Z',kg:80.2,timeZone:'Bad/Zone'}],weightUnit:'stones',targetWeightKg:'n/a',gamificationEnabled:'yes',language:123,appearance:'auto',iconChoice:'default'};
+const result=validateCompatibleData(legacy),d=result.data;
+assert(result.changed,'repairable legacy data must be changed');
+assert(d.dataVersion===1 && d.revision===0 && d.updatedAt===null,'machine metadata repair');
+assert(d.appearance==='system' && d.iconChoice==='plate' && d.language==='system','preference repair');
+assert(d.activeStart===null && d.activeGoalHours===null && d.activeTimeZone===null,'orphan active metadata repair');
+assert(new Set(d.records.map(x=>x.id)).size===2 && d.records.length===2,'duplicate IDs repaired and overlap preserved');
+assert(new Set(d.weights.map(x=>x.id)).size===2 && d.weights[0].kg===80.5,'weight metadata repair');
+let failed=false;try{validateCompatibleData({...d,records:[{...d.records[0],start:'not-a-date'}]})}catch(e){failed=String(e.message).includes('invalid fasting record')}
+assert(failed,'damaged core timestamp must remain a Recovery-level error');
+console.log('compatibility repair regression tests passed');
+'''
+    with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
+        f.write(compat_test); compat_file=f.name
+    cp=subprocess.run(['node',compat_file],capture_output=True,text=True)
+    ok(cp.returncode==0,'compatibility repair regression tests failed: '+cp.stderr)
+except Exception as e:
+    errors.append('could not build compatibility repair tests: '+str(e))
 
 if errors:
     print('FAIL')
