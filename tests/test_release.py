@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.0.1','version must be 1.0.1')
+ok(ver.get('version')=='1.0.2','version must be 1.0.2')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -149,3 +149,8 @@ if errors:
     for e in errors: print(' -',e)
     sys.exit(1)
 print('PASS: release, integrity, localization, DOM, storage/privacy and algorithm regression checks')
+
+# iPhone button-layout regression checks
+index_text=(ROOT/'index.html').read_text(encoding='utf-8')
+ok('white-space: nowrap' in index_text and '#settings .row > button' in index_text, 'Settings action buttons must not split words')
+ok('@media (max-width: 520px)' in index_text, 'Settings rows should be allowed to wrap on iPhone widths')

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "released": "2026-09-29",
-  "notes": "Fix first-backup status and reminder behavior on new or empty installations.",
+  "notes": "Fix iPhone Settings button wrapping and include the first-backup correction in a consistent integrity-verified release.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -26,10 +26,10 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "a7bc4434739ac280843b4d085c4137906c719c675c6b53ebc0b0d573e1d4998a",
-    "./index.html": "a7bc4434739ac280843b4d085c4137906c719c675c6b53ebc0b0d573e1d4998a",
-    "./privacy.html": "a6df949f392246fddf0ee240810c01cec6d4b96631380ef6b22bac309e67416f",
-    "./about.html": "30904795a6be5566c9a6f6011a069d01bf6992303120e207baebfff5a4c4ad82",
+    "./": "0bb3598fcbe0ab3631f63ccab0290ac74680d95aa1e5a25be298c89198a0d54f",
+    "./index.html": "0bb3598fcbe0ab3631f63ccab0290ac74680d95aa1e5a25be298c89198a0d54f",
+    "./privacy.html": "8b2748a35851327051197e8b59620d850bd91c72781fbce2f435475c73f0d21e",
+    "./about.html": "1f7cd09e4f5aece052bc0e5fb2a0ccd8fc0b5e76f60acaf06abb8e30997d141c",
     "./404.html": "a1ba04ec644d23211f4a54f131b8cd1d66f05fa8fb993501f4070b65ca118fa5",
     "./en/": "12f041fc207582a0beefbe4c49a5282df240a4279aa072921d411acf85b9c7ad",
     "./bg/": "87307787b7ce7292cfe810fbebf910b2fedf62d8fa59a326ee6a89625d490dda",
