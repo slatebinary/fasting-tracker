@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.6.0','version must be 1.6.0')
+ok(ver.get('version')=='1.6.1','version must be 1.6.1')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -51,8 +51,8 @@ for item in ver.get('shell',[]):
     normalized=re.sub(r'https://github\.com/[^/"\'<>\s]+/[^/"\'<>\s]+','__REPO_URL__',normalized)
     ok(hashlib.sha256(normalized.encode()).hexdigest()==ver['hashes'][item],f'GitHub Pages normalized hash mismatch {item}')
 ok('responseDigestHex' in sw and 'integrity check failed' in sw,'service worker integrity verification missing')
-ok('validateImportedData(JSON.parse(raw))' in index,'live stored data is not strictly validated')
-ok('data = validateImportedData(selected.data);' in index,'recovery snapshot restore is not strictly validated')
+ok('validateCompatibleData(JSON.parse(raw))' in index and 'return { data: validateImportedData(prepared.data), changed: prepared.changed };' in index,'live stored data compatibility bridge must end in strict validation')
+ok('data = validateCompatibleData(selected.data).data;' in index,'recovery snapshot restore is not compatibility-validated')
 ok('navigator.storage.persisted' in index and 'storageProtectionStatus' in index,'storage protection UI missing')
 ok('installStorageNotice' in index and 'isStandaloneApp' in index,'Safari/Home Screen storage warning missing')
 ok("'backup.noneYet':'No external backup yet'" in index,'missing first-backup empty-state label')
@@ -296,7 +296,7 @@ try:
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.6.0', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.6.1', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -334,6 +334,16 @@ ok('function numberSymbols(' in index and 'formatToParts(12345.6)' in index, 'lo
 ok('const MAX_DATE_MS = 8.64e15;' in index and 'function safeTargetDate(' in index, 'extreme target-date guard missing')
 ok('parsed > MAX_SAFE_GOAL_HOURS' in index, 'extreme goal input is not rejected')
 ok('function normalizeBackupClockSkew()' in index and "['firstDataAt','lastExternalBackupAt']" in index, 'backup reminder clock-skew hardening missing')
+
+# v1.6.1 recovery/navigation regressions
+ok('function prepareCompatibleData(rawData)' in index and "setMissing('appearance', 'system')" in index and "setMissing('gamificationEnabled', true)" in index, 'legacy v1 compatibility migration missing')
+ok('const compatible = validateCompatibleData(JSON.parse(raw));' in index and 'localStorage.setItem(DATA_KEY, serialized);' in index, 'compatible stored data is not upgraded in place')
+ok('const APP_SCREENS' in index and 'activateScreen(location.hash.slice(1), { updateHash: false });' in index, 'return-to-tab routing missing')
+ok('target="_blank" rel="noopener" data-i18n="public.privacy"' not in index and 'privacy.html?return=settings' in index, 'Settings privacy link must stay in app context and remember Settings')
+ok('about.html?return=fasting#health' in index and 'about.html?return=settings' in index, 'About links do not preserve their originating app screen')
+for rel in ['about.html','privacy.html','branding.html','license.html']:
+    txt=(ROOT/rel).read_text()
+    ok("u.searchParams.set('return',returnScreen)" in txt and "u.hash=returnScreen==='fasting'?'':returnScreen" in txt, f'{rel} does not preserve return screen')
 
 if errors:
     print('FAIL')

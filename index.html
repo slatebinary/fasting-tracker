@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.6.0" />
+  <meta name="ft-app-version" content="1.6.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -388,7 +388,7 @@ layout: null
         <div class="scienceStage" data-stage="5" data-i18n-html="science.timeline5"><strong>48 h+</strong> — extended fasting; there is no validated whole-body “autophagy level” that can be calculated from elapsed time.</div>
       </div>
       <div class="scienceCaution" data-i18n="science.caution">This indicator is educational, not a measurement of autophagy and not a reason to prolong a fast. Fasting responses vary by tissue, activity, prior diet, glycogen status and other factors.</div>
-      <div class="small" style="margin-top:9px"><a class="publicLink" href="about.html#health" target="_blank" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
+      <div class="small" style="margin-top:9px"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
       <details class="scienceSources">
         <summary data-i18n="science.sources">Scientific basis &amp; sources</summary>
         <ul class="sourceList small">
@@ -469,7 +469,7 @@ layout: null
     <div class="notice healthNotice">
       <strong data-i18n="public.healthTitle">Health &amp; safety</strong>
       <div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
-      <div class="publicLinks"><a class="publicLink" href="about.html#health" target="_blank" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
+      <div class="publicLinks"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
     </div>
     <div class="card" id="storageProtectionCard">
       <h2 data-i18n="storage.title">Storage protection</h2>
@@ -588,8 +588,8 @@ layout: null
       <div class="helpHeading" data-i18n="public.infoTitle">Public information</div>
       <div class="small" data-i18n="public.infoText">Read the full privacy information, health disclaimer and scientific-source notes.</div>
       <div class="publicLinks">
-        <a class="publicLink" href="privacy.html" target="_blank" rel="noopener" data-i18n="public.privacy">Privacy</a>
-        <a class="publicLink" href="about.html" target="_blank" rel="noopener" data-i18n="public.about">About &amp; sources</a>
+        <a class="publicLink" href="privacy.html?return=settings" rel="noopener" data-i18n="public.privacy">Privacy</a>
+        <a class="publicLink" href="about.html?return=settings" rel="noopener" data-i18n="public.about">About &amp; sources</a>
         <a class="publicLink" href="{{ site.github.repository_url }}/issues" target="_blank" rel="noopener noreferrer" data-i18n="public.support">Support / report an issue</a>
       </div>
       <div class="small" style="margin-top:8px" data-i18n="public.supportWarning">GitHub Issues are public. Do not include fasting history, weight data, medical information or other personal data in a report.</div>
@@ -713,7 +713,7 @@ layout: null
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="longFastModalTitle">
     <h2 id="longFastModalTitle" data-i18n="safety.longFastTitle">Extended fasting target</h2>
     <div class="small" id="longFastModalText"></div>
-    <div class="publicLinks"><a class="publicLink" href="about.html#health" target="_blank" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
+    <div class="publicLinks"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
     <div class="modalActions">
       <button id="longFastCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
       <button id="longFastContinueBtn" class="primary" data-i18n="safety.continue">Use this target</button>
@@ -752,7 +752,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.6.0';
+  const APP_VERSION = '1.6.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1230,7 +1230,7 @@ layout: null
         dayBucket: typeof snapshot.dayBucket === 'string' ? snapshot.dayBucket : snapshotDayBucket(created),
         weekBucket: typeof snapshot.weekBucket === 'string' ? snapshot.weekBucket : snapshotWeekBucket(created),
         monthBucket: typeof snapshot.monthBucket === 'string' ? snapshot.monthBucket : snapshotMonthBucket(created),
-        data: validateImportedData(snapshot.data)
+        data: validateCompatibleData(snapshot.data).data
       };
     } catch { return null; }
   }
@@ -1474,6 +1474,63 @@ layout: null
     };
   }
 
+  function prepareCompatibleData(rawData) {
+    if (!rawData || typeof rawData !== 'object' || Array.isArray(rawData)) throw new Error('invalid data');
+    const candidate = JSON.parse(JSON.stringify(rawData));
+    let changed = false;
+    const setMissing = (key, value) => {
+      if (candidate[key] == null) { candidate[key] = value; changed = true; }
+    };
+
+    // dataVersion identifies the machine format. Never guess it: unsupported or
+    // damaged formats must still enter Recovery mode. The defaults below cover
+    // fields that were added while dataVersion 1 remained the persisted format.
+    if (Number(candidate.dataVersion) !== DATA_VERSION) return { data: candidate, changed };
+    if (candidate.records === undefined) { candidate.records = []; changed = true; }
+    if (candidate.weights === undefined) { candidate.weights = []; changed = true; }
+    setMissing('weightUnit', 'kg');
+    setMissing('gamificationEnabled', true);
+    setMissing('language', 'system');
+    setMissing('appearance', 'system');
+    setMissing('iconChoice', 'plate');
+
+    const fallbackZone = currentTimeZone();
+    const fallbackGoal = Number.isFinite(parseLocalizedNumber(candidate.goalHours)) && parseLocalizedNumber(candidate.goalHours) > 0
+      ? candidate.goalHours : 16;
+
+    if (Array.isArray(candidate.records)) {
+      candidate.records = candidate.records.map((record, index) => {
+        if (!record || typeof record !== 'object' || Array.isArray(record)) return record;
+        const next = {...record};
+        if (next.id == null) { next.id = `legacy-fast-${index + 1}-${Date.parse(next.start) || index}`.slice(0, 120); changed = true; }
+        if (next.goalHours == null) { next.goalHours = fallbackGoal; changed = true; }
+        if (next.timeZone == null) { next.timeZone = fallbackZone; changed = true; }
+        return next;
+      });
+    }
+
+    if (Array.isArray(candidate.weights)) {
+      candidate.weights = candidate.weights.map((weight, index) => {
+        if (!weight || typeof weight !== 'object' || Array.isArray(weight)) return weight;
+        const next = {...weight};
+        if (next.id == null) { next.id = `legacy-weight-${index + 1}-${Date.parse(next.when) || index}`.slice(0, 120); changed = true; }
+        if (next.timeZone == null) { next.timeZone = fallbackZone; changed = true; }
+        return next;
+      });
+    }
+
+    if (candidate.activeStart != null) {
+      if (candidate.activeGoalHours == null) { candidate.activeGoalHours = fallbackGoal; changed = true; }
+      if (candidate.activeTimeZone == null) { candidate.activeTimeZone = fallbackZone; changed = true; }
+    }
+    return { data: candidate, changed };
+  }
+
+  function validateCompatibleData(rawData) {
+    const prepared = prepareCompatibleData(rawData);
+    return { data: validateImportedData(prepared.data), changed: prepared.changed };
+  }
+
   function validateImportedData(rawData) {
     rawData = migrateData(rawData);
     if (rawData.dataVersion !== DATA_VERSION) throw new Error('unsupported data format');
@@ -1535,7 +1592,15 @@ layout: null
     const raw = localStorage.getItem(DATA_KEY);
     if (!raw) return cloneDefault();
     try {
-      return validateImportedData(JSON.parse(raw));
+      const compatible = validateCompatibleData(JSON.parse(raw));
+      if (compatible.changed) {
+        const serialized = JSON.stringify(compatible.data);
+        try {
+          localStorage.setItem(DATA_KEY, serialized);
+          if (localStorage.getItem(DATA_KEY) !== serialized) throw new Error('storage verification failed');
+        } catch {}
+      }
+      return compatible.data;
     } catch (err) {
       recoveryMode = { raw, error: String(err && err.message || err), enteredAt: new Date().toISOString() };
       return cloneDefault();
@@ -2781,7 +2846,7 @@ layout: null
       if (!persistResolvedData(selected.data)) return;
     } else {
       if (!createInternalSnapshot('before restoring another snapshot')) { alert(t('backup.snapshotFailed')); return; }
-      data = validateImportedData(selected.data);
+      data = validateCompatibleData(selected.data).data;
       if (!save()) { renderAll(); return; }
     }
     closeSnapshotModal();
@@ -3085,12 +3150,26 @@ layout: null
     renderGamification();
   });
 
-  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => { const active=x===tab; x.classList.toggle('active', active); if(active) x.setAttribute('aria-current','page'); else x.removeAttribute('aria-current'); });
-    document.querySelectorAll('.screen').forEach(x => x.classList.toggle('active', x.id === tab.dataset.screen));
-    if (tab.dataset.screen === 'stats') setTimeout(drawChart, 0);
-    if (tab.dataset.screen === 'weight') setTimeout(drawWeightChart, 0);
-  }));
+  const APP_SCREENS = Object.freeze(['fasting','history','weight','stats','settings']);
+  function activateScreen(screen, { updateHash = true } = {}) {
+    const target = APP_SCREENS.includes(screen) ? screen : 'fasting';
+    document.querySelectorAll('.tab').forEach(tab => {
+      const active = tab.dataset.screen === target;
+      tab.classList.toggle('active', active);
+      if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current');
+    });
+    document.querySelectorAll('.screen').forEach(node => node.classList.toggle('active', node.id === target));
+    if (updateHash) {
+      const next = new URL(location.href);
+      next.hash = target === 'fasting' ? '' : target;
+      history.replaceState(history.state, '', next);
+    }
+    if (target === 'stats') setTimeout(drawChart, 0);
+    if (target === 'weight') setTimeout(drawWeightChart, 0);
+  }
+
+  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => activateScreen(tab.dataset.screen)));
+  window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
   el('backdateCancelBtn').addEventListener('click', closeBackdateModal);
@@ -3165,7 +3244,7 @@ layout: null
       if (typeof raw.appVersion !== 'string' || !/^\d+\.\d+\.\d+$/.test(raw.appVersion) || !validDate(raw.exportedAt)) {
         throw new Error('invalid backup metadata');
       }
-      const imported = validateImportedData(raw.data);
+      const imported = validateCompatibleData(raw.data).data;
       if (!confirm(t('import.confirm', {fasts: imported.records.length, fastWord: t(pluralKey('import.fast', imported.records.length)), weights: imported.weights.length, weightWord: t(pluralKey('import.weight', imported.weights.length))}))) {
         e.target.value = '';
         return;
@@ -3250,6 +3329,7 @@ layout: null
   applyLanguage();
   applyAppearance();
   renderAll();
+  activateScreen(location.hash.slice(1), { updateHash: false });
   if (!versionTransitionSnapshotOK && !recoveryMode) setTimeout(() => alert(t('backup.snapshotFailed')), 0);
   setInterval(() => { if (data.activeStart && !document.hidden) updateTimer(); }, 1000);
   setInterval(() => { if (!data.activeStart && !document.hidden) updateTimer(); }, 60 * 1000);
