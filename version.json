@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "released": "2026-09-29",
-  "notes": "Add backdated active fasts: start an ongoing fast at an earlier time, with quick presets and validation.",
+  "notes": "Improve backdated active-fast conflict handling with actionable resolution options.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -26,10 +26,10 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "1d32b3b8968a1290b0d9bfbc0c56cbf4e108bf5996c530c26efcd0d1fad5aa78",
-    "./index.html": "1d32b3b8968a1290b0d9bfbc0c56cbf4e108bf5996c530c26efcd0d1fad5aa78",
-    "./privacy.html": "64d585d402568fb2c17c90dc95ca3be1c97414cf93f3432ac0b075703266fbb0",
-    "./about.html": "d82476892b23baa300d41e0e1f26c88a6e596b78037bc9c6d906888cc0075527",
+    "./": "f811913a5e7af8924e29b4a30c8c5059e0c24072822e0dd49fc154d3fca4385d",
+    "./index.html": "f811913a5e7af8924e29b4a30c8c5059e0c24072822e0dd49fc154d3fca4385d",
+    "./privacy.html": "da0470c127f23db7631ae27f66d857f36166577b6bd417f57893ef49309f76a2",
+    "./about.html": "f02ec23992e11d111281b4223aefd0f699db69bc15246fe50038218ddf471b08",
     "./404.html": "a1ba04ec644d23211f4a54f131b8cd1d66f05fa8fb993501f4070b65ca118fa5",
     "./en/": "12f041fc207582a0beefbe4c49a5282df240a4279aa072921d411acf85b9c7ad",
     "./bg/": "87307787b7ce7292cfe810fbebf910b2fedf62d8fa59a326ee6a89625d490dda",
