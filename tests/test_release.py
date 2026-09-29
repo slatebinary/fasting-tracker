@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.3.1','version must be 1.3.1')
+ok(ver.get('version')=='1.5.0','version must be 1.5.0')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -172,9 +172,24 @@ ok("'help.installAndroid'" in index and "'help.installIOS'" in index, 'separate 
 for mf in ['manifest.webmanifest','manifest-bg.webmanifest','manifest-es.webmanifest','manifest-moon.webmanifest','manifest-hourglass.webmanifest','manifest-timer.webmanifest']:
     mm=json.loads((ROOT/mf).read_text())
     ok(any(i.get('purpose')=='maskable' for i in mm.get('icons',[])), f'maskable Android icon missing in {mf}')
+
+# Rolling internal snapshot + one-tap reminder regression checks
+ok('SNAPSHOT_RECENT_KEEP = 5' in index and 'SNAPSHOT_DAILY_KEEP = 7' in index and 'SNAPSHOT_WEEKLY_KEEP = 4' in index and 'SNAPSHOT_MONTHLY_KEEP = 6' in index, 'rolling snapshot retention constants missing')
+ok('function pruneSnapshots(' in index and 'function maybeCreateRollingSnapshot(' in index, 'rolling snapshot logic missing')
+ok("maybeCreateRollingSnapshot('automatic change')" in index, 'automatic snapshots are not created after saves')
+ok('id="settingsBackupNowBtn"' in index and "settingsBackupNowBtn').addEventListener('click', exportBackup)" in index, 'one-tap Settings backup action missing')
+ok('id="nextBackupLabel"' in index and 'backup.nextReminder' in index, 'next external backup reminder UI missing')
+privacy_text=(ROOT/'privacy.html').read_text()
+ok('5 recent, 7 daily, 4 weekly and 6 monthly' in privacy_text and '5 последни, 7 дневни, 4 седмични и 6 месечни' in privacy_text and '5 recientes, 7 diarias, 4 semanales y 6 mensuales' in privacy_text, 'localized rolling-backup privacy explanations missing')
+
 print('PASS: release, integrity, localization, DOM, storage/privacy and algorithm regression checks')
 
 # iPhone button-layout regression checks
 index_text=(ROOT/'index.html').read_text(encoding='utf-8')
 ok('white-space: nowrap' in index_text and '#settings .row > button' in index_text, 'Settings action buttons must not split words')
 ok('@media (max-width: 520px)' in index_text, 'Settings rows should be allowed to wrap on iPhone widths')
+
+# Active-fast target clock-time feature
+ok('id="targetMoment"' in index, 'target moment element missing')
+ok('fasting.expectedTargetTime' in index and 'fasting.targetTimePassed' in index, 'target-time translations missing')
+ok('new Date(startMs + targetMs)' in index, 'target time calculation missing')

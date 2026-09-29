@@ -21,7 +21,7 @@ Fasting Tracker is designed to work locally on your device, including offline af
 - System, light, and dark appearance modes
 - Offline PWA support
 - Local JSON export/import backups
-- Internal recovery snapshots and update safeguards
+- Automatic rolling internal JSON recovery snapshots (5 recent, 7 daily, 4 weekly, 6 monthly) and update safeguards
 - Privacy-focused local storage model
 - Accessibility improvements for keyboard and assistive technologies
 

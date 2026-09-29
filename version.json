@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.3.1",
+  "version": "1.5.0",
   "released": "2026-09-29",
-  "notes": "Safer Home Screen icon-change workflow: external backup required before reinstall, explicit uninstall data-loss warnings, and reinstall links that preserve the selected icon and language.",
+  "notes": "Adds automatic rolling internal JSON recovery snapshots with recent/daily/weekly/monthly retention and clearer one-tap external backup reminders.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -61,10 +61,10 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "ad5c2b55fa08d164a25b7c670aca533627ad4554b2efe2a5c8f7f5be36c3021f",
-    "./index.html": "ad5c2b55fa08d164a25b7c670aca533627ad4554b2efe2a5c8f7f5be36c3021f",
-    "./privacy.html": "d6fd78b7847cdbcb5e49bf0ec571235f7bbb813fceb1c6f425f4250cdaf1fd65",
-    "./about.html": "68bab070d2aaa98043657c52178b3ee29e2b4f12647d38a56d520ac5a31dac7b",
+    "./": "0254930c5a073aedf6f43d00e308ae21f2d7997eb612547bf7bdd7e1215a286c",
+    "./index.html": "0254930c5a073aedf6f43d00e308ae21f2d7997eb612547bf7bdd7e1215a286c",
+    "./privacy.html": "5f7b14dd947f55ff6b3a4e01a854d1765a6fb576bc51ba3f8faff883e19224a2",
+    "./about.html": "6aa0050d539cd2dc929c250e63fae11bf1607f3ac238a59660f03fb41380db7f",
     "./404.html": "a1ba04ec644d23211f4a54f131b8cd1d66f05fa8fb993501f4070b65ca118fa5",
     "./en/": "12f041fc207582a0beefbe4c49a5282df240a4279aa072921d411acf85b9c7ad",
     "./bg/": "87307787b7ce7292cfe810fbebf910b2fedf62d8fa59a326ee6a89625d490dda",
