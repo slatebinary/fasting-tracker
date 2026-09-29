@@ -43,6 +43,11 @@ The Home Screen app can work offline after its files have been cached. Safari an
 
 Fasting Tracker then appears on the Home screen/app launcher and can work offline after its files have been cached.
 
+
+### Changing the installed app icon safely
+
+On iPhone/iPad, and on some Android setups, changing an already-installed launcher icon requires removing/reinstalling the PWA. **Removing/uninstalling the Home Screen app can delete its local data, persistent-storage status, and internal recovery snapshots.** Before doing so, export an external JSON backup. Reinstall with the desired icon, then import the backup.
+
 ## Privacy
 
 Fasting and weight records are stored locally in browser/PWA storage on the user's device. Fasting Tracker has no application backend database for user-entered health records.
