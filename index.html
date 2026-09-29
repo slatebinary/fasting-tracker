@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.6.2" />
+  <meta name="ft-app-version" content="1.6.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -754,7 +754,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.6.2';
+  const APP_VERSION = '1.6.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -772,6 +772,14 @@ layout: null
   // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
   const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
   const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, records: [], weights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, language: 'system', appearance: 'system', iconChoice: 'plate' };
+  // Initialize URL-dependent UI state and a safe default data object before loading
+  // persisted data. Legacy-number normalization may ask currentLocale() ->
+  // uiLanguage() during load(), so these bindings must never be in the TDZ.
+  const initialUrlParams = new URLSearchParams(location.search);
+  let emergencyBoot = initialUrlParams.get('ft_recovery') === '1';
+  let urlLangOverride = SUPPORTED_LANGUAGES.includes(initialUrlParams.get('lang')) ? initialUrlParams.get('lang') : null;
+  let urlIconOverride = ['plate','moon','hourglass','timer'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
+  let data = cloneDefault();
   let recoveryMode = null;
   let backupMeta = loadBackupMeta();
   let snapshotProtectionState = {
@@ -781,7 +789,7 @@ layout: null
   };
   let automaticSnapshotFailureAlerted = false;
   const versionTransitionSnapshotOK = captureVersionTransitionSnapshot();
-  let data = load();
+  data = load();
   let lastPersistedDataRaw = getStoredDataRaw();
   if (versionTransitionSnapshotOK && !recoveryMode) rememberCurrentAppVersion();
 
@@ -810,10 +818,6 @@ layout: null
   let historyVisibleCount = HISTORY_PAGE_SIZE;
   let weightVisibleCount = HISTORY_PAGE_SIZE;
   let fastActionLocked = false;
-  let emergencyBoot = new URLSearchParams(location.search).get('ft_recovery') === '1';
-  const initialUrlParams = new URLSearchParams(location.search);
-  let urlLangOverride = SUPPORTED_LANGUAGES.includes(initialUrlParams.get('lang')) ? initialUrlParams.get('lang') : null;
-  let urlIconOverride = ['plate','moon','hourglass','timer'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
   const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 

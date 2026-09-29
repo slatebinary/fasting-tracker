@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.6.2','version must be 1.6.2')
+ok(ver.get('version')=='1.6.3','version must be 1.6.3')
 ok(ver.get('released')=='2026-09-29','release date must be 2026-09-29')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -296,7 +296,7 @@ try:
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.6.2', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.6.3', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -344,6 +344,15 @@ ok('about.html?return=fasting#health' in index and 'about.html?return=settings' 
 for rel in ['about.html','privacy.html','branding.html','license.html']:
     txt=(ROOT/rel).read_text()
     ok("u.searchParams.set('return',returnScreen)" in txt and "u.hash=returnScreen==='fasting'?'':returnScreen" in txt, f'{rel} does not preserve return screen')
+
+# v1.6.3 startup initialization-order regression
+# load() normalizes legacy/localized numeric fields and can call currentLocale() ->
+# uiLanguage(). Ensure all lexical bindings read by that path are initialized first.
+boot_load = index.index('data = load();')
+ok(index.index('let data = cloneDefault();') < boot_load, 'data must be initialized before load()')
+ok(index.index('let urlLangOverride =') < boot_load, 'urlLangOverride must be initialized before load()')
+ok(index.index('let urlIconOverride =') < boot_load, 'urlIconOverride must be initialized before load()')
+ok(index.index('let emergencyBoot =') < boot_load, 'emergencyBoot must be initialized before load()')
 
 # v1.6.2 recovery hardening + exact documentation return regressions
 ok("const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';" in index and 'sessionStorage.setItem(DOC_RETURN_KEY, location.href)' in index, 'exact documentation return capture missing')
