@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.7.3" />
+  <meta name="ft-app-version" content="1.7.4" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -142,6 +142,7 @@ layout: null
     .vizSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:7px; border-radius:16px; background:var(--line); margin:6px 0 16px; touch-action:manipulation; }
     .vizSwitcher button { min-height:58px; padding:14px 12px; border-radius:12px; background:transparent; color:var(--text); font-size:16px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; position:relative; z-index:1; }
     .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
+    .vizSwitcher button.pressed { transform:scale(.985); background:color-mix(in srgb,var(--card) 86%,var(--accent) 14%); }
     .statsVizView[hidden] { display:none !important; }
     .statsVizView canvas { width:100%; display:block; }
     #statsTimelineView { padding-bottom:4px; }
@@ -167,7 +168,7 @@ layout: null
     .calendarDay.level4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); color:var(--text); }
     .calendarDay.outside { opacity:.38; }
     .calendarDay.future { opacity:.28; }
-    .calendarDay.selected { outline:2px solid var(--accent); outline-offset:1px; }
+    .calendarDay.selected { outline:3px solid #fff; outline-offset:-3px; box-shadow:0 0 0 1px rgba(0,0,0,.50),0 0 0 4px #fff; position:relative; z-index:1; }
     .calendarDay:disabled { cursor:default; }
     .vizLegend { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; margin-top:9px; flex-wrap:wrap; }
     .legendSwatch { width:14px; height:10px; border-radius:3px; border:1px solid var(--line); }
@@ -834,7 +835,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.7.3';
+  const APP_VERSION = '1.7.4';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -911,6 +912,11 @@ layout: null
   let weekSelectedKey = null;
   let timelinePointerStart = null;
   let statsVizRenderFrame = 0;
+  let statsVizRenderTimer = 0;
+  const statsVizRendered = new Set();
+  let trendChartDaysCache = null;
+  let weeklySummariesCache = null;
+  const calendarDaysCache = new Map();
   const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 
@@ -1759,6 +1765,10 @@ layout: null
   function invalidateDerivedCaches() {
     completedDayMapCache = null;
     currentStreakCache = null;
+    statsVizRendered.clear();
+    trendChartDaysCache = null;
+    weeklySummariesCache = null;
+    calendarDaysCache.clear();
   }
 
   function syncFromStoredRaw(raw, { notify = false } = {}) {
@@ -2682,14 +2692,65 @@ layout: null
     const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
   }
 
+  function activateStatsVizControl(target, source = 'pointer') {
+    const button = target?.closest?.('#statsVizSwitcher [data-viz]');
+    if (!button) return false;
+    if (source === 'touch') {
+      button.classList.add('pressed');
+      setTimeout(() => button.classList.remove('pressed'), 120);
+    }
+    setStatsVizMode(button.dataset.viz);
+    return true;
+  }
+
+  function handleStatsVizTouchStart(event) {
+    // iOS standalone/Safari can defer the synthetic click while deciding if a
+    // gesture will scroll. A passive touchstart changes the visual selection
+    // immediately without blocking scrolling.
+    activateStatsVizControl(event.target, 'touch');
+  }
+
   function handleStatsVizPointerDown(event) {
-    setStatsVizMode(event.currentTarget.dataset.viz);
+    if (event.pointerType === 'touch') return; // touchstart handles touch sooner on iOS
+    activateStatsVizControl(event.target, 'pointer');
   }
 
   function handleStatsVizClick(event) {
-    // Keyboard activation has no preceding pointer event. Pointer-generated
-    // clicks are harmless because setStatsVizMode returns when already active.
-    setStatsVizMode(event.currentTarget.dataset.viz);
+    // Keyboard activation and browsers without Pointer Events use click.
+    activateStatsVizControl(event.target, 'click');
+  }
+
+  function showStatsVizView(mode) {
+    const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView' };
+    for (const [key,id] of Object.entries(map)) el(id).hidden = key !== mode;
+  }
+
+  function renderStatsVisualizationMode(mode = statsVizMode) {
+    if (mode === 'calendar') renderFastCalendar();
+    else if (mode === 'trend') drawFastTrendChart();
+    else if (mode === 'weeks') drawFastWeeksChart();
+    else drawChart();
+    statsVizRendered.add(mode);
+  }
+
+  function scheduleStatsVizRender(mode) {
+    const requestedMode = mode;
+    const token = ++statsVizRenderFrame;
+    if (statsVizRenderTimer) { clearTimeout(statsVizRenderTimer); statsVizRenderTimer = 0; }
+
+    // A single requestAnimationFrame still runs before the browser paints, so
+    // expensive chart work in that callback can hide the tab change. Schedule
+    // the work as a timer from the frame callback: the browser gets one paint
+    // with the newly selected tab/view before any chart calculation begins.
+    requestAnimationFrame(() => {
+      if (token !== statsVizRenderFrame || statsVizMode !== requestedMode) return;
+      statsVizRenderTimer = setTimeout(() => {
+        statsVizRenderTimer = 0;
+        if (token !== statsVizRenderFrame || statsVizMode !== requestedMode) return;
+        renderStatsVisualizationMode(requestedMode);
+        renderChartDetailForMode();
+      }, 0);
+    });
   }
 
   function setStatsVizMode(mode) {
@@ -2703,25 +2764,19 @@ layout: null
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-selected', String(active));
     });
-    const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView' };
-    for (const [key,id] of Object.entries(map)) el(id).hidden = key !== statsVizMode;
 
-    // Paint the selected tab/view first, then perform chart work on the next
-    // animation frame. This keeps the touch response visually immediate even
-    // with a large local history.
-    const requestedMode = statsVizMode;
-    const token = ++statsVizRenderFrame;
-    requestAnimationFrame(() => {
-      if (token !== statsVizRenderFrame || statsVizMode !== requestedMode) return;
-      renderStatsVisualizations();
-    });
+    // Switch the panel and explanatory copy immediately. If this mode was
+    // already rendered for the current data revision, no chart work is needed
+    // at all, making repeat switches effectively instantaneous.
+    showStatsVizView(statsVizMode);
+    renderChartDetailForMode();
+    if (!statsVizRendered.has(statsVizMode)) scheduleStatsVizRender(statsVizMode);
   }
 
   function renderStatsVisualizations() {
-    if (statsVizMode === 'calendar') { renderFastCalendar(); renderChartDetailForMode(); }
-    else if (statsVizMode === 'trend') { drawFastTrendChart(); renderChartDetailForMode(); }
-    else if (statsVizMode === 'weeks') { drawFastWeeksChart(); renderChartDetailForMode(); }
-    else drawChart(); // drawChart already renders Timeline details from the same day model.
+    // Data changes invalidate the render cache. Render only the visible mode;
+    // other modes are rendered lazily after their tab has already painted.
+    renderStatsVisualizationMode(statsVizMode);
   }
 
   function monthAnchor(offset = 0) {
@@ -2769,10 +2824,20 @@ layout: null
     heads.replaceChildren();
     for (const label of weekdayLabelsMondayFirst()) { const node=document.createElement('div'); node.className='calendarWeekday'; node.textContent=label; heads.append(node); }
     const first=new Date(month); const shift=(first.getDay()+6)%7; first.setDate(first.getDate()-shift);
-    const intervals=allFastingIntervals(), tz=currentTimeZone(); grid.replaceChildren();
-    for (let i=0;i<42;i++) {
-      const d=new Date(first); d.setDate(first.getDate()+i); d.setHours(12,0,0,0);
-      const day=chartDayForAnchor(d,tz,intervals); if (!day) continue;
+    const tz=currentTimeZone(), cacheKey=`${statsCalendarMonthOffset}|${tz}`;
+    let calendarDays=calendarDaysCache.get(cacheKey);
+    if (!calendarDays) {
+      const intervals=allFastingIntervals();
+      calendarDays=[];
+      for (let i=0;i<42;i++) {
+        const d=new Date(first); d.setDate(first.getDate()+i); d.setHours(12,0,0,0);
+        const day=chartDayForAnchor(d,tz,intervals);
+        if (day) calendarDays.push({d,day});
+      }
+      calendarDaysCache.set(cacheKey,calendarDays);
+    }
+    grid.replaceChildren();
+    for (const {d,day} of calendarDays) {
       const btn=document.createElement('button'); btn.type='button'; btn.className=`calendarDay level${calendarLevel(day.totalFastMs)}`;
       const outside=d.getMonth()!==monthIndex, future=d.getTime()>now.getTime()+12*3600000;
       if (outside) btn.classList.add('outside'); if (future) btn.classList.add('future');
@@ -2782,7 +2847,10 @@ layout: null
       const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? compactDuration(day.totalFastMs) : '—';
       btn.append(n,h);
       btn.setAttribute('aria-label',`${day.label}: ${compactDuration(day.totalFastMs)}`);
-      btn.addEventListener('click',()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:compactDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; renderFastCalendar(); renderChartDetailForMode(); });
+      const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:compactDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
+      btn.addEventListener('pointerdown',event=>{ if(event.pointerType!=='touch') selectCalendarDay(); });
+      btn.addEventListener('touchstart',selectCalendarDay,{passive:true});
+      btn.addEventListener('click',event=>{ if(event.detail===0) selectCalendarDay(); });
       grid.append(btn);
     }
     renderChartDetailForMode();
@@ -2791,13 +2859,13 @@ layout: null
   function drawFastTrendChart() {
     const c=el('fastTrendChart'), ctx=c.getContext('2d'), ratio=window.devicePixelRatio||1;
     const cssW=c.clientWidth||660, cssH=260; c.width=Math.floor(cssW*ratio); c.height=Math.floor(cssH*ratio); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,cssW,cssH);
-    const days=buildInteractiveChartDays(30), top=18,bottom=34,left=34,right=10,w=cssW-left-right,h=cssH-top-bottom;
+    const days=trendChartDaysCache || (trendChartDaysCache=buildInteractiveChartDays(30)), top=18,bottom=34,left=34,right=10,w=cssW-left-right,h=cssH-top-bottom;
     const style=getComputedStyle(document.documentElement), line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();
     ctx.strokeStyle=line; ctx.fillStyle=muted; ctx.font='10px -apple-system'; ctx.textAlign='right';
     [0,6,12,18,24].forEach(hour=>{const y=top+h-(hour/24)*h;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillText(`${hour}${t('unit.h')}`,left-5,y+3);});
     trendInteractiveLayout=[]; ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.beginPath();
     days.forEach((day,i)=>{const x=left+(i/(Math.max(1,days.length-1)))*w,y=top+h-(Math.min(24,day.totalFastMs/3600000)/24)*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}); ctx.stroke();
-    days.forEach((day,i)=>{const x=left+(i/(Math.max(1,days.length-1)))*w,y=top+h-(Math.min(24,day.totalFastMs/3600000)/24)*h;ctx.fillStyle=accent;ctx.beginPath();ctx.arc(x,y,trendSelectedDayKey===day.key?4.5:3,0,Math.PI*2);ctx.fill();trendInteractiveLayout.push({day,x,y,r:12}); if(i%5===0||i===days.length-1){ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='center';ctx.fillText(formatNumber(new Date(day.startMs).getDate()),x,cssH-10);}});
+    days.forEach((day,i)=>{const x=left+(i/(Math.max(1,days.length-1)))*w,y=top+h-(Math.min(24,day.totalFastMs/3600000)/24)*h;const selected=trendSelectedDayKey===day.key;ctx.beginPath();ctx.arc(x,y,selected?6:3,0,Math.PI*2);ctx.fillStyle=selected?'#ffffff':accent;ctx.fill();if(selected){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();}trendInteractiveLayout.push({day,x,y,r:14}); if(i%5===0||i===days.length-1){ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='center';ctx.fillText(formatNumber(new Date(day.startMs).getDate()),x,cssH-10);}});
     renderChartDetailForMode();
   }
 
@@ -2810,8 +2878,11 @@ layout: null
   function startOfWeekMonday(date) { const d=new Date(date); d.setHours(12,0,0,0); const shift=(d.getDay()+6)%7; d.setDate(d.getDate()-shift); return d; }
 
   function buildWeeklySummaries() {
+    if (weeklySummariesCache) return weeklySummariesCache;
     const tz=currentTimeZone(), intervals=allFastingIntervals(), thisMonday=startOfWeekMonday(new Date()), weeks=[];
-    for(let wi=7;wi>=0;wi--){const start=new Date(thisMonday);start.setDate(start.getDate()-wi*7);let total=0,daysWithFast=0;for(let di=0;di<7;di++){const d=new Date(start);d.setDate(start.getDate()+di);const day=chartDayForAnchor(d,tz,intervals);if(day){total+=day.totalFastMs;if(day.totalFastMs>0)daysWithFast++;}}const key=dayKey(start,tz);weeks.push({key,start,totalFastMs:total,daysWithFast,label:start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'})});} return weeks;
+    for(let wi=7;wi>=0;wi--){const start=new Date(thisMonday);start.setDate(start.getDate()-wi*7);let total=0,daysWithFast=0;for(let di=0;di<7;di++){const d=new Date(start);d.setDate(start.getDate()+di);const day=chartDayForAnchor(d,tz,intervals);if(day){total+=day.totalFastMs;if(day.totalFastMs>0)daysWithFast++;}}const key=dayKey(start,tz);weeks.push({key,start,totalFastMs:total,daysWithFast,label:start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'})});}
+    weeklySummariesCache=weeks;
+    return weeklySummariesCache;
   }
 
   function drawFastWeeksChart() {
@@ -2819,7 +2890,7 @@ layout: null
     const weeks=buildWeeklySummaries(),top=18,bottom=34,left=38,right=8,w=cssW-left-right,h=cssH-top-bottom,maxH=Math.max(24,...weeks.map(x=>x.totalFastMs/3600000));
     const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
     [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(maxH*frac,0,0)}${t('unit.h')}`,left-5,y+3);});
-    const gap=8,bw=(w-gap*7)/8;weekInteractiveLayout=[];weeks.forEach((week,i)=>{const hours=week.totalFastMs/3600000,bh=(hours/maxH)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(weekSelectedKey===week.key){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));}ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(week.label,x+bw/2,cssH-10);weekInteractiveLayout.push({week,x,y:top,w:bw,h});});renderChartDetailForMode();
+    const gap=8,bw=(w-gap*7)/8;weekInteractiveLayout=[];weeks.forEach((week,i)=>{const hours=week.totalFastMs/3600000,bh=(hours/maxH)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(weekSelectedKey===week.key){const sy=Math.max(top,y-3),sh=Math.min(h,bh+6);ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.strokeRect(x-3,sy,bw+6,sh);ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x-1,Math.max(top,y-1),bw+2,Math.min(h,bh+2));}ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(week.label,x+bw/2,cssH-10);weekInteractiveLayout.push({week,x,y:top,w:bw,h});});renderChartDetailForMode();
   }
 
   function handleWeeksPointer(event) { const c=el('fastWeeksChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=weekInteractiveLayout.find(item=>x>=item.x&&x<=item.x+item.w&&y>=item.y&&y<=item.y+item.h);if(!hit)return;weekSelectedKey=hit.week.key;statsDetailOverride={dayKey:hit.week.key,title:t('stats.weekOf',{date:hit.week.label}),text:t('stats.detailWeek',{duration:compactDuration(hit.week.totalFastMs),days:formatNumber(hit.week.daysWithFast)})};drawFastWeeksChart(); }
@@ -3807,10 +3878,9 @@ layout: null
   el('chart').addEventListener('pointermove', moveTimelinePointer);
   el('chart').addEventListener('pointerup', finishTimelinePointer);
   el('chart').addEventListener('pointercancel', cancelTimelinePointer);
-  document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(button => {
-    button.addEventListener('pointerdown', handleStatsVizPointerDown);
-    button.addEventListener('click', handleStatsVizClick);
-  });
+  el('statsVizSwitcher').addEventListener('touchstart', handleStatsVizTouchStart, {passive:true});
+  el('statsVizSwitcher').addEventListener('pointerdown', handleStatsVizPointerDown);
+  el('statsVizSwitcher').addEventListener('click', handleStatsVizClick);
   el('calendarPrevBtn').addEventListener('click', () => { statsCalendarMonthOffset -= 1; statsDetailOverride = null; renderFastCalendar(); });
   el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
   el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);
