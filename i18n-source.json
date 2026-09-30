@@ -1,6 +1,6 @@
 {
   "sourceRevision": 4,
-  "appVersion": "1.7.9",
+  "appVersion": "1.7.10",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -115,6 +115,12 @@
     "fasting.shortConfirm": "This fast lasted less than one minute. Save it to your history?",
     "fasting.clockError": "The device clock is earlier than this fast’s start time. Check the date/time settings before stopping the fast.",
     "fasting.startEarlier": "Started earlier",
+    "fasting.changeTarget": "Change target",
+    "activeTarget.title": "Change active fasting target",
+    "activeTarget.help": "This changes the target for the current fast only. The default target in Settings is not changed.",
+    "activeTarget.targetHours": "Target hours",
+    "activeTarget.quickAria": "Quick active fasting targets",
+    "activeTarget.errGoal": "Enter a target greater than 0 hours.",
     "backdate.title": "Start an ongoing fast",
     "backdate.help": "Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.",
     "backdate.start": "Started at",

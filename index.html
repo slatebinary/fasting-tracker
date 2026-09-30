@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.7.9" />
+  <meta name="ft-app-version" content="1.7.10" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -386,6 +386,7 @@ layout: null
       <div class="progressDetail" id="progressDetail" data-i18n="fasting.zeroProgress">0% complete</div>
       <div class="targetMoment" id="targetMoment" hidden></div>
       <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
+      <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
     </div>
     <div class="card">
@@ -728,6 +729,34 @@ layout: null
   </div>
 </div>
 
+<div class="modalBackdrop" id="activeTargetModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="activeTargetModalTitle">
+    <h2 id="activeTargetModalTitle" data-i18n="activeTarget.title">Change active fasting target</h2>
+    <div class="small" data-i18n="activeTarget.help">This changes the target for the current fast only. The default target in Settings is not changed.</div>
+    <div class="formGroup" style="margin-top:14px">
+      <label for="activeTargetInput" data-i18n="activeTarget.targetHours">Target hours</label>
+      <input id="activeTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
+    </div>
+    <div class="presetWrap" id="activeTargetPresets" aria-label="Quick active fasting targets" data-i18n-aria="activeTarget.quickAria">
+      <button type="button" class="chip" data-active-goal="16">16h</button>
+      <button type="button" class="chip" data-active-goal="18">18h</button>
+      <button type="button" class="chip" data-active-goal="22">22h</button>
+      <button type="button" class="chip" data-active-goal="23">23h</button>
+      <button type="button" class="chip" data-active-goal="24">24h</button>
+      <button type="button" class="chip" data-active-goal="36">36h</button>
+      <button type="button" class="chip" data-active-goal="48">48h</button>
+      <button type="button" class="chip" data-active-goal="72">72h</button>
+      <button type="button" class="chip" data-active-goal="96">96h</button>
+      <button type="button" class="chip" data-active-goal="120">120h</button>
+    </div>
+    <div class="formError" id="activeTargetError" hidden></div>
+    <div class="modalActions">
+      <button id="activeTargetCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="activeTargetSaveBtn" class="primary" data-i18n="common.save">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="modalBackdrop" id="entryModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="entryModalTitle">
     <h2 id="entryModalTitle" data-i18n="history.addTitle">Add fasting entry</h2>
@@ -838,7 +867,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.7.9';
+  const APP_VERSION = '1.7.10';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -855,7 +884,7 @@ layout: null
   const MAX_DATE_MS = 8.64e15;
   // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
   const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
-  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, records: [], weights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, language: 'system', appearance: 'system', iconChoice: 'plate' };
+  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], weights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, language: 'system', appearance: 'system', iconChoice: 'plate' };
   // Initialize URL-dependent UI state and a safe default data object before loading
   // persisted data. Legacy-number normalization may ask currentLocale() ->
   // uiLanguage() during load(), so these bindings must never be in the TDZ.
@@ -884,6 +913,7 @@ layout: null
   const statusText = el('statusText');
   const toggleFast = el('toggleFast');
   const startEarlierBtn = el('startEarlierBtn');
+  const editActiveTargetBtn = el('editActiveTargetBtn');
   const fastProgressTrack = el('fastProgressTrack');
   const progressDetail = el('progressDetail');
   const goalText = el('goalText');
@@ -897,6 +927,7 @@ layout: null
   let editingRecordTimeZone = null;
   let editingWeightTimeZone = null;
   let pendingLongFastGoal = null;
+  let pendingLongFastScope = 'default';
   let lastModalFocus = null;
   let completedDayMapCache = null;
   let currentStreakCache = null;
@@ -950,7 +981,7 @@ layout: null
       'if.title':'What is intermittent fasting?','if.what':'Intermittent fasting (IF) is an eating pattern that alternates planned periods of eating with periods of little or no caloric intake. It focuses mainly on when you eat rather than prescribing a particular food list.','if.examples':'Common approaches include daily time-restricted eating (for example, 16:8), the 5:2 pattern, and alternate-day fasting.','if.learnMore':'Potential benefits, limits & safety','if.benefitsTitle':'Potential benefits','if.benefits':'Human trials suggest intermittent fasting can help some adults reduce body weight and waist circumference and may improve blood-glucose control, insulin sensitivity, blood pressure and some blood-lipid markers. Effects are usually modest, vary among people and regimens, and are often similar to continuous calorie restriction when total energy intake and weight loss are comparable.','if.limitsTitle':'What is still uncertain','if.limits':'Long-term effects on disease prevention, lifespan, cognitive function and the best fasting schedule remain uncertain. Much of the human evidence is short- to medium-term and is concentrated in adults with overweight, obesity or metabolic risk.','if.safetyTitle':'Who should be cautious','if.safety':'Fasting is not suitable for everyone. Seek professional advice before fasting if you are pregnant or breastfeeding, under 18, underweight, have a current or past eating disorder, diabetes or another medical condition, or take medicines that can be affected by meal timing. Stop the fast and seek appropriate care for severe weakness, fainting, confusion, dehydration, persistent vomiting or other concerning symptoms.','if.sourcesTitle':'Evidence & sources','if.src1':'<a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">BMJ 2025 systematic review</a> — 99 randomized trials; intermittent fasting and continuous calorie restriction produced broadly similar weight and cardiometabolic outcomes, with generally small differences between strategies.','if.src2':'<a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">U.S. National Institute on Aging</a> — overview of intermittent-fasting patterns, potential health effects and uncertainty about long-term outcomes.','if.src3':'<a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — an 8–10 hour eating window produced modest benefits over three months in people with metabolic syndrome; longer studies are needed.','if.src4':'<a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — possible benefits and medication-related safety considerations for people with type 2 diabetes.',
       'settings.language':'Interface language','settings.languageHelp':'Use the device language automatically, or choose a language for this app.','settings.systemLanguage':'System language','settings.appearance':'Appearance','settings.appearanceHelp':'Follow the device appearance automatically, or choose light or dark mode for this app.','settings.appearanceSystem':'System','settings.appearanceLight':'Light','settings.appearanceDark':'Dark','settings.appIcon':'App icon','settings.appIconHelp':'Choose the icon for the next installation of Fasting Tracker. Changing this setting does not replace the icon of an app that is already installed.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.','settings.appIconSafetyHeading':'Changing an installed icon safely','settings.appIconSafetyText':'Removing or uninstalling the Home Screen web app can remove all of that installation\'s local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.','settings.appIconPrepare':'Back up & prepare icon change','iconChange.linkLabel':'Reinstall link','iconChange.copyLink':'Copy reinstall link','iconChange.ready':'Backup created for “{icon}”. The reinstall link is ready below. Copy it before removing the installed app.','iconChange.copied':'Reinstall link copied.','iconChange.copyFailed':'Automatic copying was not available. The reinstall link is selected below; use the device copy command.','iconChange.readyCopied':'Backup created. A reinstall link for “{icon}” was copied. Now remove/uninstall the current Home Screen app, open Safari/Chrome, paste the copied link, install Fasting Tracker again, then open Settings → Import to restore the backup.','iconChange.readyPrompt':'Backup created for “{icon}”. Copy this reinstall link. Then remove/uninstall the current Home Screen app, open the link in Safari/Chrome, reinstall Fasting Tracker, and use Settings → Import to restore the backup.','icon.plate':'Plate & clock','icon.moon':'Moon & utensils','icon.hourglass':'Hourglass & leaf','icon.timer':'F timer','settings.goal':'Target fasting duration','settings.goalHelp':'Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.','settings.storageNotice':'Your fasting and weight records are stored locally on this device. The app automatically keeps rolling internal JSON recovery snapshots and reminds you every 7 days to make an external backup.','settings.deleteAll':'Delete all data','settings.deleteHelp':'Permanently clear fasting and weight history on this device',
       'fasting.today':'Today','fasting.elapsedToday':'Fasting elapsed today','fasting.targetStreak':'Current target streak','fasting.ready':'Ready to start','fasting.start':'Start Fast','fasting.stop':'Stop Fast','fasting.started':'Started {date}','fasting.target':'Target: {goal}','fasting.targetLocked':'Target: {goal} • locked for this fast','fasting.targetReached':'Target reached • {duration} beyond target','fasting.progress':'{pct}% complete • {duration} remaining','fasting.zeroProgress':'0% complete','fasting.expectedTargetTime':'Expected target time: {date}','fasting.targetTimePassed':'Target time was: {date}','fasting.fastCount.one':'{n} fast','fasting.fastCount.other':'{n} fasts','fasting.fastCount.zero':'{n} fasts','fasting.fastCount.two':'{n} fasts','fasting.fastCount.few':'{n} fasts','fasting.fastCount.many':'{n} fasts','fasting.shortConfirm':'This fast lasted less than one minute. Save it to your history?','fasting.clockError':'The device clock is earlier than this fast’s start time. Check the date/time settings before stopping the fast.',
-      'fasting.startEarlier':'Started earlier','backdate.title':'Start an ongoing fast','backdate.help':'Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.','backdate.start':'Started at','backdate.target':'Target: {goal} • locked for this fast','backdate.targetHelp':'This target is locked to the active fast. Changing Settings later will not change it.','backdate.startFast':'Start fast','backdate.quickAria':'Quick start times','backdate.1h':'1h ago','backdate.2h':'2h ago','backdate.3h':'3h ago','backdate.4h':'4h ago','backdate.6h':'6h ago','backdate.12h':'12h ago','backdate.errStart':'Enter a valid start date and time.','backdate.errFuture':'The start time cannot be in the future.','backdate.errGoal':'Enter a target greater than 0 hours.','backdate.errOverlap':'This ongoing fast would overlap a completed fasting record.','backdate.conflictTitle':'Conflicts with an existing fast','backdate.conflictTitleMany':'Conflicts with {n} existing fasts','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Your ongoing fast cannot begin before {time}.','backdate.startAfter':'Start at {time}','backdate.editConflict':'Edit existing record','backdate.deleteConflict':'Delete conflicting record & start','backdate.deleteConfirm':'Delete this completed fasting record and start the ongoing fast from your selected time? This cannot be undone unless you have a backup.',
+      'fasting.startEarlier':'Started earlier','fasting.changeTarget':'Change target','activeTarget.title':'Change active fasting target','activeTarget.help':'This changes the target for the current fast only. The default target in Settings is not changed.','activeTarget.targetHours':'Target hours','activeTarget.quickAria':'Quick active fasting targets','activeTarget.errGoal':'Enter a target greater than 0 hours.','backdate.title':'Start an ongoing fast','backdate.help':'Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.','backdate.start':'Started at','backdate.target':'Target: {goal} • locked for this fast','backdate.targetHelp':'This target is locked to the active fast. Changing Settings later will not change it.','backdate.startFast':'Start fast','backdate.quickAria':'Quick start times','backdate.1h':'1h ago','backdate.2h':'2h ago','backdate.3h':'3h ago','backdate.4h':'4h ago','backdate.6h':'6h ago','backdate.12h':'12h ago','backdate.errStart':'Enter a valid start date and time.','backdate.errFuture':'The start time cannot be in the future.','backdate.errGoal':'Enter a target greater than 0 hours.','backdate.errOverlap':'This ongoing fast would overlap a completed fasting record.','backdate.conflictTitle':'Conflicts with an existing fast','backdate.conflictTitleMany':'Conflicts with {n} existing fasts','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Your ongoing fast cannot begin before {time}.','backdate.startAfter':'Start at {time}','backdate.editConflict':'Edit existing record','backdate.deleteConflict':'Delete conflicting record & start','backdate.deleteConfirm':'Delete this completed fasting record and start the ongoing fast from your selected time? This cannot be undone unless you have a backup.',
       'history.add':'Add entry','history.start':'Start','history.end':'End','history.targetHours':'Target hours','history.overlapHelp':'Manual entries cannot overlap another saved fast or the current active fast.','history.empty':'No completed fasts yet. Tap Add entry to enter one manually.','history.target':'Target: {goal}','history.targetReached':'Target reached','history.deleteConfirm':'Delete this fasting record?','history.addTitle':'Add fasting entry','history.editTitle':'Edit fasting entry','history.errDates':'Enter a valid start and end date/time.','history.errEndAfter':'End time must be after start time.','history.errFuture':'End time cannot be in the future.','history.errMinute':'A manual fasting entry must be at least one minute long.','history.errGoal':'Enter a target greater than 0 hours.','history.errOverlap':'This interval overlaps another saved fast or the current active fast.',
       'weight.add':'Add weight','weight.intro':'Track body weight alongside your fasting history.','weight.latest':'Latest weight','weight.change':'Change since first','weight.target':'Target weight','weight.toTarget':'Difference to target','weight.targetHelp':'Optional. Leave blank if you only want to track the trend.','weight.trend':'Weight trend','weight.chartHelp':'Last 30 weigh-ins. A target line appears when a target weight is set.','weight.dateTime':'Date & time','weight.empty':'No weight entries yet. Tap Add weight to record your first measurement.','weight.addChart':'Add weight entries to see your trend.','weight.editTitle':'Edit weight','weight.addTitle':'Add weight','weight.deleteConfirm':'Delete this weight entry?','weight.errDate':'Enter a valid date and time.','weight.errFuture':'Weight date/time cannot be in the future.','weight.errValue':'Enter a valid weight greater than 0 {unit}.','weight.errTarget':'Enter a valid target weight greater than 0 {unit}, or leave it blank.',
       'stats.completed':'Completed fasts','stats.average':'Average duration','stats.longest':'Longest fast','stats.reached':'Reached target','stats.total':'Total fasting','stats.last14':'Last 14 days','stats.chartHelp':'Each vertical day bar shows the day\'s 24 hours. Colored sections are fasting time; gaps are non-fasting time.','stats.patterns':'Fasting patterns','stats.interactive':'Interactive','stats.visualizationAria':'Statistics visualization','stats.vizTimeline':'Timeline','stats.vizCalendar':'Calendar','stats.vizTrend':'Trend','stats.vizWeeks':'Weeks','stats.prevMonth':'Previous month','stats.nextMonth':'Next month','stats.less':'Less','stats.more':'More','stats.timelineHelp':'Timeline shows each day\'s 24 hours vertically: colored sections are fasting and gaps are eating/non-fasting time.','stats.calendarHelp':'Calendar intensity shows how much of each day was spent fasting. Tap any day for its total.','stats.trendHelp':'Trend shows daily fasting hours over the last 30 days. Tap a point for that day\'s total.','stats.weeksHelp':'Weeks compares total fasting time across the last 8 calendar weeks. Tap a week for details.','stats.chartDetailDefaultTitle':'Chart details','stats.chartDetailDefaultText':'Tap a date, segment, point or week for details.','stats.detailTotal':'Total fasting: {duration}. Fasting sections: {count}.','stats.detailFast':'Fasting: {start}–{end} ({duration}).','stats.detailGap':'Non-fasting gap: {start}–{end} ({duration}).','stats.weekOf':'Week of {date}','stats.detailWeek':'Total fasting: {duration}. Days containing fasting: {days}/7.',
@@ -992,7 +1023,7 @@ layout: null
       'if.title':'Какво е интермитентното гладуване?','if.what':'Интермитентното гладуване (IF) е хранителен режим, при който планирани периоди на хранене се редуват с периоди с малко или без калориен прием. Основният акцент е върху това кога се приема храна, а не върху конкретен списък от храни.','if.examples':'Често използвани подходи са ежедневно хранене в ограничен времеви прозорец (например 16:8), режим 5:2 и гладуване през ден.','if.learnMore':'Възможни ползи, ограничения и безопасност','if.benefitsTitle':'Възможни ползи','if.benefits':'Проучвания при хора показват, че при някои възрастни интермитентното гладуване може да подпомогне намаляването на телесното тегло и обиколката на талията и може да подобри контрола на кръвната глюкоза, инсулиновата чувствителност, кръвното налягане и някои липидни показатели. Ефектите обикновено са умерени, различават се между хората и режимите и в много проучвания са сходни с тези при постоянно калорийно ограничение, когато общият енергиен прием и отслабването са сравними.','if.limitsTitle':'Какво все още не е сигурно','if.limits':'Дългосрочните ефекти върху профилактиката на заболявания, продължителността на живота, когнитивните функции и най-добрия график за гладуване остават несигурни. Голяма част от изследванията при хора са краткосрочни или средносрочни и са проведени основно при възрастни с наднормено тегло, затлъстяване или метаболитен риск.','if.safetyTitle':'Кой трябва да бъде особено внимателен','if.safety':'Гладуването не е подходящо за всеки. Потърсете професионален съвет преди гладуване при бременност или кърмене, възраст под 18 години, поднормено тегло, настоящи или минали хранителни разстройства, диабет или друго заболяване, или ако приемате лекарства, които могат да бъдат повлияни от времето на хранене. Прекратете гладуването и потърсете подходяща помощ при силна слабост, припадък, обърканост, обезводняване, продължително повръщане или други тревожни симптоми.','if.sourcesTitle':'Доказателства и източници','if.src1':'<a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">Систематичен преглед в BMJ, 2025</a> — 99 рандомизирани проучвания; интермитентното гладуване и постоянното калорийно ограничение дават като цяло сходни резултати за теглото и кардиометаболитните показатели, с обикновено малки разлики между стратегиите.','if.src2':'<a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">Национален институт по стареене на САЩ</a> — преглед на режимите на интермитентно гладуване, възможните ефекти върху здравето и несигурността за дългосрочните резултати.','if.src3':'<a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — хранене в 8–10-часов прозорец показва скромни ползи за три месеца при хора с метаболитен синдром; необходими са по-дълги проучвания.','if.src4':'<a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — възможни ползи и съображения за безопасност, свързани с лекарствата, при хора с диабет тип 2.',
       'settings.language':'Език на интерфейса','settings.languageHelp':'Използвайте автоматично езика на устройството или изберете език само за приложението.','settings.systemLanguage':'Системен език','settings.appearance':'Външен вид','settings.appearanceHelp':'Следвайте автоматично режима на устройството или изберете светъл или тъмен режим само за приложението.','settings.appearanceSystem':'Системен','settings.appearanceLight':'Светъл','settings.appearanceDark':'Тъмен','settings.appIcon':'Икона на приложението','settings.appIconHelp':'Изберете иконата за следващото инсталиране на Fasting Tracker. Промяната тук не заменя иконата на вече инсталирано приложение.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Изберете иконата в Safari преди Add to Home Screen. Инсталирано уеб приложение на началния екран не може да смени иконата си на място.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Изберете иконата преди Install app или Add to Home screen. При някои Android launcher-и също е необходимо преинсталиране, за да се покаже новата икона.','settings.appIconSafetyHeading':'Безопасна смяна на иконата на инсталираното приложение','settings.appIconSafetyText':'Премахването или деинсталирането на уеб приложението от началния екран може да изтрие всички локални данни на тази инсталация, статуса за постоянно хранилище и вътрешните възстановителни копия. Те не преживяват деинсталиране. Преди премахване създайте външен архив. След повторно инсталиране с новата икона импортирайте архива, за да възстановите данните и настройките.','settings.appIconPrepare':'Архивирай и подготви смяна на иконата','iconChange.linkLabel':'Линк за преинсталиране','iconChange.copyLink':'Копирай линка за преинсталиране','iconChange.ready':'Архивът за „{icon}“ е създаден. Линкът за преинсталиране е готов по-долу. Копирайте го преди да премахнете инсталираното приложение.','iconChange.copied':'Линкът за преинсталиране е копиран.','iconChange.copyFailed':'Автоматичното копиране не е налично. Линкът за преинсталиране е маркиран по-долу; използвайте командата за копиране на устройството.','iconChange.readyCopied':'Архивът е създаден. Копирана е връзка за повторно инсталиране с „{icon}“. Сега премахнете/деинсталирайте текущото приложение от началния екран, отворете Safari/Chrome, поставете копираната връзка, инсталирайте Fasting Tracker отново и после използвайте Настройки → Импорт, за да възстановите архива.','iconChange.readyPrompt':'Архивът за „{icon}“ е създаден. Копирайте тази връзка за повторно инсталиране. После премахнете/деинсталирайте текущото приложение, отворете връзката в Safari/Chrome, инсталирайте Fasting Tracker отново и използвайте Настройки → Импорт, за да възстановите архива.','icon.plate':'Чиния и часовник','icon.moon':'Луна и прибори','icon.hourglass':'Пясъчен часовник и листо','icon.timer':'F таймер','settings.goal':'Целева продължителност на гладуването','settings.goalHelp':'Въведете положителен брой часове в рамките на поддържания от браузъра диапазон за дати. Всяко започнато гладуване запазва целта, активна при старта му.','settings.storageNotice':'Данните за гладуването и теглото се съхраняват локално на това устройство. Приложението автоматично пази поредица от вътрешни JSON възстановителни копия и на всеки 7 дни напомня за външен архив.','settings.deleteAll':'Изтрий всички данни','settings.deleteHelp':'Изтрий окончателно историята на гладуването и теглото от това устройство',
       'fasting.today':'Днес','fasting.elapsedToday':'Време в гладуване днес','fasting.targetStreak':'Текуща поредица от постигнати цели','fasting.ready':'Готово за старт','fasting.start':'Започни гладуване','fasting.stop':'Спри гладуването','fasting.started':'Начало: {date}','fasting.target':'Цел: {goal}','fasting.targetLocked':'Цел: {goal} • фиксирана за това гладуване','fasting.targetReached':'Целта е достигната • {duration} над целта','fasting.progress':'{pct}% изпълнено • остават {duration}','fasting.zeroProgress':'0% изпълнено','fasting.expectedTargetTime':'Очакван час за достигане на целта: {date}','fasting.targetTimePassed':'Часът за достигане на целта беше: {date}','fasting.fastCount.one':'{n} гладуване','fasting.fastCount.other':'{n} гладувания','fasting.fastCount.zero':'{n} гладувания','fasting.fastCount.two':'{n} гладувания','fasting.fastCount.few':'{n} гладувания','fasting.fastCount.many':'{n} гладувания','fasting.shortConfirm':'Това гладуване продължи по-малко от една минута. Да бъде ли запазено в историята?','fasting.clockError':'Часовникът на устройството показва час преди началото на това гладуване. Проверете настройките за дата и час, преди да го спрете.',
-      'fasting.startEarlier':'Започнало по-рано','backdate.title':'Започни текущо гладуване','backdate.help':'Изберете кога всъщност е започнало това гладуване. То ще остане активно и ще продължи да се отчита, докато натиснете „Спри гладуването“.','backdate.start':'Начало','backdate.target':'Цел: {goal} • заключена за това гладуване','backdate.targetHelp':'Тази цел се заключва за текущото гладуване. По-късна промяна в Настройки няма да я промени.','backdate.startFast':'Започни гладуването','backdate.quickAria':'Бърз избор на начален час','backdate.1h':'преди 1ч','backdate.2h':'преди 2ч','backdate.3h':'преди 3ч','backdate.4h':'преди 4ч','backdate.6h':'преди 6ч','backdate.12h':'преди 12ч','backdate.errStart':'Въведете валидни дата и час за начало.','backdate.errFuture':'Началният час не може да бъде в бъдещето.','backdate.errGoal':'Въведете цел над 0 часа.','backdate.errOverlap':'Това текущо гладуване би се застъпило със завършен запис за гладуване.','backdate.conflictTitle':'Застъпване със съществуващо гладуване','backdate.conflictTitleMany':'Застъпване с {n} съществуващи гладувания','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Текущото гладуване не може да започне преди {time}.','backdate.startAfter':'Започни в {time}','backdate.editConflict':'Редактирай съществуващия запис','backdate.deleteConflict':'Изтрий застъпващия се запис и започни','backdate.deleteConfirm':'Да се изтрие ли този завършен запис за гладуване и да се започне текущото гладуване от избрания час? Това не може да бъде отменено без резервно копие.',
+      'fasting.startEarlier':'Започнало по-рано','fasting.changeTarget':'Промени целта','activeTarget.title':'Промяна на целта за текущото гладуване','activeTarget.help':'Това променя целта само за текущото гладуване. Стандартната цел в Настройки не се променя.','activeTarget.targetHours':'Целеви часове','activeTarget.quickAria':'Бърз избор на цел за текущото гладуване','activeTarget.errGoal':'Въведете цел над 0 часа.','backdate.title':'Започни текущо гладуване','backdate.help':'Изберете кога всъщност е започнало това гладуване. То ще остане активно и ще продължи да се отчита, докато натиснете „Спри гладуването“.','backdate.start':'Начало','backdate.target':'Цел: {goal} • заключена за това гладуване','backdate.targetHelp':'Тази цел се заключва за текущото гладуване. По-късна промяна в Настройки няма да я промени.','backdate.startFast':'Започни гладуването','backdate.quickAria':'Бърз избор на начален час','backdate.1h':'преди 1ч','backdate.2h':'преди 2ч','backdate.3h':'преди 3ч','backdate.4h':'преди 4ч','backdate.6h':'преди 6ч','backdate.12h':'преди 12ч','backdate.errStart':'Въведете валидни дата и час за начало.','backdate.errFuture':'Началният час не може да бъде в бъдещето.','backdate.errGoal':'Въведете цел над 0 часа.','backdate.errOverlap':'Това текущо гладуване би се застъпило със завършен запис за гладуване.','backdate.conflictTitle':'Застъпване със съществуващо гладуване','backdate.conflictTitleMany':'Застъпване с {n} съществуващи гладувания','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'Текущото гладуване не може да започне преди {time}.','backdate.startAfter':'Започни в {time}','backdate.editConflict':'Редактирай съществуващия запис','backdate.deleteConflict':'Изтрий застъпващия се запис и започни','backdate.deleteConfirm':'Да се изтрие ли този завършен запис за гладуване и да се започне текущото гладуване от избрания час? Това не може да бъде отменено без резервно копие.',
       'history.add':'Добави запис','history.start':'Начало','history.end':'Край','history.targetHours':'Целеви часове','history.overlapHelp':'Ръчните записи не могат да се застъпват с друго запазено или текущо гладуване.','history.empty':'Все още няма завършени гладувания. Натиснете „Добави запис“, за да въведете едно ръчно.','history.target':'Цел: {goal}','history.targetReached':'Целта е достигната','history.deleteConfirm':'Да се изтрие ли този запис за гладуване?','history.addTitle':'Добавяне на гладуване','history.editTitle':'Редактиране на гладуване','history.errDates':'Въведете валидни дата и час за начало и край.','history.errEndAfter':'Крайният час трябва да е след началния.','history.errFuture':'Крайният час не може да бъде в бъдещето.','history.errMinute':'Ръчният запис трябва да е с продължителност поне една минута.','history.errGoal':'Въведете цел над 0 часа.','history.errOverlap':'Този интервал се застъпва с друго запазено или текущо гладуване.',
       'weight.add':'Добави тегло','weight.intro':'Следете телесното тегло заедно с историята на гладуването.','weight.latest':'Последно тегло','weight.change':'Промяна от първото измерване','weight.target':'Целево тегло','weight.toTarget':'Разлика до целта','weight.targetHelp':'По избор. Оставете празно, ако искате само да следите тенденцията.','weight.trend':'Тенденция на теглото','weight.chartHelp':'Последните 30 измервания. При зададено целево тегло се показва линия на целта.','weight.dateTime':'Дата и час','weight.empty':'Все още няма записи за тегло. Натиснете „Добави тегло“ за първото измерване.','weight.addChart':'Добавете измервания на теглото, за да видите тенденцията.','weight.editTitle':'Редактиране на тегло','weight.addTitle':'Добавяне на тегло','weight.deleteConfirm':'Да се изтрие ли този запис за тегло?','weight.errDate':'Въведете валидни дата и час.','weight.errFuture':'Датата/часът на теглото не може да е в бъдещето.','weight.errValue':'Въведете валидно тегло над 0 {unit}.','weight.errTarget':'Въведете валидно целево тегло над 0 {unit} или оставете полето празно.',
       'stats.completed':'Завършени гладувания','stats.average':'Средна продължителност','stats.longest':'Най-дълго гладуване','stats.reached':'Постигната цел','stats.total':'Общо време в гладуване','stats.last14':'Последните 14 дни','stats.chartHelp':'Всяка вертикална дневна колона показва 24-те часа на деня. Оцветените части са време в гладуване, а прекъсванията са време извън гладуване.','stats.patterns':'Модели на гладуване','stats.interactive':'Интерактивно','stats.visualizationAria':'Визуализация на статистиката','stats.vizTimeline':'Времева линия','stats.vizCalendar':'Календар','stats.vizTrend':'Тенденция','stats.vizWeeks':'Седмици','stats.prevMonth':'Предишен месец','stats.nextMonth':'Следващ месец','stats.less':'По-малко','stats.more':'Повече','stats.timelineHelp':'Времевата линия показва 24-те часа на всеки ден вертикално: оцветените части са гладуване, а прекъсванията са хранене/време без гладуване.','stats.calendarHelp':'Интензитетът в календара показва каква част от деня е била в гладуване. Докоснете ден за общото време.','stats.trendHelp':'Тенденцията показва дневните часове гладуване за последните 30 дни. Докоснете точка за общото време за деня.','stats.weeksHelp':'Седмиците сравняват общото време в гладуване през последните 8 календарни седмици. Докоснете седмица за подробности.','stats.chartDetailDefaultTitle':'Детайли за графиката','stats.chartDetailDefaultText':'Докоснете дата, секция, точка или седмица за подробности.','stats.detailTotal':'Общо гладуване: {duration}. Секции на гладуване: {count}.','stats.detailFast':'Гладуване: {start}–{end} ({duration}).','stats.detailGap':'Пауза без гладуване: {start}–{end} ({duration}).','stats.weekOf':'Седмица от {date}','stats.detailWeek':'Общо гладуване: {duration}. Дни с гладуване: {days}/7.',
@@ -1034,7 +1065,7 @@ layout: null
       'if.title':'¿Qué es el ayuno intermitente?','if.what':'El ayuno intermitente (AI) es un patrón de alimentación que alterna periodos planificados de ingesta con periodos de poca o ninguna ingesta calórica. Se centra principalmente en cuándo se come, no en prescribir una lista concreta de alimentos.','if.examples':'Los enfoques habituales incluyen la alimentación diaria con horario restringido (por ejemplo, 16:8), el patrón 5:2 y el ayuno en días alternos.','if.learnMore':'Posibles beneficios, límites y seguridad','if.benefitsTitle':'Posibles beneficios','if.benefits':'Los ensayos en humanos sugieren que el ayuno intermitente puede ayudar a algunos adultos a reducir el peso corporal y la circunferencia de la cintura, y puede mejorar el control de la glucosa, la sensibilidad a la insulina, la presión arterial y algunos marcadores de lípidos. Los efectos suelen ser modestos, varían entre personas y regímenes y, en muchos estudios, son similares a los de la restricción calórica continua cuando la ingesta energética total y la pérdida de peso son comparables.','if.limitsTitle':'Lo que sigue siendo incierto','if.limits':'Los efectos a largo plazo sobre la prevención de enfermedades, la longevidad, la función cognitiva y el mejor horario de ayuno siguen siendo inciertos. Gran parte de la evidencia en humanos es de corto o medio plazo y se concentra en adultos con sobrepeso, obesidad o riesgo metabólico.','if.safetyTitle':'Quién debe tener especial precaución','if.safety':'El ayuno no es adecuado para todo el mundo. Consulta a un profesional antes de ayunar si estás embarazada o amamantando, tienes menos de 18 años, bajo peso, antecedentes actuales o pasados de trastornos alimentarios, diabetes u otra enfermedad, o tomas medicamentos que puedan verse afectados por el horario de las comidas. Interrumpe el ayuno y busca atención adecuada si presentas debilidad intensa, desmayo, confusión, deshidratación, vómitos persistentes u otros síntomas preocupantes.','if.sourcesTitle':'Evidencia y fuentes','if.src1':'<a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">Revisión sistemática de BMJ, 2025</a> — 99 ensayos aleatorizados; el ayuno intermitente y la restricción calórica continua produjeron resultados ampliamente similares sobre el peso y los factores cardiometabólicos, con diferencias generalmente pequeñas entre estrategias.','if.src2':'<a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">Instituto Nacional sobre el Envejecimiento de EE. UU.</a> — resumen de los patrones de ayuno intermitente, sus posibles efectos en la salud y la incertidumbre sobre los resultados a largo plazo.','if.src3':'<a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — una ventana de alimentación de 8–10 horas produjo beneficios modestos durante tres meses en personas con síndrome metabólico; hacen falta estudios más largos.','if.src4':'<a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — posibles beneficios y consideraciones de seguridad relacionadas con la medicación en personas con diabetes tipo 2.',
       'settings.language':'Idioma de la interfaz','settings.languageHelp':'Usa automáticamente el idioma del dispositivo o elige un idioma solo para esta app.','settings.systemLanguage':'Idioma del sistema','settings.appearance':'Apariencia','settings.appearanceHelp':'Sigue automáticamente la apariencia del dispositivo o elige modo claro u oscuro solo para esta app.','settings.appearanceSystem':'Sistema','settings.appearanceLight':'Claro','settings.appearanceDark':'Oscuro','settings.appIcon':'Icono de la app','settings.appIconHelp':'Elige el icono para la próxima instalación de Fasting Tracker. Cambiar esta opción no sustituye el icono de una app que ya está instalada.','settings.appIconIOSHeading':'iPhone / iPad','settings.appIconIOSHelp':'Elige el icono en Safari antes de usar Añadir a pantalla de inicio. Una app web ya instalada en la pantalla de inicio no puede sustituir su icono directamente.','settings.appIconAndroidHeading':'Android','settings.appIconAndroidHelp':'Elige el icono antes de usar Instalar app o Añadir a pantalla de inicio. Algunos launchers de Android también requieren reinstalar la app web para mostrar un icono nuevo.','settings.appIconSafetyHeading':'Cambiar de forma segura el icono instalado','settings.appIconSafetyText':'Eliminar o desinstalar la app web de la pantalla de inicio puede borrar todos los datos locales de esa instalación, el estado de almacenamiento persistente y las copias internas de recuperación. No sobreviven a la desinstalación. Antes de eliminar la app, crea una copia externa. Después de reinstalarla con el nuevo icono, importa esa copia para restaurar tus datos y ajustes.','settings.appIconPrepare':'Copia y prepara el cambio de icono','iconChange.linkLabel':'Enlace de reinstalación','iconChange.copyLink':'Copiar enlace de reinstalación','iconChange.ready':'Se creó la copia para “{icon}”. El enlace de reinstalación está listo abajo. Cópialo antes de eliminar la app instalada.','iconChange.copied':'Enlace de reinstalación copiado.','iconChange.copyFailed':'La copia automática no está disponible. El enlace de reinstalación está seleccionado abajo; usa el comando de copiar del dispositivo.','iconChange.readyCopied':'Copia creada. Se ha copiado un enlace de reinstalación para “{icon}”. Ahora elimina/desinstala la app actual de la pantalla de inicio, abre Safari/Chrome, pega el enlace copiado, instala Fasting Tracker de nuevo y después usa Ajustes → Importar para restaurar la copia.','iconChange.readyPrompt':'Copia creada para “{icon}”. Copia este enlace de reinstalación. Después elimina/desinstala la app actual, abre el enlace en Safari/Chrome, reinstala Fasting Tracker y usa Ajustes → Importar para restaurar la copia.','icon.plate':'Plato y reloj','icon.moon':'Luna y cubiertos','icon.hourglass':'Reloj de arena y hoja','icon.timer':'Temporizador F','settings.goal':'Duración objetivo del ayuno','settings.goalHelp':'Cualquier número positivo de horas dentro del intervalo de fechas admitido por el navegador. Cada ayuno conserva el objetivo que estaba activo cuando comenzó.','settings.storageNotice':'Tus registros de ayuno y peso se guardan localmente en este dispositivo. La app conserva automáticamente copias JSON internas rotativas y te recuerda cada 7 días hacer una copia externa.','settings.deleteAll':'Eliminar todos los datos','settings.deleteHelp':'Borra permanentemente el historial de ayuno y peso de este dispositivo',
       'fasting.today':'Hoy','fasting.elapsedToday':'Tiempo de ayuno hoy','fasting.targetStreak':'Racha actual de objetivos cumplidos','fasting.ready':'Listo para empezar','fasting.start':'Iniciar ayuno','fasting.stop':'Detener ayuno','fasting.started':'Inicio: {date}','fasting.target':'Objetivo: {goal}','fasting.targetLocked':'Objetivo: {goal} • fijado para este ayuno','fasting.targetReached':'Objetivo alcanzado • {duration} por encima del objetivo','fasting.progress':'{pct}% completado • quedan {duration}','fasting.zeroProgress':'0% completado','fasting.expectedTargetTime':'Hora prevista para alcanzar el objetivo: {date}','fasting.targetTimePassed':'La hora objetivo fue: {date}','fasting.fastCount.one':'{n} ayuno','fasting.fastCount.other':'{n} ayunos','fasting.fastCount.zero':'{n} ayunos','fasting.fastCount.two':'{n} ayunos','fasting.fastCount.few':'{n} ayunos','fasting.fastCount.many':'{n} ayunos','fasting.shortConfirm':'Este ayuno duró menos de un minuto. ¿Guardarlo en el historial?','fasting.clockError':'El reloj del dispositivo está en una hora anterior al inicio de este ayuno. Comprueba la fecha y la hora antes de detenerlo.',
-      'fasting.startEarlier':'Empezó antes','backdate.title':'Iniciar un ayuno en curso','backdate.help':'Elige cuándo empezó realmente este ayuno. Seguirá activo y contando hasta que pulses Detener ayuno.','backdate.start':'Empezó a las','backdate.target':'Objetivo: {goal} • fijado para este ayuno','backdate.targetHelp':'Este objetivo queda fijado para el ayuno activo. Cambiar Ajustes más tarde no lo modificará.','backdate.startFast':'Iniciar ayuno','backdate.quickAria':'Horas de inicio rápidas','backdate.1h':'hace 1h','backdate.2h':'hace 2h','backdate.3h':'hace 3h','backdate.4h':'hace 4h','backdate.6h':'hace 6h','backdate.12h':'hace 12h','backdate.errStart':'Introduce una fecha y hora de inicio válidas.','backdate.errFuture':'La hora de inicio no puede estar en el futuro.','backdate.errGoal':'Introduce un objetivo superior a 0 horas.','backdate.errOverlap':'Este ayuno en curso se solaparía con un registro de ayuno completado.','backdate.conflictTitle':'Conflicto con un ayuno existente','backdate.conflictTitleMany':'Conflicto con {n} ayunos existentes','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'El ayuno en curso no puede comenzar antes de {time}.','backdate.startAfter':'Empezar a las {time}','backdate.editConflict':'Editar registro existente','backdate.deleteConflict':'Eliminar registro en conflicto e iniciar','backdate.deleteConfirm':'¿Eliminar este registro de ayuno completado e iniciar el ayuno en curso desde la hora seleccionada? No se puede deshacer salvo que tengas una copia de seguridad.',
+      'fasting.startEarlier':'Empezó antes','fasting.changeTarget':'Cambiar objetivo','activeTarget.title':'Cambiar objetivo del ayuno activo','activeTarget.help':'Esto cambia el objetivo solo para el ayuno actual. El objetivo predeterminado de Ajustes no cambia.','activeTarget.targetHours':'Horas objetivo','activeTarget.quickAria':'Objetivos rápidos para el ayuno activo','activeTarget.errGoal':'Introduce un objetivo superior a 0 horas.','backdate.title':'Iniciar un ayuno en curso','backdate.help':'Elige cuándo empezó realmente este ayuno. Seguirá activo y contando hasta que pulses Detener ayuno.','backdate.start':'Empezó a las','backdate.target':'Objetivo: {goal} • fijado para este ayuno','backdate.targetHelp':'Este objetivo queda fijado para el ayuno activo. Cambiar Ajustes más tarde no lo modificará.','backdate.startFast':'Iniciar ayuno','backdate.quickAria':'Horas de inicio rápidas','backdate.1h':'hace 1h','backdate.2h':'hace 2h','backdate.3h':'hace 3h','backdate.4h':'hace 4h','backdate.6h':'hace 6h','backdate.12h':'hace 12h','backdate.errStart':'Introduce una fecha y hora de inicio válidas.','backdate.errFuture':'La hora de inicio no puede estar en el futuro.','backdate.errGoal':'Introduce un objetivo superior a 0 horas.','backdate.errOverlap':'Este ayuno en curso se solaparía con un registro de ayuno completado.','backdate.conflictTitle':'Conflicto con un ayuno existente','backdate.conflictTitleMany':'Conflicto con {n} ayunos existentes','backdate.conflictLine':'{start} → {end} • {duration}','backdate.conflictHint':'El ayuno en curso no puede comenzar antes de {time}.','backdate.startAfter':'Empezar a las {time}','backdate.editConflict':'Editar registro existente','backdate.deleteConflict':'Eliminar registro en conflicto e iniciar','backdate.deleteConfirm':'¿Eliminar este registro de ayuno completado e iniciar el ayuno en curso desde la hora seleccionada? No se puede deshacer salvo que tengas una copia de seguridad.',
       'history.add':'Añadir registro','history.start':'Inicio','history.end':'Fin','history.targetHours':'Horas objetivo','history.overlapHelp':'Los registros manuales no pueden solaparse con otro ayuno guardado ni con el ayuno activo.','history.empty':'Aún no hay ayunos completados. Pulsa Añadir registro para introducir uno manualmente.','history.target':'Objetivo: {goal}','history.targetReached':'Objetivo alcanzado','history.deleteConfirm':'¿Eliminar este registro de ayuno?','history.addTitle':'Añadir registro de ayuno','history.editTitle':'Editar registro de ayuno','history.errDates':'Introduce una fecha y hora válidas de inicio y fin.','history.errEndAfter':'La hora de fin debe ser posterior a la de inicio.','history.errFuture':'La hora de fin no puede estar en el futuro.','history.errMinute':'Un registro manual de ayuno debe durar al menos un minuto.','history.errGoal':'Introduce un objetivo superior a 0 horas.','history.errOverlap':'Este intervalo se solapa con otro ayuno guardado o con el ayuno activo.',
       'weight.add':'Añadir peso','weight.intro':'Registra el peso corporal junto con tu historial de ayuno.','weight.latest':'Último peso','weight.change':'Cambio desde el primero','weight.target':'Peso objetivo','weight.toTarget':'Diferencia hasta el objetivo','weight.targetHelp':'Opcional. Déjalo en blanco si solo quieres seguir la tendencia.','weight.trend':'Tendencia del peso','weight.chartHelp':'Últimos 30 pesajes. Aparece una línea objetivo cuando se establece un peso objetivo.','weight.dateTime':'Fecha y hora','weight.empty':'Aún no hay registros de peso. Pulsa Añadir peso para guardar tu primera medición.','weight.addChart':'Añade registros de peso para ver la tendencia.','weight.editTitle':'Editar peso','weight.addTitle':'Añadir peso','weight.deleteConfirm':'¿Eliminar este registro de peso?','weight.errDate':'Introduce una fecha y hora válidas.','weight.errFuture':'La fecha/hora del peso no puede estar en el futuro.','weight.errValue':'Introduce un peso válido superior a 0 {unit}.','weight.errTarget':'Introduce un peso objetivo válido superior a 0 {unit}, o déjalo en blanco.',
       'stats.completed':'Ayunos completados','stats.average':'Duración media','stats.longest':'Ayuno más largo','stats.reached':'Objetivo alcanzado','stats.total':'Ayuno total','stats.last14':'Últimos 14 días','stats.chartHelp':'Cada barra vertical diaria muestra las 24 horas del día. Las secciones coloreadas son tiempo de ayuno y los huecos son tiempo sin ayuno.','stats.patterns':'Patrones de ayuno','stats.interactive':'Interactivo','stats.visualizationAria':'Visualización de estadísticas','stats.vizTimeline':'Cronología','stats.vizCalendar':'Calendario','stats.vizTrend':'Tendencia','stats.vizWeeks':'Semanas','stats.prevMonth':'Mes anterior','stats.nextMonth':'Mes siguiente','stats.less':'Menos','stats.more':'Más','stats.timelineHelp':'La cronología muestra verticalmente las 24 horas de cada día: las secciones coloreadas son ayuno y los huecos son tiempo de comida/no ayuno.','stats.calendarHelp':'La intensidad del calendario muestra qué parte de cada día se pasó en ayuno. Toca un día para ver el total.','stats.trendHelp':'La tendencia muestra las horas de ayuno diarias de los últimos 30 días. Toca un punto para ver el total de ese día.','stats.weeksHelp':'Semanas compara el tiempo total de ayuno durante las últimas 8 semanas naturales. Toca una semana para ver detalles.','stats.chartDetailDefaultTitle':'Detalles del gráfico','stats.chartDetailDefaultText':'Toca una fecha, sección, punto o semana para ver detalles.','stats.detailTotal':'Ayuno total: {duration}. Secciones de ayuno: {count}.','stats.detailFast':'Ayuno: {start}–{end} ({duration}).','stats.detailGap':'Hueco sin ayuno: {start}–{end} ({duration}).','stats.weekOf':'Semana del {date}','stats.detailWeek':'Ayuno total: {duration}. Días con ayuno: {days}/7.',
@@ -1137,6 +1168,7 @@ layout: null
     const goalUnit = document.getElementById('goalUnit');
     if (goalUnit) goalUnit.textContent = t('unit.h');
     document.querySelectorAll('.chip[data-goal]').forEach(chip => { chip.textContent = `${formatNumber(Number(chip.dataset.goal))}${t('unit.h')}`; });
+    document.querySelectorAll('.chip[data-active-goal]').forEach(chip => { chip.textContent = `${formatNumber(Number(chip.dataset.activeGoal))}${t('unit.h')}`; });
   }
 
   function effectiveAppearance() {
@@ -1602,6 +1634,7 @@ layout: null
       activeGoalHours: activeValid ? sanitizeGoal(parsed.activeGoalHours, goal) : null,
       activeTimeZone: activeValid ? normalizeTimeZone(parsed.activeTimeZone) : null,
       activeCreatedAt: activeValid ? normalizeAuditTimestamp(parsed.activeCreatedAt) : null,
+      activeModifiedAt: activeValid ? normalizeAuditTimestamp(parsed.activeModifiedAt) : null,
       records: Array.isArray(parsed.records) ? parsed.records.map(normalizeRecord).filter(Boolean) : [],
       weights: Array.isArray(parsed.weights) ? parsed.weights.map(normalizeWeightEntry).filter(Boolean) : [],
       weightUnit: normalizeWeightUnit(parsed.weightUnit),
@@ -1721,12 +1754,16 @@ layout: null
       if (candidate.activeTimeZone !== activeZone) mark('activeTimeZone', activeZone);
       const activeCreated = normalizeAuditTimestamp(candidate.activeCreatedAt);
       if (candidate.activeCreatedAt !== activeCreated) mark('activeCreatedAt', activeCreated);
+      const activeModified = normalizeAuditTimestamp(candidate.activeModifiedAt);
+      if (candidate.activeModifiedAt !== activeModified) mark('activeModifiedAt', activeModified);
     } else {
       if (candidate.activeStart !== null) mark('activeStart', null);
       if (candidate.activeGoalHours != null) mark('activeGoalHours', null);
       if (candidate.activeTimeZone != null) mark('activeTimeZone', null);
       if (candidate.activeCreatedAt != null) mark('activeCreatedAt', null);
       else if (candidate.activeCreatedAt === undefined) mark('activeCreatedAt', null);
+      if (candidate.activeModifiedAt != null) mark('activeModifiedAt', null);
+      else if (candidate.activeModifiedAt === undefined) mark('activeModifiedAt', null);
     }
     return { data: candidate, changed };
   }
@@ -1755,7 +1792,8 @@ layout: null
       if (!Number.isFinite(parseLocalizedNumber(rawData.activeGoalHours)) || parseLocalizedNumber(rawData.activeGoalHours) <= 0 || parseLocalizedNumber(rawData.activeGoalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid active goal');
       if (!isValidTimeZone(rawData.activeTimeZone)) throw new Error('invalid active timezone');
       if (rawData.activeCreatedAt != null && !validDate(rawData.activeCreatedAt)) throw new Error('invalid active creation time');
-    } else if (rawData.activeGoalHours != null || rawData.activeTimeZone != null || rawData.activeCreatedAt != null) {
+      if (rawData.activeModifiedAt != null && !validDate(rawData.activeModifiedAt)) throw new Error('invalid active modification time');
+    } else if (rawData.activeGoalHours != null || rawData.activeTimeZone != null || rawData.activeCreatedAt != null || rawData.activeModifiedAt != null) {
       throw new Error('orphan active fast metadata');
     }
 
@@ -1829,8 +1867,8 @@ layout: null
       const openModal = visibleModal();
       const activeField = document.activeElement;
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
-        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal')) ||
-        activeField === goalHours || activeField === el('weightTargetInput'));
+        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal' || openModal.id === 'activeTargetModal')) ||
+        activeField === goalHours || activeField === el('weightTargetInput') || activeField === el('activeTargetInput'));
       data = next;
       lastPersistedDataRaw = raw;
       historyVisibleCount = HISTORY_PAGE_SIZE;
@@ -1840,7 +1878,7 @@ layout: null
         editingRecordId = null; editingWeightId = null;
         editingRecordTimeZone = null; editingWeightTimeZone = null;
         const modal = visibleModal();
-        if (modal && (modal.id === 'entryModal' || modal.id === 'weightModal' || modal.id === 'backdateModal')) hideModal(modal.id);
+        if (modal && (modal.id === 'entryModal' || modal.id === 'weightModal' || modal.id === 'backdateModal' || modal.id === 'activeTargetModal')) hideModal(modal.id);
         if (activeField instanceof HTMLElement) activeField.blur();
       }
       if (typeof renderAll === 'function') renderAll();
@@ -2089,6 +2127,7 @@ layout: null
       toggleFast.textContent = t('fasting.stop');
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
+      editActiveTargetBtn.hidden = false;
       const visualPct = Math.min(100, Math.max(0, pct));
       fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
       fastProgressTrack.classList.toggle('reached', pct >= 100);
@@ -2117,6 +2156,7 @@ layout: null
       toggleFast.textContent = t('fasting.start');
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
+      editActiveTargetBtn.hidden = true;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
       fastProgressTrack.setAttribute('aria-valuenow', '0');
@@ -2219,6 +2259,7 @@ layout: null
     data.activeGoalHours = data.goalHours;
     data.activeTimeZone = tz;
     data.activeCreatedAt = new Date().toISOString();
+    data.activeModifiedAt = null;
     if (!save()) { renderAll(); return; }
     closeBackdateModal();
     renderAll();
@@ -2256,6 +2297,7 @@ layout: null
     data.activeGoalHours = data.goalHours;
     data.activeTimeZone = currentTimeZone();
     data.activeCreatedAt = createdAt;
+    data.activeModifiedAt = null;
     if (!save()) { renderAll(); return; }
     renderAll();
   }
@@ -2264,11 +2306,13 @@ layout: null
     const end = new Date(), start = validDate(data.activeStart);
     const targetHours = activeTargetHours();
     const createdAt = normalizeAuditTimestamp(data.activeCreatedAt);
+    const modifiedAt = normalizeAuditTimestamp(data.activeModifiedAt);
     if (!start) {
       data.activeStart = null;
       data.activeGoalHours = null;
       data.activeTimeZone = null;
       data.activeCreatedAt = null;
+      data.activeModifiedAt = null;
       if (!save()) { renderAll(); return; }
       renderAll();
       return;
@@ -2280,17 +2324,19 @@ layout: null
       data.activeGoalHours = null;
       data.activeTimeZone = null;
       data.activeCreatedAt = null;
+      data.activeModifiedAt = null;
       if (!save()) { renderAll(); return; }
       renderAll();
       return;
     }
     if (duration > 0) {
-      data.records.push({ id: makeId(), start: start.toISOString(), end: end.toISOString(), goalHours: targetHours, timeZone: data.activeTimeZone || currentTimeZone(), createdAt, modifiedAt: null });
+      data.records.push({ id: makeId(), start: start.toISOString(), end: end.toISOString(), goalHours: targetHours, timeZone: data.activeTimeZone || currentTimeZone(), createdAt, modifiedAt });
     }
     data.activeStart = null;
     data.activeGoalHours = null;
     data.activeTimeZone = null;
     data.activeCreatedAt = null;
+    data.activeModifiedAt = null;
     if (!save()) { renderAll(); return; }
     renderAll();
   }
@@ -2307,6 +2353,64 @@ layout: null
       }, 650);
     }
   });
+
+  function showActiveTargetError(message) {
+    const box = el('activeTargetError');
+    box.textContent = message || '';
+    box.hidden = !message;
+  }
+
+  function syncActiveTargetPresetState() {
+    const current = parseLocalizedNumber(el('activeTargetInput').value);
+    document.querySelectorAll('[data-active-goal]').forEach(btn => {
+      const selected = Number.isFinite(current) && Number(btn.dataset.activeGoal) === current;
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function openActiveTargetModal() {
+    if (!data.activeStart || recoveryMode) return;
+    el('activeTargetInput').value = formatNumber(activeTargetHours(), 0, 3);
+    showActiveTargetError('');
+    syncActiveTargetPresetState();
+    showModal('activeTargetModal', 'activeTargetInput');
+  }
+
+  function closeActiveTargetModal() {
+    showActiveTargetError('');
+    hideModal('activeTargetModal');
+  }
+
+  function applyActiveGoalValue(value) {
+    if (!data.activeStart) return false;
+    const next = sanitizeGoal(value, activeTargetHours());
+    if (next === activeTargetHours()) { closeActiveTargetModal(); return true; }
+    data.activeGoalHours = next;
+    data.activeModifiedAt = new Date().toISOString();
+    if (!save({ deferSnapshot: true })) { renderAll(); return false; }
+    closeActiveTargetModal();
+    updateTimer();
+    return true;
+  }
+
+  function requestActiveGoalChange(value) {
+    const parsed = parseLocalizedNumber(value);
+    if (!Number.isFinite(parsed) || parsed <= 0 || parsed > MAX_SAFE_GOAL_HOURS) {
+      showActiveTargetError(t('activeTarget.errGoal'));
+      return;
+    }
+    const next = sanitizeGoal(parsed, activeTargetHours());
+    if (next >= LONG_FAST_NOTICE_HOURS && !longFastNoticeSeen()) {
+      pendingLongFastGoal = next;
+      pendingLongFastScope = 'active';
+      closeActiveTargetModal();
+      el('longFastModalText').textContent = t('safety.longFastText', { goal: formatGoal(next) });
+      showModal('longFastModal', 'longFastCancelBtn');
+      return;
+    }
+    applyActiveGoalValue(next);
+  }
 
   function currentStreak() {
     if (currentStreakCache != null) return currentStreakCache;
@@ -3787,6 +3891,7 @@ layout: null
     const next = sanitizeGoal(parsed, data.goalHours);
     if (next >= LONG_FAST_NOTICE_HOURS && !longFastNoticeSeen()) {
       pendingLongFastGoal = next;
+      pendingLongFastScope = 'default';
       el('longFastModalText').textContent = t('safety.longFastText', { goal: formatGoal(next) });
       showModal('longFastModal', 'longFastCancelBtn');
       return;
@@ -3881,6 +3986,17 @@ layout: null
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
+  bindResponsiveAction(editActiveTargetBtn, openActiveTargetModal);
+  el('activeTargetCancelBtn').addEventListener('click', closeActiveTargetModal);
+  bindResponsiveAction(el('activeTargetSaveBtn'), () => requestActiveGoalChange(el('activeTargetInput').value));
+  el('activeTargetInput').addEventListener('input', () => { showActiveTargetError(''); syncActiveTargetPresetState(); });
+  el('activeTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') requestActiveGoalChange(el('activeTargetInput').value); });
+  document.querySelectorAll('[data-active-goal]').forEach(btn => bindResponsiveAction(btn, () => {
+    el('activeTargetInput').value = formatNumber(Number(btn.dataset.activeGoal), 0, 3);
+    showActiveTargetError('');
+    syncActiveTargetPresetState();
+  }));
+  el('activeTargetModal').addEventListener('click', e => { if (e.target === el('activeTargetModal')) closeActiveTargetModal(); });
   el('backdateCancelBtn').addEventListener('click', closeBackdateModal);
   el('backdateStartBtn').addEventListener('click', saveBackdatedActiveFast);
   el('backdateStart').addEventListener('input', () => { showBackdateError(''); clearBackdateConflict(); });
@@ -3906,11 +4022,12 @@ layout: null
     const modal = visibleModal();
     if (e.key === 'Escape' && modal) {
       if (modal.id === 'backdateModal') closeBackdateModal();
+      else if (modal.id === 'activeTargetModal') closeActiveTargetModal();
       else if (modal.id === 'entryModal') closeEntryModal();
       else if (modal.id === 'weightModal') closeWeightModal();
       else if (modal.id === 'updateModal') closeUpdateModal();
       else if (modal.id === 'snapshotModal') closeSnapshotModal();
-      else if (modal.id === 'longFastModal') { pendingLongFastGoal = null; hideModal('longFastModal'); renderAll(); }
+      else if (modal.id === 'longFastModal') { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); }
       return;
     }
     if (e.key === 'Tab' && modal) {
@@ -3922,14 +4039,17 @@ layout: null
     }
   });
 
-  el('longFastCancelBtn').addEventListener('click', () => { pendingLongFastGoal = null; hideModal('longFastModal'); renderAll(); });
+  el('longFastCancelBtn').addEventListener('click', () => { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); });
   el('longFastContinueBtn').addEventListener('click', () => {
     const next = pendingLongFastGoal;
+    const scope = pendingLongFastScope;
     pendingLongFastGoal = null;
+    pendingLongFastScope = 'default';
     hideModal('longFastModal');
-    if (next != null && applyGoalValue(next)) { try { localStorage.setItem(LONG_FAST_NOTICE_KEY, '1'); } catch {} }
+    const applied = next != null && (scope === 'active' ? applyActiveGoalValue(next) : applyGoalValue(next));
+    if (applied) { try { localStorage.setItem(LONG_FAST_NOTICE_KEY, '1'); } catch {} }
   });
-  el('longFastModal').addEventListener('click', e => { if (e.target === el('longFastModal')) { pendingLongFastGoal = null; hideModal('longFastModal'); renderAll(); } });
+  el('longFastModal').addEventListener('click', e => { if (e.target === el('longFastModal')) { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); } });
 
   el('recoveryExportBtn').addEventListener('click', exportRecoveryRaw);
   el('recoverySnapshotsBtn').addEventListener('click', openSnapshotModal);

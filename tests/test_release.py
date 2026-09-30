@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.7.9','version must be 1.7.9')
+ok(ver.get('version')=='1.7.10','version must be 1.7.10')
 ok(ver.get('released')=='2026-09-30','release date must be 2026-09-30')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -296,7 +296,7 @@ try:
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==4, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.7.9', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.7.10', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -398,7 +398,7 @@ const result=validateCompatibleData(legacy),d=result.data;
 assert(result.changed,'repairable legacy data must be changed');
 assert(d.dataVersion===1 && d.revision===0 && d.updatedAt===null,'machine metadata repair');
 assert(d.appearance==='system' && d.iconChoice==='plate' && d.language==='system','preference repair');
-assert(d.activeStart===null && d.activeGoalHours===null && d.activeTimeZone===null && d.activeCreatedAt===null,'orphan active metadata repair');
+assert(d.activeStart===null && d.activeGoalHours===null && d.activeTimeZone===null && d.activeCreatedAt===null && d.activeModifiedAt===null,'orphan active metadata repair');
 assert(new Set(d.records.map(x=>x.id)).size===2 && d.records.length===2,'duplicate IDs repaired and overlap preserved');
 assert(new Set(d.weights.map(x=>x.id)).size===2 && d.weights[0].kg===80.5,'weight metadata repair');
 assert(d.records.every(x=>x.createdAt===null && x.modifiedAt===null),'legacy fast audit times must remain unknown');
@@ -479,7 +479,7 @@ if errors:
 ok('activeCreatedAt: null' in index, 'active fast creation audit field missing from canonical data')
 ok('createdAt: normalizeAuditTimestamp(r.createdAt)' in index and 'modifiedAt: normalizeAuditTimestamp(r.modifiedAt)' in index, 'fasting record audit fields are not normalized')
 ok('createdAt: normalizeAuditTimestamp(w.createdAt)' in index and 'modifiedAt: normalizeAuditTimestamp(w.modifiedAt)' in index, 'weight record audit fields are not normalized')
-ok('data.activeCreatedAt = createdAt;' in index and 'createdAt, modifiedAt: null' in index, 'active fast creation time is not carried into its completed record')
+ok('data.activeCreatedAt = createdAt;' in index and 'createdAt, modifiedAt });' in index, 'active fast creation/modification audit times are not carried into its completed record')
 ok('createdAt: existingRecord ? normalizeAuditTimestamp(existingRecord.createdAt) : nowAudit' in index and 'modifiedAt: existingRecord ? nowAudit : null' in index, 'manual fasting audit timestamps missing')
 ok('createdAt: existingWeight ? normalizeAuditTimestamp(existingWeight.createdAt) : nowAudit' in index and 'modifiedAt: existingWeight ? nowAudit : null' in index, 'weight audit timestamps missing')
 ok("navigator.share({ files: [file] })" in index and "navigator.share({files:[file]})" in index, 'backup/recovery share must send only the JSON file')
@@ -491,7 +491,14 @@ if errors:
     sys.exit(1)
 
 
-# v1.7.9 newest-first horizontal timeline regression checks
+
+ok('activeModifiedAt: null' in index, 'active fast modification audit field missing from canonical data')
+ok("data.activeModifiedAt = new Date().toISOString();" in index, 'editing active fasting target does not stamp modification time')
+ok('createdAt, modifiedAt });' in index, 'active fast modification time is not carried into completed record')
+ok('id="editActiveTargetBtn"' in index and 'id="activeTargetModal"' in index, 'active target editing UI is missing')
+ok("function requestActiveGoalChange(value)" in index and "function applyActiveGoalValue(value)" in index, 'active target editing logic is missing')
+
+# v1.7.10 active-target edit and newest-first timeline regression checks
 ok("let timelineScrollToLatestPending = true;" in index, 'timeline latest-position state missing')
 ok("scroller.scrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);" in index, 'timeline does not align to newest/right edge')
 ok("if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;" in index, 'timeline mode does not request newest position on activation')
