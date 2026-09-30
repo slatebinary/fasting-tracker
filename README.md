@@ -115,6 +115,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, as described in 
 The interface currently supports English, Bulgarian and Spanish. Language, region, time zone and weight unit are kept independent. Locale-sensitive numbers/dates use `Intl`, plurals use `Intl.PluralRules`, and the layout is prepared for future right-to-left languages. See `I18N-GUIDE.md` before adding another translation. Backup JSON remains language-neutral.
 
 
-## v1.8.0 performance architecture
+## v1.8.1 performance architecture
 
 Primary fasting/weight history and recovery snapshot payloads now use IndexedDB instead of large `localStorage` JSON blobs. Small preferences/version metadata remain in `localStorage` so public information pages can follow language/theme immediately. Daily fasting totals are persisted and updated incrementally, expensive statistics are range-limited/lazy, and the supported history ceiling is 100,000 fasting records plus 100,000 weight records. The portable external backup remains JSON. Regression coverage includes both the 2,000+2,000 smoke test and a 70-year test with 25,567 fasting plus 25,567 weight records.

@@ -2,7 +2,7 @@
 """70-year daily-history browser responsiveness regression.
 
 25,567 completed fasts + 25,567 weight records approximates 70 years of daily use.
-This models an established v1.8.0 IndexedDB database with its persisted daily
+This models an established v1.8.1 IndexedDB database with its persisted daily
 aggregate already present, which is the normal state after years of incremental use.
 """
 import sys, time
@@ -32,11 +32,11 @@ with sync_playwright() as p:
       }
       const data={dataVersion:1,revision:1,updatedAt:'2026-01-01T00:00:00.000Z',goalHours:16,activeStart:null,activeGoalHours:null,activeTimeZone:null,activeCreatedAt:null,activeModifiedAt:null,records,weights,weightUnit:'kg',targetWeightKg:75,gamificationEnabled:true,language:'en',appearance:'system',iconChoice:'plate'};
       window.__seedFastingDb(data,[...daily.entries()]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.8.0',seenAt:new Date().toISOString()}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.8.1',seenAt:new Date().toISOString()}));
     }""", COUNT)
     seed_ms=(time.perf_counter()-seed_start)*1000
     start=time.perf_counter(); page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.0'",timeout=30000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.1'",timeout=30000)
     boot=(time.perf_counter()-start)*1000
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     if page.locator('#recoveryBanner').is_visible(): print('FAIL: 70-year valid dataset entered Recovery mode'); sys.exit(1)

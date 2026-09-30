@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.0" />
+  <meta name="ft-app-version" content="1.8.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -876,7 +876,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.0';
+  const APP_VERSION = '1.8.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -920,10 +920,11 @@ layout: null
   let primaryPersistTicket = 0;
   let primaryPersistPromise = Promise.resolve();
   let appDbPromise = null;
+  const el = id => document.getElementById(id);
+  let uiReady = false;
   const versionTransitionSnapshotOK = await initializePersistentStorage();
   if (versionTransitionSnapshotOK && !recoveryMode) rememberCurrentAppVersion();
 
-  const el = id => document.getElementById(id);
   const timer = el('timer');
   const friendlyTimer = el('friendlyTimer');
   const statusText = el('statusText');
@@ -1646,10 +1647,16 @@ layout: null
       await persistSnapshotRecord(meta, data);
       await pruneSnapshotStorage(before);
       setSnapshotProtectionState('ok', snapshotCache.length, snapshotCache.length);
-      if (typeof renderSnapshotStatus === 'function') renderSnapshotStatus();
-      if (typeof renderBackupStatus === 'function') renderBackupStatus();
+      // During startup/migration the DOM helpers exist, but the rest of the UI
+      // bindings have not been initialized yet. Treat a successfully persisted
+      // snapshot as success and defer visual refresh until startup completes.
+      if (uiReady) {
+        renderSnapshotStatus();
+        renderBackupStatus();
+      }
       return meta;
     } catch (err) {
+      console.error('Recovery snapshot persistence failed', err);
       setSnapshotProtectionState('failed', snapshotCache.length, snapshotCache.length + 1);
       return null;
     }
@@ -4418,6 +4425,7 @@ layout: null
 
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
   el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;
+  uiReady = true;
   persistUrlLanguageOverride();
   persistUrlIconOverride();
   applyPreferencesIfChanged(true);
