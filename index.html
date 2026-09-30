@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.7.2" />
+  <meta name="ft-app-version" content="1.7.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -141,14 +141,14 @@ layout: null
     .fastRing .exactTimer { margin:0; font-size:16px; }
     .vizSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:7px; border-radius:16px; background:var(--line); margin:6px 0 16px; touch-action:manipulation; }
     .vizSwitcher button { min-height:58px; padding:14px 12px; border-radius:12px; background:transparent; color:var(--text); font-size:16px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; position:relative; z-index:1; }
-    .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 4px rgba(0,0,0,.10); }
+    .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
     .statsVizView[hidden] { display:none !important; }
     .statsVizView canvas { width:100%; display:block; }
     #statsTimelineView { padding-bottom:4px; }
     .timelineShell { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; align-items:start; width:100%; }
     .timelineScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; position:relative; }
-    .timelineScroller #chart { min-width:700px; touch-action:auto; }
-    .timelineAxis { height:310px; box-sizing:border-box; padding:13px 4px 32px; display:flex; flex-direction:column; justify-content:space-between; color:var(--muted); font:10px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-variant-numeric:tabular-nums; pointer-events:none; }
+    .timelineScroller #chart { min-width:700px; width:100%; height:310px; touch-action:pan-x; }
+    .timelineAxis { height:310px; box-sizing:border-box; padding:13px 4px 33px; display:flex; flex-direction:column; justify-content:space-between; color:var(--muted); font:10px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-variant-numeric:tabular-nums; pointer-events:none; }
     .timelineAxisLeft { align-items:flex-end; text-align:right; }
     .timelineAxisRight { align-items:flex-start; text-align:left; }
     .timelineAxis span { white-space:nowrap; }
@@ -176,7 +176,8 @@ layout: null
     .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
     .legendSwatch.l4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); }
     @media (max-width:380px) { .vizSwitcher button { font-size:15px; min-height:56px; padding:13px 9px; } .timelineShell { grid-template-columns:40px minmax(0,1fr) 40px; } .calendarDay { min-height:48px; } }
-    button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; }
+    button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+    a, .tab { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
     .primary { width: 100%; background: var(--accent); color: white; font-size: 18px; }
     .heroSecondary { width: 100%; margin-top: 10px; }
@@ -833,7 +834,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.7.2';
+  const APP_VERSION = '1.7.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -908,8 +909,8 @@ layout: null
   let weekInteractiveLayout = [];
   let trendSelectedDayKey = null;
   let weekSelectedKey = null;
-  let timelineTouchStart = null;
-  let lastStatsVizTouchAt = 0;
+  let timelinePointerStart = null;
+  let statsVizRenderFrame = 0;
   const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 
@@ -2558,38 +2559,43 @@ layout: null
     statsDetailOverride = null;
     if (hit.kind === 'day') chartSelectedTarget = { kind:'day', dayKey:hit.dayKey };
     else chartSelectedTarget = { kind:'segment', dayKey:hit.dayKey, segmentIndex:hit.segmentIndex };
-    drawChart();
+    drawChart(timelineChartDays);
     return true;
   }
 
-  function rememberTimelineTouch(event) {
-    const touch = event.touches?.[0];
-    timelineTouchStart = touch ? { x:touch.clientX, y:touch.clientY, at:Date.now() } : null;
+  function beginTimelinePointer(event) {
+    // Pointer Events avoid iOS's delayed synthetic click path. We keep the
+    // press pending so a horizontal swipe can still scroll the timeline.
+    timelinePointerStart = { id:event.pointerId, x:event.clientX, y:event.clientY, moved:false };
   }
 
-  function finishTimelineTouch(event) {
-    const touch = event.changedTouches?.[0], start = timelineTouchStart;
-    timelineTouchStart = null;
-    if (!touch || !start) return;
-    const moved = Math.hypot(touch.clientX - start.x, touch.clientY - start.y);
-    if (moved > 16 || Date.now() - start.at > 900) return;
-    if (selectTimelineAt(touch.clientX, touch.clientY) && event.cancelable) event.preventDefault();
+  function moveTimelinePointer(event) {
+    const start = timelinePointerStart;
+    if (!start || start.id !== event.pointerId) return;
+    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) start.moved = true;
   }
 
-  function handleChartClick(event) {
+  function finishTimelinePointer(event) {
+    const start = timelinePointerStart;
+    timelinePointerStart = null;
+    if (!start || start.id !== event.pointerId || start.moved) return;
     selectTimelineAt(event.clientX, event.clientY);
   }
 
-  function drawChart() {
+  function cancelTimelinePointer(event) {
+    if (!timelinePointerStart || timelinePointerStart.id === event.pointerId) timelinePointerStart = null;
+  }
+
+  function drawChart(daysOverride = null) {
     const c = el('chart'), ctx = c.getContext('2d');
     const ratio = window.devicePixelRatio || 1;
-    const cssW = c.clientWidth || 660, cssH = 310;
+    const cssW = c.clientWidth || 700, cssH = c.clientHeight || 310;
     c.width = Math.floor(cssW * ratio); c.height = Math.floor(cssH * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
-    c.style.touchAction = 'auto';
+    c.style.touchAction = 'pan-x';
 
-    const days = buildInteractiveChartDays(14);
+    const days = Array.isArray(daysOverride) && daysOverride.length ? daysOverride : buildInteractiveChartDays(14);
     const top = 18, bottom = 38, left = 6, right = 6;
     const w = cssW - left - right, h = cssH - top - bottom;
     const gap = 8, bw = (w - gap * 13) / 14;
@@ -2601,6 +2607,7 @@ layout: null
     const accent = style.getPropertyValue('--accent').trim();
     const muted = style.getPropertyValue('--muted').trim();
     const card = style.getPropertyValue('--card').trim();
+    const textColor = style.getPropertyValue('--text').trim();
     chartInteractiveLayout = [];
 
     ctx.strokeStyle = line; ctx.lineWidth = 1;
@@ -2615,9 +2622,12 @@ layout: null
       const isDaySelected = chartSelectedTarget && chartSelectedTarget.kind === 'day' && chartSelectedTarget.dayKey === day.key;
       ctx.fillStyle = card;
       ctx.fillRect(x0, top, bw, h);
-      ctx.strokeStyle = isDaySelected ? accent : line;
-      ctx.lineWidth = isDaySelected ? 2 : 1;
+      ctx.strokeStyle = isDaySelected ? textColor : line;
+      ctx.lineWidth = isDaySelected ? 4 : 1;
       ctx.strokeRect(x0, top, bw, h);
+      if (isDaySelected) {
+        ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.strokeRect(x0 + 2, top + 2, Math.max(1,bw - 4), Math.max(1,h - 4));
+      }
       chartInteractiveLayout.push({ kind: 'day', dayKey: day.key, x: x0, y: cssH - bottom + 4, w: bw, h: bottom - 4 });
 
       day.segments.forEach((segment, segIndex) => {
@@ -2634,9 +2644,14 @@ layout: null
         }
         const isSelected = chartSelectedTarget && chartSelectedTarget.kind === 'segment' && chartSelectedTarget.dayKey === day.key && chartSelectedTarget.segmentIndex === segIndex;
         if (isSelected) {
-          ctx.strokeStyle = accent;
-          ctx.lineWidth = 2;
-          ctx.strokeRect(x0 + 1, rectY + 1, Math.max(1, bw - 2), Math.max(1, rectH - 2));
+          // High-contrast outer border + accent inner border make selection
+          // obvious on both filled fasting segments and empty non-fasting gaps.
+          const sx = x0 + 1, sy = rectY + 1, sw = Math.max(1, bw - 2), sh = Math.max(1, rectH - 2);
+          ctx.save();
+          ctx.fillStyle = textColor; ctx.globalAlpha = .12; ctx.fillRect(sx, sy, sw, sh); ctx.globalAlpha = 1;
+          ctx.strokeStyle = textColor; ctx.lineWidth = 4; ctx.strokeRect(sx, sy, sw, sh);
+          if (sw > 5 && sh > 5) { ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.strokeRect(sx + 2, sy + 2, Math.max(1, sw - 4), Math.max(1, sh - 4)); }
+          ctx.restore();
         }
       });
 
@@ -2667,21 +2682,21 @@ layout: null
     const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
   }
 
-  function handleStatsVizTouchStart(event) {
-    if (!event.touches?.length) return;
-    lastStatsVizTouchAt = Date.now();
-    if (event.cancelable) event.preventDefault();
+  function handleStatsVizPointerDown(event) {
     setStatsVizMode(event.currentTarget.dataset.viz);
   }
 
   function handleStatsVizClick(event) {
-    if (Date.now() - lastStatsVizTouchAt < 700 && event.detail !== 0) return;
+    // Keyboard activation has no preceding pointer event. Pointer-generated
+    // clicks are harmless because setStatsVizMode returns when already active.
     setStatsVizMode(event.currentTarget.dataset.viz);
   }
 
   function setStatsVizMode(mode) {
     const allowed = ['timeline','calendar','trend','weeks'];
-    statsVizMode = allowed.includes(mode) ? mode : 'timeline';
+    const nextMode = allowed.includes(mode) ? mode : 'timeline';
+    if (statsVizMode === nextMode) return;
+    statsVizMode = nextMode;
     statsDetailOverride = null;
     document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(btn => {
       const active = btn.dataset.viz === statsVizMode;
@@ -2690,15 +2705,23 @@ layout: null
     });
     const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView' };
     for (const [key,id] of Object.entries(map)) el(id).hidden = key !== statsVizMode;
-    renderStatsVisualizations();
+
+    // Paint the selected tab/view first, then perform chart work on the next
+    // animation frame. This keeps the touch response visually immediate even
+    // with a large local history.
+    const requestedMode = statsVizMode;
+    const token = ++statsVizRenderFrame;
+    requestAnimationFrame(() => {
+      if (token !== statsVizRenderFrame || statsVizMode !== requestedMode) return;
+      renderStatsVisualizations();
+    });
   }
 
   function renderStatsVisualizations() {
-    if (statsVizMode === 'calendar') renderFastCalendar();
-    else if (statsVizMode === 'trend') drawFastTrendChart();
-    else if (statsVizMode === 'weeks') drawFastWeeksChart();
-    else drawChart();
-    renderChartDetailForMode(statsVizMode === 'timeline' ? buildInteractiveChartDays(14) : null);
+    if (statsVizMode === 'calendar') { renderFastCalendar(); renderChartDetailForMode(); }
+    else if (statsVizMode === 'trend') { drawFastTrendChart(); renderChartDetailForMode(); }
+    else if (statsVizMode === 'weeks') { drawFastWeeksChart(); renderChartDetailForMode(); }
+    else drawChart(); // drawChart already renders Timeline details from the same day model.
   }
 
   function monthAnchor(offset = 0) {
@@ -3780,12 +3803,12 @@ layout: null
     installUpdate();
   });
 
-  el('timelineScroller').addEventListener('touchstart', rememberTimelineTouch, {passive:true});
-  el('timelineScroller').addEventListener('touchend', finishTimelineTouch, {passive:false});
-  el('timelineScroller').addEventListener('touchcancel', () => { timelineTouchStart = null; }, {passive:true});
-  el('chart').addEventListener('click', handleChartClick);
+  el('chart').addEventListener('pointerdown', beginTimelinePointer);
+  el('chart').addEventListener('pointermove', moveTimelinePointer);
+  el('chart').addEventListener('pointerup', finishTimelinePointer);
+  el('chart').addEventListener('pointercancel', cancelTimelinePointer);
   document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(button => {
-    button.addEventListener('touchstart', handleStatsVizTouchStart, {passive:false});
+    button.addEventListener('pointerdown', handleStatsVizPointerDown);
     button.addEventListener('click', handleStatsVizClick);
   });
   el('calendarPrevBtn').addEventListener('click', () => { statsCalendarMonthOffset -= 1; statsDetailOverride = null; renderFastCalendar(); });
