@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.1" />
+  <meta name="ft-app-version" content="1.8.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -876,7 +876,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.1';
+  const APP_VERSION = '1.8.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2719,34 +2719,42 @@ layout: null
     ];
   }
 
-  function renderGamification() {
+  function gamificationSummaryModel() {
+    const xp = gamificationXP();
+    const level = levelForXP(xp);
+    let fillPct = 100;
+    if (level.next != null) fillPct = ((xp - level.min) / (level.next - level.min)) * 100;
+    return { xp, level, fillPct: Math.max(0, Math.min(100, fillPct)) };
+  }
+
+  function renderGamificationSummary() {
     const enabled = data.gamificationEnabled !== false;
     const summary = el('gamificationSummary');
-    const detail = el('gamificationDetail');
     if (summary) summary.hidden = !enabled;
+    if (!enabled || !summary) return;
+
+    const { xp, level, fillPct } = gamificationSummaryModel();
+    el('gSummaryLevel').textContent = t('game.level', {n: level.number});
+    el('gSummaryXP').textContent = `${formatNumber(xp)} XP`;
+    el('gSummaryNext').textContent = level.next == null ? t('game.highest') : t('game.next', {xp: Math.max(0, level.next - xp)});
+    el('gSummaryFill').style.width = `${fillPct}%`;
+    el('xpProgressTrack').setAttribute('aria-valuenow', String(Math.round(fillPct)));
+    el('xpProgressTrack').setAttribute('aria-valuetext', level.next == null ? t('game.highest') : t('game.next', {xp: Math.max(0, level.next - xp)}));
+  }
+
+  function renderGamificationDetail() {
+    const enabled = data.gamificationEnabled !== false;
+    const detail = el('gamificationDetail');
     if (detail) detail.hidden = !enabled;
     const toggle = el('gamificationToggle');
     if (toggle) toggle.checked = enabled;
-    if (!enabled) return;
+    if (!enabled || !detail) return;
 
-    const xp = gamificationXP();
-    const level = levelForXP(xp);
+    const { xp, level, fillPct } = gamificationSummaryModel();
     const levelLabel = t('game.levelFull', {n: level.number, name: t(level.nameKey)});
-    el('gSummaryLevel').textContent = t('game.level', {n: level.number});
     el('gDetailLevel').textContent = levelLabel;
-    el('gSummaryXP').textContent = `${formatNumber(xp)} XP`;
     el('gXP').textContent = formatNumber(xp);
-
-    let fillPct = 100;
-    if (level.next != null) {
-      fillPct = ((xp - level.min) / (level.next - level.min)) * 100;
-      el('gSummaryNext').textContent = t('game.next', {xp: Math.max(0, level.next - xp)});
-    } else {
-      el('gSummaryNext').textContent = t('game.highest');
-    }
-    const safeFillPct = Math.max(0, Math.min(100, fillPct));
-    el('gSummaryFill').style.width = `${safeFillPct}%`;
-    el('xpProgressTrack').setAttribute('aria-valuenow', String(Math.round(safeFillPct)));
+    el('xpProgressTrack').setAttribute('aria-valuenow', String(Math.round(fillPct)));
     el('xpProgressTrack').setAttribute('aria-valuetext', level.next == null ? t('game.highest') : t('game.next', {xp: Math.max(0, level.next - xp)}));
 
     const weekly = weeklyTargetSuccessRate();
@@ -2766,6 +2774,11 @@ layout: null
       item.append(icon, title, detailText);
       box.append(item);
     }
+  }
+
+  function renderGamification() {
+    renderGamificationSummary();
+    renderGamificationDetail();
   }
 
   function statsSummary() {
@@ -3409,6 +3422,7 @@ layout: null
       renderWeight();
       viewDirty.weight = false;
       if (el('stats').classList.contains('active')) { renderGamification(); viewDirty.stats = true; }
+      if (el('fasting').classList.contains('active')) { renderGamificationSummary(); viewDirty.fasting = false; }
       renderBackupStatus();
     }, 0));
   }
@@ -4102,7 +4116,7 @@ layout: null
 
   function renderScreen(screen = activeScreenId(), { force = false } = {}) {
     if (!force && !viewDirty[screen]) return;
-    if (screen === 'fasting') updateTimer();
+    if (screen === 'fasting') { updateTimer(); renderGamificationSummary(); }
     else if (screen === 'history') renderHistory();
     else if (screen === 'weight') renderWeight();
     else if (screen === 'stats') renderStats();
@@ -4111,7 +4125,8 @@ layout: null
       renderSnapshotStatus();
       renderInstallStorageNotice();
       queueStorageProtectionRefresh();
-      renderGamification();
+      renderGamificationDetail();
+      renderGamificationSummary();
     }
     viewDirty[screen] = false;
   }
@@ -4202,8 +4217,11 @@ layout: null
 
   el('gamificationToggle').addEventListener('change', () => {
     data.gamificationEnabled = el('gamificationToggle').checked;
-    if (!save({ invalidateDerived:false, dirtyViews:['stats','settings'] })) { renderAll(); return; }
-    if (el('stats').classList.contains('active')) renderGamification();
+    if (!save({ invalidateDerived:false, dirtyViews:['fasting','stats','settings'] })) { renderAll(); return; }
+    renderGamificationSummary();
+    renderGamificationDetail();
+    viewDirty.fasting = false;
+    if (el('stats').classList.contains('active')) viewDirty.stats = false;
   });
 
   const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html']);
@@ -4414,7 +4432,7 @@ layout: null
     }
     if (event.key === BACKUP_META_KEY) {
       reloadBackupMetaFromStorage();
-      renderBackupStatus(); renderSnapshotStatus(); renderGamification();
+      renderBackupStatus(); renderSnapshotStatus(); renderGamificationSummary(); if (el('stats').classList.contains('active') || el('settings').classList.contains('active')) renderGamificationDetail();
     }
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderScreen(activeScreenId()); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
