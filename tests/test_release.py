@@ -31,7 +31,7 @@ index=(ROOT/'index.html').read_text()
 en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.7.11','version must be 1.7.11')
+ok(ver.get('version')=='1.8.0','version must be 1.8.0')
 ok(ver.get('released')=='2026-09-30','release date must be 2026-09-30')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -52,8 +52,8 @@ for item in ver.get('shell',[]):
     normalized=re.sub(r'https://github\.com/[^/"\'<>\s]+/[^/"\'<>\s]+','__REPO_URL__',normalized)
     ok(hashlib.sha256(normalized.encode()).hexdigest()==ver['hashes'][item],f'GitHub Pages normalized hash mismatch {item}')
 ok('responseDigestHex' in sw and 'integrity check failed' in sw,'service worker integrity verification missing')
-ok('validateCompatibleData(JSON.parse(raw))' in index and 'return { data: validateImportedData(prepared.data), changed: prepared.changed };' in index,'live stored data compatibility bridge must end in strict validation')
-ok('data = validateCompatibleData(selected.data).data;' in index,'recovery snapshot restore is not compatibility-validated')
+ok('validateCompatibleData(JSON.parse(legacyRaw)).data' in index and 'return { data: validateImportedData(prepared.data), changed: prepared.changed };' in index,'legacy/live compatibility bridge must end in strict validation')
+ok('const payload = await loadSnapshotPayload(snapshotId);' in index and 'const restored = validateCompatibleData(payload).data;' in index,'recovery snapshot restore is not compatibility-validated')
 ok('navigator.storage.persisted' in index and 'storageProtectionStatus' in index,'storage protection UI missing')
 ok('installStorageNotice' in index and 'isStandaloneApp' in index,'Safari/Home Screen storage warning missing')
 ok(en_source.get('backup.noneYet')=='No external backup yet','missing first-backup empty-state label')
@@ -141,7 +141,7 @@ try:
         ok(evaluated==lang_dicts[lang],f'i18n runtime is stale for {lang}; run tools/build_i18n_runtime.py')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==4, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.7.11', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.8.0', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -245,48 +245,19 @@ ok('id="appFooterVersion"' in index, 'dynamic footer version element missing')
 ok("el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;" in index, 'footer version is not driven by APP_VERSION')
 ok('Fasting Tracker v1.2.0' not in index and '>v1.2.0<' not in index, 'stale hard-coded v1.2.0 label remains')
 
-# Snapshot-pressure and warning regression checks
-ok('function setSnapshotProtectionState(' in index and 'function isQuotaError(' in index, 'snapshot protection health tracking missing')
-ok("setSnapshotProtectionState('reduced'" in index and "setSnapshotProtectionState('failed'" in index, 'snapshot storage degradation states missing')
-ok('function writePrimaryDataWithSnapshotReclaim(' in index, 'primary data does not reclaim snapshot space under quota pressure')
+# IndexedDB lifetime-storage and recovery-snapshot regression checks
+ok("const IDB_NAME = 'FastingTrackerDB';" in index and "indexedDB.open(IDB_NAME, IDB_VERSION)" in index, 'IndexedDB primary storage layer missing')
+ok("createObjectStore('state'" in index and "createObjectStore('snapshotMeta'" in index and "createObjectStore('snapshotPayload'" in index, 'IndexedDB stores missing')
+ok("localStorage.removeItem(DATA_KEY)" in index and "localStorage.removeItem(SNAPSHOT_KEY)" in index, 'legacy large localStorage payloads are not removed after migration')
+ok("const PREFS_KEY = 'fastingTracker.preferences';" in index and 'function persistSmallPreferences()' in index, 'small localStorage preferences layer missing')
+ok('function persistDailyTotals(' in index and 'function updateStoredDayTotalsIncrementally()' in index, 'incremental persisted daily fasting totals missing')
+ok('MAX_IMPORT_FASTS = 100000' in index and 'MAX_IMPORT_WEIGHTS = 100000' in index, 'lifetime record limits were not raised')
+ok('function createInternalSnapshotAsync(' in index and "idbPut('snapshotPayload'" in index, 'IndexedDB recovery snapshot payload storage missing')
 ok("'backup.autoSnapshotFailed'" in index and "'backup.autoSnapshotReduced'" in index, 'snapshot failure/reduced localization missing')
 ok('backupReminderTitle' in index and "banner.classList.toggle('warn', snapshotAttention)" in index, 'persistent one-tap snapshot warning banner missing')
 ok(any('One is created automatically after the first meaningful fasting or weight change.' in str(v) for v in en_source.values()), 'outdated recovery-snapshot empty-state wording remains')
 ok('v1.0.0 — FIRST DEPLOYMENT' not in (ROOT/'FIRST-DEPLOYMENT-CHECKLIST.txt').read_text(), 'deployment checklist still tied to v1.0.0')
 ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guide still contains obsolete release example')
-
-# Simulate quota pressure with the actual snapshot/reclaim functions.
-try:
-    pressure_funcs='\n'.join(extract_func(n) for n in ['setSnapshotProtectionState','isQuotaError','writeSnapshotList','storeSnapshots','writePrimaryDataWithSnapshotReclaim'])
-    pressure_test=r'''
-const DATA_KEY='data', SNAPSHOT_KEY='snaps', SNAPSHOT_RECENT_KEEP=5;
-let snapshotProtectionState={status:'ok',kept:0,desired:0}; let backupMeta={};
-function saveBackupMeta(){}
-function pruneSnapshots(x){return x;}
-function loadSnapshots(){try{return JSON.parse(localStorage.getItem(SNAPSHOT_KEY)||'[]')}catch{return []}}
-class FakeStorage {
-  constructor(limit){this.limit=limit;this.m=new Map()}
-  totalWith(k,v){let n=0;for(const [kk,vv] of this.m)n += kk===k?0:String(kk).length+String(vv).length; return n+String(k).length+String(v).length}
-  setItem(k,v){if(this.totalWith(k,v)>this.limit){const e=new Error('quota');e.name='QuotaExceededError';throw e}this.m.set(k,String(v))}
-  getItem(k){return this.m.has(k)?this.m.get(k):null}
-  removeItem(k){this.m.delete(k)}
-}
-function assert(c,m){if(!c)throw new Error(m)}
-const localStorage=new FakeStorage(1550);
-localStorage.setItem(DATA_KEY,'x'.repeat(350));
-const snaps=Array.from({length:8},(_,i)=>({id:'s'+i,payload:'y'.repeat(95)}));
-localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snaps));
-writePrimaryDataWithSnapshotReclaim('z'.repeat(850));
-assert(localStorage.getItem(DATA_KEY)==='z'.repeat(850),'primary data did not save after snapshot reclaim');
-assert(snapshotProtectionState.status==='reduced'||snapshotProtectionState.status==='failed','snapshot pressure not reported');
-console.log('quota pressure simulation passed');
-'''
-    with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
-        f.write(pressure_funcs+'\n'+pressure_test); pf=f.name
-    cp=subprocess.run(['node',pf],capture_output=True,text=True)
-    ok(cp.returncode==0,'snapshot quota-pressure simulation failed: '+cp.stderr)
-except Exception as e:
-    errors.append('could not run snapshot quota-pressure simulation: '+str(e))
 
 
 # Internationalization-readiness regression checks
@@ -337,7 +308,7 @@ ok('What is intermittent fasting?' in about_text and 'Какво е интерм
 ok("if (pref !== 'system') u.searchParams.set('lang', pref);" in index, 'reinstall link must preserve explicit English and other explicit languages')
 ok('id="copyReinstallLinkBtn"' in index and "copyReinstallLinkBtn').addEventListener('click', copyReinstallLink)" in index, 'copy reinstall-link button missing')
 ok('navigator.clipboard?.writeText' in index and "document.execCommand?.('copy')" in index, 'reinstall-link copy fallbacks missing')
-ok("event.key === BACKUP_META_KEY" in index and "event.key === SNAPSHOT_KEY" in index, 'backup/snapshot cross-tab synchronization missing')
+ok("event.key === BACKUP_META_KEY" in index and "event.key === DATA_REVISION_SIGNAL_KEY" in index, 'backup/data cross-tab synchronization missing')
 ok('function reloadBackupMetaFromStorage()' in index, 'backup metadata reload helper missing')
 ok('function numberSymbols(' in index and 'formatToParts(12345.6)' in index, 'locale-aware number symbols missing')
 ok('const MAX_DATE_MS = 8.64e15;' in index and 'function safeTargetDate(' in index, 'extreme target-date guard missing')
@@ -346,7 +317,7 @@ ok('function normalizeBackupClockSkew()' in index and "['firstDataAt','lastExter
 
 # v1.6.1 recovery/navigation regressions
 ok('function prepareCompatibleData(rawData)' in index and "normalizeAppearance(candidate.appearance)" in index and "typeof candidate.gamificationEnabled !== 'boolean'" in index and "usedFastIds" in index, 'legacy v1 compatibility repair missing')
-ok('const compatible = validateCompatibleData(JSON.parse(raw));' in index and 'localStorage.setItem(DATA_KEY, serialized);' in index, 'compatible stored data is not upgraded in place')
+ok('async function initializePersistentStorage()' in index and 'validateCompatibleData(JSON.parse(legacyRaw)).data' in index and 'await persistPrimaryNow(data)' in index, 'legacy compatible data is not migrated into IndexedDB')
 ok('const APP_SCREENS' in index and 'activateScreen(location.hash.slice(1), { updateHash: false });' in index, 'return-to-tab routing missing')
 ok('target="_blank" rel="noopener" data-i18n="public.privacy"' not in index and 'privacy.html?return=settings' in index, 'Settings privacy link must stay in app context and remember Settings')
 ok('about.html?return=fasting#health' in index and 'about.html?return=settings' in index, 'About links do not preserve their originating app screen')
@@ -357,16 +328,16 @@ for rel in ['about.html','privacy.html','branding.html','license.html']:
 # v1.6.3 startup initialization-order regression
 # load() normalizes legacy/localized numeric fields and can call currentLocale() ->
 # uiLanguage(). Ensure all lexical bindings read by that path are initialized first.
-boot_load = index.index('data = load();')
-ok(index.index('let data = cloneDefault();') < boot_load, 'data must be initialized before load()')
-ok(index.index('let urlLangOverride =') < boot_load, 'urlLangOverride must be initialized before load()')
-ok(index.index('let urlIconOverride =') < boot_load, 'urlIconOverride must be initialized before load()')
-ok(index.index('let emergencyBoot =') < boot_load, 'emergencyBoot must be initialized before load()')
+boot_load = index.index('await initializePersistentStorage();')
+ok(index.index('let data = cloneDefault();') < boot_load, 'data must be initialized before IndexedDB load')
+ok(index.index('let urlLangOverride =') < boot_load, 'urlLangOverride must be initialized before IndexedDB load')
+ok(index.index('let urlIconOverride =') < boot_load, 'urlIconOverride must be initialized before IndexedDB load')
+ok(index.index('let emergencyBoot =') < boot_load, 'emergencyBoot must be initialized before IndexedDB load')
 
 # v1.6.2 recovery hardening + exact documentation return regressions
 ok("const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';" in index and 'sessionStorage.setItem(DOC_RETURN_KEY, location.href)' in index, 'exact documentation return capture missing')
-ok('validateCompatibleData(JSON.parse(JSON.stringify(data))).data' in index, 'save must canonicalize data before persistence')
-ok('const next = raw ? validateCompatibleData(JSON.parse(raw)).data : cloneDefault();' in index, 'cross-context storage sync must use compatibility repair')
+ok('data.records.length > MAX_IMPORT_FASTS' in index and 'data.weights.length > MAX_IMPORT_WEIGHTS' in index and 'queuePrimaryPersistence()' in index, 'save must enforce lifetime record limits and queue IndexedDB persistence')
+ok('async function reloadFromIndexedDB' in index and "idbGet('state', 'primary')" in index and 'DATA_REVISION_SIGNAL_KEY' in index, 'cross-context storage sync must reload validated IndexedDB state')
 ok("throw new Error('overlapping fasting records')" not in index and "throw new Error('active fast overlaps history')" not in index, 'legacy semantic overlap must not force Recovery mode')
 ok('id="recoveryDiagnostic"' in index and "recoveryMode.error" in index, 'Recovery mode diagnostic reason missing')
 for rel in ['about.html','privacy.html','branding.html','license.html']:
@@ -393,12 +364,12 @@ ok("el('calendarPrevBtn').addEventListener('click'" in index and "el('calendarNe
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
 try:
-    compat_names=['normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','migrateData','normalizeRecord','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
+    compat_names=['pad','normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','dayKey','dayKeyFast','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','migrateData','normalizeRecord','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
     compat_funcs='\n'.join(extract_func(n) for n in compat_names)
     compat_test=r'''
 const DATA_VERSION=1, SUPPORTED_LANGUAGES=['en','bg','es'];
 const FUTURE_TOLERANCE_MS=60*1000, MAX_SAFE_GOAL_HOURS=2_000_000_000;
-const MAX_IMPORT_FASTS=10000, MAX_IMPORT_WEIGHTS=10000;
+const MAX_IMPORT_FASTS=100000, MAX_IMPORT_WEIGHTS=100000;
 const numberSymbolsCache=new Map(), timeZoneValidityCache=new Map(), zonedFormatterCache=new Map();
 function currentLocale(){return 'en-US'}
 '''+compat_funcs+r'''
@@ -515,7 +486,7 @@ ok("if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;" in i
 ok("if (statsVizMode === 'timeline') scrollTimelineToLatest();" in index, 'Stats activation does not restore newest timeline position')
 
 
-# v1.7.11 performance/architecture regression checks
+# v1.8.0 performance/architecture regression checks
 ok('function renderScreen(' in index and 'const viewDirty = {' in index, 'screen-level lazy rendering missing')
 ok("document.querySelectorAll('.tab').forEach(tab => bindResponsiveAction" in index, 'bottom navigation is not on unified Pointer Events action path')
 ok("statsVizSwitcher').addEventListener('touchstart'" not in index, 'duplicate touchstart statistics path remains')
@@ -523,4 +494,5 @@ ok("addEventListener('touchstart'" not in index, 'legacy touchstart handlers rem
 ok('statsSummaryCache' in index and 'weeklySummariesCache' in index and 'calendarDaysCache' in index, 'derived statistics caching missing')
 ok('function queueStorageProtectionRefresh()' in index and 'requestIdleCallback' in index, 'deferred storage-protection work missing')
 ok((ROOT/'tests'/'test_performance.py').is_file(), 'performance regression test missing')
+ok((ROOT/'tests'/'test_lifetime_performance.py').is_file(), '70-year lifetime performance regression test missing')
 print('PASS: release, integrity, localization, DOM, storage/privacy, backup-pressure and algorithm regression checks')

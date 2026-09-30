@@ -1,43 +1,4 @@
----
-layout: null
----
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="referrer" content="no-referrer" />
-  <meta name="theme-color" content="#ffffff" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" id="appleAppTitle" content="Fasting" />
-  <meta name="description" content="Intermittent fasting and weight tracker with multi-day fasting, science notes and local-first privacy" />
-  <meta name="keywords" content="intermittent fasting tracker, fasting timer, weight tracker, fasting history, autophagy science" />
-  <meta name="author" content="Fasting Tracker" />
-  <link rel="canonical" href="{{ site.github.url }}/" />
-  <link rel="alternate" hreflang="en" href="{{ site.github.url }}/en/" />
-  <link rel="alternate" hreflang="bg" href="{{ site.github.url }}/bg/" />
-  <link rel="alternate" hreflang="es" href="{{ site.github.url }}/es/" />
-  <link rel="alternate" hreflang="x-default" href="{{ site.github.url }}/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Fasting Tracker" />
-  <meta property="og:title" content="Fasting Tracker — fasting timer, weight tracking and science notes" />
-  <meta property="og:description" content="A local-first intermittent fasting and weight tracker with multi-day fasting support, statistics, backups and evidence-aware science notes." />
-  <meta property="og:url" content="{{ site.github.url }}/" />
-  <meta property="og:image" content="{{ site.github.url }}/icons/plate/icon-512.png" />
-  <meta property="og:image:width" content="512" />
-  <meta property="og:image:height" content="512" />
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Fasting Tracker" />
-  <meta name="twitter:description" content="Track intermittent fasting and weight locally, with statistics, backups and evidence-aware science notes." />
-  <meta name="twitter:image" content="{{ site.github.url }}/icons/plate/icon-512.png" />
-  <link rel="manifest" id="appManifest" href="manifest.webmanifest" />
-  <link rel="icon" id="appFavicon" type="image/png" sizes="32x32" href="icons/plate/favicon-32.png" />
-  <link rel="apple-touch-icon" id="appleTouchIcon" sizes="180x180" href="icons/plate/apple-touch-icon.png" />
-  <title>Fasting Tracker — fasting timer & weight tracker</title>
-  <script>
+
   (function(){
     try {
       const allowed=['en','bg','es'];
@@ -45,7 +6,7 @@ layout: null
       const q=params.get('lang');
       const qi=params.get('icon');
       let pref=null, storedData=null;
-      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=storedData.appearance==='dark'?'#000000':'#ffffff'; } } catch {}
+      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.data')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=storedData.appearance==='dark'?'#000000':'#ffffff'; } } catch {}
       const primarySystemTag=((Array.isArray(navigator.languages)&&navigator.languages[0])||navigator.language||'en').toLowerCase();
       const systemBase=primarySystemTag.split(/[-_]/,1)[0];
       const systemLang=allowed.includes(systemBase)?systemBase:'en';
@@ -63,8 +24,8 @@ layout: null
       document.getElementById('appleAppTitle').content=titles[lang];
     } catch {}
   })();
-  </script>
-  <script type="application/ld+json">
+  
+
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -76,788 +37,17 @@ layout: null
     "description": "Intermittent fasting and weight tracker with multi-day fasting, statistics, local backups and evidence-aware fasting science notes.",
     "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
   }
-  </script>
-  <style>
-    :root {
-      color-scheme: light dark;
-      --bg: #f5f5f7;
-      --card: #ffffff;
-      --text: #111114;
-      --muted: #636366;
-      --line: #dedee3;
-      --accent: #006edc;
-      --good: #147a45;
-      --danger: #c6282f;
-      --tab: rgba(250,250,252,.94);
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #000000;
-        --card: #1c1c1e;
-        --text: #f5f5f7;
-        --muted: #98989d;
-        --line: #38383a;
-        --accent: #0a84ff;
-        --good: #32d583;
-        --danger: #ff453a;
-        --tab: rgba(28,28,30,.94);
-      }
-    }
-    html[data-theme="light"] {
-      color-scheme: light;
-      --bg: #f5f5f7; --card: #ffffff; --text: #111114; --muted: #636366;
-      --line: #dedee3; --accent: #006edc; --good: #147a45; --danger: #c6282f;
-      --tab: rgba(250,250,252,.94);
-    }
-    html[data-theme="dark"] {
-      color-scheme: dark;
-      --bg: #000000; --card: #1c1c1e; --text: #f5f5f7; --muted: #98989d;
-      --line: #38383a; --accent: #0a84ff; --good: #32d583; --danger: #ff453a;
-      --tab: rgba(28,28,30,.94);
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
-    body { padding: env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom)); }
-    main { width: min(720px, 100%); margin: 0 auto; padding: 16px; }
-    h1 { font-size: 30px; margin: 8px 0 18px; }
-    h2 { font-size: 20px; margin: 0 0 12px; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    .card { background: var(--card); border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 1px rgba(0,0,0,.03); }
-    .hero { text-align: center; padding: 28px 18px; }
-    .eyebrow { color: var(--muted); font-size: 14px; }
-    .friendlyTimer { font-size: clamp(34px, 10vw, 54px); font-weight: 760; letter-spacing: -1.3px; margin: 13px 0 2px; line-height: 1.08; }
-    .exactTimer { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 650; margin-bottom: 14px; }
-    .goal { color: var(--muted); margin-top: 8px; }
-    .progressDetail { min-height: 20px; color: var(--muted); font-size: 13px; margin: 4px 0 8px; }
-    .targetMoment { min-height: 18px; color: var(--muted); font-size: 13px; margin: 0 0 16px; line-height: 1.35; }
-    .progressDetail.good { color: var(--good); }
-    .progressTrack { height: 12px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 14px 0 8px; }
-    .progressFill { height: 100%; background: var(--accent); width: 0; border-radius: inherit; transition: width .25s ease; }
-    .fastRing { --fast-progress-angle:0deg; width:min(228px,68vw); aspect-ratio:1; margin:18px auto 12px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(var(--accent) var(--fast-progress-angle), var(--line) 0); transition:background .25s ease, box-shadow .25s ease; position:relative; }
-    .fastRing.reached { box-shadow:0 0 0 5px color-mix(in srgb, var(--good) 14%, transparent); }
-    .fastRingInner { width:calc(100% - 18px); height:calc(100% - 18px); border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
-    .fastRing .friendlyTimer { font-size:clamp(31px,9vw,48px); margin:0 0 3px; }
-    .fastRing .exactTimer { margin:0; font-size:16px; }
-    .vizSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:7px; border-radius:16px; background:var(--line); margin:6px 0 16px; touch-action:manipulation; }
-    .vizSwitcher button { min-height:58px; padding:14px 12px; border-radius:12px; background:transparent; color:var(--text); font-size:16px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; position:relative; z-index:1; }
-    .screen:not(.active) { content-visibility:hidden; contain-intrinsic-size:1px 900px; }
-    #chart, #fastTrendChart, #fastWeeksChart, #weightChart { contain:layout paint; }
-    .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
-    .vizSwitcher button.pressed { transform:scale(.985); background:color-mix(in srgb,var(--card) 86%,var(--accent) 14%); }
-    .statsVizView[hidden] { display:none !important; }
-    .statsVizView canvas { width:100%; display:block; }
-    #statsTimelineView { padding-bottom:4px; }
-    .timelineShell { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; align-items:start; width:100%; }
-    .timelineScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; position:relative; }
-    .timelineScroller #chart { min-width:700px; width:100%; height:310px; touch-action:pan-x; }
-    .timelineAxis { height:310px; box-sizing:border-box; padding:13px 4px 33px; display:flex; flex-direction:column; justify-content:space-between; color:var(--muted); font:10px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-variant-numeric:tabular-nums; pointer-events:none; }
-    .timelineAxisLeft { align-items:flex-end; text-align:right; }
-    .timelineAxisRight { align-items:flex-start; text-align:left; }
-    .timelineAxis span { white-space:nowrap; }
-
-    .calendarHeader { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:4px 0 10px; }
-    .calendarHeader button { padding:8px 11px; min-width:42px; }
-    .calendarMonthTitle { font-weight:750; text-align:center; flex:1; }
-    .calendarWeekdays, .fastCalendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
-    .calendarWeekdays { margin-bottom:5px; }
-    .calendarWeekday { color:var(--muted); font-size:10px; text-align:center; padding:2px 0; }
-    .calendarDay { min-height:54px; padding:6px 3px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--text); text-align:center; font-size:12px; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
-    .calendarDay .calendarHours { font-size:9px; color:var(--muted); font-weight:600; }
-    .calendarDay.level1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
-    .calendarDay.level2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
-    .calendarDay.level3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
-    .calendarDay.level4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); color:var(--text); }
-    .calendarDay.outside { opacity:.38; }
-    .calendarDay.future { opacity:.28; }
-    .calendarDay.selected { outline:3px solid #fff; outline-offset:-3px; box-shadow:0 0 0 1px rgba(0,0,0,.50),0 0 0 4px #fff; position:relative; z-index:1; }
-    .calendarDay:disabled { cursor:default; }
-    .vizLegend { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; margin-top:9px; flex-wrap:wrap; }
-    .legendSwatch { width:14px; height:10px; border-radius:3px; border:1px solid var(--line); }
-    .legendSwatch.l1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
-    .legendSwatch.l2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
-    .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
-    .legendSwatch.l4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); }
-    @media (max-width:380px) { .vizSwitcher button { font-size:15px; min-height:56px; padding:13px 9px; } .timelineShell { grid-template-columns:40px minmax(0,1fr) 40px; } .calendarDay { min-height:48px; } }
-    button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-    button.fastActionPressed { transform:scale(.985); filter:brightness(.96); }
-    a, .tab { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-    button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
-    .primary { width: 100%; background: var(--accent); color: white; font-size: 18px; }
-    .heroSecondary { width: 100%; margin-top: 10px; }
-    .stop { background: var(--danger); }
-    .secondary { background: var(--line); color: var(--text); }
-    .dangerText { color: var(--danger); background: transparent; padding: 8px; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .metric { background: var(--card); border-radius: 16px; padding: 16px; min-width: 0; }
-    .metric .value { font-size: 26px; font-weight: 750; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-    .metric .label { color: var(--muted); font-size: 13px; margin-top: 5px; }
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-    .row:last-child { border-bottom: 0; }
-    .row strong { display: block; }
-    .small { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
-    .goalInputWrap { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
-    select { max-width: 190px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
-    input.numericInput { width: 112px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; text-align: end; }
-    .presetWrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .chip { padding: 9px 12px; border-radius: 999px; background: var(--line); color: var(--text); font-size: 13px; }
-    .chip.active { background: var(--accent); color: white; }
-    .historyEmpty { color: var(--muted); text-align: center; padding: 28px 10px; }
-    .duration { font-weight: 700; font-variant-numeric: tabular-nums; }
-    .goalBadge { display: inline-block; margin-top: 6px; font-size: 12px; color: var(--good); }
-    canvas { width: 100%; height: 220px; display: block; }
-    nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--tab); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--line); z-index: 10; }
-    .tabs { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
-    .tab { background: transparent; color: var(--muted); border-radius: 0; padding: 10px 4px 8px; font-size: 12px; font-weight: 600; }
-    .tab .ico { display: block; font-size: 21px; line-height: 1.1; margin-bottom: 3px; }
-    .tab.active { color: var(--accent); }
-    .notice { background: color-mix(in srgb, var(--accent) 12%, var(--card)); border-radius: 14px; padding: 12px 14px; color: var(--text); font-size: 14px; margin-bottom: 14px; line-height: 1.4; }
-    [hidden] { display: none !important; }
-    .updateBanner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--accent) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
-    .updateBanner strong { display: block; }
-    .updateBanner .small { margin-top: 2px; }
-    .updateBanner button { padding: 9px 12px; flex: 0 0 auto; }
-    .updateStatus.good { color: var(--good); }
-    .updateStatus.warn { color: var(--accent); }
-    .backupBanner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--good) 11%, var(--card)); border: 1px solid color-mix(in srgb, var(--good) 26%, transparent); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
-    .backupBanner strong { display: block; }
-    .backupBanner .small { margin-top: 2px; }
-    .backupBanner button { padding: 9px 12px; flex: 0 0 auto; }
-    .backupBanner.warn { background: color-mix(in srgb, var(--danger) 8%, var(--card)); border-color: color-mix(in srgb, var(--danger) 34%, transparent); }
-    .snapshotItem { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-    .snapshotItem:last-child { border-bottom: 0; }
-    .snapshotItem button { padding: 9px 12px; flex: 0 0 auto; }
-    .modalActions.wrap { flex-wrap: wrap; }
-    .version { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 0 2px; }
-    .helpSteps { margin: 8px 0 0; padding-inline-start: 22px; }
-    .helpSteps li { margin: 8px 0; line-height: 1.4; }
-    .helpHeading { font-weight: 700; margin-top: 16px; }
-    .platformNote { margin-top:10px; padding:11px 12px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
-    .platformNote strong { display:block; margin-bottom:4px; }
-    .iconSafetyNote { border-color:color-mix(in srgb, var(--danger) 45%, var(--line)); background:color-mix(in srgb, var(--danger) 6%, var(--bg)); }
-    .iconSafetyNote button { margin-top:10px; width:100%; white-space:normal; }
-    .sectionHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 18px; }
-    .sectionHeader h1 { margin: 0; }
-    .historyRow { align-items: flex-start; }
-    .historyActions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 5px; }
-    .historyActions button { padding: 7px 9px; font-size: 13px; }
-    .iconChoiceGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:14px; }
-    .iconChoice { padding:8px; background:var(--bg); color:var(--text); border:2px solid transparent; white-space:normal !important; min-width:0; text-align:center; }
-    .iconChoice img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:22%; margin-bottom:7px; }
-    .iconChoice span { display:block; font-size:12px; line-height:1.25; }
-    .iconChoice.active { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--bg)); }
-    button, select, .small, .metric .label, .notice { word-break: normal; overflow-wrap: normal; }
-    button { max-width: 100%; }
-    html[dir="rtl"] .scienceLead, html[dir="rtl"] .row, html[dir="rtl"] .sectionHeader, html[dir="rtl"] .snapshotItem { direction: rtl; }
-    html[dir="rtl"] canvas { direction: ltr; } /* chart coordinates remain numeric; labels are localized separately */
-    @media (max-width: 430px) { .iconChoiceGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    .reinstallLinkTools { margin-top:12px; }
-    .reinstallLinkRow { display:flex; gap:8px; align-items:stretch; margin-top:6px; flex-wrap:wrap; }
-    .reinstallLinkRow input { flex:1 1 280px; min-width:0; font-size:13px; }
-    .reinstallLinkRow button { flex:0 0 auto; }
-    .modalBackdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); background: rgba(0,0,0,.46); }
-    .modalCard { width: min(460px, 100%); max-height: 90vh; overflow: auto; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 18px 60px rgba(0,0,0,.28); }
-    .modalCard h2 { margin-bottom: 16px; }
-    .formGroup { margin: 13px 0; }
-    .formGroup label { display: block; font-weight: 650; margin-bottom: 6px; }
-    .formGroup input { width: 100%; padding: 12px; border-radius: 11px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
-    .formError { color: var(--danger); font-size: 13px; line-height: 1.35; margin-top: 10px; }
-    .backdateConflict { margin-top: 12px; padding: 14px; border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--danger) 8%, var(--card)); }
-    .backdateConflict strong { display: block; margin-bottom: 7px; color: var(--danger); }
-    .backdateConflictList { display: grid; gap: 5px; margin: 8px 0; }
-    .backdateConflictActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .backdateConflictActions button { min-width: 0; white-space: normal; overflow-wrap: normal; word-break: normal; }
-    .modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
-    .modalActions .primary { width: auto; font-size: inherit; }
-    body.modalOpen { overflow: hidden; }
-    .recoveryCard { border: 2px solid var(--danger); }
-    .recoveryActions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
-    .recoveryActions button { flex: 1 1 150px; }
-    .loadMoreWrap { display: flex; justify-content: center; padding: 14px 0 2px; }
-    .loadMoreWrap button { min-width: 180px; }
-    .achievementBadge[aria-label] { position: relative; }
-    .weightTop { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    .weightUnitToggle { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--line); }
-    .weightUnitToggle button { padding: 7px 12px; border-radius: 9px; background: transparent; color: var(--text); font-size: 13px; }
-    .weightUnitToggle button.active { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-    .weightValue { font-variant-numeric: tabular-nums; }
-    .weightHistory { margin-top: 14px; }
-    .weightTargetWrap { display:flex; align-items:center; gap:7px; }
-    .weightTargetWrap input { width: 112px; }
-    .weightChartWrap { position: relative; }
-
-    .scienceCard { overflow: hidden; }
-    .scienceLead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-    .scienceWindow { font-weight: 750; font-size: 17px; }
-    .evidenceBadge { flex: 0 0 auto; border-radius: 999px; padding: 6px 9px; font-size: 11px; font-weight: 700; background: color-mix(in srgb, var(--accent) 12%, var(--card)); color: var(--accent); }
-    .scienceTimeline { margin-top: 15px; border-left: 2px solid var(--line); padding-left: 13px; }
-    .scienceStage { position: relative; padding: 3px 0 13px; color: var(--muted); }
-    .scienceStage::before { content: ''; position: absolute; left: -20px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--line); border: 2px solid var(--card); }
-    .scienceStage.current { color: var(--text); }
-    .scienceStage.current::before { background: var(--accent); }
-    .scienceStage strong { color: inherit; }
-    .scienceCaution { margin-top: 5px; padding: 11px 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 7%, var(--card)); color: var(--muted); font-size: 12px; line-height: 1.42; }
-    .scienceSources { margin-top: 12px; }
-    .scienceSources summary { cursor: pointer; font-weight: 700; }
-    .scienceSources a { color: var(--accent); text-decoration: none; }
-    .scienceSources a:hover { text-decoration: underline; }
-    .sourceList { margin: 10px 0 0; padding-left: 20px; }
-    .sourceList li { margin: 8px 0; line-height: 1.35; }
-
-    .gamificationCard[hidden], .gamificationDetail[hidden] { display: none !important; }
-    .levelPill { display:inline-block; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:750; background:color-mix(in srgb, var(--accent) 12%, var(--card)); color:var(--accent); }
-    .xpHeader { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:8px; }
-    .xpValue { font-size:24px; font-weight:760; font-variant-numeric:tabular-nums; }
-    .xpTrack { height:10px; border-radius:999px; background:var(--line); overflow:hidden; margin:10px 0 6px; }
-    .xpFill { height:100%; width:0; background:var(--accent); border-radius:inherit; transition:width .25s ease; }
-    .badgeGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
-    .achievementBadge { border:1px solid var(--line); border-radius:14px; padding:12px; min-width:0; }
-    .achievementBadge.unlocked { background:color-mix(in srgb, var(--good) 8%, var(--card)); border-color:color-mix(in srgb, var(--good) 35%, var(--line)); }
-    .achievementBadge.locked { opacity:.55; }
-    .achievementBadge .badgeIcon { font-size:20px; margin-bottom:4px; }
-    .achievementBadge strong { display:block; font-size:14px; }
-    .achievementBadge .small { margin-top:3px; }
-    .toggleWrap { display:flex; align-items:center; gap:9px; flex:0 0 auto; }
-    .toggleWrap input { width:22px; height:22px; accent-color:var(--accent); }
-    .publicLinks { display:flex; flex-wrap:wrap; gap:9px; margin-top:10px; }
-    .publicLink { display:inline-block; color:var(--accent); text-decoration:none; font-weight:650; padding:8px 10px; border-radius:10px; background:color-mix(in srgb, var(--accent) 9%, var(--card)); }
-    .publicLink:hover { text-decoration:underline; }
-    .healthNotice { background:color-mix(in srgb, #ff9f0a 10%, var(--card)); border:1px solid color-mix(in srgb, #ff9f0a 28%, transparent); }
-
-    /* Localization-fit hardening */
-    button, .publicLink { max-width: 100%; }
-    button { word-break: normal; overflow-wrap: normal; }
-    .publicLink { white-space: normal; overflow-wrap: anywhere; }
-    select { min-width: 0; max-width: min(190px, 100%); }
-    .row > *, .sectionHeader > *, .scienceLead > *, .xpHeader > *, .weightTop > * { min-width: 0; }
-    #settings .row > div:first-child, .updateBanner > div:first-child, .backupBanner > div:first-child { flex: 1 1 220px; min-width: 0; }
-    #settings .row > button, .updateBanner > button, .backupBanner > button, .snapshotItem > button, .sectionHeader > button, .historyActions button {
-      flex: 0 1 auto; white-space: normal; overflow-wrap: normal; word-break: normal;
-    }
-    .scienceLead { flex-wrap: wrap; align-items: flex-start; }
-    .scienceWindow { flex: 1 1 150px; min-width: 0; overflow-wrap: anywhere; }
-    .evidenceBadge { flex: 0 1 auto; max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: center; }
-    @media (max-width: 520px) {
-      #settings .row, .updateBanner, .backupBanner, .snapshotItem, .sectionHeader, .xpHeader, .weightTop { flex-wrap: wrap; }
-      #settings .row > button, .updateBanner > button, .backupBanner > button, .snapshotItem > button, .sectionHeader > button { margin-inline-start: auto; }
-      .modalActions { flex-wrap: wrap; }
-    }
-    @media (max-width: 359px) {
-      .tab { font-size: 10px; padding-left: 1px; padding-right: 1px; }
-    }
-    @media (min-width: 560px) { .grid { grid-template-columns: repeat(3, 1fr); } .badgeGrid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
-  </style>
-</head>
-<body>
-<main>
-  <div class="card recoveryCard" id="recoveryBanner" role="alert" hidden>
-    <h2 data-i18n="recovery.title">Recovery mode</h2>
-    <div class="small" data-i18n="recovery.text">Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten.</div>
-    <div class="small" id="recoveryDiagnostic" style="margin-top:8px"></div>
-    <div class="recoveryActions">
-      <button id="recoveryExportBtn" class="secondary" data-i18n="recovery.exportRaw">Export raw data</button>
-      <button id="recoverySnapshotsBtn" class="secondary" data-i18n="recovery.snapshots">Recovery snapshots</button>
-      <button id="recoveryImportBtn" class="secondary" data-i18n="recovery.importBackup">Import backup</button>
-      <button id="recoveryResetBtn" class="dangerText" data-i18n="recovery.startFresh">Start fresh</button>
-    </div>
-  </div>
-  <section id="fasting" class="screen active">
-    <h1 data-i18n="nav.fasting">Fasting</h1>
-    <div class="notice installStorageNotice" id="installStorageNotice" role="status" hidden>
-      <strong data-i18n="installStorage.title">Using Safari on iPhone?</strong>
-      <div class="small" data-i18n="installStorage.text">Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.</div>
-      <div class="publicLinks" style="margin-top:8px"><button id="installStorageDismiss" class="secondary" data-i18n="common.dismiss">Dismiss</button></div>
-    </div>
-    <div class="updateBanner" id="updateBanner" hidden>
-      <div><strong id="updateBannerTitle" data-i18n="update.newVersion">New version available</strong><div class="small" id="updateBannerText" data-i18n="update.releaseReady">A newer Fasting Tracker release is ready.</div></div>
-      <button id="updateBannerBtn" class="secondary" data-i18n="update.update">Update</button>
-    </div>
-    <div class="backupBanner" id="backupReminder" hidden>
-      <div><strong id="backupReminderTitle" data-i18n="backup.reminderTitle">External backup reminder</strong><div class="small" id="backupReminderText">It has been 7 days since your last backup.</div></div>
-      <button id="backupReminderBtn" class="secondary" data-i18n="backup.now">Back up now</button>
-    </div>
-    <div class="card hero">
-      <div class="eyebrow" id="statusText" data-i18n="fasting.ready">Ready to start</div>
-      <div class="fastRing" id="fastProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Fasting target progress" data-i18n-aria="a11y.fastProgress">
-        <div class="fastRingInner">
-          <div class="friendlyTimer" id="friendlyTimer">—</div>
-          <div class="exactTimer" id="timer">00:00:00</div>
-        </div>
-      </div>
-      <div class="goal" id="goalText">—</div>
-      <div class="progressDetail" id="progressDetail" data-i18n="fasting.zeroProgress">0% complete</div>
-      <div class="targetMoment" id="targetMoment" hidden></div>
-      <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
-      <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
-      <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
-    </div>
-    <div class="card">
-      <h2 data-i18n="fasting.today">Today</h2>
-      <div class="row"><div data-i18n="fasting.elapsedToday">Fasting elapsed today</div><div class="duration" id="todayTotal">0h 0m</div></div>
-      <div class="row"><div data-i18n="fasting.targetStreak">Current target streak</div><div class="duration" id="streakValue">0 fasts</div></div>
-    </div>
-    <div class="card gamificationCard" id="gamificationSummary">
-      <div class="sectionHeader"><h2 data-i18n="game.consistency">Consistency</h2><span class="levelPill" id="gSummaryLevel">Level 1</span></div>
-      <div class="xpHeader"><div class="xpValue" id="gSummaryXP">—</div><div class="small" id="gSummaryNext">—</div></div>
-      <div class="xpTrack" id="xpProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Consistency level progress" data-i18n-aria="a11y.xpProgress"><div class="xpFill" id="gSummaryFill"></div></div>
-      <div class="small" data-i18n="game.summaryHelp">XP rewards completing your chosen target and logging weight consistently. Fasting beyond the target earns no extra XP.</div>
-    </div>
-    <div class="card" id="ifBasicsCard">
-      <h2 data-i18n="if.title">What is intermittent fasting?</h2>
-      <div class="small" data-i18n="if.what">Intermittent fasting (IF) is an eating pattern that alternates planned periods of eating with periods of little or no caloric intake. It focuses mainly on when you eat rather than prescribing a particular food list.</div>
-      <div class="small" style="margin-top:8px" data-i18n="if.examples">Common approaches include daily time-restricted eating (for example, 16:8), the 5:2 pattern, and alternate-day fasting.</div>
-      <details class="scienceSources">
-        <summary data-i18n="if.learnMore">Potential benefits, limits &amp; safety</summary>
-        <div class="helpHeading" data-i18n="if.benefitsTitle">Potential benefits</div>
-        <div class="small" data-i18n="if.benefits">Human trials suggest intermittent fasting can help some adults reduce body weight and waist circumference and may improve blood-glucose control, insulin sensitivity, blood pressure and some blood-lipid markers. Effects are usually modest, vary among people and regimens, and are often similar to continuous calorie restriction when total energy intake and weight loss are comparable.</div>
-        <div class="helpHeading" data-i18n="if.limitsTitle">What is still uncertain</div>
-        <div class="small" data-i18n="if.limits">Long-term effects on disease prevention, lifespan, cognitive function and the best fasting schedule remain uncertain. Much of the human evidence is short- to medium-term and is concentrated in adults with overweight, obesity or metabolic risk.</div>
-        <div class="helpHeading" data-i18n="if.safetyTitle">Who should be cautious</div>
-        <div class="small" data-i18n="if.safety">Fasting is not suitable for everyone. Seek professional advice before fasting if you are pregnant or breastfeeding, under 18, underweight, have a current or past eating disorder, diabetes or another medical condition, or take medicines that can be affected by meal timing. Stop the fast and seek appropriate care for severe weakness, fainting, confusion, dehydration, persistent vomiting or other concerning symptoms.</div>
-        <div class="helpHeading" data-i18n="if.sourcesTitle">Evidence &amp; sources</div>
-        <ul class="sourceList small">
-          <li data-i18n-html="if.src1"><a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">BMJ 2025 systematic review</a> — 99 randomized trials; intermittent fasting and continuous calorie restriction produced broadly similar weight and cardiometabolic outcomes, with generally small differences between strategies.</li>
-          <li data-i18n-html="if.src2"><a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">U.S. National Institute on Aging</a> — overview of intermittent-fasting patterns, potential health effects and uncertainty about long-term outcomes.</li>
-          <li data-i18n-html="if.src3"><a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — an 8–10 hour eating window produced modest benefits over three months in people with metabolic syndrome; longer studies are needed.</li>
-          <li data-i18n-html="if.src4"><a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — possible benefits and medication-related safety considerations for people with type 2 diabetes.</li>
-        </ul>
-      </details>
-    </div>
-
-    <div class="card scienceCard" id="scienceCard">
-      <h2 data-i18n="science.title">Autophagy &amp; fasting science</h2>
-      <div class="scienceLead">
-        <div class="scienceWindow" id="scienceWindow" data-i18n="science.notFasting">Not fasting</div>
-        <div class="evidenceBadge" id="scienceEvidence" data-i18n="science.limited">Human evidence: limited</div>
-      </div>
-      <div class="small" id="scienceText" data-i18n="science.idle">Autophagy is active at basal levels even when you are not fasting. Human research has not established a universal hour when fasting-induced autophagy “starts.”</div>
-      <div class="scienceTimeline" id="scienceTimeline">
-        <div class="scienceStage" data-stage="0" data-i18n-html="science.timeline0"><strong>0–8 h</strong> — early fast; no clock-based autophagy inference.</div>
-        <div class="scienceStage" data-stage="1" data-i18n-html="science.timeline1"><strong>8–12 h</strong> — ketones commonly begin to rise; metabolic switching starts.</div>
-        <div class="scienceStage" data-stage="2" data-i18n-html="science.timeline2"><strong>12–24 h</strong> — metabolic transition progresses; autophagy onset in humans remains unproven.</div>
-        <div class="scienceStage" data-stage="3" data-i18n-html="science.timeline3"><strong>24–36 h</strong> — human autophagy-related markers have been studied; results are mixed and tissue-dependent.</div>
-        <div class="scienceStage" data-stage="4" data-i18n-html="science.timeline4"><strong>36–48 h</strong> — prolonged fasting; a 36 h human muscle study found only modest effects on autophagy mediators.</div>
-        <div class="scienceStage" data-stage="5" data-i18n-html="science.timeline5"><strong>48 h+</strong> — extended fasting; there is no validated whole-body “autophagy level” that can be calculated from elapsed time.</div>
-      </div>
-      <div class="scienceCaution" data-i18n="science.caution">This indicator is educational, not a measurement of autophagy and not a reason to prolong a fast. Fasting responses vary by tissue, activity, prior diet, glycogen status and other factors.</div>
-      <div class="small" style="margin-top:9px"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
-      <details class="scienceSources">
-        <summary data-i18n="science.sources">Scientific basis &amp; sources</summary>
-        <ul class="sourceList small">
-          <li data-i18n-html="science.src1"><a href="https://pubmed.ncbi.nlm.nih.gov/35892559/" target="_blank" rel="noopener noreferrer">Gómez-Virgilio et al., 2022 (PubMed)</a> — autophagy is active at basal levels in cells and responds to nutrient stress.</li>
-          <li data-i18n-html="science.src2"><a href="https://www.nejm.org/doi/abs/10.1056/NEJMra1905136" target="_blank" rel="noopener noreferrer">de Cabo &amp; Mattson, NEJM 2019</a> and <a href="https://www.nejm.org/doi/full/10.1056/NEJMx200002" target="_blank" rel="noopener noreferrer">2020 correction</a> — human ketone levels begin rising roughly 8–12 h into fasting and increase further by 48 h.</li>
-          <li data-i18n-html="science.src3"><a href="https://pubmed.ncbi.nlm.nih.gov/35142356/" target="_blank" rel="noopener noreferrer">Anton et al., 2022 (PubMed)</a> — review concluding that whether an acute fast produces significant increases in human autophagy remains unknown.</li>
-          <li data-i18n-html="science.src4"><a href="https://pubmed.ncbi.nlm.nih.gov/35660501/" target="_blank" rel="noopener noreferrer">Chaudhary et al., 2022 (PubMed)</a> — 12–24 h fasting did not show robust activation of autophagy markers in human skeletal muscle.</li>
-          <li data-i18n-html="science.src5"><a href="https://pubmed.ncbi.nlm.nih.gov/30161009/" target="_blank" rel="noopener noreferrer">Dethlefsen et al., 2018 (PubMed)</a> — 36 h fasting produced only modest changes in autophagy-related markers in human skeletal muscle, influenced by training status.</li>
-        </ul>
-      </details>
-    </div>
-  </section>
-
-  <section id="history" class="screen">
-    <div class="sectionHeader"><h1 data-i18n="nav.history">History</h1><button id="addEntryBtn" class="secondary" data-i18n="history.add">Add entry</button></div>
-    <div class="card" id="historyList"></div>
-  </section>
-
-  <section id="weight" class="screen">
-    <div class="sectionHeader"><h1 data-i18n="nav.weight">Weight</h1><button id="addWeightBtn" class="secondary" data-i18n="weight.add">Add weight</button></div>
-    <div class="weightTop">
-      <div class="small" data-i18n="weight.intro">Track body weight alongside your fasting history.</div>
-      <div class="weightUnitToggle" aria-label="Weight unit" data-i18n-aria="a11y.weightUnit">
-        <button id="unitKgBtn" type="button" data-unit="kg">kg</button>
-        <button id="unitLbBtn" type="button" data-unit="lb">lb</button>
-      </div>
-    </div>
-    <div class="grid">
-      <div class="metric"><div class="value weightValue" id="wLatest">—</div><div class="label" data-i18n="weight.latest">Latest weight</div></div>
-      <div class="metric"><div class="value weightValue" id="wChange">—</div><div class="label" data-i18n="weight.change">Change since first</div></div>
-      <div class="metric"><div class="value weightValue" id="wTarget">—</div><div class="label" data-i18n="weight.target">Target weight</div></div>
-      <div class="metric"><div class="value weightValue" id="wToTarget">—</div><div class="label" data-i18n="weight.toTarget">Difference to target</div></div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <div class="row">
-        <div><strong data-i18n="weight.target">Target weight</strong><div class="small" data-i18n="weight.targetHelp">Optional. Leave blank if you only want to track the trend.</div></div>
-        <div class="weightTargetWrap"><input id="weightTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Target weight" data-i18n-aria="weight.target"><span id="weightTargetUnit">kg</span></div>
-      </div>
-    </div>
-    <div class="card weightChartWrap">
-      <h2 data-i18n="weight.trend">Weight trend</h2>
-      <canvas id="weightChart" width="660" height="240" role="img" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
-      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Last 30 weigh-ins. A target line appears when a target weight is set.</div>
-    </div>
-    <div class="card weightHistory" id="weightHistoryList"></div>
-  </section>
-
-  <section id="stats" class="screen">
-    <h1 data-i18n="nav.stats">Statistics</h1>
-    <div class="grid">
-      <div class="metric"><div class="value" id="mTotal">0</div><div class="label" data-i18n="stats.completed">Completed fasts</div></div>
-      <div class="metric"><div class="value" id="mAverage">0h</div><div class="label" data-i18n="stats.average">Average duration</div></div>
-      <div class="metric"><div class="value" id="mLongest">0h</div><div class="label" data-i18n="stats.longest">Longest fast</div></div>
-      <div class="metric"><div class="value" id="mGoal">0</div><div class="label" data-i18n="stats.reached">Reached target</div></div>
-      <div class="metric"><div class="value" id="mStreak">0</div><div class="label" data-i18n="fasting.targetStreak">Current target streak</div></div>
-      <div class="metric"><div class="value" id="mHours">0h</div><div class="label" data-i18n="stats.total">Total fasting</div></div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <div class="sectionHeader"><h2 data-i18n="stats.patterns">Fasting patterns</h2></div>
-      <div class="vizSwitcher" id="statsVizSwitcher" role="tablist" aria-label="Statistics visualization" data-i18n-aria="stats.visualizationAria">
-        <button type="button" class="active" data-viz="timeline" role="tab" aria-selected="true" data-i18n="stats.vizTimeline">Timeline</button>
-        <button type="button" data-viz="calendar" role="tab" aria-selected="false" data-i18n="stats.vizCalendar">Calendar</button>
-        <button type="button" data-viz="trend" role="tab" aria-selected="false" data-i18n="stats.vizTrend">Trend</button>
-        <button type="button" data-viz="weeks" role="tab" aria-selected="false" data-i18n="stats.vizWeeks">Weeks</button>
-      </div>
-      <div class="statsVizView" id="statsTimelineView">
-        <div class="timelineShell">
-          <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
-          <div class="timelineScroller" id="timelineScroller">
-            <canvas id="chart" width="700" height="310" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
-          </div>
-          <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
-        </div>
-      </div>
-      <div class="statsVizView" id="statsCalendarView" hidden>
-        <div class="calendarHeader">
-          <button id="calendarPrevBtn" class="secondary" type="button" aria-label="Previous month" data-i18n-aria="stats.prevMonth">‹</button>
-          <div class="calendarMonthTitle" id="calendarMonthTitle"></div>
-          <button id="calendarNextBtn" class="secondary" type="button" aria-label="Next month" data-i18n-aria="stats.nextMonth">›</button>
-        </div>
-        <div class="calendarWeekdays" id="calendarWeekdays"></div>
-        <div class="fastCalendar" id="fastCalendar"></div>
-        <div class="vizLegend"><span data-i18n="stats.less">Less</span><span class="legendSwatch"></span><span class="legendSwatch l1"></span><span class="legendSwatch l2"></span><span class="legendSwatch l3"></span><span class="legendSwatch l4"></span><span data-i18n="stats.more">More</span></div>
-      </div>
-      <div class="statsVizView" id="statsTrendView" hidden>
-        <canvas id="fastTrendChart" width="660" height="260" role="img" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
-      </div>
-      <div class="statsVizView" id="statsWeeksView" hidden>
-        <canvas id="fastWeeksChart" width="660" height="260" role="img" aria-label="Weekly fasting hours for the last 8 weeks" data-i18n-aria="a11y.fastWeeksChart"></canvas>
-      </div>
-      <div class="notice" id="chartDetailBox" style="margin-top:10px;padding:12px 14px">
-        <strong id="chartDetailTitle" data-i18n="stats.chartDetailDefaultTitle">Chart details</strong>
-        <div class="small" id="chartDetailText" data-i18n="stats.chartDetailDefaultText" style="margin-top:6px">Tap a date, segment, point or week for details.</div>
-      </div>
-      <div class="small" id="statsVizHelp" data-i18n="stats.timelineHelp">Timeline shows each day's 24 hours vertically: colored sections are fasting and gaps are eating/non-fasting time.</div>
-    </div>
-    <div class="card gamificationDetail" id="gamificationDetail" style="margin-top:14px">
-      <div class="sectionHeader"><h2 data-i18n="game.progress">Progress &amp; achievements</h2><span class="levelPill" id="gDetailLevel">Level 1</span></div>
-      <div class="grid" style="margin-top:10px">
-        <div class="metric"><div class="value" id="gXP">0</div><div class="label" data-i18n="game.xp">Consistency XP</div></div>
-        <div class="metric"><div class="value" id="gWeekly">—</div><div class="label" data-i18n="game.weekly">Target success rate this week</div></div>
-        <div class="metric"><div class="value" id="gWeightStreak">0</div><div class="label" data-i18n="game.weightStreak">Weekly weigh-in streak</div></div>
-      </div>
-      <div class="small" style="margin-top:12px" data-i18n="game.rule">10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. No extra XP is awarded for fasting past the target.</div>
-      <div class="badgeGrid" id="achievementBadges"></div>
-    </div>
-  </section>
-
-  <section id="settings" class="screen">
-    <h1 data-i18n="nav.settings">Settings</h1>
-    <div class="notice" data-i18n="settings.storageNotice">Your fasting and weight records are stored locally on this device. The app automatically keeps rolling internal JSON recovery snapshots and reminds you every 7 days to make an external backup.</div>
-    <div class="notice healthNotice">
-      <strong data-i18n="public.healthTitle">Health &amp; safety</strong>
-      <div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
-      <div class="publicLinks"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
-    </div>
-    <div class="card" id="storageProtectionCard">
-      <h2 data-i18n="storage.title">Storage protection</h2>
-      <div class="row">
-        <div><strong id="storageProtectionStatus" data-i18n="storage.checking">Checking storage protection…</strong><div class="small" id="storageProtectionHelp" data-i18n="storage.help">Persistent storage can reduce the chance that the browser removes local app data under storage pressure. External backups are still recommended.</div></div>
-        <button id="storageProtectBtn" class="secondary" data-i18n="storage.request" hidden>Request protection</button>
-      </div>
-      <div class="small" id="storageUsageLabel" data-i18n="storage.usageUnknown">Storage usage information is unavailable.</div>
-    </div>
-    <div class="card">
-      <div class="row">
-        <div><strong data-i18n="settings.language">Interface language</strong><div class="small" data-i18n="settings.languageHelp">Use the device language automatically, or choose a language for this app.</div></div>
-        <select id="languageSelect" aria-label="Interface language" data-i18n-aria="settings.language">
-          <option value="system"></option>
-        </select>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="settings.appearance">Appearance</strong><div class="small" data-i18n="settings.appearanceHelp">Follow the device appearance automatically, or choose light or dark mode for this app.</div></div>
-        <select id="appearanceSelect" aria-label="Appearance" data-i18n-aria="settings.appearance">
-          <option value="system" data-i18n="settings.appearanceSystem">System</option>
-          <option value="light" data-i18n="settings.appearanceLight">Light</option>
-          <option value="dark" data-i18n="settings.appearanceDark">Dark</option>
-        </select>
-      </div>
-      <div class="row" style="display:block">
-        <div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
-        <div class="iconChoiceGrid" id="iconChoiceGrid" role="radiogroup" aria-label="App icon" data-i18n-aria="settings.appIcon">
-          <button type="button" class="iconChoice" data-icon-choice="plate" role="radio" aria-checked="false"><img src="icons/plate/icon-192.png" alt=""><span data-i18n="icon.plate">Plate & clock</span></button>
-          <button type="button" class="iconChoice" data-icon-choice="moon" role="radio" aria-checked="false"><img src="icons/moon/icon-192.png" alt=""><span data-i18n="icon.moon">Moon & utensils</span></button>
-          <button type="button" class="iconChoice" data-icon-choice="hourglass" role="radio" aria-checked="false"><img src="icons/hourglass/icon-192.png" alt=""><span data-i18n="icon.hourglass">Hourglass & leaf</span></button>
-          <button type="button" class="iconChoice" data-icon-choice="timer" role="radio" aria-checked="false"><img src="icons/timer/icon-192.png" alt=""><span data-i18n="icon.timer">F timer</span></button>
-        </div>
-        <div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
-        <div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
-        <div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button type="button" id="prepareIconChangeBtn" class="secondary" data-i18n="settings.appIconPrepare">Back up & prepare icon change</button><div id="reinstallLinkTools" class="reinstallLinkTools" hidden><label class="small" for="reinstallLinkInput" data-i18n="iconChange.linkLabel">Reinstall link</label><div class="reinstallLinkRow"><input id="reinstallLinkInput" type="text" readonly autocomplete="off" aria-label="Reinstall link" data-i18n-aria="iconChange.linkLabel"><button type="button" id="copyReinstallLinkBtn" class="secondary" data-i18n="iconChange.copyLink">Copy reinstall link</button></div><div id="reinstallLinkStatus" class="small" aria-live="polite"></div></div></div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.</div></div>
-        <div class="goalInputWrap"><input id="goalHours" class="numericInput" type="text" inputmode="decimal" autocomplete="off" value="16" aria-label="Target fasting duration" data-i18n-aria="settings.goal"> <span id="goalUnit">h</span></div>
-      </div>
-      <div class="presetWrap" aria-label="Quick fasting targets" data-i18n-aria="settings.goal">
-        <button class="chip" data-goal="16">16h</button>
-        <button class="chip" data-goal="18">18h</button>
-        <button class="chip" data-goal="22">22h</button>
-        <button class="chip" data-goal="23">23h</button>
-        <button class="chip" data-goal="24">24h</button>
-        <button class="chip" data-goal="36">36h</button>
-        <button class="chip" data-goal="48">48h</button>
-        <button class="chip" data-goal="72">72h</button>
-        <button class="chip" data-goal="96">96h</button>
-        <button class="chip" data-goal="120">120h</button>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div><strong id="gameToggleLabel" data-i18n="game.consistencyAchievements">Consistency &amp; achievements</strong><div class="small" id="gameToggleHelp" data-i18n="game.settingsHelp">Optional gamification. Rewards meeting your own target and regular weight logging—not longer fasting.</div></div>
-        <label class="toggleWrap"><input id="gamificationToggle" type="checkbox" checked aria-labelledby="gameToggleLabel" aria-describedby="gameToggleHelp"><span aria-hidden="true" data-i18n="common.on">On</span></label>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div></div>
-        <button id="exportBtn" class="secondary" data-i18n="common.export">Export</button>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.last">Last external backup</strong><div class="small" data-i18n="backup.lastHelp">A reminder appears after 7 days without one.</div></div>
-        <div class="duration" id="lastBackupLabel" data-i18n="common.never">Never</div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.nextReminder">Next external backup reminder</strong><div class="small" id="nextBackupLabel">Starts after your first fasting or weight record.</div></div>
-        <button id="settingsBackupNowBtn" class="secondary" data-i18n="backup.now">Back up now</button>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.snapshots">Automatic internal JSON snapshots</strong><div class="small" id="snapshotStatus">Keeps recent, daily, weekly and monthly recovery points automatically.</div></div>
-        <button id="restoreSnapshotBtn" class="secondary" data-i18n="common.restore">Restore</button>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.importTitle">Import backup</strong><div class="small" data-i18n="backup.importHelp">Restore from an exported JSON file</div></div>
-        <button id="importBtn" class="secondary" data-i18n="common.import">Import</button>
-        <input id="importFile" type="file" accept="application/json,.json" hidden>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting and weight history on this device</div></div>
-        <button id="resetBtn" class="dangerText" data-i18n="common.delete">Delete</button>
-      </div>
-    </div>
-
-    <div class="card" id="aboutHelp">
-      <h2 data-i18n="help.title">About &amp; Help</h2>
-      <div class="helpHeading" data-i18n="help.installIOS">Install on iPhone / iPad</div>
-      <ol class="helpSteps small">
-        <li data-i18n="help.installIOS1">Open the app's web address in Safari.</li>
-        <li data-i18n-html="help.installIOS2">Tap Share, then <strong>Add to Home Screen</strong>.</li>
-        <li data-i18n-html="help.installIOS3">Keep <strong>Open as Web App</strong> enabled if iOS shows that option, then tap Add.</li>
-      </ol>
-      <div class="helpHeading" data-i18n="help.installAndroid">Install on Android</div>
-      <ol class="helpSteps small">
-        <li data-i18n="help.installAndroid1">Open the app's web address in Chrome or another browser that supports PWA installation.</li>
-        <li data-i18n-html="help.installAndroid2">Open the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
-        <li data-i18n="help.installAndroid3">Confirm the installation. Fasting Tracker will appear on the Home screen/app launcher and can work offline after its files are cached.</li>
-      </ol>
-
-      <div class="helpHeading" data-i18n="help.backup">Backup &amp; restore</div>
-      <div class="small" data-i18n-html="help.backupText">The app reminds you every 7 days to use <strong>Export</strong> and save the JSON backup in Files, iCloud Drive, Google Drive, or another secure location. Before an app update, <strong>Backup &amp; Update</strong> creates an external backup first. Internal recovery snapshots are stored inside the installed web app and are lost if that installation is removed. The JSON file itself is the complete external backup; no companion text file is required. Before reinstalling to change the Home Screen icon, export an external backup; after reinstalling, use <strong>Import</strong> to restore it.</div>
-      <div class="small" style="margin-top:8px" data-i18n="backup.unencrypted">Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.</div>
-
-      <div class="helpHeading" data-i18n="help.privacy">Privacy &amp; storage</div>
-      <div class="small" data-i18n="help.privacyText">Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each friend who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.</div>
-
-      <div class="helpHeading" data-i18n="help.timeZoneTitle">Historical time zones</div>
-      <div class="small" data-i18n="help.timeZoneText">Fasts and weight entries remember the time zone in which they were created, so historical clock times and calendar-day charts do not shift if you later travel to another time zone.</div>
-
-      <div class="helpHeading" data-i18n="help.autophagy">Autophagy indicator</div>
-      <div class="small" data-i18n="help.autophagyText">The science card deliberately does not claim that autophagy starts at a fixed hour. Autophagy occurs continuously at a basal level, and current human studies do not support a universal fasting-duration threshold. The card separates well-established metabolic timing from more uncertain autophagy evidence and links to the studies used.</div>
-
-      <div class="helpHeading" data-i18n="help.consistency">Consistency system</div>
-      <div class="small" data-i18n="help.consistencyText">Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.</div>
-
-      <div class="helpHeading" data-i18n="public.healthTitle">Health &amp; safety</div>
-      <div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
-
-      <div class="helpHeading" data-i18n="public.infoTitle">Public information</div>
-      <div class="small" data-i18n="public.infoText">Read the full privacy information, health disclaimer and scientific-source notes.</div>
-      <div class="publicLinks">
-        <a class="publicLink" href="privacy.html?return=settings" rel="noopener" data-i18n="public.privacy">Privacy</a>
-        <a class="publicLink" href="about.html?return=settings" rel="noopener" data-i18n="public.about">About &amp; sources</a>
-        <a class="publicLink" href="{{ site.github.repository_url }}/issues" target="_blank" rel="noopener noreferrer" data-i18n="public.support">Support / report an issue</a>
-      </div>
-      <div class="small" style="margin-top:8px" data-i18n="public.supportWarning">GitHub Issues are public. Do not include fasting history, weight data, medical information or other personal data in a report.</div>
-
-      <div class="row" style="margin-top:10px">
-        <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
-        <div class="duration" id="appVersionLabel">—</div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
-        <button id="updateBtn" class="secondary" data-i18n="update.check">Check</button>
-      </div>
-    </div>
-    <div class="version" id="appFooterVersion">Fasting Tracker</div>
-  </section>
-</main>
+  
 
 
-<div class="modalBackdrop" id="backdateModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
-    <h2 id="backdateModalTitle" data-i18n="backdate.title">Start an ongoing fast</h2>
-    <div class="small" data-i18n="backdate.help">Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.</div>
-    <div class="formGroup">
-      <label for="backdateStart" data-i18n="backdate.start">Started at</label>
-      <input id="backdateStart" type="datetime-local" step="60" />
-      <div class="presetWrap" aria-label="Quick start times" data-i18n-aria="backdate.quickAria">
-        <button class="chip backdatePreset" type="button" data-hours="1" data-i18n="backdate.1h">1h ago</button>
-        <button class="chip backdatePreset" type="button" data-hours="2" data-i18n="backdate.2h">2h ago</button>
-        <button class="chip backdatePreset" type="button" data-hours="3" data-i18n="backdate.3h">3h ago</button>
-        <button class="chip backdatePreset" type="button" data-hours="4" data-i18n="backdate.4h">4h ago</button>
-        <button class="chip backdatePreset" type="button" data-hours="6" data-i18n="backdate.6h">6h ago</button>
-        <button class="chip backdatePreset" type="button" data-hours="12" data-i18n="backdate.12h">12h ago</button>
-      </div>
-    </div>
-    <div class="notice" id="backdateTargetSummary">—</div>
-    <div class="formError" id="backdateError" hidden></div>
-    <div class="backdateConflict" id="backdateConflict" hidden role="alert">
-      <strong id="backdateConflictTitle"></strong>
-      <div class="backdateConflictList" id="backdateConflictList"></div>
-      <div class="small" id="backdateConflictHint"></div>
-      <div class="backdateConflictActions">
-        <button id="backdateAdjustBtn" class="secondary" type="button"></button>
-        <button id="backdateEditConflictBtn" class="secondary" type="button" data-i18n="backdate.editConflict">Edit existing record</button>
-        <button id="backdateDeleteConflictBtn" class="dangerText" type="button" data-i18n="backdate.deleteConflict">Delete conflicting record &amp; start</button>
-      </div>
-    </div>
-    <div class="modalActions">
-      <button id="backdateCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="backdateStartBtn" class="primary" data-i18n="backdate.startFast">Start fast</button>
-    </div>
-  </div>
-</div>
 
-<div class="modalBackdrop" id="activeTargetModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="activeTargetModalTitle">
-    <h2 id="activeTargetModalTitle" data-i18n="activeTarget.title">Change active fasting target</h2>
-    <div class="small" data-i18n="activeTarget.help">This changes the target for the current fast only. The default target in Settings is not changed.</div>
-    <div class="formGroup" style="margin-top:14px">
-      <label for="activeTargetInput" data-i18n="activeTarget.targetHours">Target hours</label>
-      <input id="activeTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
-    </div>
-    <div class="presetWrap" id="activeTargetPresets" aria-label="Quick active fasting targets" data-i18n-aria="activeTarget.quickAria">
-      <button type="button" class="chip" data-active-goal="16">16h</button>
-      <button type="button" class="chip" data-active-goal="18">18h</button>
-      <button type="button" class="chip" data-active-goal="22">22h</button>
-      <button type="button" class="chip" data-active-goal="23">23h</button>
-      <button type="button" class="chip" data-active-goal="24">24h</button>
-      <button type="button" class="chip" data-active-goal="36">36h</button>
-      <button type="button" class="chip" data-active-goal="48">48h</button>
-      <button type="button" class="chip" data-active-goal="72">72h</button>
-      <button type="button" class="chip" data-active-goal="96">96h</button>
-      <button type="button" class="chip" data-active-goal="120">120h</button>
-    </div>
-    <div class="formError" id="activeTargetError" hidden></div>
-    <div class="modalActions">
-      <button id="activeTargetCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="activeTargetSaveBtn" class="primary" data-i18n="common.save">Save</button>
-    </div>
-  </div>
-</div>
 
-<div class="modalBackdrop" id="entryModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="entryModalTitle">
-    <h2 id="entryModalTitle" data-i18n="history.addTitle">Add fasting entry</h2>
-    <div class="formGroup">
-      <label for="entryStart" data-i18n="history.start">Start</label>
-      <input id="entryStart" type="datetime-local" step="60" />
-    </div>
-    <div class="formGroup">
-      <label for="entryEnd" data-i18n="history.end">End</label>
-      <input id="entryEnd" type="datetime-local" step="60" />
-    </div>
-    <div class="formGroup">
-      <label for="entryGoal" data-i18n="history.targetHours">Target hours</label>
-      <input id="entryGoal" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
-    </div>
-    <div class="small" data-i18n="history.overlapHelp">Manual entries cannot overlap another saved fast or the current active fast.</div>
-    <div class="formError" id="entryError" hidden></div>
-    <div class="modalActions">
-      <button id="entryCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="entrySaveBtn" class="primary" data-i18n="common.save">Save</button>
-    </div>
-  </div>
-</div>
-
-<div class="modalBackdrop" id="weightModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="weightModalTitle">
-    <h2 id="weightModalTitle" data-i18n="weight.addTitle">Add weight</h2>
-    <div class="formGroup">
-      <label for="weightWhen" data-i18n="weight.dateTime">Date &amp; time</label>
-      <input id="weightWhen" type="datetime-local" step="60" />
-    </div>
-    <div class="formGroup">
-      <label for="weightValueInput"><span data-i18n="nav.weight">Weight</span> (<span id="weightModalUnit">kg</span>)</label>
-      <input id="weightValueInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
-    </div>
-    <div class="formError" id="weightError" hidden></div>
-    <div class="modalActions">
-      <button id="weightCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="weightSaveBtn" class="primary" data-i18n="common.save">Save</button>
-    </div>
-  </div>
-</div>
-
-<div class="modalBackdrop" id="updateModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
-    <h2 id="updateModalTitle" data-i18n="update.install">Install update</h2>
-    <div class="small" id="updateModalText">—</div>
-    <div class="modalActions wrap">
-      <button id="updateCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="updateWithoutBackupBtn" class="secondary" data-i18n="update.withoutBackup">Update without backup</button>
-      <button id="backupUpdateBtn" class="primary" data-i18n="update.backupUpdate">Backup &amp; Update</button>
-    </div>
-  </div>
-</div>
-
-<div class="modalBackdrop" id="snapshotModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="snapshotModalTitle">
-    <h2 id="snapshotModalTitle" data-i18n="backup.snapshots">Internal recovery snapshots</h2>
-    <div class="small" data-i18n="backup.snapshotsHelp">These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. If local storage becomes limited, it may keep fewer snapshots and will warn you. They do not replace an external backup.</div>
-    <div id="snapshotList" style="margin-top:10px"></div>
-    <div class="modalActions">
-      <button id="snapshotCloseBtn" class="secondary" data-i18n="common.close">Close</button>
-    </div>
-  </div>
-</div>
-
-<div class="modalBackdrop" id="longFastModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="longFastModalTitle">
-    <h2 id="longFastModalTitle" data-i18n="safety.longFastTitle">Extended fasting target</h2>
-    <div class="small" id="longFastModalText"></div>
-    <div class="publicLinks"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
-    <div class="modalActions">
-      <button id="longFastCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="longFastContinueBtn" class="primary" data-i18n="safety.continue">Use this target</button>
-    </div>
-  </div>
-</div>
-
-<nav>
-  <div class="tabs">
-    <button class="tab active" data-screen="fasting" aria-current="page"><span class="ico">⏱</span><span data-i18n="nav.fasting">Fasting</span></button>
-    <button class="tab" data-screen="history"><span class="ico">🗓</span><span data-i18n="nav.history">History</span></button>
-    <button class="tab" data-screen="weight"><span class="ico">⚖︎</span><span data-i18n="nav.weight">Weight</span></button>
-    <button class="tab" data-screen="stats"><span class="ico">▥</span><span data-i18n="nav.stats">Stats</span></button>
-    <button class="tab" data-screen="settings"><span class="ico">⚙︎</span><span data-i18n="nav.settings">Settings</span></button>
-  </div>
-</nav>
-
-<script src="i18n/en.js"></script>
-<script src="i18n/bg.js"></script>
-<script src="i18n/es.js"></script>
-<script>
 (async () => {
   'use strict';
 
   const DATA_KEY = 'fastingTracker.data'; // legacy migration only
   const SNAPSHOT_KEY = 'fastingTracker.snapshots'; // legacy migration only
   const DATA_REVISION_SIGNAL_KEY = 'fastingTracker.dataRevision';
-  const PREFS_KEY = 'fastingTracker.preferences';
   const IDB_NAME = 'FastingTrackerDB';
   const IDB_VERSION = 1;
   const BACKUP_META_KEY = 'fastingTracker.backupMeta';
@@ -1243,16 +433,11 @@ layout: null
     const when = validDate(w.when);
     const kg = sanitizeWeightKg(w.kg, null);
     if (!when || kg == null || when.getTime() > Date.now() + FUTURE_TOLERANCE_MS) return null;
-    const tz = normalizeTimeZone(w.timeZone);
-    const whenIso = when.toISOString();
-    const calendarDay = typeof w.calendarDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(w.calendarDay)
-      ? w.calendarDay : dayKeyFast(whenIso, tz);
     return {
       id: (typeof w.id === 'string' && w.id.length <= 120) ? w.id : makeId(),
-      when: whenIso,
+      when: when.toISOString(),
       kg,
-      timeZone: tz,
-      calendarDay,
+      timeZone: normalizeTimeZone(w.timeZone),
       createdAt: normalizeAuditTimestamp(w.createdAt),
       modifiedAt: normalizeAuditTimestamp(w.modifiedAt)
     };
@@ -1391,24 +576,11 @@ layout: null
     persistedRecordMap = nextMap;
   }
 
-  function persistSmallPreferences() {
-    try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({
-        language: normalizeLanguage(data.language),
-        appearance: normalizeAppearance(data.appearance),
-        iconChoice: normalizeIconChoice(data.iconChoice),
-        weightUnit: normalizeWeightUnit(data.weightUnit),
-        gamificationEnabled: data.gamificationEnabled !== false
-      }));
-    } catch {}
-  }
-
   async function persistDailyTotals(revision = data.revision) {
     await idbPut('state', {key:'dailyTotals', revision, entries:[...storedDayTotalsMap.entries()]});
   }
 
   async function persistPrimaryNow(snapshotData = data) {
-    persistSmallPreferences();
     await idbPut('state', {key:'primary', data:snapshotData});
     await persistDailyTotals(snapshotData.revision);
     try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:snapshotData.revision, at:Date.now()})); } catch {}
@@ -1501,7 +673,6 @@ layout: null
         await persistDailyTotals(data.revision);
       }
       persistedRecordMap = new Map(data.records.map(r => [r.id, r]));
-      persistSmallPreferences();
 
       if (migratedLegacy) await persistPrimaryNow(data);
       try { localStorage.removeItem(DATA_KEY); localStorage.removeItem(SNAPSHOT_KEY); } catch {}
@@ -2062,7 +1233,6 @@ layout: null
       recoveryMode = null;
       invalidateDerivedCaches();
       rememberCurrentAppVersion();
-      persistSmallPreferences();
       queuePrimaryPersistence();
       scheduleRollingSnapshot('automatic change');
       return true;
@@ -2085,7 +1255,6 @@ layout: null
       data.updatedAt = new Date().toISOString();
       if (invalidateDerived) invalidateDerivedCaches();
       markViewsDirty(...(Array.isArray(dirtyViews) ? dirtyViews : ['fasting','history','weight','stats','settings']));
-      persistSmallPreferences();
       queuePrimaryPersistence();
       if (deferSnapshot) scheduleRollingSnapshot('automatic change');
       else maybeCreateRollingSnapshot('automatic change');
@@ -2130,29 +1299,6 @@ layout: null
   function dayKey(dateLike, timeZone = currentTimeZone()) {
     const p = zonedParts(dateLike, timeZone);
     return `${p.year}-${pad(p.month)}-${pad(p.day)}`;
-  }
-
-  function dayKeyFast(dateLike, timeZone = currentTimeZone()) {
-    const tz = normalizeTimeZone(timeZone);
-    if (tz === 'UTC') {
-      const d = new Date(dateLike);
-      return Number.isFinite(d.getTime()) ? d.toISOString().slice(0,10) : '';
-    }
-    return dayKey(dateLike, tz);
-  }
-
-  function weekKeyFromDayString(dayString) {
-    const m=String(dayString||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(!m) return '';
-    const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
-    const dow=d.getUTCDay(), diff=dow===0?-6:1-dow;
-    d.setUTCDate(d.getUTCDate()+diff);
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
-  }
-
-  function weightCalendarDay(weight) {
-    if (weight && typeof weight.calendarDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(weight.calendarDay)) return weight.calendarDay;
-    return weight ? dayKeyFast(weight.when, weight.timeZone || currentTimeZone()) : '';
   }
 
   function localDateLabel(dateLike, timeZone = null) {
@@ -2557,7 +1703,7 @@ layout: null
 
   function currentStreak() {
     if (currentStreakCache != null) return currentStreakCache;
-    const sorted = [...data.records].sort((a, b) => String(b.end).localeCompare(String(a.end)));
+    const sorted = [...data.records].sort((a, b) => new Date(b.end) - new Date(a.end));
     let streak = 0;
     for (const r of sorted) {
       if (!recordMetGoal(r)) break;
@@ -2640,7 +1786,7 @@ layout: null
   }
 
   function distinctWeightLoggingDays() {
-    return new Set(data.weights.map(weightCalendarDay).filter(Boolean)).size;
+    return new Set(data.weights.map(w => dayKey(w.when, w.timeZone))).size;
   }
 
   function gamificationXP() {
@@ -2656,40 +1802,29 @@ layout: null
 
   function weeklyTargetSuccessRate() {
     const currentWeek = weekKey(new Date(), currentTimeZone());
-    let total=0, reached=0;
-    // Only the current week matters. Scan newest-first and stop once records are
-    // clearly older than the week rather than converting a lifetime of dates.
-    const sorted=[...data.records].sort((a,b)=>String(b.end).localeCompare(String(a.end)));
-    for(const r of sorted){
-      const day=dayKeyFast(r.end,r.timeZone||currentTimeZone());
-      const wk=weekKeyFromDayString(day);
-      if(wk===currentWeek){ total++; if(recordMetGoal(r)) reached++; continue; }
-      if(total>0 && wk && wk<currentWeek) break;
-    }
-    return total ? Math.round((reached/total)*100) : null;
+    const records = data.records.filter(r => weekKey(r.end, r.timeZone || currentTimeZone()) === currentWeek);
+    if (!records.length) return null;
+    return Math.round((records.filter(recordMetGoal).length / records.length) * 100);
   }
 
   function weightWeekStreak() {
-    const weeks = new Set(data.weights.map(w => weekKeyFromDayString(weightCalendarDay(w))).filter(Boolean));
+    const weeks = new Set(data.weights.map(w => weekKey(w.when, w.timeZone)));
     if (!weeks.size) return 0;
     let cursor = startOfWeek();
-    let key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-    if (!weeks.has(key)) {
+    if (!weeks.has(dayKey(cursor))) {
       cursor.setDate(cursor.getDate() - 7);
-      key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-      if (!weeks.has(key)) return 0;
+      if (!weeks.has(dayKey(cursor))) return 0;
     }
     let streak = 0;
-    while (weeks.has(key)) {
+    while (weeks.has(dayKey(cursor))) {
       streak++;
       cursor.setDate(cursor.getDate() - 7);
-      key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
     }
     return streak;
   }
 
   function hasComebackAchievement() {
-    const sorted = [...data.records].sort((a, b) => String(a.end).localeCompare(String(b.end)));
+    const sorted = [...data.records].sort((a, b) => new Date(a.end) - new Date(b.end));
     for (let i = 1; i < sorted.length; i++) {
       if (!recordMetGoal(sorted[i - 1]) && recordMetGoal(sorted[i])) return true;
     }
@@ -2787,33 +1922,21 @@ layout: null
     renderGamification();
   }
 
-  function allFastingIntervals(rangeStart = -Infinity, rangeEnd = Infinity) {
-    const intervals = [];
-    for (const r of data.records) {
-      const start = Date.parse(r.start), end = Date.parse(r.end);
-      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
-      if (end <= rangeStart || start >= rangeEnd) continue;
-      intervals.push({ start, end });
-    }
-    if (data.activeStart) {
-      const start = Date.parse(data.activeStart), end = Date.now();
-      if (Number.isFinite(start) && end > start && end > rangeStart && start < rangeEnd) intervals.push({start,end});
-    }
-    intervals.sort((a,b)=>a.start-b.start);
-    return intervals;
+  function allFastingIntervals() {
+    const intervals = data.records.map(r => ({ start: new Date(r.start).getTime(), end: new Date(r.end).getTime() }));
+    if (data.activeStart) intervals.push({ start: new Date(data.activeStart).getTime(), end: Date.now() });
+    return intervals.filter(item => Number.isFinite(item.start) && Number.isFinite(item.end) && item.end > item.start).sort((a, b) => a.start - b.start);
   }
 
-  function currentZoneDaySummaries(timeZone = currentTimeZone(), rangeStart = -Infinity, rangeEnd = Infinity) {
+  function currentZoneDaySummaries(timeZone = currentTimeZone()) {
     const tz = normalizeTimeZone(timeZone);
-    const cacheKey = `${tz}|${Number.isFinite(rangeStart)?Math.floor(rangeStart/86400000):'all'}|${Number.isFinite(rangeEnd)?Math.ceil(rangeEnd/86400000):'all'}|${data.revision}`;
-    if (currentZoneDaySummaryCache?.key === cacheKey) return currentZoneDaySummaryCache.map;
+    if (currentZoneDaySummaryCache?.timeZone === tz) return currentZoneDaySummaryCache.map;
     const map = new Map();
-    for (const interval of allFastingIntervals(rangeStart, rangeEnd)) {
-      let cursor = Math.max(interval.start, Number.isFinite(rangeStart) ? rangeStart : interval.start), guard = 0;
-      const intervalEnd = Math.min(interval.end, Number.isFinite(rangeEnd) ? rangeEnd : interval.end);
-      while (cursor < intervalEnd && guard++ < 10000) {
+    for (const interval of allFastingIntervals()) {
+      let cursor = interval.start, guard = 0;
+      while (cursor < interval.end && guard++ < 10000) {
         const key = dayKey(cursor, tz);
-        const boundary = Math.min(intervalEnd, nextZonedDayBoundary(cursor, tz));
+        const boundary = Math.min(interval.end, nextZonedDayBoundary(cursor, tz));
         const item = map.get(key) || { totalFastMs:0, fastCount:0 };
         item.totalFastMs += Math.max(0, boundary - cursor);
         item.fastCount += 1;
@@ -2821,15 +1944,13 @@ layout: null
         cursor = Math.max(boundary, cursor + 1);
       }
     }
-    currentZoneDaySummaryCache = { key:cacheKey, map };
+    currentZoneDaySummaryCache = { timeZone:tz, map };
     return map;
   }
 
   function buildInteractiveChartDays(dayCount = 14, timeZone = currentTimeZone()) {
     const tz = normalizeTimeZone(timeZone);
-    const newestAnchor = new Date(); newestAnchor.setHours(12,0,0,0);
-    const oldestAnchor = new Date(newestAnchor); oldestAnchor.setDate(oldestAnchor.getDate() - dayCount - 1);
-    const intervals = allFastingIntervals(oldestAnchor.getTime(), newestAnchor.getTime() + 2*86400000);
+    const intervals = allFastingIntervals();
     const days = [];
     for (let i = dayCount - 1; i >= 0; i--) {
       const anchor = new Date();
@@ -3202,8 +2323,7 @@ layout: null
     const tz=currentTimeZone(), cacheKey=`${statsCalendarMonthOffset}|${tz}`;
     let calendarDays=calendarDaysCache.get(cacheKey);
     if (!calendarDays) {
-      const rangeStart=first.getTime()-2*86400000, rangeEnd=first.getTime()+44*86400000;
-      const summaries=currentZoneDaySummaries(tz,rangeStart,rangeEnd);
+      const summaries=currentZoneDaySummaries(tz);
       calendarDays=[];
       for (let i=0;i<42;i++) {
         const d=new Date(first); d.setDate(first.getDate()+i); d.setHours(12,0,0,0);
@@ -3232,8 +2352,7 @@ layout: null
   }
 
   function buildSummaryChartDays(dayCount = 30, timeZone = currentTimeZone()) {
-    const tz = normalizeTimeZone(timeZone), now = new Date(), rangeStart = now.getTime() - (dayCount + 2) * 86400000, rangeEnd = now.getTime() + 2 * 86400000;
-    const summaries = currentZoneDaySummaries(tz, rangeStart, rangeEnd), days = [];
+    const tz = normalizeTimeZone(timeZone), summaries = currentZoneDaySummaries(tz), days = [];
     for (let i = dayCount - 1; i >= 0; i--) {
       const anchor = new Date(); anchor.setHours(12,0,0,0); anchor.setDate(anchor.getDate() - i);
       const day = chartDayForAnchor(anchor, tz, summaries);
@@ -3265,7 +2384,7 @@ layout: null
 
   function buildWeeklySummaries() {
     if (weeklySummariesCache) return weeklySummariesCache;
-    const tz=currentTimeZone(), thisMonday=startOfWeekMonday(new Date()), rangeStart=thisMonday.getTime()-8*7*86400000-2*86400000, rangeEnd=Date.now()+2*86400000, summaries=currentZoneDaySummaries(tz,rangeStart,rangeEnd), weeks=[];
+    const tz=currentTimeZone(), summaries=currentZoneDaySummaries(tz), thisMonday=startOfWeekMonday(new Date()), weeks=[];
     for(let wi=7;wi>=0;wi--){const start=new Date(thisMonday);start.setDate(start.getDate()-wi*7);let total=0,daysWithFast=0;for(let di=0;di<7;di++){const d=new Date(start);d.setDate(start.getDate()+di);const day=chartDayForAnchor(d,tz,summaries);if(day){total+=day.totalFastMs;if(day.totalFastMs>0)daysWithFast++;}}const key=dayKey(start,tz);weeks.push({key,start,totalFastMs:total,daysWithFast,label:start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'})});}
     weeklySummariesCache=weeks;
     return weeklySummariesCache;
@@ -3442,10 +2561,8 @@ layout: null
     if (kg == null) { showWeightError(t('weight.errValue', {unit:data.weightUnit})); return; }
     const existingWeight = editingWeightId ? data.weights.find(w => w.id === editingWeightId) : null;
     const nowAudit = new Date().toISOString();
-    const whenIso = when.toISOString();
     const entry = {
-      id: editingWeightId || makeId(), when: whenIso, kg, timeZone: tz,
-      calendarDay: dayKeyFast(whenIso, tz),
+      id: editingWeightId || makeId(), when: when.toISOString(), kg, timeZone: tz,
       createdAt: existingWeight ? normalizeAuditTimestamp(existingWeight.createdAt) : nowAudit,
       modifiedAt: existingWeight ? nowAudit : null
     };
@@ -3457,7 +2574,7 @@ layout: null
   }
 
   function sortedWeightsAsc() {
-    return [...data.weights].sort((a, b) => String(a.when).localeCompare(String(b.when)));
+    return [...data.weights].sort((a, b) => new Date(a.when) - new Date(b.when));
   }
 
   function renderWeight() {
@@ -4510,6 +3627,3 @@ layout: null
     checkForUpdates({ quiet: true });
   }
 })();
-</script>
-</body>
-</html>

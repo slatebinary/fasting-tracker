@@ -115,6 +115,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, as described in 
 The interface currently supports English, Bulgarian and Spanish. Language, region, time zone and weight unit are kept independent. Locale-sensitive numbers/dates use `Intl`, plurals use `Intl.PluralRules`, and the layout is prepared for future right-to-left languages. See `I18N-GUIDE.md` before adding another translation. Backup JSON remains language-neutral.
 
 
-## v1.7.11 performance architecture
+## v1.8.0 performance architecture
 
-The app uses screen-level lazy rendering, Pointer Events for touch/mouse activation, deferred recovery-snapshot work, derived-statistics caches, and external JSON/JavaScript localization sources under `i18n/`. A Playwright large-history smoke test is included in `tests/test_performance.py`.
+Primary fasting/weight history and recovery snapshot payloads now use IndexedDB instead of large `localStorage` JSON blobs. Small preferences/version metadata remain in `localStorage` so public information pages can follow language/theme immediately. Daily fasting totals are persisted and updated incrementally, expensive statistics are range-limited/lazy, and the supported history ceiling is 100,000 fasting records plus 100,000 weight records. The portable external backup remains JSON. Regression coverage includes both the 2,000+2,000 smoke test and a 70-year test with 25,567 fasting plus 25,567 weight records.
