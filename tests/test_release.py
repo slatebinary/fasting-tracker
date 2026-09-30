@@ -31,7 +31,7 @@ index=(ROOT/'index.html').read_text()
 en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.8.4','version must be 1.8.4')
+ok(ver.get('version')=='1.8.5','version must be 1.8.5')
 ok(ver.get('released')=='2026-09-30','release date must be 2026-09-30')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -141,7 +141,7 @@ try:
         ok(evaluated==lang_dicts[lang],f'i18n runtime is stale for {lang}; run tools/build_i18n_runtime.py')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==5, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.8.4', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.8.5', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -486,14 +486,21 @@ ok("if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;" in i
 ok("if (statsVizMode === 'timeline') scrollTimelineToLatest();" in index, 'Stats activation does not restore newest timeline position')
 
 
-# v1.8.4 stop-fast confirmation + Undo regression checks
+# v1.8.5 stop-fast confirmation + Undo regression checks
 ok('id="stopFastModal"' in index and 'id="stopAndSaveBtn"' in index and 'id="keepFastingBtn"' in index, 'single stop-fast modal is missing')
 ok('id="stopUndoBar"' in index and 'id="stopUndoBtn"' in index, 'stop-fast Undo UI is missing')
 ok('function undoStoppedFast()' in index and 'expiresAt: Date.now() + 10000' in index, '10-second stop-fast Undo logic is missing')
 ok("confirm(t('fasting.stop" not in index, 'native/double stop-fast confirmation still remains')
 ok('fasting.stopModalText' in en_source and 'fasting.stopAndSave' in en_source and 'fasting.undo' in en_source, 'stop-fast modal/Undo translations missing')
 
-# v1.8.4 performance/architecture regression checks
+
+# v1.8.5 stop countdown / home return / weight chart interaction regression checks
+ok('id="stopUndoCountdown"' in index and 'function updateStopUndoCountdown()' in index, 'visible stop-fast Undo countdown is missing')
+ok("activateScreen('fasting');" in index and 'function keepFastingAndReturnHome()' in index, 'Keep fasting does not explicitly return to the Fasting home screen')
+ok('weightChartHitPoints' in index and 'function weightChartPointAt(' in index and 'function finishWeightChartPointer(' in index, 'weight chart point interaction is missing')
+ok('id="weightChartDetail"' in index and 'weight.pointDetail' in en_source, 'weight chart selected-value details are missing')
+
+# v1.8.5 performance/architecture regression checks
 ok('function renderScreen(' in index and 'const viewDirty = {' in index, 'screen-level lazy rendering missing')
 ok("document.querySelectorAll('.tab').forEach(tab => bindResponsiveAction" in index, 'bottom navigation is not on unified Pointer Events action path')
 ok("statsVizSwitcher').addEventListener('touchstart'" not in index, 'duplicate touchstart statistics path remains')

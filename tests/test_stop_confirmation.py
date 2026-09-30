@@ -25,9 +25,9 @@ with sync_playwright() as p:
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.on('dialog',lambda d:(dialogs.append(d.message),d.dismiss()))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.4',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.5',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.4'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.5'",timeout=20000)
     page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
 
     # Stop opens one app modal; dismissing it must keep the fast running.
@@ -40,6 +40,7 @@ with sync_playwright() as p:
         print('FAIL: stop confirmation does not show elapsed duration'); sys.exit(1)
     page.locator('#keepFastingBtn').click()
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    page.wait_for_function("document.querySelector('#fasting')?.classList.contains('active')",timeout=5000)
     if 'Stop' not in page.locator('#toggleFast').inner_text():
         print('FAIL: Keep fasting ended the active fast'); sys.exit(1)
 
@@ -50,6 +51,13 @@ with sync_playwright() as p:
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Start')",timeout=5000)
     page.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
+    countdown=page.locator('#stopUndoCountdown').inner_text().strip()
+    if not countdown.endswith('s') or not countdown[:-1].isdigit() or not (1 <= int(countdown[:-1]) <= 10):
+        print('FAIL: Undo countdown is not visible or valid'); sys.exit(1)
+    page.wait_for_timeout(1100)
+    countdown2=page.locator('#stopUndoCountdown').inner_text().strip()
+    if int(countdown2[:-1]) >= int(countdown[:-1]):
+        print('FAIL: Undo countdown did not decrease'); sys.exit(1)
     page.locator('.tab[data-screen="history"]').click()
     page.wait_for_function(f"document.querySelectorAll('#historyList .historyRow').length === {initial_count + 1}",timeout=5000)
 

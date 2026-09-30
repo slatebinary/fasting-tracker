@@ -175,7 +175,7 @@
   "weight.toTarget": "Diferencia hasta el objetivo",
   "weight.targetHelp": "Opcional. Déjalo en blanco si solo quieres seguir la tendencia.",
   "weight.trend": "Tendencia del peso",
-  "weight.chartHelp": "Últimos 30 pesajes. Aparece una línea objetivo cuando se establece un peso objetivo.",
+  "weight.chartHelp": "Últimos 30 pesajes. Aparece una línea objetivo cuando se establece un peso objetivo. Toca un punto para ver su valor exacto.",
   "weight.dateTime": "Fecha y hora",
   "weight.empty": "Aún no hay registros de peso. Pulsa Añadir peso para guardar tu primera medición.",
   "weight.addChart": "Añade registros de peso para ver la tendencia.",
@@ -432,5 +432,6 @@
   "unit.hour.zero": "horas",
   "unit.hour.two": "horas",
   "unit.hour.few": "horas",
-  "unit.hour.many": "horas"
+  "unit.hour.many": "horas",
+  "weight.pointDetail": "{weight} • {date}"
 }

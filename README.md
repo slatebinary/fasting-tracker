@@ -116,7 +116,7 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
-## v1.8.4 stop-fast safety
+## v1.8.5 stop-fast safety
 
 Stopping an active fast now uses one explicit in-app confirmation showing the elapsed duration, with Keep fasting and Stop & save actions. After saving, a 10-second Undo restores the exact active fast (start, target, time zone and audit timestamps) and removes the just-created History record.
 

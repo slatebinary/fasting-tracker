@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.4" />
+  <meta name="ft-app-version" content="1.8.5" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -259,7 +259,10 @@ layout: null
     .stopConfirmText.warn { color:var(--danger); font-weight:650; }
     .stopUndoBar { position:fixed; left:12px; right:12px; bottom:calc(72px + env(safe-area-inset-bottom)); z-index:90; max-width:696px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:2px solid color-mix(in srgb, white 78%, var(--line)); border-radius:16px; background:color-mix(in srgb, var(--card) 94%, black); box-shadow:0 12px 34px rgba(0,0,0,.32); }
     .stopUndoBar .stopUndoText { color:var(--text); font-weight:650; line-height:1.3; }
+    .stopUndoCountdown { flex:0 0 auto; min-width:42px; text-align:center; font-variant-numeric:tabular-nums; font-weight:750; color:var(--text); border:1px solid color-mix(in srgb, white 65%, var(--line)); border-radius:999px; padding:7px 9px; }
     .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
+    #weightChart { touch-action:pan-y; cursor:pointer; }
+    .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
     .modalBackdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); background: rgba(0,0,0,.46); }
     .modalCard { width: min(460px, 100%); max-height: 90vh; overflow: auto; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 18px 60px rgba(0,0,0,.28); }
     .modalCard h2 { margin-bottom: 16px; }
@@ -488,7 +491,8 @@ layout: null
     <div class="card weightChartWrap">
       <h2 data-i18n="weight.trend">Weight trend</h2>
       <canvas id="weightChart" width="660" height="240" role="img" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
-      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Last 30 weigh-ins. A target line appears when a target weight is set.</div>
+      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Last 30 weigh-ins. A target line appears when a target weight is set. Tap a point to see its exact value.</div>
+      <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
     </div>
     <div class="card weightHistory" id="weightHistoryList"></div>
   </section>
@@ -855,6 +859,7 @@ layout: null
 
 <div class="stopUndoBar" id="stopUndoBar" role="status" aria-live="assertive" hidden>
   <div class="stopUndoText" id="stopUndoText" data-i18n="fasting.stoppedUndo">Fast stopped and saved.</div>
+  <span class="stopUndoCountdown" id="stopUndoCountdown" aria-hidden="true">10s</span>
   <button id="stopUndoBtn" type="button" data-i18n="fasting.undo">Undo</button>
 </div>
 
@@ -897,7 +902,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.4';
+  const APP_VERSION = '1.8.5';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -974,7 +979,11 @@ layout: null
   let fastActionLocked = false;
   let pendingStopUndo = null;
   let stopUndoTimer = 0;
+  let stopUndoCountdownTimer = 0;
   let stopUndoMessageTimer = 0;
+  let weightChartHitPoints = [];
+  let weightChartSelectedId = null;
+  let weightChartPointerStart = null;
   let chartInteractiveLayout = [];
   let timelineChartGeometry = null;
   let timelineChartDays = [];
@@ -2477,8 +2486,16 @@ layout: null
   function clearStopUndo({ hide = true } = {}) {
     pendingStopUndo = null;
     if (stopUndoTimer) { clearTimeout(stopUndoTimer); stopUndoTimer = 0; }
+    if (stopUndoCountdownTimer) { clearInterval(stopUndoCountdownTimer); stopUndoCountdownTimer = 0; }
     if (stopUndoMessageTimer) { clearTimeout(stopUndoMessageTimer); stopUndoMessageTimer = 0; }
     if (hide) el('stopUndoBar').hidden = true;
+  }
+
+  function updateStopUndoCountdown() {
+    const badge = el('stopUndoCountdown');
+    if (!badge || !pendingStopUndo) return;
+    const seconds = Math.max(0, Math.ceil((pendingStopUndo.expiresAt - Date.now()) / 1000));
+    badge.textContent = `${seconds}s`;
   }
 
   function showStopUndo(recordId, activeSnapshot) {
@@ -2486,12 +2503,21 @@ layout: null
     pendingStopUndo = { recordId, activeSnapshot, expiresAt: Date.now() + 10000 };
     el('stopUndoText').textContent = t('fasting.stoppedUndo');
     el('stopUndoBtn').hidden = false;
+    el('stopUndoCountdown').hidden = false;
     el('stopUndoBar').hidden = false;
+    updateStopUndoCountdown();
+    stopUndoCountdownTimer = setInterval(updateStopUndoCountdown, 250);
     stopUndoTimer = setTimeout(() => clearStopUndo(), 10000);
   }
 
   function closeStopFastModal() {
     hideModal('stopFastModal');
+  }
+
+  function keepFastingAndReturnHome() {
+    closeStopFastModal();
+    activateScreen('fasting');
+    requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
   }
 
   function stopFast() {
@@ -2581,6 +2607,7 @@ layout: null
     renderAll();
     el('stopUndoText').textContent = t('fasting.undoRestored');
     el('stopUndoBtn').hidden = true;
+    el('stopUndoCountdown').hidden = true;
     el('stopUndoBar').hidden = false;
     stopUndoMessageTimer = setTimeout(() => { el('stopUndoBar').hidden = true; stopUndoMessageTimer = 0; }, 2200);
   }
@@ -3656,13 +3683,20 @@ layout: null
     const accent = style.getPropertyValue('--accent').trim();
     const muted = style.getPropertyValue('--muted').trim();
     const good = style.getPropertyValue('--good').trim();
+    const card = style.getPropertyValue('--card').trim();
+    const textColor = style.getPropertyValue('--text').trim();
     const unit = data.weightUnit;
+    const detail = el('weightChartDetail');
+    weightChartHitPoints = [];
 
     if (!entries.length) {
+      weightChartSelectedId = null;
+      if (detail) { detail.hidden = true; detail.textContent = ''; }
       ctx.fillStyle = muted; ctx.font = '13px -apple-system'; ctx.textAlign = 'center';
       ctx.fillText(t('weight.addChart'), cssW / 2, cssH / 2);
       ctx.textAlign = 'start'; return;
     }
+    if (weightChartSelectedId && !entries.some(e => e.id === weightChartSelectedId)) weightChartSelectedId = null;
 
     const values = entries.map(e => kgToDisplay(e.kg, unit));
     const target = data.targetWeightKg == null ? null : kgToDisplay(data.targetWeightKg, unit);
@@ -3698,7 +3732,39 @@ layout: null
     entries.forEach((e,i) => { const x=xFor(i), y=yFor(values[i]); if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
     ctx.stroke();
     ctx.fillStyle = accent;
-    entries.forEach((e,i) => { const x=xFor(i), y=yFor(values[i]); ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill(); });
+    entries.forEach((e,i) => {
+      const x=xFor(i), y=yFor(values[i]);
+      weightChartHitPoints.push({ id:e.id, entry:e, x, y, value:values[i] });
+      ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill();
+    });
+
+    const selectedIndex = entries.findIndex(e => e.id === weightChartSelectedId);
+    if (selectedIndex >= 0) {
+      const e = entries[selectedIndex], x = xFor(selectedIndex), y = yFor(values[selectedIndex]);
+      ctx.save();
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = accent; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      const valueLabel = formatWeight(e.kg, unit);
+      ctx.font = '600 12px -apple-system';
+      const labelW = Math.ceil(ctx.measureText(valueLabel).width) + 16;
+      const labelH = 24;
+      const bx = Math.max(4, Math.min(cssW - labelW - 4, x - labelW / 2));
+      const by = y > 48 ? y - 36 : y + 12;
+      ctx.fillStyle = card; ctx.strokeStyle = accent; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') ctx.roundRect(bx, by, labelW, labelH, 7); else ctx.rect(bx, by, labelW, labelH);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = textColor; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(valueLabel, bx + labelW / 2, by + labelH / 2);
+      ctx.restore();
+      if (detail) {
+        detail.textContent = t('weight.pointDetail', { weight:valueLabel, date:localDateTimeLabel(e.when, e.timeZone) });
+        detail.hidden = false;
+      }
+    } else if (detail) {
+      detail.hidden = true;
+      detail.textContent = '';
+    }
 
     let labelIndexes;
     if (entries.length <= 4) labelIndexes = entries.map((_,i)=>i);
@@ -3708,10 +3774,41 @@ layout: null
       times.forEach((time,i)=>{ const distance=Math.abs(time-midT); if(distance<midDistance){midDistance=distance;midI=i;} });
       labelIndexes=[...new Set([0,midI,entries.length-1])];
     }
-    ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'center';
+    ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     labelIndexes.forEach(i => { const d = new Date(entries[i].when); const tz=entries[i].timeZone || currentTimeZone(); const label=d.toLocaleDateString(currentLocale(), {day:'numeric',month:'numeric',timeZone:tz}); ctx.fillText(label, xFor(i), cssH - 10); });
     ctx.textAlign = 'start';
   }
+
+  function weightChartPointAt(clientX, clientY) {
+    const c = el('weightChart');
+    if (!c || !weightChartHitPoints.length) return null;
+    const rect = c.getBoundingClientRect();
+    const x = clientX - rect.left, y = clientY - rect.top;
+    let best = null, bestDistance = Infinity;
+    for (const point of weightChartHitPoints) {
+      const distance = Math.hypot(x - point.x, y - point.y);
+      if (distance < bestDistance) { best = point; bestDistance = distance; }
+    }
+    return bestDistance <= 26 ? best : null;
+  }
+
+  function beginWeightChartPointer(event) {
+    if (event.button != null && event.button !== 0) return;
+    weightChartPointerStart = { id:event.pointerId, x:event.clientX, y:event.clientY };
+  }
+
+  function finishWeightChartPointer(event) {
+    const start = weightChartPointerStart;
+    weightChartPointerStart = null;
+    if (!start || start.id !== event.pointerId) return;
+    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
+    const point = weightChartPointAt(event.clientX, event.clientY);
+    if (!point) return;
+    weightChartSelectedId = point.id;
+    drawWeightChart();
+  }
+
+  function cancelWeightChartPointer() { weightChartPointerStart = null; }
 
   function setWeightUnit(unit) {
     data.weightUnit = normalizeWeightUnit(unit);
@@ -4367,7 +4464,7 @@ layout: null
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
-  bindResponsiveAction(el('keepFastingBtn'), closeStopFastModal);
+  bindResponsiveAction(el('keepFastingBtn'), keepFastingAndReturnHome);
   bindResponsiveAction(el('stopAndSaveBtn'), confirmStopFast);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
   bindResponsiveAction(editActiveTargetBtn, openActiveTargetModal);
@@ -4525,6 +4622,9 @@ layout: null
   el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
   el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);
   el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer);
+  el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
+  el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
+  el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
   window.addEventListener('resize', () => { markViewsDirty('stats','weight'); if (el('stats').classList.contains('active')) renderScreen('stats'); if (el('weight').classList.contains('active')) renderScreen('weight'); });
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('offline', () => setUpdateUI('offline', t('update.offlineExplicit')));
