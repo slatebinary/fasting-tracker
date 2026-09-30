@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.7.0" />
+  <meta name="ft-app-version" content="1.7.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -139,11 +139,13 @@ layout: null
     .fastRingInner { width:calc(100% - 18px); height:calc(100% - 18px); border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
     .fastRing .friendlyTimer { font-size:clamp(31px,9vw,48px); margin:0 0 3px; }
     .fastRing .exactTimer { margin:0; font-size:16px; }
-    .vizSwitcher { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; padding:4px; border-radius:13px; background:var(--line); margin:4px 0 14px; }
-    .vizSwitcher button { padding:9px 5px; border-radius:10px; background:transparent; color:var(--text); font-size:12px; min-width:0; }
-    .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    .vizSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:7px; border-radius:16px; background:var(--line); margin:6px 0 16px; touch-action:manipulation; }
+    .vizSwitcher button { min-height:50px; padding:12px 10px; border-radius:12px; background:transparent; color:var(--text); font-size:15px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; position:relative; z-index:1; }
+    .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 4px rgba(0,0,0,.10); }
     .statsVizView[hidden] { display:none !important; }
     .statsVizView canvas { width:100%; display:block; }
+    #statsTimelineView { overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; padding-bottom:4px; }
+    #statsTimelineView #chart { min-width:620px; touch-action:pan-x; }
     .calendarHeader { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:4px 0 10px; }
     .calendarHeader button { padding:8px 11px; min-width:42px; }
     .calendarMonthTitle { font-weight:750; text-align:center; flex:1; }
@@ -166,7 +168,7 @@ layout: null
     .legendSwatch.l2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
     .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
     .legendSwatch.l4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); }
-    @media (max-width:380px) { .vizSwitcher button { font-size:11px; padding:8px 2px; } .calendarDay { min-height:48px; } }
+    @media (max-width:380px) { .vizSwitcher button { font-size:14px; min-height:48px; padding:10px 8px; } .calendarDay { min-height:48px; } }
     button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
     .primary { width: 100%; background: var(--accent); color: white; font-size: 18px; }
@@ -484,7 +486,7 @@ layout: null
       <div class="metric"><div class="value" id="mHours">0h</div><div class="label" data-i18n="stats.total">Total fasting</div></div>
     </div>
     <div class="card" style="margin-top:14px">
-      <div class="sectionHeader"><h2 data-i18n="stats.patterns">Fasting patterns</h2><span class="small" data-i18n="stats.interactive">Interactive</span></div>
+      <div class="sectionHeader"><h2 data-i18n="stats.patterns">Fasting patterns</h2></div>
       <div class="vizSwitcher" id="statsVizSwitcher" role="tablist" aria-label="Statistics visualization" data-i18n-aria="stats.visualizationAria">
         <button type="button" class="active" data-viz="timeline" role="tab" aria-selected="true" data-i18n="stats.vizTimeline">Timeline</button>
         <button type="button" data-viz="calendar" role="tab" aria-selected="false" data-i18n="stats.vizCalendar">Calendar</button>
@@ -492,7 +494,7 @@ layout: null
         <button type="button" data-viz="weeks" role="tab" aria-selected="false" data-i18n="stats.vizWeeks">Weeks</button>
       </div>
       <div class="statsVizView" id="statsTimelineView">
-        <canvas id="chart" width="660" height="280" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
+        <canvas id="chart" width="660" height="310" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
       </div>
       <div class="statsVizView" id="statsCalendarView" hidden>
         <div class="calendarHeader">
@@ -818,7 +820,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.7.0';
+  const APP_VERSION = '1.7.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -883,6 +885,8 @@ layout: null
   let weightVisibleCount = HISTORY_PAGE_SIZE;
   let fastActionLocked = false;
   let chartInteractiveLayout = [];
+  let timelineChartGeometry = null;
+  let timelineChartDays = [];
   let chartSelectedTarget = null;
   let statsVizMode = 'timeline';
   let statsCalendarMonthOffset = 0;
@@ -2505,36 +2509,59 @@ layout: null
     const rect = c.getBoundingClientRect();
     const x = clientX - rect.left;
     const y = clientY - rect.top;
-    for (let i = chartInteractiveLayout.length - 1; i >= 0; i--) {
-      const hit = chartInteractiveLayout[i];
-      if (x >= hit.x && x <= hit.x + hit.w && y >= hit.y && y <= hit.y + hit.h) return hit;
-    }
-    return null;
+    const g = timelineChartGeometry;
+    if (!g || !timelineChartDays.length) return null;
+
+    // Use the whole day cell (bar plus half of each inter-column gap) as the
+    // horizontal touch target. This is much easier to hit than the narrow
+    // painted bar on a phone while still selecting the intended date.
+    const firstCenter = g.left + g.bw / 2;
+    const index = Math.round((x - firstCenter) / g.slot);
+    if (index < 0 || index >= timelineChartDays.length) return null;
+    const center = firstCenter + index * g.slot;
+    if (Math.abs(x - center) > g.slot / 2) return null;
+    const day = timelineChartDays[index];
+
+    // Tapping the date-label strip selects the whole day.
+    if (y >= g.top + g.h && y <= g.cssH) return { kind:'day', dayKey:day.key };
+    if (y < g.top || y > g.top + g.h) return null;
+
+    // Map the vertical touch position directly to clock time, then find the
+    // corresponding fasting or non-fasting segment. Every point in the 24 h
+    // column therefore has a selectable segment, even if that segment is only
+    // a few pixels tall visually.
+    const fraction = Math.max(0, Math.min(0.999999, (y - g.top) / g.h));
+    const instant = day.startMs + fraction * (day.endMs - day.startMs);
+    let segmentIndex = day.segments.findIndex(seg => instant >= seg.start && instant < seg.end);
+    if (segmentIndex < 0 && day.segments.length) segmentIndex = day.segments.length - 1;
+    return segmentIndex >= 0 ? { kind:'segment', dayKey:day.key, segmentIndex } : { kind:'day', dayKey:day.key };
   }
 
   function handleChartPointer(event) {
-    const point = event.touches?.[0] || event;
-    const hit = hitTestChart(point.clientX, point.clientY);
+    const hit = hitTestChart(event.clientX, event.clientY);
     if (!hit) return;
     statsDetailOverride = null;
-    if (hit.kind === 'day') chartSelectedTarget = { kind: 'day', dayKey: hit.dayKey };
-    else chartSelectedTarget = { kind: 'segment', dayKey: hit.dayKey, segmentIndex: hit.segmentIndex };
+    if (hit.kind === 'day') chartSelectedTarget = { kind:'day', dayKey:hit.dayKey };
+    else chartSelectedTarget = { kind:'segment', dayKey:hit.dayKey, segmentIndex:hit.segmentIndex };
     drawChart();
   }
 
   function drawChart() {
     const c = el('chart'), ctx = c.getContext('2d');
     const ratio = window.devicePixelRatio || 1;
-    const cssW = c.clientWidth || 660, cssH = 280;
+    const cssW = c.clientWidth || 660, cssH = 310;
     c.width = Math.floor(cssW * ratio); c.height = Math.floor(cssH * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
-    c.style.touchAction = 'manipulation';
+    c.style.touchAction = 'pan-x';
 
     const days = buildInteractiveChartDays(14);
-    const top = 18, bottom = 34, left = 34, right = 8;
+    const top = 18, bottom = 38, left = 40, right = 10;
     const w = cssW - left - right, h = cssH - top - bottom;
-    const gap = 6, bw = (w - gap * 13) / 14;
+    const gap = 8, bw = (w - gap * 13) / 14;
+    const slot = bw + gap;
+    timelineChartDays = days;
+    timelineChartGeometry = { top, bottom, left, right, w, h, gap, bw, slot, cssW, cssH };
     const style = getComputedStyle(document.documentElement);
     const line = style.getPropertyValue('--line').trim();
     const accent = style.getPropertyValue('--accent').trim();
@@ -2566,7 +2593,7 @@ layout: null
         const segHeight = Math.max(2, ((segment.end - segment.start) / (day.endMs - day.startMs)) * h);
         const rectY = Math.min(top + h - 2, segTop);
         const rectH = Math.min(h, segHeight);
-        chartInteractiveLayout.push({ kind: 'segment', dayKey: day.key, segmentIndex: segIndex, x: x0, y: rectY, w: bw, h: rectH });
+        chartInteractiveLayout.push({ kind: 'segment', dayKey: day.key, segmentIndex: segIndex, x: x0 - gap/2, y: rectY, w: bw + gap, h: rectH });
         if (segment.type === 'fast') {
           ctx.fillStyle = accent;
           ctx.globalAlpha = .88;
@@ -2581,9 +2608,9 @@ layout: null
         }
       });
 
-      const d = new Date(day.startMs);
-      ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'center';
-      ctx.fillText(formatNumber(d.getDate()), x0 + bw / 2, cssH - 10);
+      const dp = zonedParts(day.startMs, day.timeZone);
+      ctx.fillStyle = muted; ctx.font = '11px -apple-system'; ctx.textAlign = 'center';
+      ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
     });
     ctx.textAlign = 'start';
     renderChartDetail(days);
@@ -2606,6 +2633,16 @@ layout: null
     title.textContent = detail?.title || t('stats.chartDetailDefaultTitle');
     text.textContent = detail?.text || t('stats.chartDetailDefaultText');
     const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
+  }
+
+  function activateStatsVizFromEvent(event) {
+    const button = event.target.closest?.('#statsVizSwitcher [data-viz]');
+    if (!button) return;
+    // Pointer-up gives immediate, reliable activation on iOS/PWA. Keyboard
+    // activation still comes through click (detail === 0).
+    if (event.type === 'click' && event.detail !== 0) return;
+    if (event.cancelable) event.preventDefault();
+    setStatsVizMode(button.dataset.viz);
   }
 
   function setStatsVizMode(mode) {
@@ -3709,8 +3746,9 @@ layout: null
     installUpdate();
   });
 
-  el('chart').addEventListener('pointerdown', handleChartPointer);
-  document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(btn => btn.addEventListener('click', () => setStatsVizMode(btn.dataset.viz)));
+  el('chart').addEventListener('pointerup', handleChartPointer);
+  el('statsVizSwitcher').addEventListener('pointerup', activateStatsVizFromEvent);
+  el('statsVizSwitcher').addEventListener('click', activateStatsVizFromEvent);
   el('calendarPrevBtn').addEventListener('click', () => { statsCalendarMonthOffset -= 1; statsDetailOverride = null; renderFastCalendar(); });
   el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
   el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);
