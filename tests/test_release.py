@@ -28,9 +28,10 @@ def canonical_bytes(path):
     return data
 
 index=(ROOT/'index.html').read_text()
+en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.7.10','version must be 1.7.10')
+ok(ver.get('version')=='1.7.11','version must be 1.7.11')
 ok(ver.get('released')=='2026-09-30','release date must be 2026-09-30')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -55,7 +56,7 @@ ok('validateCompatibleData(JSON.parse(raw))' in index and 'return { data: valida
 ok('data = validateCompatibleData(selected.data).data;' in index,'recovery snapshot restore is not compatibility-validated')
 ok('navigator.storage.persisted' in index and 'storageProtectionStatus' in index,'storage protection UI missing')
 ok('installStorageNotice' in index and 'isStandaloneApp' in index,'Safari/Home Screen storage warning missing')
-ok("'backup.noneYet':'No external backup yet'" in index,'missing first-backup empty-state label')
+ok(en_source.get('backup.noneYet')=='No external backup yet','missing first-backup empty-state label')
 ok('function hasBackupWorthyData()' in index and 'if (!hasBackupWorthyData()) return false;' in index,'empty installations must not show backup reminder')
 ok('firstDataAt' in index,'backup reminder must track first meaningful data')
 ok('<meta name="referrer" content="no-referrer"' in index,'index referrer policy missing')
@@ -103,17 +104,48 @@ if main:
     ok(cp.returncode==0,'main JavaScript syntax error: '+cp.stderr)
 cp=subprocess.run(['node','--check',str(ROOT/'sw.js')],capture_output=True,text=True)
 ok(cp.returncode==0,'service worker syntax error: '+cp.stderr)
-# Translation parity from object sections.
-langs={}
-for lang,next_lang in [('en','bg'),('bg','es')]:
-    a=index.index(f'    {lang}: {{'); b=index.index(f'    {next_lang}: {{',a)
-    langs[lang]=set(re.findall(r"'([^']+)'\s*:",index[a:b]))
-a=index.index('    es: {'); b=index.index('\n    }\n  };',a)+6
-langs['es']=set(re.findall(r"'([^']+)'\s*:",index[a:b]))
-ok(langs['en']==langs['bg']==langs['es'],f'translation key mismatch: {[len(langs[x]) for x in ["en","bg","es"]]}')
+# Translation parity from external source dictionaries.
+lang_dicts={}
+for lang in ('en','bg','es'):
+    jp=ROOT/'i18n'/f'{lang}.json'; rp=ROOT/'i18n'/f'{lang}.js'
+    ok(jp.is_file(),f'missing i18n source {lang}.json')
+    ok(rp.is_file(),f'missing i18n runtime {lang}.js')
+    if jp.is_file(): lang_dicts[lang]=json.loads(jp.read_text(encoding='utf-8'))
+langs={lang:set(values) for lang,values in lang_dicts.items()}
+ok(langs.get('en')==langs.get('bg')==langs.get('es'),f'translation key mismatch: {[len(langs.get(x,set())) for x in ["en","bg","es"]]}')
 refs_i18n=set(re.findall(r'data-i18n(?:-html|-aria)?="([^"]+)"',index)) | set(re.findall(r"\bt\('([^']+)'",main or ''))
-missing_i18n=sorted(refs_i18n-langs['en'])
+missing_i18n=sorted(refs_i18n-langs.get('en',set()))
 ok(not missing_i18n,'missing translation keys: '+','.join(missing_i18n[:20]))
+# Runtime bundles must be generated from, and exactly match, their JSON sources.
+try:
+    ph=lambda value:set(re.findall(r'\{([A-Za-z0-9_]+)\}',str(value)))
+    canonical=lang_dicts['en']
+    for key,value in canonical.items():
+        for lang in ('bg','es'):
+            ok(ph(lang_dicts[lang][key])==ph(value), f'placeholder mismatch {lang}:{key}')
+    plural_bases=['backup.snapshotWord','fasting.fastCount','import.fast','import.weight','unit.day','unit.hour']
+    plural_categories=['zero','one','two','few','many','other']
+    for base in plural_bases:
+        for cat in plural_categories:
+            for lang in ('en','bg','es'):
+                ok(f'{base}.{cat}' in lang_dicts[lang], f'missing plural category {lang}:{base}.{cat}')
+    for lang in ('en','bg','es'):
+        runtime=(ROOT/'i18n'/f'{lang}.js').read_text(encoding='utf-8')
+        with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
+            f.write(runtime+f"\nconsole.log(JSON.stringify(window.FT_I18N[{json.dumps(lang)}]));\n".replace('window.','globalThis.')); runtime_js=f.name
+        # Browser bundles refer to window; evaluate with a tiny shim.
+        js='globalThis.window=globalThis;\n'+runtime+f"\nconsole.log(JSON.stringify(window.FT_I18N[{json.dumps(lang)}]));\n"
+        with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
+            f.write(js); runtime_js=f.name
+        evaluated=json.loads(subprocess.check_output(['node',runtime_js],text=True))
+        ok(evaluated==lang_dicts[lang],f'i18n runtime is stale for {lang}; run tools/build_i18n_runtime.py')
+    source=json.loads((ROOT/'i18n-source.json').read_text())
+    ok(source.get('sourceRevision')==4, 'i18n source revision mismatch')
+    ok(source.get('appVersion')=='1.7.11', 'i18n source app version mismatch')
+    ok(source.get('language')=='en', 'i18n source language must be en')
+    ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
+except Exception as e:
+    errors.append('could not validate external translation dictionaries: '+str(e))
 # DOM ID references
 ids=set(re.findall(r'\bid="([^"]+)"',index))
 refs=set(re.findall(r"\bel\('([^']+)'\)",index))
@@ -136,7 +168,7 @@ def extract_func(name):
 fnames=['validDate','pad','numberSymbols','parseLocalizedNumber','safeTargetDate','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','zonedLocalToDate','dayKey','nextZonedDayBoundary','addIntervalToDayMap','compareVersions']
 try:
     extracted='\n'.join(extract_func(n) for n in fnames)
-    node_test='const MAX_DATE_MS=8.64e15;\n'+extracted+r'''
+    node_test='const MAX_DATE_MS=8.64e15;\nconst numberSymbolsCache=new Map(); const timeZoneValidityCache=new Map(); const zonedFormatterCache=new Map();\n'+extracted+r'''
 function assert(c,m){if(!c)throw new Error(m)}
 assert(validDate(null)===null,'null date must not become Unix epoch');
 assert(validDate('')===null,'empty date must be invalid');
@@ -168,7 +200,7 @@ except Exception as e:
 # Backdated active-fast feature regression checks
 ok('id="startEarlierBtn"' in index and 'id="backdateModal"' in index,'backdated active-fast UI missing')
 ok('function saveBackdatedActiveFast()' in index and 'function setBackdatePreset(hours)' in index,'backdated active-fast logic missing')
-ok("'backdate.errOverlap'" in index and "'fasting.startEarlier'" in index,'backdated active-fast localization missing')
+ok('backdate.errOverlap' in en_source and 'fasting.startEarlier' in en_source,'backdated active-fast localization missing')
 ok('data.activeStart = start.toISOString();' in index and 'data.activeGoalHours = data.goalHours;' in index,'backdated active fast must persist start and locked target')
 
 
@@ -185,7 +217,7 @@ for key in ("data-icon-choice=\"plate\"","data-icon-choice=\"moon\"","data-icon-
 ok("iconChoice: 'plate'" in html_text, 'default icon choice missing')
 ok('function applyIconChoice()' in html_text, 'applyIconChoice missing')
 
-ok("'help.installAndroid'" in index and "'help.installIOS'" in index, 'separate iOS/Android installation localization missing')
+ok('help.installAndroid' in en_source and 'help.installIOS' in en_source, 'separate iOS/Android installation localization missing')
 for mf in ['manifest.webmanifest','manifest-bg.webmanifest','manifest-es.webmanifest','manifest-moon.webmanifest','manifest-hourglass.webmanifest','manifest-timer.webmanifest']:
     mm=json.loads((ROOT/mf).read_text())
     ok(any(i.get('purpose')=='maskable' for i in mm.get('icons',[])), f'maskable Android icon missing in {mf}')
@@ -193,7 +225,7 @@ for mf in ['manifest.webmanifest','manifest-bg.webmanifest','manifest-es.webmani
 # Rolling internal snapshot + one-tap reminder regression checks
 ok('SNAPSHOT_RECENT_KEEP = 5' in index and 'SNAPSHOT_DAILY_KEEP = 7' in index and 'SNAPSHOT_WEEKLY_KEEP = 4' in index and 'SNAPSHOT_MONTHLY_KEEP = 6' in index, 'rolling snapshot retention constants missing')
 ok('function pruneSnapshots(' in index and 'function maybeCreateRollingSnapshot(' in index, 'rolling snapshot logic missing')
-ok("maybeCreateRollingSnapshot('automatic change')" in index, 'automatic snapshots are not created after saves')
+ok("scheduleRollingSnapshot('automatic change')" in index and "maybeCreateRollingSnapshot('automatic change')" in index, 'automatic snapshot scheduling missing')
 ok('id="settingsBackupNowBtn"' in index and "settingsBackupNowBtn').addEventListener('click', exportBackup)" in index, 'one-tap Settings backup action missing')
 ok('id="nextBackupLabel"' in index and 'backup.nextReminder' in index, 'next external backup reminder UI missing')
 privacy_text=(ROOT/'privacy.html').read_text()
@@ -219,7 +251,7 @@ ok("setSnapshotProtectionState('reduced'" in index and "setSnapshotProtectionSta
 ok('function writePrimaryDataWithSnapshotReclaim(' in index, 'primary data does not reclaim snapshot space under quota pressure')
 ok("'backup.autoSnapshotFailed'" in index and "'backup.autoSnapshotReduced'" in index, 'snapshot failure/reduced localization missing')
 ok('backupReminderTitle' in index and "banner.classList.toggle('warn', snapshotAttention)" in index, 'persistent one-tap snapshot warning banner missing')
-ok('One is created automatically after the first meaningful fasting or weight change.' in index, 'outdated recovery-snapshot empty-state wording remains')
+ok(any('One is created automatically after the first meaningful fasting or weight change.' in str(v) for v in en_source.values()), 'outdated recovery-snapshot empty-state wording remains')
 ok('v1.0.0 — FIRST DEPLOYMENT' not in (ROOT/'FIRST-DEPLOYMENT-CHECKLIST.txt').read_text(), 'deployment checklist still tied to v1.0.0')
 ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guide still contains obsolete release example')
 
@@ -265,7 +297,9 @@ ok('function resolveSystemLanguage()' in index and 'navigator.languages' in inde
 ok("document.documentElement.dir = meta.dir" in index, 'app direction is not driven by language metadata')
 ok('padding-inline-start' in index and 'margin-inline-start' in index and 'text-align: end' in index, 'logical CSS properties for RTL readiness missing')
 ok('I18N-GUIDE.md' in [p.name for p in ROOT.iterdir()], 'I18N-GUIDE.md missing')
-ok((ROOT/'i18n-source.json').is_file() and (ROOT/'tools/export_i18n_source.py').is_file(), 'canonical i18n source/export tool missing')
+ok((ROOT/'i18n-source.json').is_file() and (ROOT/'tools/export_i18n_source.py').is_file() and (ROOT/'tools/build_i18n_runtime.py').is_file(), 'canonical i18n source/build tools missing')
+ok('const I18N = window.FT_I18N || {};' in index, 'main app does not use external translation runtime')
+ok(all(f'<script src="i18n/{lang}.js"></script>' in index for lang in ('en','bg','es')), 'external translation runtime scripts missing')
 ok("if (rawData.language != null && typeof rawData.language !== 'string')" in index, 'future-language backup tolerance missing')
 ok("if (!['system','en','bg','es'].includes(rawData.language))" not in index, 'backup import still rejects future language codes')
 ok("manifestSuffix" in index and 'function manifestFor(lang, icon)' in index, 'manifest selection is not metadata-driven')
@@ -274,33 +308,8 @@ ok('lang === \'bg\' ?' not in index and "lang === 'es' ?" not in index, 'hard-co
 # User-visible dynamic messages must use t(...) rather than direct alert/confirm/prompt literals.
 main_src=main or ''
 ok(not re.search(r"\b(?:alert|confirm|prompt)\(\s*['\"]", main_src), 'hard-coded alert/confirm/prompt user text remains')
-# Existing translations must remain exact-key complete and all referenced keys must exist.
-ok(len(langs['en']) >= 300, 'unexpectedly small canonical translation dictionary')
-# Evaluate the actual JS dictionaries to verify placeholders and the frozen English source.
-try:
-    ia=main.index('  const I18N = {'); ib=main.index('\n  };',ia)+5
-    i18n_block=main[ia:ib]
-    with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
-        f.write(i18n_block+'\nconsole.log(JSON.stringify(I18N));\n'); i18n_js=f.name
-    evaluated=json.loads(subprocess.check_output(['node',i18n_js],text=True))
-    canonical=evaluated['en']
-    ph=lambda value:set(re.findall(r'\{([A-Za-z0-9_]+)\}',str(value)))
-    for key,value in canonical.items():
-        for lang in ('bg','es'):
-            ok(ph(evaluated[lang][key])==ph(value), f'placeholder mismatch {lang}:{key}')
-    plural_bases=['backup.snapshotWord','fasting.fastCount','import.fast','import.weight','unit.day','unit.hour']
-    plural_categories=['zero','one','two','few','many','other']
-    for base in plural_bases:
-        for cat in plural_categories:
-            for lang in ('en','bg','es'):
-                ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
-    source=json.loads((ROOT/'i18n-source.json').read_text())
-    ok(source.get('sourceRevision')==4, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.7.10', 'i18n source app version mismatch')
-    ok(source.get('language')=='en', 'i18n source language must be en')
-    ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
-except Exception as e:
-    errors.append('could not validate evaluated translation dictionaries: '+str(e))
+# Existing translations are validated from external JSON sources above.
+ok(len(langs.get('en',set())) >= 300, 'unexpectedly small canonical translation dictionary')
 # Current locale must not force English to GB or Spanish to Spain; region comes from matching browser locale.
 ok("'en-GB'" not in index and "'es-ES'" not in index and "'bg-BG'" not in index, 'UI language still forces a country-specific locale')
 # Public informational pages must follow app/system language and set document direction from metadata.
@@ -390,6 +399,7 @@ try:
 const DATA_VERSION=1, SUPPORTED_LANGUAGES=['en','bg','es'];
 const FUTURE_TOLERANCE_MS=60*1000, MAX_SAFE_GOAL_HOURS=2_000_000_000;
 const MAX_IMPORT_FASTS=10000, MAX_IMPORT_WEIGHTS=10000;
+const numberSymbolsCache=new Map(), timeZoneValidityCache=new Map(), zonedFormatterCache=new Map();
 function currentLocale(){return 'en-US'}
 '''+compat_funcs+r'''
 function assert(c,m){if(!c)throw new Error(m)}
@@ -447,7 +457,7 @@ if errors:
     sys.exit(1)
 
 # v1.7.4 statistics visualization responsiveness + selection contrast regression checks
-ok("addEventListener('touchstart', handleStatsVizTouchStart, {passive:true})" in index, 'stats switcher must use immediate passive touchstart on iOS')
+ok("statsVizSwitcher').addEventListener('pointerdown', handleStatsVizPointerDown)" in index and "addEventListener('touchstart'" not in index, 'stats switcher must use unified immediate Pointer Events')
 ok('setTimeout(() => {' in index and 'renderStatsVisualizationMode(requestedMode)' in index, 'stats view render must be deferred until after the selection can paint')
 ok('const statsVizRendered = new Set();' in index, 'statistics visualization render cache missing')
 ok('.calendarDay.selected { outline:3px solid #fff' in index, 'calendar selection needs high-contrast white border')
@@ -463,7 +473,7 @@ ok('data-goal="23"' in index, '23-hour quick fasting target preset is missing')
 
 # v1.7.7 responsive Weight actions regression checks
 ok('function bindResponsiveAction(node, handler)' in index, 'responsive touch activation helper missing')
-ok("save({ deferSnapshot: true })" in index, 'Weight changes must defer automatic snapshot rotation')
+ok('function save({ deferSnapshot = true' in index, 'automatic snapshot rotation must be deferred by default')
 ok('function scheduleWeightUiRefresh()' in index, 'lightweight Weight refresh scheduler missing')
 ok("bindResponsiveAction(el('weightSaveBtn'), saveWeightEntry);" in index, 'Weight Save does not use responsive activation')
 ok('bindResponsiveAction(edit, () => openWeightModal(w));' in index, 'Weight Edit does not use responsive activation')
@@ -504,4 +514,13 @@ ok("scroller.scrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidt
 ok("if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;" in index, 'timeline mode does not request newest position on activation')
 ok("if (statsVizMode === 'timeline') scrollTimelineToLatest();" in index, 'Stats activation does not restore newest timeline position')
 
+
+# v1.7.11 performance/architecture regression checks
+ok('function renderScreen(' in index and 'const viewDirty = {' in index, 'screen-level lazy rendering missing')
+ok("document.querySelectorAll('.tab').forEach(tab => bindResponsiveAction" in index, 'bottom navigation is not on unified Pointer Events action path')
+ok("statsVizSwitcher').addEventListener('touchstart'" not in index, 'duplicate touchstart statistics path remains')
+ok("addEventListener('touchstart'" not in index, 'legacy touchstart handlers remain; Pointer Events should be the single path')
+ok('statsSummaryCache' in index and 'weeklySummariesCache' in index and 'calendarDaysCache' in index, 'derived statistics caching missing')
+ok('function queueStorageProtectionRefresh()' in index and 'requestIdleCallback' in index, 'deferred storage-protection work missing')
+ok((ROOT/'tests'/'test_performance.py').is_file(), 'performance regression test missing')
 print('PASS: release, integrity, localization, DOM, storage/privacy, backup-pressure and algorithm regression checks')

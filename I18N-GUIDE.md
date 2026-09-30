@@ -1,6 +1,6 @@
 # Internationalization guide
 
-Fasting Tracker treats the English dictionary in `index.html` as the canonical source wording.
+Fasting Tracker keeps editable translation dictionaries in `i18n/*.json`. English (`i18n/en.json`) is the canonical source wording. Browser runtime bundles are generated into `i18n/*.js`, keeping translation data out of the main application script.
 
 ## Source wording
 
@@ -8,16 +8,19 @@ Fasting Tracker treats the English dictionary in `index.html` as the canonical s
 - Increment that revision whenever an existing English translation string changes meaning or a key is renamed.
 - Add new user-facing text through a translation key rather than embedding it directly in JavaScript.
 - Every supported language must contain exactly the same keys as English. The release test enforces this.
+- Run `python3 tools/build_i18n_runtime.py` after editing any `i18n/*.json` file.
+- Run `python3 tools/export_i18n_source.py` to refresh the canonical English export used for translation QA.
 
 ## Adding a language
 
 1. Add its metadata to `LANGUAGE_META` (`locale`, `dir`, autonym `label`, manifest suffix and short app title).
-2. Add a complete dictionary under `I18N`.
-3. Add the localized PWA manifest variants for all selectable icons.
-4. Add the public landing page and `hreflang`/sitemap entries.
-5. Add localized About/Privacy content.
-6. Run `python3 tests/test_release.py`.
-7. Test a narrow phone width and, for RTL languages, the entire app with `dir=rtl`.
+2. Add a complete `i18n/<code>.json` dictionary using exactly the English keys.
+3. Run `python3 tools/build_i18n_runtime.py`, then add the generated `i18n/<code>.js` script to `index.html` and the release shell in `version.json`.
+4. Add the localized PWA manifest variants for all selectable icons.
+5. Add the public landing page and `hreflang`/sitemap entries.
+6. Add localized About/Privacy content.
+7. Run `python3 tools/export_i18n_source.py`, `python3 tests/test_release.py`, and `python3 tests/test_performance.py`.
+8. Test a narrow phone width and, for RTL languages, the entire app with `dir=rtl`.
 
 ## Locale and region
 
