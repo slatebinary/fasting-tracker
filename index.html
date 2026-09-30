@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.2" />
+  <meta name="ft-app-version" content="1.8.4" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -255,6 +255,11 @@ layout: null
     .reinstallLinkRow { display:flex; gap:8px; align-items:stretch; margin-top:6px; flex-wrap:wrap; }
     .reinstallLinkRow input { flex:1 1 280px; min-width:0; font-size:13px; }
     .reinstallLinkRow button { flex:0 0 auto; }
+    .stopConfirmText { margin-top:8px; font-size:16px; line-height:1.45; color:var(--text); }
+    .stopConfirmText.warn { color:var(--danger); font-weight:650; }
+    .stopUndoBar { position:fixed; left:12px; right:12px; bottom:calc(72px + env(safe-area-inset-bottom)); z-index:90; max-width:696px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:2px solid color-mix(in srgb, white 78%, var(--line)); border-radius:16px; background:color-mix(in srgb, var(--card) 94%, black); box-shadow:0 12px 34px rgba(0,0,0,.32); }
+    .stopUndoBar .stopUndoText { color:var(--text); font-weight:650; line-height:1.3; }
+    .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
     .modalBackdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); background: rgba(0,0,0,.46); }
     .modalCard { width: min(460px, 100%); max-height: 90vh; overflow: auto; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 18px 60px rgba(0,0,0,.28); }
     .modalCard h2 { margin-bottom: 16px; }
@@ -837,6 +842,22 @@ layout: null
   </div>
 </div>
 
+<div class="modalBackdrop" id="stopFastModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="stopFastModalTitle">
+    <h2 id="stopFastModalTitle" data-i18n="fasting.stopModalTitle">Stop fasting?</h2>
+    <div class="stopConfirmText" id="stopFastModalText"></div>
+    <div class="modalActions">
+      <button id="keepFastingBtn" class="secondary" type="button" data-i18n="fasting.keepFasting">Keep fasting</button>
+      <button id="stopAndSaveBtn" class="primary stop" type="button" data-i18n="fasting.stopAndSave">Stop &amp; save</button>
+    </div>
+  </div>
+</div>
+
+<div class="stopUndoBar" id="stopUndoBar" role="status" aria-live="assertive" hidden>
+  <div class="stopUndoText" id="stopUndoText" data-i18n="fasting.stoppedUndo">Fast stopped and saved.</div>
+  <button id="stopUndoBtn" type="button" data-i18n="fasting.undo">Undo</button>
+</div>
+
 <nav>
   <div class="tabs">
     <button class="tab active" data-screen="fasting" aria-current="page"><span class="ico">⏱</span><span data-i18n="nav.fasting">Fasting</span></button>
@@ -869,14 +890,14 @@ layout: null
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 4;
+  const I18N_SOURCE_REVISION = 5;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.2';
+  const APP_VERSION = '1.8.4';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -951,6 +972,9 @@ layout: null
   let historyVisibleCount = HISTORY_PAGE_SIZE;
   let weightVisibleCount = HISTORY_PAGE_SIZE;
   let fastActionLocked = false;
+  let pendingStopUndo = null;
+  let stopUndoTimer = 0;
+  let stopUndoMessageTimer = 0;
   let chartInteractiveLayout = [];
   let timelineChartGeometry = null;
   let timelineChartDays = [];
@@ -2450,11 +2474,28 @@ layout: null
     renderAll();
   }
 
+  function clearStopUndo({ hide = true } = {}) {
+    pendingStopUndo = null;
+    if (stopUndoTimer) { clearTimeout(stopUndoTimer); stopUndoTimer = 0; }
+    if (stopUndoMessageTimer) { clearTimeout(stopUndoMessageTimer); stopUndoMessageTimer = 0; }
+    if (hide) el('stopUndoBar').hidden = true;
+  }
+
+  function showStopUndo(recordId, activeSnapshot) {
+    clearStopUndo({hide:false});
+    pendingStopUndo = { recordId, activeSnapshot, expiresAt: Date.now() + 10000 };
+    el('stopUndoText').textContent = t('fasting.stoppedUndo');
+    el('stopUndoBtn').hidden = false;
+    el('stopUndoBar').hidden = false;
+    stopUndoTimer = setTimeout(() => clearStopUndo(), 10000);
+  }
+
+  function closeStopFastModal() {
+    hideModal('stopFastModal');
+  }
+
   function stopFast() {
-    const end = new Date(), start = validDate(data.activeStart);
-    const targetHours = activeTargetHours();
-    const createdAt = normalizeAuditTimestamp(data.activeCreatedAt);
-    const modifiedAt = normalizeAuditTimestamp(data.activeModifiedAt);
+    const start = validDate(data.activeStart);
     if (!start) {
       data.activeStart = null;
       data.activeGoalHours = null;
@@ -2465,40 +2506,97 @@ layout: null
       renderAll();
       return;
     }
-    const duration = end - start;
+    const duration = Date.now() - start.getTime();
     if (duration <= 0) { alert(t('fasting.clockError')); return; }
-    if (duration < 60000 && !confirm(t('fasting.shortConfirm'))) {
-      data.activeStart = null;
-      data.activeGoalHours = null;
-      data.activeTimeZone = null;
-      data.activeCreatedAt = null;
-      data.activeModifiedAt = null;
-      if (!save()) { renderAll(); return; }
-      renderAll();
-      return;
-    }
-    if (duration > 0) {
-      data.records.push({ id: makeId(), start: start.toISOString(), end: end.toISOString(), goalHours: targetHours, timeZone: data.activeTimeZone || currentTimeZone(), createdAt, modifiedAt });
-    }
+    const text = el('stopFastModalText');
+    text.classList.toggle('warn', duration < 60000);
+    text.textContent = duration < 60000
+      ? t('fasting.stopModalShort')
+      : t('fasting.stopModalText', {duration: friendlyDuration(duration)});
+    showModal('stopFastModal', 'keepFastingBtn');
+  }
+
+  function confirmStopFast() {
+    const start = validDate(data.activeStart);
+    if (!start) { closeStopFastModal(); return; }
+    const end = new Date();
+    const duration = end - start;
+    if (duration <= 0) { closeStopFastModal(); alert(t('fasting.clockError')); return; }
+    const activeSnapshot = {
+      activeStart: start.toISOString(),
+      activeGoalHours: activeTargetHours(),
+      activeTimeZone: data.activeTimeZone || currentTimeZone(),
+      activeCreatedAt: normalizeAuditTimestamp(data.activeCreatedAt),
+      activeModifiedAt: normalizeAuditTimestamp(data.activeModifiedAt)
+    };
+    const record = {
+      id: makeId(),
+      start: activeSnapshot.activeStart,
+      end: end.toISOString(),
+      goalHours: activeSnapshot.activeGoalHours,
+      timeZone: activeSnapshot.activeTimeZone,
+      createdAt: activeSnapshot.activeCreatedAt,
+      modifiedAt: activeSnapshot.activeModifiedAt
+    };
+    data.records.push(record);
     data.activeStart = null;
     data.activeGoalHours = null;
     data.activeTimeZone = null;
     data.activeCreatedAt = null;
     data.activeModifiedAt = null;
-    if (!save()) { renderAll(); return; }
+    if (!save()) {
+      data.records = data.records.filter(r => r.id !== record.id);
+      Object.assign(data, activeSnapshot);
+      closeStopFastModal();
+      renderAll();
+      return;
+    }
+    closeStopFastModal();
     renderAll();
+    showStopUndo(record.id, activeSnapshot);
   }
 
-  toggleFast.addEventListener('click', () => {
+  function undoStoppedFast() {
+    const pending = pendingStopUndo;
+    if (!pending || Date.now() > pending.expiresAt) { clearStopUndo(); return; }
+    if (data.activeStart || !data.records.some(r => r.id === pending.recordId)) {
+      clearStopUndo();
+      alert(t('fasting.undoUnavailable'));
+      return;
+    }
+    const removed = data.records.find(r => r.id === pending.recordId);
+    data.records = data.records.filter(r => r.id !== pending.recordId);
+    Object.assign(data, pending.activeSnapshot);
+    if (!save()) {
+      data.records.push(removed);
+      data.activeStart = null;
+      data.activeGoalHours = null;
+      data.activeTimeZone = null;
+      data.activeCreatedAt = null;
+      data.activeModifiedAt = null;
+      renderAll();
+      return;
+    }
+    clearStopUndo({hide:false});
+    renderAll();
+    el('stopUndoText').textContent = t('fasting.undoRestored');
+    el('stopUndoBtn').hidden = true;
+    el('stopUndoBar').hidden = false;
+    stopUndoMessageTimer = setTimeout(() => { el('stopUndoBar').hidden = true; stopUndoMessageTimer = 0; }, 2200);
+  }
+
+  bindResponsiveAction(toggleFast, () => {
     if (fastActionLocked || recoveryMode) return;
     fastActionLocked = true;
     toggleFast.disabled = true;
-    try { data.activeStart ? stopFast() : startFast(); }
-    finally {
+    try {
+      if (data.activeStart) stopFast();
+      else { clearStopUndo(); startFast(); }
+    } finally {
       setTimeout(() => {
         fastActionLocked = false;
         toggleFast.disabled = !!recoveryMode;
-      }, 650);
+      }, 300);
     }
   });
 
@@ -2671,7 +2769,9 @@ layout: null
       const day=dayKeyFast(r.end,r.timeZone||currentTimeZone());
       const wk=weekKeyFromDayString(day);
       if(wk===currentWeek){ total++; if(recordMetGoal(r)) reached++; continue; }
-      if(total>0 && wk && wk<currentWeek) break;
+      // Records are newest-first. Once we are older than the current week,
+      // no later record in this loop can belong to the current week.
+      if(wk && wk<currentWeek) break;
     }
     return total ? Math.round((reached/total)*100) : null;
   }
@@ -4267,6 +4367,9 @@ layout: null
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
+  bindResponsiveAction(el('keepFastingBtn'), closeStopFastModal);
+  bindResponsiveAction(el('stopAndSaveBtn'), confirmStopFast);
+  bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
   bindResponsiveAction(editActiveTargetBtn, openActiveTargetModal);
   el('activeTargetCancelBtn').addEventListener('click', closeActiveTargetModal);
   bindResponsiveAction(el('activeTargetSaveBtn'), () => requestActiveGoalChange(el('activeTargetInput').value));
@@ -4308,6 +4411,7 @@ layout: null
       else if (modal.id === 'weightModal') closeWeightModal();
       else if (modal.id === 'updateModal') closeUpdateModal();
       else if (modal.id === 'snapshotModal') closeSnapshotModal();
+      else if (modal.id === 'stopFastModal') closeStopFastModal();
       else if (modal.id === 'longFastModal') { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); }
       return;
     }
