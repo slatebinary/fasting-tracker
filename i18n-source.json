@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 3,
-  "appVersion": "1.7.7",
+  "sourceRevision": 4,
+  "appVersion": "1.7.9",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -277,7 +277,7 @@
     "backup.reminderTitle": "External backup reminder",
     "backup.now": "Back up now",
     "backup.exportTitle": "Export backup",
-    "backup.exportHelp": "Save/share your data as a JSON file",
+    "backup.exportHelp": "Save/share your data as one JSON backup file",
     "backup.last": "Last external backup",
     "backup.lastHelp": "A reminder appears after 7 days without one.",
     "backup.noneYet": "No external backup yet",
@@ -338,7 +338,7 @@
     "help.installAndroid2": "Open the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.",
     "help.installAndroid3": "Confirm the installation. Fasting Tracker will appear on the Home screen/app launcher and can work offline after its files are cached.",
     "help.backup": "Backup & restore",
-    "help.backupText": "The app automatically keeps rolling internal JSON snapshots after meaningful changes and reminds you every 7 days to use <strong>Back up now</strong> for an external JSON copy in Files, iCloud Drive, Google Drive, or another secure location. When enough history exists it keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points. Internal snapshots are lost if this installation is removed. Before reinstalling to change the Home Screen icon, create an external backup; after reinstalling, use <strong>Import</strong> to restore it.",
+    "help.backupText": "The app automatically keeps rolling internal JSON snapshots after meaningful changes and reminds you every 7 days to use <strong>Back up now</strong> for an external JSON copy in Files, iCloud Drive, Google Drive, or another secure location. When enough history exists it keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points. Internal snapshots are lost if this installation is removed. The JSON file itself is the complete external backup; no companion text file is required. Before reinstalling to change the Home Screen icon, create an external backup; after reinstalling, use <strong>Import</strong> to restore it.",
     "help.privacy": "Privacy & storage",
     "help.privacyText": "Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each friend who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.",
     "help.timeZoneTitle": "Historical time zones",

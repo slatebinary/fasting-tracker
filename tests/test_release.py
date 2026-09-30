@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.7.7','version must be 1.7.7')
+ok(ver.get('version')=='1.7.9','version must be 1.7.9')
 ok(ver.get('released')=='2026-09-30','release date must be 2026-09-30')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -258,7 +258,7 @@ except Exception as e:
 
 
 # Internationalization-readiness regression checks
-ok('const I18N_SOURCE_REVISION = 3;' in index, 'canonical i18n source revision missing')
+ok('const I18N_SOURCE_REVISION = 4;' in index, 'canonical i18n source revision missing')
 ok('const LANGUAGE_META = Object.freeze({' in index and 'const SUPPORTED_LANGUAGES' in index, 'central language metadata missing')
 ok('new Intl.PluralRules(currentLocale()).select' in index, 'Intl.PluralRules pluralization missing')
 ok('function resolveSystemLanguage()' in index and 'navigator.languages' in index, 'system-language resolution is not future-ready')
@@ -295,8 +295,8 @@ try:
             for lang in ('en','bg','es'):
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
-    ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.7.7', 'i18n source app version mismatch')
+    ok(source.get('sourceRevision')==4, 'i18n source revision mismatch')
+    ok(source.get('appVersion')=='1.7.9', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -384,7 +384,7 @@ ok("el('calendarPrevBtn').addEventListener('click'" in index and "el('calendarNe
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
 try:
-    compat_names=['normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','migrateData','normalizeRecord','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
+    compat_names=['normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','migrateData','normalizeRecord','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
     compat_funcs='\n'.join(extract_func(n) for n in compat_names)
     compat_test=r'''
 const DATA_VERSION=1, SUPPORTED_LANGUAGES=['en','bg','es'];
@@ -398,9 +398,18 @@ const result=validateCompatibleData(legacy),d=result.data;
 assert(result.changed,'repairable legacy data must be changed');
 assert(d.dataVersion===1 && d.revision===0 && d.updatedAt===null,'machine metadata repair');
 assert(d.appearance==='system' && d.iconChoice==='plate' && d.language==='system','preference repair');
-assert(d.activeStart===null && d.activeGoalHours===null && d.activeTimeZone===null,'orphan active metadata repair');
+assert(d.activeStart===null && d.activeGoalHours===null && d.activeTimeZone===null && d.activeCreatedAt===null,'orphan active metadata repair');
 assert(new Set(d.records.map(x=>x.id)).size===2 && d.records.length===2,'duplicate IDs repaired and overlap preserved');
 assert(new Set(d.weights.map(x=>x.id)).size===2 && d.weights[0].kg===80.5,'weight metadata repair');
+assert(d.records.every(x=>x.createdAt===null && x.modifiedAt===null),'legacy fast audit times must remain unknown');
+assert(d.weights.every(x=>x.createdAt===null && x.modifiedAt===null),'legacy weight audit times must remain unknown');
+const audit='2026-09-30T08:00:00.000Z';
+const stamped=validateCompatibleData({...d,records:[{...d.records[0],createdAt:audit,modifiedAt:audit}],weights:[{...d.weights[0],createdAt:audit,modifiedAt:audit}]}).data;
+assert(stamped.records[0].createdAt===audit && stamped.records[0].modifiedAt===audit,'fast audit timestamps must survive validation');
+assert(stamped.weights[0].createdAt===audit && stamped.weights[0].modifiedAt===audit,'weight audit timestamps must survive validation');
+const repaired=validateCompatibleData({...d,records:[{...d.records[0],createdAt:'bad',modifiedAt:'bad'}],weights:[{...d.weights[0],createdAt:'bad',modifiedAt:'bad'}]}).data;
+assert(repaired.records[0].createdAt===null && repaired.records[0].modifiedAt===null,'invalid optional fast audit metadata should repair to unknown');
+assert(repaired.weights[0].createdAt===null && repaired.weights[0].modifiedAt===null,'invalid optional weight audit metadata should repair to unknown');
 let failed=false;try{validateCompatibleData({...d,records:[{...d.records[0],start:'not-a-date'}]})}catch(e){failed=String(e.message).includes('invalid fasting record')}
 assert(failed,'damaged core timestamp must remain a Recovery-level error');
 console.log('compatibility repair regression tests passed');
@@ -465,5 +474,27 @@ if errors:
     print('FAIL')
     for e in errors: print(' -',e)
     sys.exit(1)
+
+# v1.7.8 per-entry audit metadata + single-file share regression checks
+ok('activeCreatedAt: null' in index, 'active fast creation audit field missing from canonical data')
+ok('createdAt: normalizeAuditTimestamp(r.createdAt)' in index and 'modifiedAt: normalizeAuditTimestamp(r.modifiedAt)' in index, 'fasting record audit fields are not normalized')
+ok('createdAt: normalizeAuditTimestamp(w.createdAt)' in index and 'modifiedAt: normalizeAuditTimestamp(w.modifiedAt)' in index, 'weight record audit fields are not normalized')
+ok('data.activeCreatedAt = createdAt;' in index and 'createdAt, modifiedAt: null' in index, 'active fast creation time is not carried into its completed record')
+ok('createdAt: existingRecord ? normalizeAuditTimestamp(existingRecord.createdAt) : nowAudit' in index and 'modifiedAt: existingRecord ? nowAudit : null' in index, 'manual fasting audit timestamps missing')
+ok('createdAt: existingWeight ? normalizeAuditTimestamp(existingWeight.createdAt) : nowAudit' in index and 'modifiedAt: existingWeight ? nowAudit : null' in index, 'weight audit timestamps missing')
+ok("navigator.share({ files: [file] })" in index and "navigator.share({files:[file]})" in index, 'backup/recovery share must send only the JSON file')
+ok("title: t('backup.shareTitle')" not in index and "title:t('backup.shareTitle')" not in index, 'share title can create an unwanted companion text item on iOS/cloud targets')
+
+if errors:
+    print('FAIL')
+    for e in errors: print(' -',e)
+    sys.exit(1)
+
+
+# v1.7.9 newest-first horizontal timeline regression checks
+ok("let timelineScrollToLatestPending = true;" in index, 'timeline latest-position state missing')
+ok("scroller.scrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);" in index, 'timeline does not align to newest/right edge')
+ok("if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;" in index, 'timeline mode does not request newest position on activation')
+ok("if (statsVizMode === 'timeline') scrollTimelineToLatest();" in index, 'Stats activation does not restore newest timeline position')
 
 print('PASS: release, integrity, localization, DOM, storage/privacy, backup-pressure and algorithm regression checks')
