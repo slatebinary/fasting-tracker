@@ -30,7 +30,7 @@ def canonical_bytes(path):
 index=(ROOT/'index.html').read_text()
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.7.4','version must be 1.7.4')
+ok(ver.get('version')=='1.7.7','version must be 1.7.7')
 ok(ver.get('released')=='2026-09-30','release date must be 2026-09-30')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -296,7 +296,7 @@ try:
                 ok(f'{base}.{cat}' in evaluated[lang], f'missing plural category {lang}:{base}.{cat}')
     source=json.loads((ROOT/'i18n-source.json').read_text())
     ok(source.get('sourceRevision')==3, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.7.4', 'i18n source app version mismatch')
+    ok(source.get('appVersion')=='1.7.7', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -445,6 +445,21 @@ ok('.calendarDay.selected { outline:3px solid #fff' in index, 'calendar selectio
 ok("ctx.fillStyle=selected?'#ffffff':accent" in index, 'trend selection needs a white selected dot')
 ok("ctx.strokeStyle='#ffffff';ctx.lineWidth=4" in index, 'weekly selection needs a high-contrast white border')
 
+
+# v1.7.6 fasting-target preset regression checks
+ok('data-goal="22"' in index, '22-hour quick fasting target preset is missing')
+ok('data-goal="23"' in index, '23-hour quick fasting target preset is missing')
+
+
+
+# v1.7.7 responsive Weight actions regression checks
+ok('function bindResponsiveAction(node, handler)' in index, 'responsive touch activation helper missing')
+ok("save({ deferSnapshot: true })" in index, 'Weight changes must defer automatic snapshot rotation')
+ok('function scheduleWeightUiRefresh()' in index, 'lightweight Weight refresh scheduler missing')
+ok("bindResponsiveAction(el('weightSaveBtn'), saveWeightEntry);" in index, 'Weight Save does not use responsive activation')
+ok('bindResponsiveAction(edit, () => openWeightModal(w));' in index, 'Weight Edit does not use responsive activation')
+ok('bindResponsiveAction(del, () => {' in index, 'Weight Delete does not use responsive activation')
+ok("requestIdleCallback' in window" in index, 'deferred snapshot work should prefer browser idle time')
 
 if errors:
     print('FAIL')

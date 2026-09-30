@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.7.4" />
+  <meta name="ft-app-version" content="1.7.7" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -178,6 +178,7 @@ layout: null
     .legendSwatch.l4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); }
     @media (max-width:380px) { .vizSwitcher button { font-size:15px; min-height:56px; padding:13px 9px; } .timelineShell { grid-template-columns:40px minmax(0,1fr) 40px; } .calendarDay { min-height:48px; } }
     button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+    button.fastActionPressed { transform:scale(.985); filter:brightness(.96); }
     a, .tab { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
     .primary { width: 100%; background: var(--accent); color: white; font-size: 18px; }
@@ -595,6 +596,8 @@ layout: null
       <div class="presetWrap" aria-label="Quick fasting targets" data-i18n-aria="settings.goal">
         <button class="chip" data-goal="16">16h</button>
         <button class="chip" data-goal="18">18h</button>
+        <button class="chip" data-goal="22">22h</button>
+        <button class="chip" data-goal="23">23h</button>
         <button class="chip" data-goal="24">24h</button>
         <button class="chip" data-goal="36">36h</button>
         <button class="chip" data-goal="48">48h</button>
@@ -835,7 +838,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.7.4';
+  const APP_VERSION = '1.7.7';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -869,6 +872,7 @@ layout: null
     desired: Math.max(0, Number(backupMeta.snapshotDesiredCount) || 0)
   };
   let automaticSnapshotFailureAlerted = false;
+  let deferredSnapshotTicket = 0;
   const versionTransitionSnapshotOK = captureVersionTransitionSnapshot();
   data = load();
   let lastPersistedDataRaw = getStoredDataRaw();
@@ -1477,6 +1481,24 @@ layout: null
     return !!snapshot;
   }
 
+
+  function scheduleRollingSnapshot(reason = 'automatic change') {
+    // Primary app data is already written synchronously before this is called.
+    // Defer the heavier recovery-snapshot rotation until the interface has had
+    // a chance to paint. Rapid consecutive edits are coalesced into the newest
+    // state, which is the most useful automatic recovery point.
+    const ticket = ++deferredSnapshotTicket;
+    requestAnimationFrame(() => {
+      const run = () => {
+        if (ticket !== deferredSnapshotTicket) return;
+        maybeCreateRollingSnapshot(reason);
+        refreshStorageProtection();
+      };
+      if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 1200 });
+      else setTimeout(run, 350);
+    });
+  }
+
   function loadBackupMeta() {
     const now = new Date().toISOString();
     let meta = {};
@@ -1851,7 +1873,7 @@ layout: null
     }
   }
 
-  function save() {
+  function save({ deferSnapshot = false } = {}) {
     if (recoveryMode) {
       alert(t('recovery.writeBlocked'));
       return false;
@@ -1872,7 +1894,8 @@ layout: null
       data = candidate;
       lastPersistedDataRaw = serialized;
       invalidateDerivedCaches();
-      maybeCreateRollingSnapshot('automatic change');
+      if (deferSnapshot) scheduleRollingSnapshot('automatic change');
+      else maybeCreateRollingSnapshot('automatic change');
       return true;
     } catch {
       data = previousData;
@@ -2973,6 +2996,37 @@ layout: null
     renderAll();
   }
 
+  function bindResponsiveAction(node, handler) {
+    if (!node || typeof handler !== 'function') return;
+    let suppressClickUntil = 0;
+    const flash = () => {
+      node.classList.add('fastActionPressed');
+      setTimeout(() => node.classList.remove('fastActionPressed'), 110);
+    };
+    node.addEventListener('pointerup', event => {
+      if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+      suppressClickUntil = performance.now() + 700;
+      event.preventDefault();
+      flash();
+      handler(event);
+    });
+    node.addEventListener('click', event => {
+      if (performance.now() < suppressClickUntil) { event.preventDefault(); return; }
+      flash();
+      handler(event);
+    });
+  }
+
+  function scheduleWeightUiRefresh() {
+    // Let a modal close / deleted row disappear before rebuilding summaries,
+    // history and the weight chart.
+    requestAnimationFrame(() => setTimeout(() => {
+      renderWeight();
+      renderGamification();
+      renderBackupStatus();
+    }, 0));
+  }
+
   function showWeightError(message) {
     const box = el('weightError');
     box.textContent = message;
@@ -3010,9 +3064,9 @@ layout: null
     const entry = { id: editingWeightId || makeId(), when: when.toISOString(), kg, timeZone: tz };
     if (editingWeightId) data.weights = data.weights.map(w => w.id === editingWeightId ? entry : w);
     else data.weights.push(entry);
-    if (!save()) { renderAll(); return; }
+    if (!save({ deferSnapshot: true })) { renderAll(); return; }
     closeWeightModal();
-    renderAll();
+    scheduleWeightUiRefresh();
   }
 
   function sortedWeightsAsc() {
@@ -3055,9 +3109,15 @@ layout: null
         const right = document.createElement('div'); right.style.textAlign = 'right'; right.style.flex = '0 0 auto';
         const val = document.createElement('div'); val.className = 'duration'; val.textContent = formatWeight(w.kg, unit); right.append(val);
         const actions = document.createElement('div'); actions.className = 'historyActions';
-        const edit = document.createElement('button'); edit.className = 'secondary'; edit.textContent = t('common.edit'); edit.addEventListener('click', () => openWeightModal(w));
-        const del = document.createElement('button'); del.className = 'dangerText'; del.textContent = t('common.delete'); del.addEventListener('click', () => {
-          if (confirm(t('weight.deleteConfirm'))) { data.weights = data.weights.filter(x => x.id !== w.id); save(); renderAll(); }
+        const edit = document.createElement('button'); edit.className = 'secondary'; edit.textContent = t('common.edit');
+        bindResponsiveAction(edit, () => openWeightModal(w));
+        const del = document.createElement('button'); del.className = 'dangerText'; del.textContent = t('common.delete');
+        bindResponsiveAction(del, () => {
+          if (!confirm(t('weight.deleteConfirm'))) return;
+          data.weights = data.weights.filter(x => x.id !== w.id);
+          if (!save({ deferSnapshot: true })) { renderAll(); return; }
+          row.remove();
+          scheduleWeightUiRefresh();
         });
         actions.append(edit, del); right.append(actions); row.append(left, right); box.append(row);
       });
@@ -3761,9 +3821,9 @@ layout: null
   el('entryCancelBtn').addEventListener('click', closeEntryModal);
   el('entrySaveBtn').addEventListener('click', saveManualEntry);
   el('entryModal').addEventListener('click', e => { if (e.target === el('entryModal')) closeEntryModal(); });
-  el('addWeightBtn').addEventListener('click', () => openWeightModal());
+  bindResponsiveAction(el('addWeightBtn'), () => openWeightModal());
   el('weightCancelBtn').addEventListener('click', closeWeightModal);
-  el('weightSaveBtn').addEventListener('click', saveWeightEntry);
+  bindResponsiveAction(el('weightSaveBtn'), saveWeightEntry);
   el('weightModal').addEventListener('click', e => { if (e.target === el('weightModal')) closeWeightModal(); });
   el('unitKgBtn').addEventListener('click', () => setWeightUnit('kg'));
   el('unitLbBtn').addEventListener('click', () => setWeightUnit('lb'));
