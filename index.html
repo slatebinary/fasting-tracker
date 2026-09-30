@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.7.1" />
+  <meta name="ft-app-version" content="1.7.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -140,12 +140,19 @@ layout: null
     .fastRing .friendlyTimer { font-size:clamp(31px,9vw,48px); margin:0 0 3px; }
     .fastRing .exactTimer { margin:0; font-size:16px; }
     .vizSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:7px; border-radius:16px; background:var(--line); margin:6px 0 16px; touch-action:manipulation; }
-    .vizSwitcher button { min-height:50px; padding:12px 10px; border-radius:12px; background:transparent; color:var(--text); font-size:15px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; position:relative; z-index:1; }
+    .vizSwitcher button { min-height:58px; padding:14px 12px; border-radius:12px; background:transparent; color:var(--text); font-size:16px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; position:relative; z-index:1; }
     .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 4px rgba(0,0,0,.10); }
     .statsVizView[hidden] { display:none !important; }
     .statsVizView canvas { width:100%; display:block; }
-    #statsTimelineView { overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; padding-bottom:4px; }
-    #statsTimelineView #chart { min-width:620px; touch-action:pan-x; }
+    #statsTimelineView { padding-bottom:4px; }
+    .timelineShell { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; align-items:start; width:100%; }
+    .timelineScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; position:relative; }
+    .timelineScroller #chart { min-width:700px; touch-action:auto; }
+    .timelineAxis { height:310px; box-sizing:border-box; padding:13px 4px 32px; display:flex; flex-direction:column; justify-content:space-between; color:var(--muted); font:10px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-variant-numeric:tabular-nums; pointer-events:none; }
+    .timelineAxisLeft { align-items:flex-end; text-align:right; }
+    .timelineAxisRight { align-items:flex-start; text-align:left; }
+    .timelineAxis span { white-space:nowrap; }
+
     .calendarHeader { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:4px 0 10px; }
     .calendarHeader button { padding:8px 11px; min-width:42px; }
     .calendarMonthTitle { font-weight:750; text-align:center; flex:1; }
@@ -168,7 +175,7 @@ layout: null
     .legendSwatch.l2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
     .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
     .legendSwatch.l4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); }
-    @media (max-width:380px) { .vizSwitcher button { font-size:14px; min-height:48px; padding:10px 8px; } .calendarDay { min-height:48px; } }
+    @media (max-width:380px) { .vizSwitcher button { font-size:15px; min-height:56px; padding:13px 9px; } .timelineShell { grid-template-columns:40px minmax(0,1fr) 40px; } .calendarDay { min-height:48px; } }
     button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
     .primary { width: 100%; background: var(--accent); color: white; font-size: 18px; }
@@ -494,7 +501,13 @@ layout: null
         <button type="button" data-viz="weeks" role="tab" aria-selected="false" data-i18n="stats.vizWeeks">Weeks</button>
       </div>
       <div class="statsVizView" id="statsTimelineView">
-        <canvas id="chart" width="660" height="310" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
+        <div class="timelineShell">
+          <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+          <div class="timelineScroller" id="timelineScroller">
+            <canvas id="chart" width="700" height="310" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
+          </div>
+          <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+        </div>
       </div>
       <div class="statsVizView" id="statsCalendarView" hidden>
         <div class="calendarHeader">
@@ -820,7 +833,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.7.1';
+  const APP_VERSION = '1.7.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -895,6 +908,8 @@ layout: null
   let weekInteractiveLayout = [];
   let trendSelectedDayKey = null;
   let weekSelectedKey = null;
+  let timelineTouchStart = null;
+  let lastStatsVizTouchAt = 0;
   const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 
@@ -2537,13 +2552,32 @@ layout: null
     return segmentIndex >= 0 ? { kind:'segment', dayKey:day.key, segmentIndex } : { kind:'day', dayKey:day.key };
   }
 
-  function handleChartPointer(event) {
-    const hit = hitTestChart(event.clientX, event.clientY);
-    if (!hit) return;
+  function selectTimelineAt(clientX, clientY) {
+    const hit = hitTestChart(clientX, clientY);
+    if (!hit) return false;
     statsDetailOverride = null;
     if (hit.kind === 'day') chartSelectedTarget = { kind:'day', dayKey:hit.dayKey };
     else chartSelectedTarget = { kind:'segment', dayKey:hit.dayKey, segmentIndex:hit.segmentIndex };
     drawChart();
+    return true;
+  }
+
+  function rememberTimelineTouch(event) {
+    const touch = event.touches?.[0];
+    timelineTouchStart = touch ? { x:touch.clientX, y:touch.clientY, at:Date.now() } : null;
+  }
+
+  function finishTimelineTouch(event) {
+    const touch = event.changedTouches?.[0], start = timelineTouchStart;
+    timelineTouchStart = null;
+    if (!touch || !start) return;
+    const moved = Math.hypot(touch.clientX - start.x, touch.clientY - start.y);
+    if (moved > 16 || Date.now() - start.at > 900) return;
+    if (selectTimelineAt(touch.clientX, touch.clientY) && event.cancelable) event.preventDefault();
+  }
+
+  function handleChartClick(event) {
+    selectTimelineAt(event.clientX, event.clientY);
   }
 
   function drawChart() {
@@ -2553,10 +2587,10 @@ layout: null
     c.width = Math.floor(cssW * ratio); c.height = Math.floor(cssH * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
-    c.style.touchAction = 'pan-x';
+    c.style.touchAction = 'auto';
 
     const days = buildInteractiveChartDays(14);
-    const top = 18, bottom = 38, left = 40, right = 10;
+    const top = 18, bottom = 38, left = 6, right = 6;
     const w = cssW - left - right, h = cssH - top - bottom;
     const gap = 8, bw = (w - gap * 13) / 14;
     const slot = bw + gap;
@@ -2570,12 +2604,10 @@ layout: null
     chartInteractiveLayout = [];
 
     ctx.strokeStyle = line; ctx.lineWidth = 1;
-    ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'right';
     [0, 6, 12, 18, 24].forEach(hour => {
       const frac = hour / 24;
       const y = top + h * frac;
       ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(cssW - right, y); ctx.stroke();
-      ctx.fillText(`${pad(hour)}:00`, left - 4, Math.max(10, y + (hour === 0 ? 0 : 3)));
     });
 
     days.forEach((day, i) => {
@@ -2635,14 +2667,16 @@ layout: null
     const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
   }
 
-  function activateStatsVizFromEvent(event) {
-    const button = event.target.closest?.('#statsVizSwitcher [data-viz]');
-    if (!button) return;
-    // Pointer-up gives immediate, reliable activation on iOS/PWA. Keyboard
-    // activation still comes through click (detail === 0).
-    if (event.type === 'click' && event.detail !== 0) return;
+  function handleStatsVizTouchStart(event) {
+    if (!event.touches?.length) return;
+    lastStatsVizTouchAt = Date.now();
     if (event.cancelable) event.preventDefault();
-    setStatsVizMode(button.dataset.viz);
+    setStatsVizMode(event.currentTarget.dataset.viz);
+  }
+
+  function handleStatsVizClick(event) {
+    if (Date.now() - lastStatsVizTouchAt < 700 && event.detail !== 0) return;
+    setStatsVizMode(event.currentTarget.dataset.viz);
   }
 
   function setStatsVizMode(mode) {
@@ -3746,9 +3780,14 @@ layout: null
     installUpdate();
   });
 
-  el('chart').addEventListener('pointerup', handleChartPointer);
-  el('statsVizSwitcher').addEventListener('pointerup', activateStatsVizFromEvent);
-  el('statsVizSwitcher').addEventListener('click', activateStatsVizFromEvent);
+  el('timelineScroller').addEventListener('touchstart', rememberTimelineTouch, {passive:true});
+  el('timelineScroller').addEventListener('touchend', finishTimelineTouch, {passive:false});
+  el('timelineScroller').addEventListener('touchcancel', () => { timelineTouchStart = null; }, {passive:true});
+  el('chart').addEventListener('click', handleChartClick);
+  document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(button => {
+    button.addEventListener('touchstart', handleStatsVizTouchStart, {passive:false});
+    button.addEventListener('click', handleStatsVizClick);
+  });
   el('calendarPrevBtn').addEventListener('click', () => { statsCalendarMonthOffset -= 1; statsDetailOverride = null; renderFastCalendar(); });
   el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
   el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);
