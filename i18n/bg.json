@@ -175,7 +175,7 @@
   "weight.toTarget": "Разлика до целта",
   "weight.targetHelp": "По избор. Оставете празно, ако искате само да следите тенденцията.",
   "weight.trend": "Тенденция на теглото",
-  "weight.chartHelp": "Графиката показва измерванията за избрания период. При зададено целево тегло се показва линия на целта. Докоснете точка, за да видите точната ѝ стойност.",
+  "weight.chartHelp": "Всяка точка е средното от всички измервания в един избран календарен период. Плъзнете наляво за по-стари периоди; графиката се отваря при най-новите данни. Всички отделни записи остават достъпни по-долу.",
   "weight.dateTime": "Дата и час",
   "weight.empty": "Все още няма записи за тегло. Натиснете „Добави тегло“ за първото измерване.",
   "weight.addChart": "Добавете измервания на теглото, за да видите тенденцията.",
@@ -450,5 +450,12 @@
   "weight.measurement.other": "измервания",
   "weight.periodSummary": "{range} • {count} {measurementWord}",
   "weight.noPeriodData": "Няма измервания през този период.",
-  "a11y.weightPeriod": "Период за статистиката на теглото"
+  "a11y.weightPeriod": "Период за статистиката на теглото",
+  "weight.aggregatePointDetail": "Средно {weight} • {period} • {count} {measurementWord}",
+  "weight.weekOf": "Седмица от {date}",
+  "weight.quarterLabel": "Тримесечие {quarter}, {year}",
+  "weight.halfYearLabel": "Полугодие {half}, {year}",
+  "weight.quarterShort": "Т{quarter} {year}",
+  "weight.halfYearShort": "П{half} {year}",
+  "a11y.weightChartScroller": "Превъртаема графика на теглото. Плъзнете хоризонтално, за да видите по-стари периоди."
 }

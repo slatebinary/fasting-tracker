@@ -2,7 +2,7 @@
 """70-year daily-history browser responsiveness regression.
 
 25,567 completed fasts + 25,567 weight records approximates 70 years of daily use.
-This models an established v1.8.6 IndexedDB database with its persisted daily
+This models an established v1.8.7 IndexedDB database with its persisted daily
 aggregate already present, which is the normal state after years of incremental use.
 """
 import sys, time
@@ -32,16 +32,24 @@ with sync_playwright() as p:
       }
       const data={dataVersion:1,revision:1,updatedAt:'2026-01-01T00:00:00.000Z',goalHours:16,activeStart:null,activeGoalHours:null,activeTimeZone:null,activeCreatedAt:null,activeModifiedAt:null,records,weights,weightUnit:'kg',targetWeightKg:75,gamificationEnabled:true,language:'en',appearance:'system',iconChoice:'plate'};
       window.__seedFastingDb(data,[...daily.entries()]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.8.6',seenAt:new Date().toISOString()}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.8.7',seenAt:new Date().toISOString()}));
     }""", COUNT)
     seed_ms=(time.perf_counter()-seed_start)*1000
     start=time.perf_counter(); page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.6'",timeout=30000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.7'",timeout=30000)
     boot=(time.perf_counter()-start)*1000
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     if page.locator('#recoveryBanner').is_visible(): print('FAIL: 70-year valid dataset entered Recovery mode'); sys.exit(1)
     timings={'seed':seed_ms,'boot':boot}
     timings['weight']=measure_click(page,'.tab[data-screen="weight"]',"document.querySelector('#weight.screen.active') !== null && document.querySelector('#wLatest').textContent !== '—'",20000)
+    # Lifetime chart must virtualize its canvas: thousands of weekly aggregate
+    # periods may create a large scroll track, but never a giant bitmap.
+    page.locator('[data-weight-period="week"]').click(); page.wait_for_timeout(180)
+    weight_chart=page.locator('#weightChartScroller').evaluate("e=>({b:+e.dataset.bucketCount,d:+e.dataset.dataPointCount,left:e.scrollLeft,max:e.scrollWidth-e.clientWidth,canvas:e.querySelector('#weightChart').clientWidth})")
+    if weight_chart['d'] < 3000 or weight_chart['canvas'] > 800:
+        print('FAIL: 70-year weekly weight chart is not virtualized as expected',weight_chart); sys.exit(1)
+    if weight_chart['max'] > 1 and abs(weight_chart['left']-weight_chart['max']) > 2:
+        print('FAIL: 70-year weight chart did not open on newest side',weight_chart); sys.exit(1)
     timings['history']=measure_click(page,'.tab[data-screen="history"]',"document.querySelector('#history.screen.active') !== null && document.querySelectorAll('#historyList .historyRow').length > 0",20000)
     timings['stats']=measure_click(page,'.tab[data-screen="stats"]',f"document.querySelector('#stats.screen.active') !== null && document.querySelector('#mTotal').textContent.replace(/\\D/g,'') === '{COUNT}'",20000)
     for mode in ('calendar','trend','weeks','timeline'):

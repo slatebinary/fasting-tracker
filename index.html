@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.6" />
+  <meta name="ft-app-version" content="1.8.7" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -261,7 +261,11 @@ layout: null
     .stopUndoBar .stopUndoText { color:var(--text); font-weight:650; line-height:1.3; }
     .stopUndoCountdown { flex:0 0 auto; min-width:42px; text-align:center; font-variant-numeric:tabular-nums; font-weight:750; color:var(--text); border:1px solid color-mix(in srgb, white 65%, var(--line)); border-radius:999px; padding:7px 9px; }
     .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
-    #weightChart { touch-action:pan-y; cursor:pointer; }
+    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:pointer; }
+    .weightChartShell { display:grid; grid-template-columns:46px minmax(0,1fr); align-items:start; width:100%; margin-top:4px; }
+    .weightChartYAxis { width:46px; height:240px; display:block; pointer-events:none; }
+    .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; }
+    .weightChartTrack { position:relative; min-width:100%; height:240px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
     .weightPeriodSwitcher { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:4px 2px 8px; margin:2px -2px 10px; touch-action:pan-x; }
     .weightPeriodSwitcher::-webkit-scrollbar { display:none; }
@@ -516,8 +520,15 @@ layout: null
     </div>
     <div class="card weightChartWrap">
       <h2 data-i18n="weight.trend">Weight trend</h2>
-      <canvas id="weightChart" width="660" height="240" role="img" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
-      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Chart shows measurements in the selected period. A target line appears when a target weight is set. Tap a point to see its exact value.</div>
+      <div class="weightChartShell">
+        <canvas id="weightChartYAxis" class="weightChartYAxis" width="46" height="240" aria-hidden="true"></canvas>
+        <div id="weightChartScroller" class="weightChartScroller" aria-label="Scrollable weight trend" data-i18n-aria="a11y.weightChartScroller">
+          <div id="weightChartTrack" class="weightChartTrack">
+            <canvas id="weightChart" width="614" height="240" role="img" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Each point is the average of all measurements in one selected calendar period. Scroll left for older periods; the chart opens at the newest data. All individual entries remain available below.</div>
       <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
     </div>
     <div class="card weightHistory" id="weightHistoryList"></div>
@@ -921,14 +932,14 @@ layout: null
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 6;
+  const I18N_SOURCE_REVISION = 7;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.6';
+  const APP_VERSION = '1.8.7';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1010,6 +1021,10 @@ layout: null
   let weightChartHitPoints = [];
   let weightChartSelectedId = null;
   let weightChartPointerStart = null;
+  let weightChartScrollFrame = 0;
+  let weightChartScrollToLatestPending = true;
+  let weightChartBuckets = [];
+  let weightAggregateCache = new Map();
   let weightPeriodMode = 'month';
   let chartInteractiveLayout = [];
   let timelineChartGeometry = null;
@@ -2066,6 +2081,8 @@ layout: null
     trendChartDaysCache = null;
     weeklySummariesCache = null;
     calendarDaysCache.clear();
+    weightAggregateCache.clear();
+    weightChartBuckets = [];
   }
 
   function markViewsDirty(...views) {
@@ -3670,6 +3687,91 @@ layout: null
     const fmt = new Intl.DateTimeFormat(currentLocale(), {day:'numeric',month:'short',year:'numeric'});
     return `${fmt.format(start)} – ${fmt.format(end)}`;
   }
+
+  function weightEntryCalendarDay(entry) {
+    const stored = typeof entry?.calendarDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(entry.calendarDay) ? entry.calendarDay : null;
+    return stored || dayKeyFast(entry.when, entry.timeZone || currentTimeZone());
+  }
+  function weightBucketKeyForDay(calendarDay, mode = weightPeriodMode) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(calendarDay || ''));
+    if (!match) return null;
+    const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+    const d = new Date(Date.UTC(year, month - 1, day));
+    if (mode === 'week') {
+      const shift = (d.getUTCDay() + 6) % 7;
+      d.setUTCDate(d.getUTCDate() - shift);
+    } else if (mode === 'month') d.setUTCDate(1);
+    else if (mode === 'quarter') { d.setUTCDate(1); d.setUTCMonth(Math.floor(d.getUTCMonth() / 3) * 3); }
+    else if (mode === 'halfyear') { d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() < 6 ? 0 : 6); }
+    else { d.setUTCMonth(0, 1); }
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+  }
+  function nextWeightBucketKey(key, mode = weightPeriodMode) {
+    const [year,month,day] = String(key).split('-').map(Number);
+    const d = new Date(Date.UTC(year, month - 1, day));
+    if (mode === 'week') d.setUTCDate(d.getUTCDate() + 7);
+    else if (mode === 'month') d.setUTCMonth(d.getUTCMonth() + 1);
+    else if (mode === 'quarter') d.setUTCMonth(d.getUTCMonth() + 3);
+    else if (mode === 'halfyear') d.setUTCMonth(d.getUTCMonth() + 6);
+    else d.setUTCFullYear(d.getUTCFullYear() + 1);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+  }
+  function weightBucketDate(key) {
+    const [year,month,day] = String(key).split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day, 12));
+  }
+  function weightBucketLongLabel(bucket, mode = weightPeriodMode) {
+    const d = weightBucketDate(bucket.key);
+    const locale = currentLocale();
+    const year = d.getUTCFullYear(), month = d.getUTCMonth();
+    if (mode === 'week') return t('weight.weekOf', {date:d.toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})});
+    if (mode === 'month') return d.toLocaleDateString(locale,{month:'long',year:'numeric',timeZone:'UTC'});
+    if (mode === 'quarter') return t('weight.quarterLabel',{quarter:Math.floor(month/3)+1,year});
+    if (mode === 'halfyear') return t('weight.halfYearLabel',{half:month<6?1:2,year});
+    return String(year);
+  }
+  function weightBucketShortLabel(bucket, mode = weightPeriodMode) {
+    const d = weightBucketDate(bucket.key);
+    const locale = currentLocale();
+    const year = d.getUTCFullYear(), month = d.getUTCMonth();
+    if (mode === 'week') return d.toLocaleDateString(locale,{day:'numeric',month:'short',timeZone:'UTC'});
+    if (mode === 'month') return d.toLocaleDateString(locale,{month:'short',year:'2-digit',timeZone:'UTC'});
+    if (mode === 'quarter') return t('weight.quarterShort',{quarter:Math.floor(month/3)+1,year:String(year).slice(-2)});
+    if (mode === 'halfyear') return t('weight.halfYearShort',{half:month<6?1:2,year:String(year).slice(-2)});
+    return String(year);
+  }
+  function buildWeightAggregateBuckets(asc = null, mode = weightPeriodMode) {
+    const key = `${Number(data.revision)||0}|${mode}`;
+    if (weightAggregateCache.has(key)) return weightAggregateCache.get(key);
+    if (weightAggregateCache.size > 10) weightAggregateCache.clear();
+    const entries = Array.isArray(asc) ? asc : sortedWeightsAsc();
+    const map = new Map();
+    for (const entry of entries) {
+      const bucketKey = weightBucketKeyForDay(weightEntryCalendarDay(entry), mode);
+      if (!bucketKey) continue;
+      let bucket = map.get(bucketKey);
+      if (!bucket) {
+        bucket = {key:bucketKey,count:0,sumKg:0,averageKg:null,lowKg:entry.kg,highKg:entry.kg,first:entry,latest:entry};
+        map.set(bucketKey,bucket);
+      }
+      bucket.count += 1;
+      bucket.sumKg += entry.kg;
+      bucket.lowKg = Math.min(bucket.lowKg, entry.kg);
+      bucket.highKg = Math.max(bucket.highKg, entry.kg);
+      if (String(entry.when) < String(bucket.first.when)) bucket.first = entry;
+      if (String(entry.when) > String(bucket.latest.when)) bucket.latest = entry;
+    }
+    const keys = [...map.keys()].sort();
+    if (!keys.length) { weightAggregateCache.set(key, []); return []; }
+    const result = [];
+    for (let cursor = keys[0], last = keys[keys.length-1], guard = 0; cursor <= last && guard < 20000; cursor = nextWeightBucketKey(cursor, mode), guard++) {
+      const bucket = map.get(cursor);
+      if (bucket) bucket.averageKg = bucket.sumKg / bucket.count;
+      result.push(bucket || {key:cursor,count:0,sumKg:0,averageKg:null,lowKg:null,highKg:null,first:null,latest:null});
+    }
+    weightAggregateCache.set(key, result);
+    return result;
+  }
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
     if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'month';
     document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => {
@@ -3706,6 +3808,7 @@ layout: null
     if (!WEIGHT_PERIOD_MODES.includes(mode) || mode === weightPeriodMode) return;
     weightPeriodMode = mode;
     weightChartSelectedId = null;
+    weightChartScrollToLatestPending = true;
     const asc = sortedWeightsAsc();
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
@@ -3771,151 +3874,129 @@ layout: null
     drawWeightChart(asc);
   }
 
-  function drawWeightChart(asc = null) {
-    const c = el('weightChart');
+  function drawWeightChartYAxis(minV, maxV) {
+    const c = el('weightChartYAxis');
     if (!c) return;
-    const ctx = c.getContext('2d');
-    const ratio = window.devicePixelRatio || 1;
-    const cssW = c.clientWidth || 660, cssH = 240;
+    const ratio = window.devicePixelRatio || 1, cssW = 46, cssH = 240;
     c.width = Math.floor(cssW * ratio); c.height = Math.floor(cssH * ratio);
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    ctx.clearRect(0, 0, cssW, cssH);
+    c.style.width = `${cssW}px`; c.style.height = `${cssH}px`;
+    const ctx = c.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,cssW,cssH);
+    const muted = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+    const top=18,bottom=34,h=cssH-top-bottom,span=maxV-minV||1;
+    ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.textBaseline='middle';
+    [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.fillText(formatNumber(minV+span*frac,1,1),40,y);});
+  }
 
-    const allEntries = Array.isArray(asc) ? asc : sortedWeightsAsc();
-    const entries = weightEntriesForPeriod(allEntries);
+  function drawWeightChart(asc = null) {
+    const c = el('weightChart'), scroller = el('weightChartScroller'), track = el('weightChartTrack');
+    if (!c || !scroller || !track) return;
+    const buckets = buildWeightAggregateBuckets(Array.isArray(asc) ? asc : null, weightPeriodMode);
+    weightChartBuckets = buckets;
+    const viewportW = Math.max(220, scroller.clientWidth || 614), cssH = 240;
+    const ratio = window.devicePixelRatio || 1;
+    c.style.width = `${viewportW}px`; c.style.height = `${cssH}px`;
+    c.width = Math.floor(viewportW * ratio); c.height = Math.floor(cssH * ratio);
+    const ctx = c.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,viewportW,cssH);
+
     const chartNote = el('weightChartNote');
     if (chartNote) chartNote.textContent = t('weight.chartHelp');
-    const style = getComputedStyle(document.documentElement);
-    const line = style.getPropertyValue('--line').trim();
-    const accent = style.getPropertyValue('--accent').trim();
-    const muted = style.getPropertyValue('--muted').trim();
-    const good = style.getPropertyValue('--good').trim();
-    const card = style.getPropertyValue('--card').trim();
-    const textColor = style.getPropertyValue('--text').trim();
-    const unit = data.weightUnit;
     const detail = el('weightChartDetail');
     weightChartHitPoints = [];
+    const style = getComputedStyle(document.documentElement);
+    const line=style.getPropertyValue('--line').trim(), accent=style.getPropertyValue('--accent').trim(), muted=style.getPropertyValue('--muted').trim();
+    const good=style.getPropertyValue('--good').trim(), card=style.getPropertyValue('--card').trim(), textColor=style.getPropertyValue('--text').trim();
+    const unit=data.weightUnit;
 
-    if (!entries.length) {
-      weightChartSelectedId = null;
-      if (detail) { detail.hidden = true; detail.textContent = ''; }
-      ctx.fillStyle = muted; ctx.font = '13px -apple-system'; ctx.textAlign = 'center';
-      ctx.fillText(data.weights.length ? t('weight.noPeriodData') : t('weight.addChart'), cssW / 2, cssH / 2);
-      ctx.textAlign = 'start'; return;
-    }
-    if (weightChartSelectedId && !entries.some(e => e.id === weightChartSelectedId)) weightChartSelectedId = null;
-
-    const values = entries.map(e => kgToDisplay(e.kg, unit));
-    const target = data.targetWeightKg == null ? null : kgToDisplay(data.targetWeightKg, unit);
-    const scaleValues = target == null ? [...values] : [...values, target];
-    let minV = Math.min(...scaleValues), maxV = Math.max(...scaleValues);
-    let span = maxV - minV;
-    const padV = span > 0 ? Math.max(span * .15, unit === 'lb' ? 2 : 1) : (unit === 'lb' ? 5 : 2);
-    minV -= padV; maxV += padV; span = maxV - minV || 1;
-
-    const top = 18, bottom = 34, left = 46, right = 12, w = cssW - left - right, h = cssH - top - bottom;
-    ctx.strokeStyle = line; ctx.lineWidth = 1;
-    [0, .5, 1].forEach(frac => {
-      const y = top + h - h * frac;
-      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(cssW-right, y); ctx.stroke();
-      const label = minV + span * frac;
-      ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'right';
-      ctx.fillText(formatNumber(label, 1, 1), left - 6, y + 3);
-    });
-
-    const yFor = v => top + h - ((v - minV) / span) * h;
-    const times = entries.map(e => new Date(e.when).getTime());
-    const minT = Math.min(...times), maxT = Math.max(...times), timeSpan = maxT - minT;
-    const xFor = i => timeSpan <= 0 ? left + w/2 : left + ((times[i]-minT)/timeSpan)*w;
-
-    if (target != null) {
-      const y = yFor(target);
-      ctx.save(); ctx.strokeStyle = good; ctx.setLineDash([5,4]); ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(cssW-right, y); ctx.stroke(); ctx.restore();
+    if (!buckets.length) {
+      track.style.width='100%'; weightChartSelectedId=null;
+      if(detail){detail.hidden=true;detail.textContent='';}
+      drawWeightChartYAxis(0,1);
+      ctx.fillStyle=muted;ctx.font='13px -apple-system';ctx.textAlign='center';ctx.fillText(t('weight.addChart'),viewportW/2,cssH/2);ctx.textAlign='start';return;
     }
 
-    ctx.strokeStyle = accent; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    const dataBuckets=buckets.filter(b=>b.count>0);
+    if (weightChartSelectedId && !dataBuckets.some(b=>b.key===weightChartSelectedId)) weightChartSelectedId=null;
+    const values=dataBuckets.map(b=>kgToDisplay(b.averageKg,unit));
+    const target=data.targetWeightKg==null?null:kgToDisplay(data.targetWeightKg,unit);
+    const scaleValues=target==null?[...values]:[...values,target];
+    let minV=Math.min(...scaleValues),maxV=Math.max(...scaleValues),span=maxV-minV;
+    const padV=span>0?Math.max(span*.15,unit==='lb'?2:1):(unit==='lb'?5:2);minV-=padV;maxV+=padV;span=maxV-minV||1;
+    drawWeightChartYAxis(minV,maxV);
+
+    const top=18,bottom=34,left=16,right=14,plotW=Math.max(1,viewportW-left-right),h=cssH-top-bottom;
+    const pointSpacing=buckets.length<=5?Math.max(1,plotW/Math.max(1,buckets.length-1)):68;
+    const virtualPlotW=buckets.length<=5?plotW:Math.max(plotW,(buckets.length-1)*pointSpacing);
+    const trackW=Math.ceil(left+virtualPlotW+right);
+    track.style.width=`${Math.max(viewportW,trackW)}px`;
+    scroller.dataset.period = weightPeriodMode;
+    scroller.dataset.bucketCount = String(buckets.length);
+    scroller.dataset.dataPointCount = String(dataBuckets.length);
+    if(weightChartScrollToLatestPending){scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth);weightChartScrollToLatestPending=false;}
+    const scrollX=scroller.scrollLeft;
+    const yFor=v=>top+h-((v-minV)/span)*h;
+    const absoluteX=i=>left+(buckets.length<=5?(buckets.length===1?plotW/2:i*pointSpacing):i*pointSpacing);
+    const xFor=i=>absoluteX(i)-scrollX;
+
+    ctx.strokeStyle=line;ctx.lineWidth=1;
+    [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();});
+    if(target!=null){const y=yFor(target);ctx.save();ctx.strokeStyle=good;ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();ctx.restore();}
+
+    const firstVisible=Math.max(0,Math.floor((scrollX-left)/Math.max(1,pointSpacing))-2);
+    const lastVisible=Math.min(buckets.length-1,Math.ceil((scrollX+viewportW-left)/Math.max(1,pointSpacing))+2);
+    ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
+    let pathOpen=false;
     ctx.beginPath();
-    entries.forEach((e,i) => { const x=xFor(i), y=yFor(values[i]); if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    for(let i=Math.max(0,firstVisible-1);i<=Math.min(buckets.length-1,lastVisible+1);i++){
+      const bucket=buckets[i];
+      if(!bucket.count){pathOpen=false;continue;}
+      const x=xFor(i),y=yFor(kgToDisplay(bucket.averageKg,unit));
+      if(!pathOpen){ctx.moveTo(x,y);pathOpen=true;}else ctx.lineTo(x,y);
+    }
     ctx.stroke();
-    ctx.fillStyle = accent;
-    entries.forEach((e,i) => {
-      const x=xFor(i), y=yFor(values[i]);
-      weightChartHitPoints.push({ id:e.id, entry:e, x, y, value:values[i] });
-      ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill();
-    });
 
-    const selectedIndex = entries.findIndex(e => e.id === weightChartSelectedId);
-    if (selectedIndex >= 0) {
-      const e = entries[selectedIndex], x = xFor(selectedIndex), y = yFor(values[selectedIndex]);
-      ctx.save();
-      ctx.fillStyle = '#fff'; ctx.strokeStyle = accent; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      const valueLabel = formatWeight(e.kg, unit);
-      ctx.font = '600 12px -apple-system';
-      const labelW = Math.ceil(ctx.measureText(valueLabel).width) + 16;
-      const labelH = 24;
-      const bx = Math.max(4, Math.min(cssW - labelW - 4, x - labelW / 2));
-      const by = y > 48 ? y - 36 : y + 12;
-      ctx.fillStyle = card; ctx.strokeStyle = accent; ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      if (typeof ctx.roundRect === 'function') ctx.roundRect(bx, by, labelW, labelH, 7); else ctx.rect(bx, by, labelW, labelH);
-      ctx.fill(); ctx.stroke();
-      ctx.fillStyle = textColor; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(valueLabel, bx + labelW / 2, by + labelH / 2);
-      ctx.restore();
-      if (detail) {
-        detail.textContent = t('weight.pointDetail', { weight:valueLabel, date:localDateTimeLabel(e.when, e.timeZone) });
-        detail.hidden = false;
+    ctx.fillStyle=accent;
+    for(let i=firstVisible;i<=lastVisible;i++){
+      const bucket=buckets[i]; if(!bucket.count) continue;
+      const value=kgToDisplay(bucket.averageKg,unit),x=xFor(i),y=yFor(value);
+      if(x < -28 || x > viewportW+28) continue;
+      weightChartHitPoints.push({id:bucket.key,bucket,x,y,value});
+      ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+    }
+
+    const selectedIndex=buckets.findIndex(b=>b.key===weightChartSelectedId&&b.count>0);
+    if(selectedIndex>=0){
+      const bucket=buckets[selectedIndex],x=xFor(selectedIndex),value=kgToDisplay(bucket.averageKg,unit),y=yFor(value);
+      if(x>=-18&&x<=viewportW+18){
+        ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,6.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+        const valueLabel=formatWeight(bucket.averageKg,unit);ctx.font='600 12px -apple-system';const labelW=Math.ceil(ctx.measureText(valueLabel).width)+16,labelH=24;
+        const bx=Math.max(4,Math.min(viewportW-labelW-4,x-labelW/2)),by=y>48?y-36:y+12;
+        ctx.fillStyle=card;ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.beginPath();if(typeof ctx.roundRect==='function')ctx.roundRect(bx,by,labelW,labelH,7);else ctx.rect(bx,by,labelW,labelH);ctx.fill();ctx.stroke();
+        ctx.fillStyle=textColor;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(valueLabel,bx+labelW/2,by+labelH/2);ctx.restore();
       }
-    } else if (detail) {
-      detail.hidden = true;
-      detail.textContent = '';
+      if(detail){const count=bucket.count;detail.textContent=t('weight.aggregatePointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count))});detail.hidden=false;}
+    } else if(detail){detail.hidden=true;detail.textContent='';}
+
+    const labelStep=Math.max(1,Math.ceil(62/Math.max(1,pointSpacing)));
+    ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='center';ctx.textBaseline='alphabetic';
+    for(let i=firstVisible;i<=lastVisible;i++){
+      if(i%labelStep!==0 && i!==buckets.length-1) continue;
+      const x=xFor(i);if(x<18||x>viewportW-18)continue;ctx.fillText(weightBucketShortLabel(buckets[i]),x,cssH-10);
     }
-
-    let labelIndexes;
-    if (entries.length <= 4) labelIndexes = entries.map((_,i)=>i);
-    else {
-      const midT=minT+timeSpan/2;
-      let midI=0, midDistance=Infinity;
-      times.forEach((time,i)=>{ const distance=Math.abs(time-midT); if(distance<midDistance){midDistance=distance;midI=i;} });
-      labelIndexes=[...new Set([0,midI,entries.length-1])];
-    }
-    ctx.fillStyle = muted; ctx.font = '10px -apple-system'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    labelIndexes.forEach(i => { const d = new Date(entries[i].when); const tz=entries[i].timeZone || currentTimeZone(); const label=d.toLocaleDateString(currentLocale(), {day:'numeric',month:'numeric',timeZone:tz}); ctx.fillText(label, xFor(i), cssH - 10); });
-    ctx.textAlign = 'start';
+    ctx.textAlign='start';
   }
 
-  function weightChartPointAt(clientX, clientY) {
-    const c = el('weightChart');
-    if (!c || !weightChartHitPoints.length) return null;
-    const rect = c.getBoundingClientRect();
-    const x = clientX - rect.left, y = clientY - rect.top;
-    let best = null, bestDistance = Infinity;
-    for (const point of weightChartHitPoints) {
-      const distance = Math.hypot(x - point.x, y - point.y);
-      if (distance < bestDistance) { best = point; bestDistance = distance; }
-    }
-    return bestDistance <= 26 ? best : null;
+  function weightChartPointAt(clientX,clientY){
+    const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;const rect=c.getBoundingClientRect(),x=clientX-rect.left,y=clientY-rect.top;let best=null,bestDistance=Infinity;
+    for(const point of weightChartHitPoints){const distance=Math.hypot(x-point.x,y-point.y);if(distance<bestDistance){best=point;bestDistance=distance;}}
+    return bestDistance<=28?best:null;
   }
-
-  function beginWeightChartPointer(event) {
-    if (event.button != null && event.button !== 0) return;
-    weightChartPointerStart = { id:event.pointerId, x:event.clientX, y:event.clientY };
+  function beginWeightChartPointer(event){if(event.button!=null&&event.button!==0)return;weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0};}
+  function finishWeightChartPointer(event){const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;const scroller=el('weightChartScroller');if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((scroller?.scrollLeft||0)-start.scrollLeft)>8)return;const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;weightChartSelectedId=point.id;drawWeightChart();}
+  function cancelWeightChartPointer(){weightChartPointerStart=null;}
+  function handleWeightChartScroll(){
+    if(weightChartScrollFrame)return;
+    weightChartScrollFrame=requestAnimationFrame(()=>{weightChartScrollFrame=0;drawWeightChart();});
   }
-
-  function finishWeightChartPointer(event) {
-    const start = weightChartPointerStart;
-    weightChartPointerStart = null;
-    if (!start || start.id !== event.pointerId) return;
-    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
-    const point = weightChartPointAt(event.clientX, event.clientY);
-    if (!point) return;
-    weightChartSelectedId = point.id;
-    drawWeightChart();
-  }
-
-  function cancelWeightChartPointer() { weightChartPointerStart = null; }
 
   function setWeightUnit(unit) {
     data.weightUnit = normalizeWeightUnit(unit);
@@ -4733,6 +4814,7 @@ layout: null
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
+  el('weightChartScroller').addEventListener('scroll', handleWeightChartScroll, {passive:true});
   window.addEventListener('resize', () => { markViewsDirty('stats','weight'); if (el('stats').classList.contains('active')) renderScreen('stats'); if (el('weight').classList.contains('active')) renderScreen('weight'); });
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('offline', () => setUpdateUI('offline', t('update.offlineExplicit')));

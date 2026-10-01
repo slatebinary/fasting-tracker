@@ -116,9 +116,13 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+## v1.8.7 aggregated weight timeline
+
+The Weight chart now behaves as a long-term period timeline. Week, Month, Quarter, 6 months and Year modes show one aggregate point per calendar period (the average of every measurement in that period), keep all individual weight entries available in the editable history, and allow horizontal scrolling back through older periods. The chart opens on the newest data and uses a virtualized viewport so decades of weekly points do not require a giant canvas.
+
 ## v1.8.6 weight statistics
 
-The Weight screen now has selectable rolling Week, Month, Quarter, 6 months and Year views. Each view shows its exact date range plus start/latest weight, change, average, lowest and highest measurements, and the interactive trend chart follows the same selected period.
+The Weight screen added selectable rolling Week, Month, Quarter, 6 months and Year statistics. Each view shows its exact date range plus start/latest weight, change, average, lowest and highest measurements.
 
 ## v1.8.5 stop-fast and weight-chart refinements
 

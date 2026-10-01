@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: weight-chart points are tappable and reveal exact values."""
+"""Regression: aggregate weight-chart points are tappable and reveal their values."""
 import sys
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
@@ -14,30 +14,29 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.6',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.7',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.6'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.7'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_function("document.querySelector('#weight')?.classList.contains('active')",timeout=5000)
     page.locator('[data-weight-period="year"]').click()
-    page.wait_for_function("document.querySelector('#weightPeriodRange')?.dataset.period === 'year'",timeout=5000)
+    page.wait_for_function("document.querySelector('#weightChartScroller')?.dataset.period === 'year'",timeout=5000)
     page.wait_for_timeout(100)
-    # Last point lies at the right edge of the plot. Derive its y from the same
-    # public data/scale inputs used by the chart so this remains deterministic.
+    # Five daily measurements in one year aggregate to one average point. The
+    # single point is centered in the plot; derive its y from the public data.
     pos=page.locator('#weightChart').evaluate("""(c) => {
-      const unit='kg', values=[80,79.9998,79.9996,79.9994,79.9992], target=75;
-      let minV=Math.min(...values,target), maxV=Math.max(...values,target), span=maxV-minV;
+      const values=[80,79.9998,79.9996,79.9994,79.9992], avg=values.reduce((a,b)=>a+b,0)/values.length, target=75;
+      let minV=Math.min(avg,target), maxV=Math.max(avg,target), span=maxV-minV;
       const padV=span>0?Math.max(span*.15,1):2; minV-=padV; maxV+=padV; span=maxV-minV||1;
-      const top=18,bottom=34,left=46,right=12,w=c.clientWidth-left-right,h=240-top-bottom;
-      const y=top+h-((values[4]-minV)/span)*h;
-      return {x:c.clientWidth-right,y};
+      const top=18,bottom=34,left=16,right=14,plotW=c.clientWidth-left-right,h=240-top-bottom;
+      return {x:left+plotW/2,y:top+h-((avg-minV)/span)*h};
     }""")
     page.locator('#weightChart').click(position={'x':pos['x'],'y':pos['y']})
     page.wait_for_function("!document.querySelector('#weightChartDetail')?.hidden",timeout=5000)
     detail=page.locator('#weightChartDetail').inner_text()
-    if 'kg' not in detail:
-        print('FAIL: selected weight point did not show its exact value'); sys.exit(1)
+    if 'Average' not in detail or 'kg' not in detail or '5 measurements' not in detail:
+        print('FAIL: aggregate weight point did not show average/count detail:', detail); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: weight-chart points reveal exact values')
+print('PASS: aggregate weight-chart points reveal average values and source counts')
