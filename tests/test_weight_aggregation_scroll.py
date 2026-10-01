@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: weight modes aggregate by calendar period and scroll newest-first."""
+"""Regression: Daily preserves raw points; aggregate modes bucket by period and all scroll newest-first."""
 import sys, datetime
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
@@ -16,24 +16,26 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={'width':390,'height':844}); errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.7',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.8',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.7'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.8'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click(); page.wait_for_timeout(150)
 
     counts={}
-    for mode in ('week','month','quarter','halfyear','year'):
+    for mode in ('daily','week','month','quarter','halfyear','year'):
         page.locator(f'[data-weight-period="{mode}"]').click()
         page.wait_for_function(f"document.querySelector('#weightChartScroller')?.dataset.period === '{mode}'",timeout=5000)
         page.wait_for_timeout(100)
         info=page.locator('#weightChartScroller').evaluate("e=>({b:+e.dataset.bucketCount,d:+e.dataset.dataPointCount,left:e.scrollLeft,max:e.scrollWidth-e.clientWidth})")
         counts[mode]=info['d']
         if info['d'] < 2:
-            print('FAIL: mode did not produce multiple aggregate points despite enough data',mode,info); sys.exit(1)
+            print('FAIL: mode did not produce multiple points despite enough data',mode,info); sys.exit(1)
+        if mode == 'daily' and info['d'] != 800:
+            print('FAIL: Daily must preserve every individual measurement',info); sys.exit(1)
         if info['max'] > 1 and abs(info['left']-info['max']) > 2:
             print('FAIL: chart did not open on newest/right side',mode,info); sys.exit(1)
 
-    if not (counts['week'] > counts['month'] > counts['quarter'] > counts['halfyear'] > counts['year']):
+    if not (counts['daily'] > counts['week'] > counts['month'] > counts['quarter'] > counts['halfyear'] > counts['year']):
         print('FAIL: aggregate granularity counts are unexpected',counts); sys.exit(1)
 
     # Manual historical scrolling must remain where the user leaves it rather
@@ -56,4 +58,4 @@ with sync_playwright() as p:
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: weight calendar aggregation, newest-first loading, historical scrolling and raw-entry retention')
+print('PASS: Daily raw points, calendar aggregation, newest-first loading, historical scrolling and raw-entry retention')

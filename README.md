@@ -116,6 +116,10 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+## v1.8.8 daily and labeled weight timeline
+
+The Weight chart restores a Daily mode that plots every individual measurement (including multiple measurements on the same day) while keeping the full history horizontally scrollable and opening at the newest values. Daily is the default and fits roughly the latest 30 measurements in the visible chart on a phone. Week, Month, Quarter, 6 months and Year continue to show one average point per calendar period. Selecting any point shows the weight plus its exact date/time or explicit calendar period, both beside the point and in the detail line below the graph.
+
 ## v1.8.7 aggregated weight timeline
 
 The Weight chart now behaves as a long-term period timeline. Week, Month, Quarter, 6 months and Year modes show one aggregate point per calendar period (the average of every measurement in that period), keep all individual weight entries available in the editable history, and allow horizontal scrolling back through older periods. The chart opens on the newest data and uses a virtualized viewport so decades of weekly points do not require a giant canvas.

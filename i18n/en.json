@@ -175,7 +175,7 @@
   "weight.toTarget": "Difference to target",
   "weight.targetHelp": "Optional. Leave blank if you only want to track the trend.",
   "weight.trend": "Weight trend",
-  "weight.chartHelp": "Each point is the average of all measurements in one selected calendar period. Scroll left for older periods; the chart opens at the newest data. All individual entries remain available below.",
+  "weight.chartHelp": "Daily shows individual measurements. Week, Month, Quarter, 6 months and Year show one average point per calendar period. Tap a point for its exact value and time/period. Scroll left for older data; the chart opens at the newest values. All individual entries remain available below.",
   "weight.dateTime": "Date & time",
   "weight.empty": "No weight entries yet. Tap Add weight to record your first measurement.",
   "weight.addChart": "Add weight entries to see your trend.",
@@ -435,6 +435,7 @@
   "unit.hour.many": "hours",
   "weight.pointDetail": "{weight} • {date}",
   "weight.statistics": "Weight statistics",
+  "weight.periodDaily": "Daily",
   "weight.periodWeek": "Week",
   "weight.periodMonth": "Month",
   "weight.periodQuarter": "Quarter",
@@ -457,5 +458,5 @@
   "weight.halfYearLabel": "Half-year {half}, {year}",
   "weight.quarterShort": "Q{quarter} {year}",
   "weight.halfYearShort": "H{half} {year}",
-  "a11y.weightChartScroller": "Scrollable weight trend. Swipe horizontally to view older periods."
+  "a11y.weightChartScroller": "Scrollable weight trend. Swipe horizontally to view older weight data."
 }

@@ -31,7 +31,7 @@ index=(ROOT/'index.html').read_text()
 en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.8.7','version must be 1.8.7')
+ok(ver.get('version')=='1.8.8','version must be 1.8.8')
 ok(ver.get('released')=='2026-10-01','release date must be 2026-10-01')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -140,8 +140,8 @@ try:
         evaluated=json.loads(subprocess.check_output(['node',runtime_js],text=True))
         ok(evaluated==lang_dicts[lang],f'i18n runtime is stale for {lang}; run tools/build_i18n_runtime.py')
     source=json.loads((ROOT/'i18n-source.json').read_text())
-    ok(source.get('sourceRevision')==7, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.8.7', 'i18n source app version mismatch')
+    ok(source.get('sourceRevision')==8, 'i18n source revision mismatch')
+    ok(source.get('appVersion')=='1.8.8', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -261,7 +261,7 @@ ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guid
 
 
 # Internationalization-readiness regression checks
-ok('const I18N_SOURCE_REVISION = 7;' in index, 'canonical i18n source revision missing')
+ok('const I18N_SOURCE_REVISION = 8;' in index, 'canonical i18n source revision missing')
 ok('const LANGUAGE_META = Object.freeze({' in index and 'const SUPPORTED_LANGUAGES' in index, 'central language metadata missing')
 ok('new Intl.PluralRules(currentLocale()).select' in index, 'Intl.PluralRules pluralization missing')
 ok('function resolveSystemLanguage()' in index and 'navigator.languages' in index, 'system-language resolution is not future-ready')
@@ -501,20 +501,24 @@ ok('weightChartHitPoints' in index and 'function weightChartPointAt(' in index a
 ok('id="weightChartDetail"' in index and 'weight.aggregatePointDetail' in en_source, 'weight chart selected-value details are missing')
 
 # v1.8.6 weight-period statistics regression checks
-ok('id="weightPeriodSwitcher"' in index and all(f'data-weight-period="{mode}"' in index for mode in ['week','month','quarter','halfyear','year']), 'weekly/monthly/quarterly/6-month/yearly weight selector is incomplete')
+ok('id="weightPeriodSwitcher"' in index and all(f'data-weight-period="{mode}"' in index for mode in ['daily','week','month','quarter','halfyear','year']), 'daily/weekly/monthly/quarterly/6-month/yearly weight selector is incomplete')
 ok(all(f'id="{metric}"' in index for metric in ['wPeriodStart','wPeriodEnd','wPeriodChange','wPeriodAverage','wPeriodLow','wPeriodHigh']), 'weight period summary metrics are incomplete')
 ok('function weightPeriodBounds(' in index and 'function weightEntriesForPeriod(' in index and 'function renderWeightPeriodAnalytics(' in index, 'weight period statistics logic is missing')
 ok('weight.statistics' in en_source and 'weight.periodQuarter' in en_source and 'weight.periodHalfYear' in en_source, 'weight period translations are missing')
 ok((ROOT/'tests'/'test_weight_statistics.py').is_file(), 'weight-period browser regression test missing')
 
 
-# v1.8.7 aggregated/scrollable weight timeline regression checks
+# v1.8.8 aggregated/scrollable weight timeline regression checks
 ok('id="weightChartScroller"' in index and 'id="weightChartTrack"' in index and 'id="weightChartYAxis"' in index, 'scrollable weight chart shell is incomplete')
 ok('function buildWeightAggregateBuckets(' in index and 'function weightBucketKeyForDay(' in index, 'calendar-period weight aggregation is missing')
 ok('weightChartScrollToLatestPending = true' in index and 'scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth)' in index, 'weight chart newest-first positioning is missing')
 ok('function handleWeightChartScroll()' in index and "addEventListener('scroll', handleWeightChartScroll" in index, 'historical weight chart scrolling is missing')
 ok('weight.aggregatePointDetail' in en_source and 'weight.weekOf' in en_source, 'aggregate weight point localization is missing')
 ok((ROOT/'tests'/'test_weight_aggregation_scroll.py').is_file(), 'weight aggregation/scroll browser regression test missing')
+ok("let weightPeriodMode = 'daily'" in index and 'weight.periodDaily' in en_source, 'Daily weight-chart mode/default is missing')
+ok("if (mode === 'daily')" in index and 'key:`entry:${entry.id}`' in index, 'Daily mode must preserve individual weight entries rather than aggregate them')
+ok('function weightPointCalloutPeriod(' in index and 'periodLabel=weightPointCalloutPeriod(bucket)' in index, 'selected weight points must label their exact time/calendar period')
+ok("weightPeriodMode==='daily'?buckets:buckets.filter" in index and 'weightChartScaleCache' in index, 'lifetime-scale Daily rendering optimization is missing')
 
 # v1.8.0+ performance/architecture regression checks
 ok('function renderScreen(' in index and 'const viewDirty = {' in index, 'screen-level lazy rendering missing')

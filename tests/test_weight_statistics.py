@@ -21,27 +21,30 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.7',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.8',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.7'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.8'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_function("document.querySelector('#weight')?.classList.contains('active')",timeout=5000)
-    page.wait_for_function("document.querySelector('#weightPeriodRange')?.dataset.period === 'month'",timeout=5000)
+    page.wait_for_function("document.querySelector('#weightPeriodRange')?.dataset.period === 'daily'",timeout=5000)
 
     def period(mode):
         page.locator(f'[data-weight-period="{mode}"]').click()
         page.wait_for_function(f"document.querySelector('#weightPeriodRange')?.dataset.period === '{mode}'",timeout=5000)
         return int(page.locator('#weightPeriodRange').get_attribute('data-count'))
 
-    # Month is the default; every requested selector must produce a meaningful
-    # rolling window and the windows should grow monotonically in this dataset.
-    month_count=int(page.locator('#weightPeriodRange').get_attribute('data-count'))
+    # Daily is the default and summarizes the most recent 30 calendar days.
+    # The longer rolling windows remain available and grow monotonically.
+    daily_count=int(page.locator('#weightPeriodRange').get_attribute('data-count'))
     week_count=period('week')
+    month_count=period('month')
     quarter_count=period('quarter')
     half_count=period('halfyear')
     year_count=period('year')
     if not (1 <= week_count < month_count < quarter_count < half_count < year_count <= 367):
         print('FAIL: unexpected weight period counts', week_count, month_count, quarter_count, half_count, year_count); sys.exit(1)
+    if not (28 <= daily_count <= 31):
+        print('FAIL: Daily rolling statistics should cover about 30 days', daily_count); sys.exit(1)
 
     # Summary metrics must be populated for a period with data.
     for selector in ['#wPeriodStart','#wPeriodEnd','#wPeriodChange','#wPeriodAverage','#wPeriodLow','#wPeriodHigh']:
@@ -58,4 +61,4 @@ with sync_playwright() as p:
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: weekly/monthly/quarterly/6-month/yearly weight statistics')
+print('PASS: daily plus weekly/monthly/quarterly/6-month/yearly weight statistics')
