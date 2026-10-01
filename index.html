@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.5" />
+  <meta name="ft-app-version" content="1.8.6" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -263,6 +263,13 @@ layout: null
     .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
     #weightChart { touch-action:pan-y; cursor:pointer; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
+    .weightPeriodSwitcher { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:4px 2px 8px; margin:2px -2px 10px; touch-action:pan-x; }
+    .weightPeriodSwitcher::-webkit-scrollbar { display:none; }
+    .weightPeriodSwitcher button { flex:0 0 auto; min-width:82px; padding:10px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; line-height:1.1; white-space:nowrap; }
+    .weightPeriodSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
+    .weightPeriodRange { min-height:18px; margin:0 0 4px; color:var(--muted); }
+    .weightStatsGrid { margin-top:8px; }
+    .weightStatsGrid .metric .value { font-size:22px; }
     .modalBackdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); background: rgba(0,0,0,.46); }
     .modalCard { width: min(460px, 100%); max-height: 90vh; overflow: auto; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 18px 60px rgba(0,0,0,.28); }
     .modalCard h2 { margin-bottom: 16px; }
@@ -488,10 +495,29 @@ layout: null
         <div class="weightTargetWrap"><input id="weightTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Target weight" data-i18n-aria="weight.target"><span id="weightTargetUnit">kg</span></div>
       </div>
     </div>
+    <div class="card weightStatsCard">
+      <h2 data-i18n="weight.statistics">Weight statistics</h2>
+      <div class="weightPeriodSwitcher" id="weightPeriodSwitcher" role="tablist" aria-label="Weight statistics period" data-i18n-aria="a11y.weightPeriod">
+        <button type="button" data-weight-period="week" role="tab" aria-selected="false" data-i18n="weight.periodWeek">Week</button>
+        <button type="button" data-weight-period="month" role="tab" aria-selected="true" class="active" data-i18n="weight.periodMonth">Month</button>
+        <button type="button" data-weight-period="quarter" role="tab" aria-selected="false" data-i18n="weight.periodQuarter">Quarter</button>
+        <button type="button" data-weight-period="halfyear" role="tab" aria-selected="false" data-i18n="weight.periodHalfYear">6 months</button>
+        <button type="button" data-weight-period="year" role="tab" aria-selected="false" data-i18n="weight.periodYear">Year</button>
+      </div>
+      <div class="weightPeriodRange small" id="weightPeriodRange"></div>
+      <div class="grid weightStatsGrid">
+        <div class="metric"><div class="value weightValue" id="wPeriodStart">—</div><div class="label" data-i18n="weight.periodStart">Start</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodEnd">—</div><div class="label" data-i18n="weight.periodEnd">Latest</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodChange">—</div><div class="label" data-i18n="weight.periodChange">Change</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodAverage">—</div><div class="label" data-i18n="weight.average">Average</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodLow">—</div><div class="label" data-i18n="weight.lowest">Lowest</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodHigh">—</div><div class="label" data-i18n="weight.highest">Highest</div></div>
+      </div>
+    </div>
     <div class="card weightChartWrap">
       <h2 data-i18n="weight.trend">Weight trend</h2>
       <canvas id="weightChart" width="660" height="240" role="img" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
-      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Last 30 weigh-ins. A target line appears when a target weight is set. Tap a point to see its exact value.</div>
+      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Chart shows measurements in the selected period. A target line appears when a target weight is set. Tap a point to see its exact value.</div>
       <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
     </div>
     <div class="card weightHistory" id="weightHistoryList"></div>
@@ -895,14 +921,14 @@ layout: null
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 5;
+  const I18N_SOURCE_REVISION = 6;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.5';
+  const APP_VERSION = '1.8.6';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -984,6 +1010,7 @@ layout: null
   let weightChartHitPoints = [];
   let weightChartSelectedId = null;
   let weightChartPointerStart = null;
+  let weightPeriodMode = 'month';
   let chartInteractiveLayout = [];
   let timelineChartGeometry = null;
   let timelineChartDays = [];
@@ -3608,6 +3635,82 @@ layout: null
     return [...data.weights].sort((a, b) => String(a.when).localeCompare(String(b.when)));
   }
 
+  const WEIGHT_PERIOD_MODES = Object.freeze(['week','month','quarter','halfyear','year']);
+  function subtractCalendarMonthsClamped(dateLike, months) {
+    const source = new Date(dateLike);
+    const day = source.getDate();
+    const result = new Date(source);
+    result.setDate(1);
+    result.setMonth(result.getMonth() - months);
+    const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+    result.setDate(Math.min(day, lastDay));
+    return result;
+  }
+  function weightPeriodBounds(mode = weightPeriodMode, now = new Date()) {
+    const end = new Date(now);
+    let start = new Date(end);
+    if (mode === 'week') start.setDate(start.getDate() - 6);
+    else if (mode === 'month') start = subtractCalendarMonthsClamped(end, 1);
+    else if (mode === 'quarter') start = subtractCalendarMonthsClamped(end, 3);
+    else if (mode === 'halfyear') start = subtractCalendarMonthsClamped(end, 6);
+    else start = subtractCalendarMonthsClamped(end, 12);
+    start.setHours(0,0,0,0);
+    return { start, end };
+  }
+  function weightEntriesForPeriod(asc = sortedWeightsAsc(), mode = weightPeriodMode, now = new Date()) {
+    const {start, end} = weightPeriodBounds(mode, now);
+    const startIso = start.toISOString(), endIso = end.toISOString();
+    let lo = 0, hi = asc.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (String(asc[mid].when) < startIso) lo = mid + 1; else hi = mid; }
+    const from = lo; hi = asc.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (String(asc[mid].when) <= endIso) lo = mid + 1; else hi = mid; }
+    return asc.slice(from, lo);
+  }
+  function weightPeriodDateRangeLabel(start, end) {
+    const fmt = new Intl.DateTimeFormat(currentLocale(), {day:'numeric',month:'short',year:'numeric'});
+    return `${fmt.format(start)} – ${fmt.format(end)}`;
+  }
+  function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
+    if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'month';
+    document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => {
+      const active = btn.dataset.weightPeriod === weightPeriodMode;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', String(active));
+    });
+    const bounds = weightPeriodBounds(weightPeriodMode);
+    const entries = weightEntriesForPeriod(asc, weightPeriodMode, bounds.end);
+    const range = weightPeriodDateRangeLabel(bounds.start, bounds.end);
+    const summary = el('weightPeriodRange');
+    if (summary) {
+      const count = entries.length;
+      summary.textContent = t('weight.periodSummary', {range, count:formatNumber(count), measurementWord:t(pluralKey('weight.measurement', count))});
+      summary.dataset.count = String(count);
+      summary.dataset.period = weightPeriodMode;
+    }
+    const ids = ['wPeriodStart','wPeriodEnd','wPeriodChange','wPeriodAverage','wPeriodLow','wPeriodHigh'];
+    if (!entries.length) { ids.forEach(id => { const node=el(id); if(node) node.textContent='—'; }); return entries; }
+    const unit = data.weightUnit;
+    const first = entries[0], latest = entries[entries.length - 1];
+    let total = 0, low = entries[0].kg, high = entries[0].kg;
+    for (const entry of entries) { total += entry.kg; if (entry.kg < low) low = entry.kg; if (entry.kg > high) high = entry.kg; }
+    const average = total / entries.length;
+    el('wPeriodStart').textContent = formatWeight(first.kg, unit);
+    el('wPeriodEnd').textContent = formatWeight(latest.kg, unit);
+    el('wPeriodChange').textContent = formatWeight(latest.kg - first.kg, unit, true);
+    el('wPeriodAverage').textContent = formatWeight(average, unit);
+    el('wPeriodLow').textContent = formatWeight(low, unit);
+    el('wPeriodHigh').textContent = formatWeight(high, unit);
+    return entries;
+  }
+  function setWeightPeriodMode(mode) {
+    if (!WEIGHT_PERIOD_MODES.includes(mode) || mode === weightPeriodMode) return;
+    weightPeriodMode = mode;
+    weightChartSelectedId = null;
+    const asc = sortedWeightsAsc();
+    renderWeightPeriodAnalytics(asc);
+    drawWeightChart(asc);
+  }
+
   function renderWeight() {
     const unit = data.weightUnit;
     el('unitKgBtn').classList.toggle('active', unit === 'kg');
@@ -3664,10 +3767,11 @@ layout: null
         wrap.append(more); box.append(wrap);
       }
     }
-    drawWeightChart();
+    renderWeightPeriodAnalytics(asc);
+    drawWeightChart(asc);
   }
 
-  function drawWeightChart() {
+  function drawWeightChart(asc = null) {
     const c = el('weightChart');
     if (!c) return;
     const ctx = c.getContext('2d');
@@ -3677,7 +3781,10 @@ layout: null
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
 
-    const entries = sortedWeightsAsc().slice(-30);
+    const allEntries = Array.isArray(asc) ? asc : sortedWeightsAsc();
+    const entries = weightEntriesForPeriod(allEntries);
+    const chartNote = el('weightChartNote');
+    if (chartNote) chartNote.textContent = t('weight.chartHelp');
     const style = getComputedStyle(document.documentElement);
     const line = style.getPropertyValue('--line').trim();
     const accent = style.getPropertyValue('--accent').trim();
@@ -3693,7 +3800,7 @@ layout: null
       weightChartSelectedId = null;
       if (detail) { detail.hidden = true; detail.textContent = ''; }
       ctx.fillStyle = muted; ctx.font = '13px -apple-system'; ctx.textAlign = 'center';
-      ctx.fillText(t('weight.addChart'), cssW / 2, cssH / 2);
+      ctx.fillText(data.weights.length ? t('weight.noPeriodData') : t('weight.addChart'), cssW / 2, cssH / 2);
       ctx.textAlign = 'start'; return;
     }
     if (weightChartSelectedId && !entries.some(e => e.id === weightChartSelectedId)) weightChartSelectedId = null;
@@ -4497,6 +4604,7 @@ layout: null
   el('weightModal').addEventListener('click', e => { if (e.target === el('weightModal')) closeWeightModal(); });
   el('unitKgBtn').addEventListener('click', () => setWeightUnit('kg'));
   el('unitLbBtn').addEventListener('click', () => setWeightUnit('lb'));
+  document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => bindResponsiveAction(btn, () => setWeightPeriodMode(btn.dataset.weightPeriod)));
   el('weightTargetInput').addEventListener('change', setTargetWeightFromInput);
   el('weightTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') { el('weightTargetInput').blur(); setTargetWeightFromInput(); } });
   document.addEventListener('keydown', e => {

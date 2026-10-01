@@ -116,10 +116,14 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
-## v1.8.5 stop-fast safety
+## v1.8.6 weight statistics
 
-Stopping an active fast now uses one explicit in-app confirmation showing the elapsed duration, with Keep fasting and Stop & save actions. After saving, a 10-second Undo restores the exact active fast (start, target, time zone and audit timestamps) and removes the just-created History record.
+The Weight screen now has selectable rolling Week, Month, Quarter, 6 months and Year views. Each view shows its exact date range plus start/latest weight, change, average, lowest and highest measurements, and the interactive trend chart follows the same selected period.
 
-## v1.8.2 performance architecture
+## v1.8.5 stop-fast and weight-chart refinements
 
-Primary fasting/weight history and recovery snapshot payloads now use IndexedDB instead of large `localStorage` JSON blobs. Small preferences/version metadata remain in `localStorage` so public information pages can follow language/theme immediately. Daily fasting totals are persisted and updated incrementally, expensive statistics are range-limited/lazy, and the supported history ceiling is 100,000 fasting records plus 100,000 weight records. The portable external backup remains JSON. Regression coverage includes both the 2,000+2,000 smoke test and a 70-year test with 25,567 fasting plus 25,567 weight records.
+Stopping an active fast uses one explicit in-app confirmation showing the elapsed duration, with Keep fasting and Stop & save actions. After saving, a 10-second Undo restores the exact active fast (start, target, time zone and audit timestamps) and removes the just-created History record. The Undo countdown is visible, Keep fasting returns to the Fasting home screen, and Weight-chart points can be tapped for exact values.
+
+## v1.8.0 performance architecture
+
+Primary fasting/weight history and recovery snapshot payloads use IndexedDB instead of large `localStorage` JSON blobs. Small preferences/version metadata remain in `localStorage` so public information pages can follow language/theme immediately. Daily fasting totals are persisted and updated incrementally, expensive statistics are range-limited/lazy, and the supported history ceiling is 100,000 fasting records plus 100,000 weight records. The portable external backup remains JSON. Regression coverage includes both the 2,000+2,000 smoke test and a 70-year test with 25,567 fasting plus 25,567 weight records.
