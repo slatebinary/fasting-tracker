@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.12" />
+  <meta name="ft-app-version" content="1.8.13" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1070,14 +1070,14 @@ layout: null
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 11;
+  const I18N_SOURCE_REVISION = 12;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.12';
+  const APP_VERSION = '1.8.13';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2360,6 +2360,14 @@ layout: null
     return `${formatNumber(minutes)}${t('unit.m')}`;
   }
 
+  function totalHoursDuration(ms) {
+    ms = Math.max(0, ms);
+    const totalMin = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMin / 60);
+    const minutes = totalMin % 60;
+    return `${formatNumber(hours)}${t('unit.h')} ${formatNumber(minutes)}${t('unit.m')}`;
+  }
+
   function dayKey(dateLike, timeZone = currentTimeZone()) {
     const p = zonedParts(dateLike, timeZone);
     return `${p.year}-${pad(p.month)}-${pad(p.day)}`;
@@ -3227,6 +3235,26 @@ layout: null
       if (cursor < endMs) segments.push({ type: 'gap', start: cursor, end: endMs, index: segments.length });
       days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz, label: localDateLabel(startMs, tz) });
     }
+
+    // Give every segment a stable continuation key across midnight. Fast
+    // pieces share the original fast's exact source boundaries. Consecutive
+    // non-fasting pieces on adjacent days are grouped until another fast
+    // interrupts them. This lets selection reveal the rest of the same
+    // fast/gap without changing the underlying timeline data.
+    let gapSerial = 0;
+    let previousGap = null;
+    for (const day of days) {
+      for (const segment of day.segments) {
+        if (segment.type === 'fast') {
+          segment.continuationKey = `fast:${segment.sourceStart}:${segment.sourceEnd}`;
+          previousGap = null;
+          continue;
+        }
+        const contiguous = previousGap && Math.abs(previousGap.end - segment.start) < 1000;
+        segment.continuationKey = contiguous ? previousGap.continuationKey : `gap:${++gapSerial}`;
+        previousGap = segment;
+      }
+    }
     return days;
   }
 
@@ -3249,21 +3277,28 @@ layout: null
     const segment = day.segments[chartSelectedTarget.segmentIndex];
     if (!segment) return null;
     const start = chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone);
-    const end = chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone);
+    // The internal interval still ends at exact midnight. Calling that boundary
+    // "end of day" keeps the displayed range consistent with the true 24-hour
+    // duration while the axis itself can remain labelled 23:59.
+    const end = Math.abs(segment.end - day.endMs) < 1000
+      ? t('stats.endOfDay')
+      : chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone);
     if (segment.type === 'fast') {
       const segmentDuration = Math.max(0, segment.end - segment.start);
       const sourceDuration = Math.max(0, (segment.sourceEnd ?? segment.end) - (segment.sourceStart ?? segment.start));
       const targetDuration = goalMs(segment.goalHours ?? data.goalHours);
       const splitAcrossDay = Math.abs(sourceDuration - segmentDuration) >= 60000;
+      const beyondTarget = Math.max(0, sourceDuration - targetDuration);
       return {
         title: day.label,
         text: splitAcrossDay
-          ? t('stats.detailFastSplitTarget', {
+          ? t(beyondTarget >= 60000 ? 'stats.detailFastSplitTargetBeyond' : 'stats.detailFastSplitTarget', {
               start,
               end,
               segmentDuration: compactDuration(segmentDuration),
-              duration: compactDuration(sourceDuration),
-              target: compactDuration(targetDuration)
+              duration: totalHoursDuration(sourceDuration),
+              target: totalHoursDuration(targetDuration),
+              beyond: totalHoursDuration(beyondTarget)
             })
           : t('stats.detailFastTarget', {
               start,
@@ -3394,6 +3429,14 @@ layout: null
     const card = style.getPropertyValue('--card').trim();
     const textColor = style.getPropertyValue('--text').trim();
     chartInteractiveLayout = [];
+    let selectedContinuationKey = null;
+    let selectedContinuationType = null;
+    if (chartSelectedTarget?.kind === 'segment') {
+      const selectedDay = days.find(item => item.key === chartSelectedTarget.dayKey);
+      const selectedSegment = selectedDay?.segments?.[chartSelectedTarget.segmentIndex];
+      selectedContinuationKey = selectedSegment?.continuationKey || null;
+      selectedContinuationType = selectedSegment?.type || null;
+    }
 
     ctx.strokeStyle = line; ctx.lineWidth = 1;
     [0, 6, 12, 18, 24].forEach(hour => {
@@ -3428,6 +3471,27 @@ layout: null
           ctx.globalAlpha = 1;
         }
         const isSelected = chartSelectedTarget && chartSelectedTarget.kind === 'segment' && chartSelectedTarget.dayKey === day.key && chartSelectedTarget.segmentIndex === segIndex;
+        const isRelatedContinuation = !isSelected
+          && selectedContinuationKey
+          && segment.type === selectedContinuationType
+          && segment.continuationKey === selectedContinuationKey;
+        if (isRelatedContinuation) {
+          // The selected piece keeps the strong border. Other pieces belonging
+          // to the same continuous fast/gap are deliberately quieter so the
+          // user can follow the interval across midnight without confusing the
+          // continuation with the primary selection.
+          const rx = x0 + 1, ry = rectY + 1, rw = Math.max(1, bw - 2), rh = Math.max(1, rectH - 2);
+          ctx.save();
+          if (segment.type === 'fast') {
+            ctx.fillStyle = card; ctx.globalAlpha = .28; ctx.fillRect(rx, ry, rw, rh);
+            ctx.strokeStyle = textColor; ctx.globalAlpha = .58;
+          } else {
+            ctx.fillStyle = accent; ctx.globalAlpha = .11; ctx.fillRect(rx, ry, rw, rh);
+            ctx.strokeStyle = accent; ctx.globalAlpha = .62;
+          }
+          ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.strokeRect(rx, ry, rw, rh);
+          ctx.restore();
+        }
         if (isSelected) {
           // High-contrast outer border + accent inner border make selection
           // obvious on both filled fasting segments and empty non-fasting gaps.

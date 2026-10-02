@@ -117,6 +117,10 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+## v1.8.13 Timeline continuation context
+
+Selecting a Timeline segment now softly highlights any continuation of the same fast or non-fasting gap across adjacent day columns while keeping the selected piece strongly outlined. Midnight-spanning detail text uses “end of day” rather than pairing `23:59` with a full 24-hour duration, and full-fast comparisons use total hours (for example `28h 0m of 16h 0m target — 12h 0m beyond target`).
+
 ## v1.8.12 Timeline end-of-day label
 
 The fasting Statistics Timeline now displays the end-of-day marker as `23:59` instead of `24:00` on both axes and in selected segment/gap time ranges. This is a presentation change only; internal day boundaries and duration calculations still use the exact midnight boundary.
