@@ -116,6 +116,15 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+
+## v1.8.12 Timeline end-of-day label
+
+The fasting Statistics Timeline now displays the end-of-day marker as `23:59` instead of `24:00` on both axes and in selected segment/gap time ranges. This is a presentation change only; internal day boundaries and duration calculations still use the exact midnight boundary.
+
+## v1.8.11 fasting target details in Statistics
+
+Selecting a fasting segment in Statistics → Timeline now shows the segment/full-fast duration together with the target saved for that specific fast, for example `13h 05m of 23h 0m`. If a fast crosses midnight, the detail distinguishes the portion shown on the selected day from the full fast so the target comparison remains accurate.
+
 ## v1.8.10 progress sharing
 
 Fasting and Statistics now expose a privacy-aware Share progress action. The user can include the current/latest fast, overall fasting summary, consistency/XP, and optionally weight progress. Weight is off by default. Native Web Share is used when available, with a copy fallback, and the current installation link is always included.

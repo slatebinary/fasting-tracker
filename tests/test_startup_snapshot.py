@@ -20,7 +20,7 @@ with sync_playwright() as p:
       localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.7.11',seenAt:'2026-09-30T10:00:00.000Z'}));
     }""", [payload])
     page.set_content(inlined_html(), wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.10'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.12'",timeout=20000)
     page.wait_for_timeout(300)
     if errors:
         print('FAIL: startup browser errors: '+' | '.join(errors[:3])); sys.exit(1)

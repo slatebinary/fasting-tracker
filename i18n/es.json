@@ -212,6 +212,8 @@
   "stats.chartDetailDefaultText": "Toca una fecha, sección, punto o semana para ver detalles.",
   "stats.detailTotal": "Ayuno total: {duration}. Secciones de ayuno: {count}.",
   "stats.detailFast": "Ayuno: {start}–{end} ({duration}).",
+  "stats.detailFastTarget": "Ayuno: {start}–{end} ({duration} de {target}).",
+  "stats.detailFastSplitTarget": "Ayuno de este día: {start}–{end} ({segmentDuration}). Ayuno completo: {duration} de {target}.",
   "stats.detailGap": "Hueco sin ayuno: {start}–{end} ({duration}).",
   "stats.weekOf": "Semana del {date}",
   "stats.detailWeek": "Ayuno total: {duration}. Días con ayuno: {days}/7.",

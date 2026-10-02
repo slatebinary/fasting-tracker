@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.10" />
+  <meta name="ft-app-version" content="1.8.12" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -586,11 +586,11 @@ layout: null
       </div>
       <div class="statsVizView" id="statsTimelineView">
         <div class="timelineShell">
-          <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+          <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
           <div class="timelineScroller" id="timelineScroller">
             <canvas id="chart" width="700" height="310" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
           </div>
-          <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+          <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
         </div>
       </div>
       <div class="statsVizView" id="statsCalendarView" hidden>
@@ -1070,14 +1070,14 @@ layout: null
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 10;
+  const I18N_SOURCE_REVISION = 11;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.10';
+  const APP_VERSION = '1.8.12';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -3133,11 +3133,27 @@ layout: null
       const start = Date.parse(r.start), end = Date.parse(r.end);
       if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
       if (end <= rangeStart || start >= rangeEnd) continue;
-      intervals.push({ start, end });
+      intervals.push({
+        start,
+        end,
+        goalHours: sanitizeGoal(r.goalHours, data.goalHours),
+        sourceStart: start,
+        sourceEnd: end,
+        active: false
+      });
     }
     if (data.activeStart) {
       const start = Date.parse(data.activeStart), end = Date.now();
-      if (Number.isFinite(start) && end > start && end > rangeStart && start < rangeEnd) intervals.push({start,end});
+      if (Number.isFinite(start) && end > start && end > rangeStart && start < rangeEnd) {
+        intervals.push({
+          start,
+          end,
+          goalHours: sanitizeGoal(data.activeGoalHours, data.goalHours),
+          sourceStart: start,
+          sourceEnd: end,
+          active: true
+        });
+      }
     }
     intervals.sort((a,b)=>a.start-b.start);
     return intervals;
@@ -3193,7 +3209,16 @@ layout: null
           segments.push({ type: 'gap', start: cursor, end: segStart, index: segments.length });
         }
         if (segEnd > segStart) {
-          segments.push({ type: 'fast', start: segStart, end: segEnd, index: segments.length });
+          segments.push({
+            type: 'fast',
+            start: segStart,
+            end: segEnd,
+            index: segments.length,
+            goalHours: interval.goalHours,
+            sourceStart: interval.sourceStart,
+            sourceEnd: interval.sourceEnd,
+            active: interval.active
+          });
           totalFastMs += segEnd - segStart;
           fastCount += 1;
         }
@@ -3206,7 +3231,7 @@ layout: null
   }
 
   function chartTimeWithinDayLabel(ms, dayEndMs, timeZone) {
-    if (Math.abs(ms - dayEndMs) < 1000) return '24:00';
+    if (Math.abs(ms - dayEndMs) < 1000) return '23:59';
     const parts = zonedParts(ms, timeZone);
     return `${pad(parts.hour)}:${pad(parts.minute)}`;
   }
@@ -3225,9 +3250,32 @@ layout: null
     if (!segment) return null;
     const start = chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone);
     const end = chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone);
+    if (segment.type === 'fast') {
+      const segmentDuration = Math.max(0, segment.end - segment.start);
+      const sourceDuration = Math.max(0, (segment.sourceEnd ?? segment.end) - (segment.sourceStart ?? segment.start));
+      const targetDuration = goalMs(segment.goalHours ?? data.goalHours);
+      const splitAcrossDay = Math.abs(sourceDuration - segmentDuration) >= 60000;
+      return {
+        title: day.label,
+        text: splitAcrossDay
+          ? t('stats.detailFastSplitTarget', {
+              start,
+              end,
+              segmentDuration: compactDuration(segmentDuration),
+              duration: compactDuration(sourceDuration),
+              target: compactDuration(targetDuration)
+            })
+          : t('stats.detailFastTarget', {
+              start,
+              end,
+              duration: compactDuration(sourceDuration),
+              target: compactDuration(targetDuration)
+            })
+      };
+    }
     return {
       title: day.label,
-      text: t(segment.type === 'fast' ? 'stats.detailFast' : 'stats.detailGap', { start, end, duration: compactDuration(segment.end - segment.start) })
+      text: t('stats.detailGap', { start, end, duration: compactDuration(segment.end - segment.start) })
     };
   }
 

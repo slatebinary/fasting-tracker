@@ -212,6 +212,8 @@
   "stats.chartDetailDefaultText": "Tap a date, segment, point or week for details.",
   "stats.detailTotal": "Total fasting: {duration}. Fasting sections: {count}.",
   "stats.detailFast": "Fasting: {start}–{end} ({duration}).",
+  "stats.detailFastTarget": "Fasting: {start}–{end} ({duration} of {target}).",
+  "stats.detailFastSplitTarget": "Fasting this day: {start}–{end} ({segmentDuration}). Full fast: {duration} of {target}.",
   "stats.detailGap": "Non-fasting gap: {start}–{end} ({duration}).",
   "stats.weekOf": "Week of {date}",
   "stats.detailWeek": "Total fasting: {duration}. Days containing fasting: {days}/7.",

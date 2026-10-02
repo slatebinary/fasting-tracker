@@ -31,7 +31,7 @@ index=(ROOT/'index.html').read_text()
 en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.8.10','version must be 1.8.10')
+ok(ver.get('version')=='1.8.12','version must be 1.8.12')
 ok(ver.get('released')=='2026-10-02','release date must be 2026-10-02')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
@@ -140,8 +140,8 @@ try:
         evaluated=json.loads(subprocess.check_output(['node',runtime_js],text=True))
         ok(evaluated==lang_dicts[lang],f'i18n runtime is stale for {lang}; run tools/build_i18n_runtime.py')
     source=json.loads((ROOT/'i18n-source.json').read_text())
-    ok(source.get('sourceRevision')==10, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.8.10', 'i18n source app version mismatch')
+    ok(source.get('sourceRevision')==11, 'i18n source revision mismatch')
+    ok(source.get('appVersion')=='1.8.12', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -261,7 +261,7 @@ ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guid
 
 
 # Internationalization-readiness regression checks
-ok('const I18N_SOURCE_REVISION = 10;' in index, 'canonical i18n source revision missing')
+ok('const I18N_SOURCE_REVISION = 11;' in index, 'canonical i18n source revision missing')
 ok('const LANGUAGE_META = Object.freeze({' in index and 'const SUPPORTED_LANGUAGES' in index, 'central language metadata missing')
 ok('new Intl.PluralRules(currentLocale()).select' in index, 'Intl.PluralRules pluralization missing')
 ok('function resolveSystemLanguage()' in index and 'navigator.languages' in index, 'system-language resolution is not future-ready')
@@ -508,7 +508,7 @@ ok('weight.statistics' in en_source and 'weight.periodQuarter' in en_source and 
 ok((ROOT/'tests'/'test_weight_statistics.py').is_file(), 'weight-period browser regression test missing')
 
 
-# v1.8.10 aggregated/scrollable weight timeline regression checks
+# v1.8.7 aggregated/scrollable weight timeline regression checks
 ok('id="weightChartScroller"' in index and 'id="weightChartTrack"' in index and 'id="weightChartYAxis"' in index, 'scrollable weight chart shell is incomplete')
 ok('function buildWeightAggregateBuckets(' in index and 'function weightBucketKeyForDay(' in index, 'calendar-period weight aggregation is missing')
 ok('weightChartScrollToLatestPending = true' in index and 'scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth)' in index, 'weight chart newest-first positioning is missing')
@@ -539,5 +539,17 @@ ok("navigator.share({title:payload.title, text:payload.body, url:payload.url})" 
 ok("share.installLine" in en_source and "share.weightOptionHelp" in en_source, 'progress sharing localization missing')
 ok('Sharing progress' in privacy_text and 'Споделяне на напредъка' in privacy_text and 'Compartir progreso' in privacy_text, 'localized progress-sharing privacy disclosure missing')
 ok((ROOT/'tests'/'test_share_progress.py').is_file(), 'progress-sharing browser regression test missing')
+
+
+# v1.8.12 fasting Timeline target-detail regression checks
+ok('goalHours: sanitizeGoal(r.goalHours, data.goalHours)' in index and 'goalHours: sanitizeGoal(data.activeGoalHours, data.goalHours)' in index, 'fasting Timeline intervals must retain their saved target')
+ok('stats.detailFastTarget' in en_source and 'stats.detailFastSplitTarget' in en_source, 'fasting Timeline target-detail localization missing')
+ok('target: compactDuration(targetDuration)' in index and "t('stats.detailFastTarget'" in index, 'selected fasting Timeline segment does not show duration versus target')
+ok((ROOT/'tests'/'test_fasting_timeline_target_detail.py').is_file(), 'fasting Timeline target-detail browser regression test missing')
+
+# v1.8.12 fasting Timeline end-of-day display regression checks
+ok(index.count('<span>23:59</span>') >= 2, 'both fasting Timeline axes must end at 23:59')
+ok('<span>24:00</span>' not in index, '24:00 must not remain on fasting Timeline axes')
+ok("if (Math.abs(ms - dayEndMs) < 1000) return '23:59';" in index, 'selected Timeline end-of-day labels must display 23:59')
 
 print('PASS: release, integrity, localization, DOM, storage/privacy, backup-pressure and algorithm regression checks')

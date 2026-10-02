@@ -212,6 +212,8 @@
   "stats.chartDetailDefaultText": "Докоснете дата, секция, точка или седмица за подробности.",
   "stats.detailTotal": "Общо гладуване: {duration}. Секции на гладуване: {count}.",
   "stats.detailFast": "Гладуване: {start}–{end} ({duration}).",
+  "stats.detailFastTarget": "Гладуване: {start}–{end} ({duration} от {target}).",
+  "stats.detailFastSplitTarget": "Гладуване през този ден: {start}–{end} ({segmentDuration}). Цялото гладуване: {duration} от {target}.",
   "stats.detailGap": "Пауза без гладуване: {start}–{end} ({duration}).",
   "stats.weekOf": "Седмица от {date}",
   "stats.detailWeek": "Общо гладуване: {duration}. Дни с гладуване: {days}/7.",
