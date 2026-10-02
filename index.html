@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.8" />
+  <meta name="ft-app-version" content="1.8.10" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -274,6 +274,29 @@ layout: null
     .weightPeriodRange { min-height:18px; margin:0 0 4px; color:var(--muted); }
     .weightStatsGrid { margin-top:8px; }
     .weightStatsGrid .metric .value { font-size:22px; }
+    .setupTopRow { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .setupProgress { font-size:13px; color:var(--muted); font-weight:650; }
+    .setupStep h3 { margin:0 0 8px; font-size:18px; }
+    .setupStepText { color:var(--muted); line-height:1.5; }
+    .setupStatus { margin-top:12px; padding:11px 12px; border-radius:12px; background:var(--bg); border:1px solid var(--line); line-height:1.4; }
+    .setupStatus.good { border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); }
+    .setupStatus.warn { border-color:color-mix(in srgb, #ff9f0a 52%, var(--line)); }
+    .setupActionRow { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
+    .setupActionRow button { flex:0 1 auto; }
+    .setupIconGrid { margin-top:10px; }
+    .setupChecklist { display:grid; gap:8px; margin-top:12px; }
+    .setupChecklistRow { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:9px 0; border-bottom:1px solid var(--line); }
+    .setupChecklistRow:last-child { border-bottom:0; }
+    .setupChecklistRow strong:last-child { text-align:right; }
+    .setupBasicsGrid { display:grid; gap:14px; margin-top:12px; }
+    .setupBasicsGrid label { display:block; font-weight:650; margin-bottom:6px; }
+    .setupBasicsGrid input[type="text"] { width:100%; padding:12px; border-radius:11px; border:1px solid var(--line); background:var(--bg); color:var(--text); font:inherit; }
+    .setupUnitToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); }
+    .setupUnitToggle button { min-width:64px; padding:8px 12px; border-radius:9px; background:transparent; color:var(--text); }
+    .setupUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    .setupInlineToggle { display:flex; align-items:center; gap:9px; font-weight:650; }
+    .setupInlineToggle input { width:22px; height:22px; accent-color:var(--accent); }
+    .setupModalCard { width:min(520px,100%); }
     .modalBackdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); background: rgba(0,0,0,.46); }
     .modalCard { width: min(460px, 100%); max-height: 90vh; overflow: auto; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 18px 60px rgba(0,0,0,.28); }
     .modalCard h2 { margin-bottom: 16px; }
@@ -288,6 +311,14 @@ layout: null
     .backdateConflictActions button { min-width: 0; white-space: normal; overflow-wrap: normal; word-break: normal; }
     .modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
     .modalActions .primary { width: auto; font-size: inherit; }
+    .shareOptions { display:grid; gap:8px; margin:14px 0; }
+    .shareOption { display:flex; align-items:flex-start; gap:10px; padding:10px 11px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
+    .shareOption input { width:21px; height:21px; margin-top:1px; flex:0 0 auto; accent-color:var(--accent); }
+    .shareOptionText { min-width:0; }
+    .shareOptionText strong, .shareOptionText .small { display:block; }
+    .sharePreview { margin-top:12px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--bg); white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; line-height:1.45; max-height:220px; overflow:auto; }
+    .shareInstallLink { margin-top:10px; font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+    .shareStatus { min-height:18px; margin-top:8px; color:var(--muted); font-size:12px; }
     body.modalOpen { overflow: hidden; }
     .recoveryCard { border: 2px solid var(--danger); }
     .recoveryActions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
@@ -381,11 +412,11 @@ layout: null
     </div>
   </div>
   <section id="fasting" class="screen active">
-    <h1 data-i18n="nav.fasting">Fasting</h1>
+    <div class="sectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
     <div class="notice installStorageNotice" id="installStorageNotice" role="status" hidden>
       <strong data-i18n="installStorage.title">Using Safari on iPhone?</strong>
       <div class="small" data-i18n="installStorage.text">Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.</div>
-      <div class="publicLinks" style="margin-top:8px"><button id="installStorageDismiss" class="secondary" data-i18n="common.dismiss">Dismiss</button></div>
+      <div class="publicLinks" style="margin-top:8px"><button id="installStorageSetupBtn" class="secondary" data-i18n="setup.open">Setup guide</button><button id="installStorageDismiss" class="secondary" data-i18n="common.dismiss">Dismiss</button></div>
     </div>
     <div class="updateBanner" id="updateBanner" hidden>
       <div><strong id="updateBannerTitle" data-i18n="update.newVersion">New version available</strong><div class="small" id="updateBannerText" data-i18n="update.releaseReady">A newer Fasting Tracker release is ready.</div></div>
@@ -536,7 +567,7 @@ layout: null
   </section>
 
   <section id="stats" class="screen">
-    <h1 data-i18n="nav.stats">Statistics</h1>
+    <div class="sectionHeader"><h1 data-i18n="nav.stats">Statistics</h1><button id="shareStatsBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
     <div class="grid">
       <div class="metric"><div class="value" id="mTotal">0</div><div class="label" data-i18n="stats.completed">Completed fasts</div></div>
       <div class="metric"><div class="value" id="mAverage">0h</div><div class="label" data-i18n="stats.average">Average duration</div></div>
@@ -611,6 +642,10 @@ layout: null
         <button id="storageProtectBtn" class="secondary" data-i18n="storage.request" hidden>Request protection</button>
       </div>
       <div class="small" id="storageUsageLabel" data-i18n="storage.usageUnknown">Storage usage information is unavailable.</div>
+      <div class="row" style="margin-top:12px">
+        <div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup and basic preferences.</div></div>
+        <button id="setupGuideBtn" class="secondary" data-i18n="setup.open">Setup guide</button>
+      </div>
     </div>
     <div class="card">
       <div class="row">
@@ -742,6 +777,84 @@ layout: null
   </section>
 </main>
 
+
+<div class="modalBackdrop" id="setupModal" hidden>
+  <div class="modalCard setupModalCard" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <div class="setupTopRow"><div class="setupProgress" id="setupProgress">Step 1 of 5</div><button id="setupDismissBtn" type="button" class="secondary" data-i18n="setup.notNow">Not now</button></div>
+    <h2 id="setupTitle" data-i18n="setup.title">Recommended first setup</h2>
+
+    <div class="setupStep" id="setupStepInstall" data-setup-step="1">
+      <h3 data-i18n="setup.installTitle">1. Add Fasting Tracker to your Home Screen</h3>
+      <div class="setupStepText" data-i18n="setup.installIntro">For the most app-like and reliable mobile experience, install the app before you begin tracking.</div>
+      <div id="setupIconArea" class="setupIconGrid">
+        <strong data-i18n="setup.iconTitle">Choose the Home Screen icon first</strong>
+        <div class="small" data-i18n="setup.iconHelp">On iPhone/iPad the installed icon is chosen at installation. Changing it later can require a safe backup and reinstall.</div>
+        <div class="iconChoiceGrid" role="radiogroup" aria-label="App icon" data-i18n-aria="settings.appIcon">
+          <button type="button" class="iconChoice" data-icon-choice="plate" role="radio" aria-checked="false"><img src="icons/plate/icon-192.png" alt=""><span data-i18n="icon.plate">Plate &amp; clock</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="moon" role="radio" aria-checked="false"><img src="icons/moon/icon-192.png" alt=""><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="hourglass" role="radio" aria-checked="false"><img src="icons/hourglass/icon-192.png" alt=""><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="timer" role="radio" aria-checked="false"><img src="icons/timer/icon-192.png" alt=""><span data-i18n="icon.timer">F timer</span></button>
+        </div>
+      </div>
+      <div class="setupStatus" id="setupInstallStatus"></div>
+      <div class="setupActionRow" id="setupInstallActions">
+        <button id="setupContinueBrowserBtn" type="button" class="secondary" data-i18n="setup.continueBrowser" hidden>Continue in browser instead</button>
+        <button id="setupImportExistingBtn" type="button" class="secondary" data-i18n="setup.importExisting" hidden>Import existing JSON backup</button>
+        <button id="setupPreInstallBackupBtn" type="button" class="secondary" data-i18n="setup.preInstallBackup" hidden>Export browser backup first</button>
+      </div>
+      <div class="small" id="setupInstallExtra" style="margin-top:8px"></div>
+    </div>
+
+    <div class="setupStep" id="setupStepStorage" data-setup-step="2" hidden>
+      <h3 data-i18n="setup.storageTitle">2. Protect local storage</h3>
+      <div class="setupStepText" data-i18n="setup.storageIntro">Ask the browser to make this app's storage persistent. This reduces automatic eviction under storage pressure, but it does not protect against uninstalling the app, clearing website data, device loss or corruption.</div>
+      <div class="setupStatus" id="setupStorageStatus" data-i18n="storage.checking">Checking storage protection…</div>
+      <div class="small" data-i18n="setup.importBeforeBackup" style="margin-top:8px">If you moved from Safari/browser and made a JSON backup there, import it before creating the new backup in the next step.</div>
+      <div class="setupActionRow"><button id="setupProtectBtn" type="button" class="primary" data-i18n="setup.storageProtect">Protect storage</button><button id="setupStorageImportBtn" type="button" class="secondary" data-i18n="setup.importExisting">Import existing JSON backup</button></div>
+      <div class="small" id="setupStorageUsage" style="margin-top:8px"></div>
+    </div>
+
+    <div class="setupStep" id="setupStepBackup" data-setup-step="3" hidden>
+      <h3 data-i18n="setup.backupTitle">3. Make your first manual JSON backup</h3>
+      <div class="setupStepText" data-i18n="setup.backupIntro">Export one JSON file and save it outside the app, preferably in Files/iCloud Drive, Google Drive or another location you control.</div>
+      <div class="setupStatus" id="setupBackupStatus"></div>
+      <div class="setupActionRow"><button id="setupExportBtn" type="button" class="primary" data-i18n="setup.export">Export JSON backup</button></div>
+      <div class="small" data-i18n="setup.backupReminder" style="margin-top:8px">After you begin recording data, Fasting Tracker reminds you every 7 days to make another external backup.</div>
+    </div>
+
+    <div class="setupStep" id="setupStepBasics" data-setup-step="4" hidden>
+      <h3 data-i18n="setup.basicsTitle">4. Set the basics</h3>
+      <div class="setupStepText" data-i18n="setup.basicsIntro">Choose your default fasting target, weight unit and whether consistency gamification is enabled. You can change all of these later.</div>
+      <div class="setupBasicsGrid">
+        <div>
+          <label for="setupGoalInput" data-i18n="setup.goal">Default fasting target</label>
+          <input id="setupGoalInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Default fasting target" data-i18n-aria="setup.goal">
+          <div class="presetWrap" style="margin-top:8px">
+            <button type="button" class="chip" data-setup-goal="16">16h</button><button type="button" class="chip" data-setup-goal="18">18h</button><button type="button" class="chip" data-setup-goal="22">22h</button><button type="button" class="chip" data-setup-goal="23">23h</button><button type="button" class="chip" data-setup-goal="24">24h</button>
+          </div>
+        </div>
+        <div>
+          <label data-i18n="setup.weightUnit">Weight unit</label>
+          <div class="setupUnitToggle" role="group" aria-label="Weight unit" data-i18n-aria="a11y.weightUnit"><button id="setupUnitKgBtn" type="button">kg</button><button id="setupUnitLbBtn" type="button">lb</button></div>
+        </div>
+        <label class="setupInlineToggle"><input id="setupGameToggle" type="checkbox"><span data-i18n="setup.gamification">Consistency gamification</span></label>
+        <div class="formError" id="setupBasicsError" hidden></div>
+      </div>
+    </div>
+
+    <div class="setupStep" id="setupStepReady" data-setup-step="5" hidden>
+      <h3 data-i18n="setup.readyTitle">5. Ready to track</h3>
+      <div class="setupStepText" data-i18n="setup.readyIntro">Use the Home Screen app when possible, keep external JSON backups, and review the health and safety guidance before fasting.</div>
+      <div class="setupChecklist" id="setupReadySummary"></div>
+      <div class="small" data-i18n="setup.readyBackupReminder" style="margin-top:10px">Internal recovery snapshots stay inside this installation. Keep external JSON backups because uninstalling, clearing website data or losing the device can remove local records.</div>
+    </div>
+
+    <div class="modalActions wrap">
+      <button id="setupBackBtn" type="button" class="secondary" data-i18n="setup.back">Back</button>
+      <button id="setupNextBtn" type="button" class="primary" data-i18n="setup.continue">Continue</button>
+    </div>
+  </div>
+</div>
 
 <div class="modalBackdrop" id="backdateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
@@ -884,6 +997,28 @@ layout: null
   </div>
 </div>
 
+<div class="modalBackdrop" id="shareModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+    <h2 id="shareModalTitle" data-i18n="share.title">Share progress</h2>
+    <div class="small" data-i18n="share.help">Choose what to include. Fasting Tracker opens your device share sheet; the app itself does not upload this message.</div>
+    <div class="shareOptions">
+      <label class="shareOption"><input id="shareFastToggle" type="checkbox" checked><span class="shareOptionText"><strong data-i18n="share.fastOption">Current/latest fast</strong><span class="small" data-i18n="share.fastOptionHelp">Elapsed or latest completed fasting result.</span></span></label>
+      <label class="shareOption"><input id="shareStatsToggle" type="checkbox" checked><span class="shareOptionText"><strong data-i18n="share.statsOption">Fasting summary</strong><span class="small" data-i18n="share.statsOptionHelp">Completed fasts, average, total fasting and current streak.</span></span></label>
+      <label class="shareOption" id="shareConsistencyOption"><input id="shareConsistencyToggle" type="checkbox" checked><span class="shareOptionText"><strong data-i18n="share.consistencyOption">Consistency</strong><span class="small" data-i18n="share.consistencyOptionHelp">XP and current level when gamification is enabled.</span></span></label>
+      <label class="shareOption"><input id="shareWeightToggle" type="checkbox"><span class="shareOptionText"><strong data-i18n="share.weightOption">Weight progress</strong><span class="small" data-i18n="share.weightOptionHelp">Latest weight and change since your first entry. Off by default for privacy.</span></span></label>
+    </div>
+    <div class="small"><strong data-i18n="share.preview">Preview</strong></div>
+    <div class="sharePreview" id="sharePreview" aria-live="polite"></div>
+    <div class="shareInstallLink" id="shareInstallLink"></div>
+    <div class="shareStatus" id="shareStatus" aria-live="polite"></div>
+    <div class="modalActions wrap">
+      <button id="shareCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button>
+      <button id="shareCopyBtn" class="secondary" type="button" data-i18n="share.copy">Copy</button>
+      <button id="shareNativeBtn" class="primary" type="button" data-i18n="share.share">Share</button>
+    </div>
+  </div>
+</div>
+
 <div class="modalBackdrop" id="stopFastModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="stopFastModalTitle">
     <h2 id="stopFastModalTitle" data-i18n="fasting.stopModalTitle">Stop fasting?</h2>
@@ -927,20 +1062,22 @@ layout: null
   const BACKUP_META_KEY = 'fastingTracker.backupMeta';
   const APP_META_KEY = 'fastingTracker.appMeta';
   const INSTALL_NOTICE_KEY = 'fastingTracker.installStorageNoticeDismissed';
+  const SETUP_GUIDE_KEY = 'fastingTracker.setupGuide';
+  const SETUP_GUIDE_VERSION = 1;
   const LONG_FAST_NOTICE_KEY = 'fastingTracker.longFastNoticeSeen';
   const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';
   const DATA_VERSION = 1;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 8;
+  const I18N_SOURCE_REVISION = 10;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.8';
+  const APP_VERSION = '1.8.10';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -965,6 +1102,9 @@ layout: null
   // persisted data. Legacy-number normalization may ask currentLocale() ->
   // uiLanguage() during load(), so these bindings must never be in the TDZ.
   const initialUrlParams = new URLSearchParams(location.search);
+  let initialAppMeta = {};
+  try { initialAppMeta = JSON.parse(localStorage.getItem(APP_META_KEY) || '{}') || {}; } catch { initialAppMeta = {}; }
+  const hadKnownInstallAtBoot = typeof initialAppMeta.lastAppVersion === 'string' && initialAppMeta.lastAppVersion.length > 0;
   let emergencyBoot = initialUrlParams.get('ft_recovery') === '1';
   let urlLangOverride = SUPPORTED_LANGUAGES.includes(initialUrlParams.get('lang')) ? initialUrlParams.get('lang') : null;
   let urlIconOverride = ['plate','moon','hourglass','timer'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
@@ -984,6 +1124,10 @@ layout: null
   let primaryPersistTicket = 0;
   let primaryPersistPromise = Promise.resolve();
   let appDbPromise = null;
+  let setupGuideStep = 1;
+  let setupStorageResult = null;
+  let setupWeightUnitChoice = 'kg';
+  let setupGuideAutoOpened = false;
   const el = id => document.getElementById(id);
   let uiReady = false;
   const versionTransitionSnapshotOK = await initializePersistentStorage();
@@ -1144,6 +1288,8 @@ layout: null
     if (goalUnit) goalUnit.textContent = t('unit.h');
     document.querySelectorAll('.chip[data-goal]').forEach(chip => { chip.textContent = `${formatNumber(Number(chip.dataset.goal))}${t('unit.h')}`; });
     document.querySelectorAll('.chip[data-active-goal]').forEach(chip => { chip.textContent = `${formatNumber(Number(chip.dataset.activeGoal))}${t('unit.h')}`; });
+    document.querySelectorAll('.chip[data-setup-goal]').forEach(chip => { chip.textContent = `${formatNumber(Number(chip.dataset.setupGoal))}${t('unit.h')}`; });
+    if (!el('setupModal')?.hidden) renderSetupGuide();
   }
 
   function effectiveAppearance() {
@@ -4208,6 +4354,150 @@ layout: null
     return u.toString();
   }
 
+  function shareInstallUrl() {
+    return selectedIconInstallUrl();
+  }
+
+  function latestCompletedFast() {
+    if (!data.records.length) return null;
+    let latest = null;
+    for (const record of data.records) {
+      if (!latest || String(record.end) > String(latest.end)) latest = record;
+    }
+    return latest;
+  }
+
+  function buildShareProgressLines() {
+    const lines = ['Fasting Tracker'];
+    const includeFast = !!el('shareFastToggle')?.checked;
+    const includeStats = !!el('shareStatsToggle')?.checked;
+    const includeConsistency = !!el('shareConsistencyToggle')?.checked && data.gamificationEnabled !== false;
+    const includeWeight = !!el('shareWeightToggle')?.checked;
+
+    if (includeFast) {
+      if (data.activeStart) {
+        const start = validDate(data.activeStart);
+        const elapsed = start ? Math.max(0, Date.now() - start.getTime()) : 0;
+        const target = sanitizeGoal(data.activeGoalHours ?? data.goalHours, data.goalHours);
+        lines.push(t('share.activeFastLine', {duration:compactDuration(elapsed), target:`${formatNumber(target,0,3)}${t('unit.h')}`}));
+      } else {
+        const latest = latestCompletedFast();
+        if (latest) {
+          const duration = recordMs(latest);
+          const target = sanitizeGoal(latest.goalHours, data.goalHours);
+          lines.push(t('share.latestFastLine', {
+            duration:compactDuration(duration),
+            target:`${formatNumber(target,0,3)}${t('unit.h')}`,
+            result:t(recordMetGoal(latest) ? 'share.targetReached' : 'share.targetNotReached'),
+            date:localDateLabel(latest.end, latest.timeZone)
+          }));
+        }
+      }
+    }
+
+    if (includeStats && data.records.length) {
+      const summary = statsSummary();
+      lines.push(t('share.statsLine', {
+        count:formatNumber(summary.count),
+        average:compactDuration(summary.average),
+        total:compactDuration(summary.total),
+        streak:formatNumber(summary.streak)
+      }));
+    }
+
+    if (includeConsistency) {
+      const {xp, level} = gamificationSummaryModel();
+      lines.push(t('share.consistencyLine', {xp:formatNumber(xp), level:formatNumber(level.number), name:t(level.nameKey)}));
+    }
+
+    if (includeWeight && data.weights.length) {
+      const asc = sortedWeightsAsc();
+      const first = asc[0], latest = asc[asc.length - 1];
+      lines.push(t('share.weightLine', {
+        weight:formatWeight(latest.kg),
+        change:formatWeight(latest.kg - first.kg, data.weightUnit, true),
+        date:localDateLabel(latest.when, latest.timeZone)
+      }));
+    }
+
+    if (lines.length === 1) lines.push(t('share.appOnlyLine'));
+    return lines;
+  }
+
+  function buildShareProgressPayload() {
+    const url = shareInstallUrl();
+    const body = buildShareProgressLines().join('\n');
+    return {
+      title: t('share.shareTitle'),
+      body,
+      copyText: `${body}\n\n${t('share.installLine', {url})}`,
+      url
+    };
+  }
+
+  function renderSharePreview() {
+    const preview = el('sharePreview');
+    const link = el('shareInstallLink');
+    if (!preview || !link) return;
+    const lines = buildShareProgressLines();
+    preview.textContent = lines.join('\n');
+    link.textContent = t('share.installIncluded', {url:shareInstallUrl()});
+    const consistencyOption = el('shareConsistencyOption');
+    if (consistencyOption) consistencyOption.hidden = data.gamificationEnabled === false;
+  }
+
+  function openShareModal() {
+    el('shareStatus').textContent = '';
+    const consistencyToggle = el('shareConsistencyToggle');
+    if (consistencyToggle) consistencyToggle.checked = data.gamificationEnabled !== false;
+    renderSharePreview();
+    showModal('shareModal', 'shareNativeBtn');
+  }
+
+  function closeShareModal() {
+    hideModal('shareModal');
+  }
+
+  async function copyShareProgress() {
+    const status = el('shareStatus');
+    const payload = buildShareProgressPayload();
+    let copied = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(payload.copyText);
+        copied = true;
+      }
+    } catch {}
+    if (!copied) {
+      try {
+        const area = document.createElement('textarea');
+        area.value = payload.copyText;
+        area.setAttribute('readonly','');
+        area.style.position = 'fixed'; area.style.opacity = '0';
+        document.body.append(area); area.select();
+        copied = !!document.execCommand?.('copy'); area.remove();
+      } catch {}
+    }
+    if (status) status.textContent = copied ? t('share.copied') : t('share.copyFailed');
+    return copied;
+  }
+
+  async function shareProgress() {
+    const status = el('shareStatus');
+    const payload = buildShareProgressPayload();
+    if (navigator.share) {
+      try {
+        await navigator.share({title:payload.title, text:payload.body, url:payload.url});
+        if (status) status.textContent = t('share.shared');
+        return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+    const copied = await copyShareProgress();
+    if (copied && status) status.textContent = t('share.shareUnavailableCopied');
+  }
+
   function refreshReinstallLink() {
     const box = el('reinstallLinkInput');
     if (box) box.value = selectedIconInstallUrl();
@@ -4744,6 +5034,7 @@ layout: null
       else if (modal.id === 'updateModal') closeUpdateModal();
       else if (modal.id === 'snapshotModal') closeSnapshotModal();
       else if (modal.id === 'stopFastModal') closeStopFastModal();
+      else if (modal.id === 'setupModal') dismissSetupGuide();
       else if (modal.id === 'longFastModal') { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); }
       return;
     }
@@ -4801,6 +5092,7 @@ layout: null
       if (!persistResolvedData(imported)) { e.target.value = ''; return; }
       await flushPrimaryPersistence();
       renderAll();
+      if (!el('setupModal')?.hidden) renderSetupGuide();
       alert(t('import.done'));
     } catch {
       alert(t('import.invalid'));
@@ -4879,7 +5171,35 @@ layout: null
   window.addEventListener('pagehide', () => { flushPrimaryPersistence(); });
 
   el('installStorageDismiss').addEventListener('click', () => { try { localStorage.setItem(INSTALL_NOTICE_KEY, '1'); } catch {} renderInstallStorageNotice(); });
+  el('installStorageSetupBtn').addEventListener('click', () => openSetupGuide());
   el('storageProtectBtn').addEventListener('click', () => refreshStorageProtection({ request: true }));
+  el('setupGuideBtn').addEventListener('click', () => openSetupGuide());
+  el('setupDismissBtn').addEventListener('click', dismissSetupGuide);
+  el('setupBackBtn').addEventListener('click', () => setSetupGuideStep(setupGuideStep - 1));
+  el('setupNextBtn').addEventListener('click', nextSetupGuideStep);
+  el('setupContinueBrowserBtn').addEventListener('click', () => { saveSetupGuideState({awaitStandalone:false}); setSetupGuideStep(2); });
+  el('setupImportExistingBtn').addEventListener('click', () => el('importFile').click());
+  el('setupPreInstallBackupBtn').addEventListener('click', () => exportSetupBackup({preInstall:true}));
+  el('setupProtectBtn').addEventListener('click', () => refreshSetupStorageStatus(true));
+  el('setupStorageImportBtn').addEventListener('click', () => el('importFile').click());
+  el('setupExportBtn').addEventListener('click', () => exportSetupBackup());
+  document.querySelectorAll('#setupIconArea .iconChoice[data-icon-choice]').forEach(btn => btn.addEventListener('click', () => {
+    if (isStandaloneApp()) return;
+    try { const u=new URL(location.href); u.searchParams.set('icon', normalizeIconChoice(btn.dataset.iconChoice)); history.replaceState(null,'',u); } catch {}
+  }));
+  el('setupUnitKgBtn').addEventListener('click', () => { setupWeightUnitChoice='kg'; renderSetupUnitChoice(); });
+  el('setupUnitLbBtn').addEventListener('click', () => { setupWeightUnitChoice='lb'; renderSetupUnitChoice(); });
+  document.querySelectorAll('[data-setup-goal]').forEach(btn => btn.addEventListener('click', () => { const input=el('setupGoalInput'); if (input) input.value=formatNumber(Number(btn.dataset.setupGoal),0,3); }));
+
+  bindResponsiveAction(el('shareProgressBtn'), openShareModal);
+  bindResponsiveAction(el('shareStatsBtn'), openShareModal);
+  el('shareCancelBtn').addEventListener('click', closeShareModal);
+  el('shareCopyBtn').addEventListener('click', copyShareProgress);
+  el('shareNativeBtn').addEventListener('click', shareProgress);
+  el('shareModal').addEventListener('click', e => { if (e.target === el('shareModal')) closeShareModal(); });
+  for (const id of ['shareFastToggle','shareStatsToggle','shareConsistencyToggle','shareWeightToggle']) {
+    el(id).addEventListener('change', () => { el('shareStatus').textContent=''; renderSharePreview(); });
+  }
 
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
   el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;
@@ -4905,6 +5225,7 @@ layout: null
     setInterval(renderBackupStatus, 60 * 60 * 1000);
 
   queueStorageProtectionRefresh();
+  setTimeout(maybeAutoOpenSetupGuide, 180);
 
   function isIOSDevice() {
     return /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -4922,6 +5243,248 @@ layout: null
     box.hidden = !(isIOSDevice() && !isStandaloneApp() && !dismissed);
   }
 
+
+  function isAndroidDevice() {
+    return /Android/i.test(navigator.userAgent || '');
+  }
+
+  function isMobileInstallTarget() {
+    return isIOSDevice() || isAndroidDevice();
+  }
+
+  function loadSetupGuideState() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(SETUP_GUIDE_KEY) || 'null');
+      if (!raw || typeof raw !== 'object' || Number(raw.version) !== SETUP_GUIDE_VERSION) return {version:SETUP_GUIDE_VERSION};
+      return {...raw, version:SETUP_GUIDE_VERSION};
+    } catch { return {version:SETUP_GUIDE_VERSION}; }
+  }
+
+  function saveSetupGuideState(patch = {}) {
+    const state = {...loadSetupGuideState(), ...patch, version:SETUP_GUIDE_VERSION};
+    try { localStorage.setItem(SETUP_GUIDE_KEY, JSON.stringify(state)); } catch {}
+    return state;
+  }
+
+  function setSetupStatus(node, text, kind = '') {
+    if (!node) return;
+    node.textContent = text;
+    node.classList.toggle('good', kind === 'good');
+    node.classList.toggle('warn', kind === 'warn');
+  }
+
+  function setupInstallInstructions() {
+    if (isStandaloneApp()) return t('setup.installDetected');
+    if (isIOSDevice()) return t('setup.installIOS');
+    if (isAndroidDevice()) return t('setup.installAndroid');
+    return t('setup.installDesktop');
+  }
+
+  function renderSetupInstallStep() {
+    const standalone = isStandaloneApp();
+    const mobile = isMobileInstallTarget();
+    const status = el('setupInstallStatus');
+    const extra = el('setupInstallExtra');
+    const iconArea = el('setupIconArea');
+    const continueBrowser = el('setupContinueBrowserBtn');
+    const importExisting = el('setupImportExistingBtn');
+    const preBackup = el('setupPreInstallBackupBtn');
+    const next = el('setupNextBtn');
+    if (iconArea) iconArea.hidden = standalone;
+    if (continueBrowser) continueBrowser.hidden = standalone || !mobile;
+    if (importExisting) importExisting.hidden = !standalone;
+    if (preBackup) preBackup.hidden = standalone || !hasBackupWorthyData();
+    setSetupStatus(status, setupInstallInstructions(), standalone ? 'good' : (mobile ? 'warn' : ''));
+    if (extra) {
+      if (standalone) extra.textContent = t('setup.importHint');
+      else if (mobile && hasBackupWorthyData()) extra.textContent = t('setup.preInstallDataText');
+      else if (mobile) extra.textContent = t('setup.installRequired');
+      else extra.textContent = t('setup.installDesktopExtra');
+    }
+    if (next) next.disabled = !standalone && mobile;
+    applyIconChoice();
+  }
+
+  function renderSetupBackupStatus() {
+    const node = el('setupBackupStatus');
+    const last = validDate(backupMeta.lastExternalBackupAt);
+    if (last) setSetupStatus(node, t('setup.backupDone', {date:localDateTimeLabel(last)}), 'good');
+    else setSetupStatus(node, t('setup.backupNeeded'), 'warn');
+  }
+
+  function renderSetupUnitChoice() {
+    const kg = el('setupUnitKgBtn'), lb = el('setupUnitLbBtn');
+    if (!kg || !lb) return;
+    const isKg = setupWeightUnitChoice === 'kg';
+    kg.classList.toggle('active', isKg); lb.classList.toggle('active', !isKg);
+    kg.setAttribute('aria-pressed', String(isKg)); lb.setAttribute('aria-pressed', String(!isKg));
+  }
+
+  function initializeSetupBasicsControls() {
+    const input = el('setupGoalInput'), toggle = el('setupGameToggle'), error = el('setupBasicsError');
+    if (input) input.value = formatNumber(data.goalHours, 0, 3);
+    setupWeightUnitChoice = normalizeWeightUnit(data.weightUnit);
+    renderSetupUnitChoice();
+    if (toggle) toggle.checked = data.gamificationEnabled !== false;
+    if (error) { error.hidden = true; error.textContent = ''; }
+  }
+
+  function setupReadyRow(label, value, kind = '') {
+    const row = document.createElement('div'); row.className = 'setupChecklistRow';
+    const left = document.createElement('span'); left.textContent = label;
+    const right = document.createElement('strong'); right.textContent = value;
+    if (kind === 'good') right.style.color = 'var(--accent)';
+    row.append(left, right); return row;
+  }
+
+  function renderSetupReadySummary() {
+    const box = el('setupReadySummary'); if (!box) return;
+    box.innerHTML = '';
+    box.append(setupReadyRow(t('setup.readyHome'), isStandaloneApp() ? t('setup.statusDone') : t('setup.statusRecommended'), isStandaloneApp() ? 'good' : ''));
+    let storageText = t('setup.statusUnknown');
+    if (setupStorageResult) {
+      if (!setupStorageResult.supported || setupStorageResult.error) storageText = t('setup.statusUnavailable');
+      else storageText = setupStorageResult.persistent ? t('setup.statusDone') : t('setup.statusNotProtected');
+    }
+    box.append(setupReadyRow(t('setup.readyStorage'), storageText, setupStorageResult?.persistent ? 'good' : ''));
+    const last = validDate(backupMeta.lastExternalBackupAt);
+    box.append(setupReadyRow(t('setup.readyBackup'), last ? t('setup.statusDone') : t('setup.statusNotDone'), last ? 'good' : ''));
+    box.append(setupReadyRow(t('setup.readyDefaults'), `${formatNumber(data.goalHours,0,3)}${t('unit.h')} • ${data.weightUnit}`));
+  }
+
+  function renderSetupGuide() {
+    const total = 5;
+    setupGuideStep = Math.max(1, Math.min(total, Number(setupGuideStep) || 1));
+    document.querySelectorAll('#setupModal [data-setup-step]').forEach(node => { node.hidden = Number(node.dataset.setupStep) !== setupGuideStep; });
+    const progress = el('setupProgress'); if (progress) progress.textContent = t('setup.stepProgress', {step:setupGuideStep,total});
+    const back = el('setupBackBtn'), next = el('setupNextBtn');
+    if (back) back.hidden = setupGuideStep === 1;
+    if (next) { next.textContent = t(setupGuideStep === total ? 'setup.finish' : 'setup.continue'); next.disabled = false; }
+    if (setupGuideStep === 1) renderSetupInstallStep();
+    else if (setupGuideStep === 2) refreshSetupStorageStatus(false);
+    else if (setupGuideStep === 3) renderSetupBackupStatus();
+    else if (setupGuideStep === 4) initializeSetupBasicsControls();
+    else if (setupGuideStep === 5) { renderSetupReadySummary(); if (!setupStorageResult) refreshSetupStorageStatus(false); }
+  }
+
+  function setSetupGuideStep(step) {
+    setupGuideStep = Math.max(1, Math.min(5, Number(step) || 1));
+    saveSetupGuideState({started:true, dismissed:false, currentStep:setupGuideStep, awaitStandalone:setupGuideStep === 1 && isMobileInstallTarget() && !isStandaloneApp()});
+    renderSetupGuide();
+  }
+
+  function openSetupGuide({ automatic = false } = {}) {
+    if (recoveryMode || emergencyBoot) return;
+    const state = loadSetupGuideState();
+    if (automatic && (state.completed || state.dismissed)) return;
+    let step = Number(state.currentStep) || 1;
+    if (automatic && isStandaloneApp() && (state.awaitStandalone || !hadKnownInstallAtBoot)) step = Math.max(2, step);
+    if (!automatic && state.completed) step = 1;
+    setupGuideStep = Math.max(1, Math.min(5, step));
+    setupWeightUnitChoice = normalizeWeightUnit(data.weightUnit);
+    saveSetupGuideState({started:true, dismissed:false, currentStep:setupGuideStep, awaitStandalone:setupGuideStep === 1 && isMobileInstallTarget() && !isStandaloneApp()});
+    renderSetupGuide();
+    showModal('setupModal', setupGuideStep === 1 ? 'setupDismissBtn' : 'setupNextBtn');
+  }
+
+  function dismissSetupGuide() {
+    saveSetupGuideState({started:false, dismissed:true, currentStep:setupGuideStep, awaitStandalone:false, dismissedAt:new Date().toISOString()});
+    hideModal('setupModal');
+  }
+
+  function completeSetupGuide() {
+    saveSetupGuideState({started:false, dismissed:false, completed:true, currentStep:5, awaitStandalone:false, completedAt:new Date().toISOString()});
+    hideModal('setupModal');
+    activateScreen('fasting');
+    try { window.scrollTo({top:0, behavior:'auto'}); } catch { window.scrollTo(0,0); }
+  }
+
+  async function refreshSetupStorageStatus(request = false) {
+    const node = el('setupStorageStatus'), usage = el('setupStorageUsage'), btn = el('setupProtectBtn');
+    if (!node || !usage || !btn) return null;
+    if (!request) setSetupStatus(node, t('storage.checking'));
+    btn.disabled = !!request;
+    const result = await refreshStorageProtection({request});
+    setupStorageResult = result;
+    if (!result.supported || result.error) {
+      setSetupStatus(node, t('setup.storageUnavailable'), 'warn');
+      btn.hidden = true;
+    } else if (result.persistent) {
+      setSetupStatus(node, t('setup.storageProtected'), 'good');
+      btn.hidden = true;
+    } else {
+      setSetupStatus(node, request ? t('setup.storageDenied') : t('setup.storageBestEffort'), 'warn');
+      btn.hidden = !result.requestSupported;
+      btn.disabled = false;
+    }
+    usage.textContent = Number.isFinite(result.used) && Number.isFinite(result.quota)
+      ? t('storage.usage', {used:formatBytes(result.used), quota:formatBytes(result.quota)})
+      : t('storage.usageUnknown');
+    if (request) saveSetupGuideState({storageAttempted:true, storageProtected:!!result.persistent});
+    if (setupGuideStep === 5) renderSetupReadySummary();
+    return result;
+  }
+
+  async function exportSetupBackup({ preInstall = false } = {}) {
+    const btn = el(preInstall ? 'setupPreInstallBackupBtn' : 'setupExportBtn');
+    if (btn) btn.disabled = true;
+    try {
+      const ok = await exportBackup();
+      if (ok) {
+        saveSetupGuideState(preInstall ? {preInstallBackedUpAt:new Date().toISOString()} : {firstBackupAt:new Date().toISOString()});
+        if (preInstall) {
+          const extra = el('setupInstallExtra'); if (extra) extra.textContent = t('setup.preInstallBackedUp');
+        } else renderSetupBackupStatus();
+      }
+      return ok;
+    } finally { if (btn) btn.disabled = false; }
+  }
+
+  function applySetupBasics() {
+    const input = el('setupGoalInput'), error = el('setupBasicsError');
+    const parsed = parseLocalizedNumber(input?.value);
+    if (!Number.isFinite(parsed) || parsed <= 0 || parsed > MAX_SAFE_GOAL_HOURS) {
+      if (error) { error.textContent = t('setup.goalError'); error.hidden = false; }
+      input?.focus(); return false;
+    }
+    let longNoticeSeen = false;
+    try { longNoticeSeen = localStorage.getItem(LONG_FAST_NOTICE_KEY) === '1'; } catch {}
+    if (parsed >= LONG_FAST_NOTICE_HOURS && parsed !== data.goalHours && !longNoticeSeen) {
+      if (error) { error.textContent = t('setup.goalLong'); error.hidden = false; }
+      input?.focus(); return false;
+    }
+    if (error) { error.hidden = true; error.textContent = ''; }
+    data.goalHours = parsed;
+    data.weightUnit = normalizeWeightUnit(setupWeightUnitChoice);
+    data.gamificationEnabled = el('setupGameToggle')?.checked !== false;
+    if (!save({invalidateDerived:false, dirtyViews:['fasting','weight','stats','settings']})) return false;
+    goalHours.value = formatNumber(data.goalHours,0,3);
+    renderGamificationSummary();
+    return true;
+  }
+
+  function nextSetupGuideStep() {
+    if (setupGuideStep === 1) {
+      if (isMobileInstallTarget() && !isStandaloneApp()) return;
+      setSetupGuideStep(2); return;
+    }
+    if (setupGuideStep === 2) { setSetupGuideStep(3); return; }
+    if (setupGuideStep === 3) { setSetupGuideStep(4); return; }
+    if (setupGuideStep === 4) { if (applySetupBasics()) setSetupGuideStep(5); return; }
+    completeSetupGuide();
+  }
+
+  function maybeAutoOpenSetupGuide() {
+    if (setupGuideAutoOpened || recoveryMode || emergencyBoot) return;
+    const state = loadSetupGuideState();
+    const freshEmptyInstall = !hadKnownInstallAtBoot && !hasBackupWorthyData();
+    const shouldResume = state.started && !state.completed && !state.dismissed;
+    const shouldResumeAfterInstall = state.awaitStandalone && isStandaloneApp() && !state.completed && !state.dismissed;
+    if (!freshEmptyInstall && !shouldResume && !shouldResumeAfterInstall) return;
+    setupGuideAutoOpened = true;
+    openSetupGuide({automatic:true});
+  }
+
   function formatBytes(bytes) {
     const n = Number(bytes);
     if (!Number.isFinite(n) || n < 0) return '—';
@@ -4931,23 +5494,47 @@ layout: null
     return `${formatNumber(n / (1024 ** 3), 1, 1)} GB`;
   }
 
-  async function refreshStorageProtection({ request = false } = {}) {
-    const status = el('storageProtectionStatus'), usage = el('storageUsageLabel'), btn = el('storageProtectBtn');
-    if (!status || !usage || !btn) return;
-    if (!navigator.storage || typeof navigator.storage.persisted !== 'function') {
-      status.textContent = t('storage.unavailable'); usage.textContent = t('storage.usageUnknown'); btn.hidden = true; return;
-    }
+  async function queryStorageProtection({ request = false } = {}) {
+    const result = { supported:false, persistent:null, requestSupported:false, attempted:!!request, used:null, quota:null, error:false };
+    if (!navigator.storage || typeof navigator.storage.persisted !== 'function') return result;
+    result.supported = true;
+    result.requestSupported = typeof navigator.storage.persist === 'function';
     try {
       let persistent = await navigator.storage.persisted();
-      if (request && !persistent && typeof navigator.storage.persist === 'function') persistent = await navigator.storage.persist();
-      status.textContent = persistent ? t('storage.protected') : t('storage.bestEffort');
-      btn.hidden = persistent || typeof navigator.storage.persist !== 'function';
-      if (request && !persistent) status.textContent = t('storage.requestDenied');
+      if (request && !persistent && result.requestSupported) persistent = await navigator.storage.persist();
+      result.persistent = !!persistent;
       if (typeof navigator.storage.estimate === 'function') {
-        const est = await navigator.storage.estimate();
-        usage.textContent = Number.isFinite(est.usage) && Number.isFinite(est.quota) ? t('storage.usage', {used:formatBytes(est.usage), quota:formatBytes(est.quota)}) : t('storage.usageUnknown');
-      } else usage.textContent = t('storage.usageUnknown');
-    } catch { status.textContent = t('storage.unavailable'); usage.textContent = t('storage.usageUnknown'); btn.hidden = true; }
+        try {
+          const est = await navigator.storage.estimate();
+          if (Number.isFinite(est?.usage)) result.used = est.usage;
+          if (Number.isFinite(est?.quota)) result.quota = est.quota;
+        } catch {}
+      }
+      return result;
+    } catch {
+      result.error = true;
+      result.persistent = null;
+      return result;
+    }
+  }
+
+  async function refreshStorageProtection({ request = false } = {}) {
+    const result = await queryStorageProtection({ request });
+    const status = el('storageProtectionStatus'), usage = el('storageUsageLabel'), btn = el('storageProtectBtn');
+    if (status && usage && btn) {
+      if (!result.supported || result.error) {
+        status.textContent = t('storage.unavailable');
+        usage.textContent = t('storage.usageUnknown');
+        btn.hidden = true;
+      } else {
+        status.textContent = result.persistent ? t('storage.protected') : (request ? t('storage.requestDenied') : t('storage.bestEffort'));
+        btn.hidden = !!result.persistent || !result.requestSupported;
+        usage.textContent = Number.isFinite(result.used) && Number.isFinite(result.quota)
+          ? t('storage.usage', {used:formatBytes(result.used), quota:formatBytes(result.quota)})
+          : t('storage.usageUnknown');
+      }
+    }
+    return result;
   }
 
   async function repairEmergencyBoot() {

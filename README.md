@@ -116,6 +116,14 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+## v1.8.10 progress sharing
+
+Fasting and Statistics now expose a privacy-aware Share progress action. The user can include the current/latest fast, overall fasting summary, consistency/XP, and optionally weight progress. Weight is off by default. Native Web Share is used when available, with a copy fallback, and the current installation link is always included.
+
+## v1.8.9 optional first-run setup guide
+
+New installations can use an optional guided setup. On mobile it first explains how to add Fasting Tracker to the Home Screen (including choosing the install-time icon and safeguarding any browser-only records), then resumes in the installed app, requests persistent storage when the browser supports it, walks through the first manual external JSON backup, offers basic fasting/weight/gamification defaults, and finishes with a storage/backup readiness summary. The guide can be dismissed and reopened at any time from Settings.
+
 ## v1.8.8 daily and labeled weight timeline
 
 The Weight chart restores a Daily mode that plots every individual measurement (including multiple measurements on the same day) while keeping the full history horizontally scrollable and opening at the newest values. Daily is the default and fits roughly the latest 30 measurements in the visible chart on a phone. Week, Month, Quarter, 6 months and Year continue to show one average point per calendar period. Selecting any point shows the weight plus its exact date/time or explicit calendar period, both beside the point and in the detail line below the graph.
