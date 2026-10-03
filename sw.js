@@ -1,7 +1,7 @@
 // Fasting Tracker update protocol v1.
-// IMPORTANT: Keep this service worker unchanged for ordinary app/content releases.
-// Ordinary releases are described by version.json and staged into a versioned cache.
-// Change sw.js only when the update protocol itself must change.
+// The release/cache protocol below remains stable across ordinary content releases.
+// Non-protocol service-worker features (for example notification-click routing) may
+// be extended without changing UPDATE_PROTOCOL_VERSION.
 const UPDATE_PROTOCOL_VERSION = 1;
 const SCOPE_URL = new URL(self.registration.scope);
 function stableScopeToken(value) {
@@ -174,6 +174,25 @@ async function ensureInitialRelease() {
 
 self.addEventListener('install', event => { event.waitUntil(ensureInitialRelease()); });
 self.addEventListener('activate', event => { event.waitUntil(self.clients.claim()); });
+
+// Device notifications are created by the foreground app so no push server is
+// required. When a notification is tapped, focus the installed app if it is
+// already open; otherwise open the app at the relevant screen.
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const screen = event.notification?.data?.screen || 'fasting';
+  const target = new URL(`./#${screen}`, self.registration.scope).href;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({type:'window', includeUncontrolled:true});
+    for (const client of windows) {
+      if (!client.url.startsWith(self.registration.scope)) continue;
+      try { await client.focus(); } catch {}
+      try { client.postMessage({type:'OPEN_SCREEN', screen}); } catch {}
+      return;
+    }
+    if (self.clients.openWindow) await self.clients.openWindow(target);
+  })());
+});
 
 self.addEventListener('message', event => {
   if (!event.data || event.data.type !== 'REFRESH_RELEASE') return;

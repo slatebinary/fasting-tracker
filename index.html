@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.13" />
+  <meta name="ft-app-version" content="1.8.18" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -131,6 +131,9 @@ layout: null
     .goal { color: var(--muted); margin-top: 8px; }
     .progressDetail { min-height: 20px; color: var(--muted); font-size: 13px; margin: 4px 0 8px; }
     .targetMoment { min-height: 18px; color: var(--muted); font-size: 13px; margin: 0 0 16px; line-height: 1.35; }
+    .nextFastCard { border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); }
+    .nextFastCountdownValue { font-size: clamp(28px, 8vw, 42px); font-weight: 760; letter-spacing: .01em; margin: 8px 0 4px; font-variant-numeric: tabular-nums; }
+    .cycleHelp { margin-top: 8px; line-height: 1.4; }
     .progressDetail.good { color: var(--good); }
     .progressTrack { height: 12px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 14px 0 8px; }
     .progressFill { height: 100%; background: var(--accent); width: 0; border-radius: inherit; transition: width .25s ease; }
@@ -441,6 +444,14 @@ layout: null
       <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
     </div>
+    <div class="card nextFastCard" id="nextFastCard" hidden>
+      <div class="sectionHeader"><h2 data-i18n="fasting.nextTitle">24-hour cycle</h2><span class="levelPill" data-i18n="fasting.nextCycleBadge">Optional timing</span></div>
+      <div class="small" data-i18n="fasting.nextIn">Time remaining in this cycle</div>
+      <div class="nextFastCountdownValue" id="nextFastCountdown" aria-live="polite">00:00:00</div>
+      <div class="small" id="nextFastAt"></div>
+      <div class="small" id="nextFastBasis" style="margin-top:6px"></div>
+      <div class="small" style="margin-top:6px" data-i18n="fasting.nextHelp">Optional arithmetic/timing reference only. The remainder completes a 24-hour cycle; it is not a recommendation for how long to eat or when to start another fast.</div>
+    </div>
     <div class="card">
       <h2 data-i18n="fasting.today">Today</h2>
       <div class="row"><div data-i18n="fasting.elapsedToday">Fasting elapsed today</div><div class="duration" id="todayTotal">0h 0m</div></div>
@@ -507,6 +518,11 @@ layout: null
   <section id="history" class="screen">
     <div class="sectionHeader"><h1 data-i18n="nav.history">History</h1><button id="addEntryBtn" class="secondary" data-i18n="history.add">Add entry</button></div>
     <div class="card" id="historyList"></div>
+    <div class="card" id="deletedFastsCard" style="margin-top:14px" hidden>
+      <div class="sectionHeader"><h2 data-i18n="history.deletedTitle">Recently deleted</h2><span class="small" id="deletedFastsCount"></span></div>
+      <div class="small" data-i18n="history.deletedHelp">Deleted fasts are excluded from History, Statistics and XP, but their audit records stay in JSON backups until you restore or permanently delete them.</div>
+      <div id="deletedFastsList" style="margin-top:10px"></div>
+    </div>
   </section>
 
   <section id="weight" class="screen">
@@ -643,7 +659,7 @@ layout: null
       </div>
       <div class="small" id="storageUsageLabel" data-i18n="storage.usageUnknown">Storage usage information is unavailable.</div>
       <div class="row" style="margin-top:12px">
-        <div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup and basic preferences.</div></div>
+        <div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup, basic preferences and notifications.</div></div>
         <button id="setupGuideBtn" class="secondary" data-i18n="setup.open">Setup guide</button>
       </div>
     </div>
@@ -679,8 +695,11 @@ layout: null
         <div class="goalInputWrap"><input id="goalHours" class="numericInput" type="text" inputmode="decimal" autocomplete="off" value="16" aria-label="Target fasting duration" data-i18n-aria="settings.goal"> <span id="goalUnit">h</span></div>
       </div>
       <div class="presetWrap" aria-label="Quick fasting targets" data-i18n-aria="settings.goal">
+        <button class="chip" data-goal="12">12h</button>
+        <button class="chip" data-goal="14">14h</button>
         <button class="chip" data-goal="16">16h</button>
         <button class="chip" data-goal="18">18h</button>
+        <button class="chip" data-goal="20">20h</button>
         <button class="chip" data-goal="22">22h</button>
         <button class="chip" data-goal="23">23h</button>
         <button class="chip" data-goal="24">24h</button>
@@ -690,10 +709,47 @@ layout: null
         <button class="chip" data-goal="96">96h</button>
         <button class="chip" data-goal="120">120h</button>
       </div>
+      <div class="small cycleHelp" id="goalCycleHelp"></div>
       <div class="row" style="margin-top:10px">
         <div><strong id="gameToggleLabel" data-i18n="game.consistencyAchievements">Consistency &amp; achievements</strong><div class="small" id="gameToggleHelp" data-i18n="game.settingsHelp">Optional gamification. Rewards meeting your own target and regular weight logging—not longer fasting.</div></div>
         <label class="toggleWrap"><input id="gamificationToggle" type="checkbox" checked aria-labelledby="gameToggleLabel" aria-describedby="gameToggleHelp"><span aria-hidden="true" data-i18n="common.on">On</span></label>
       </div>
+    </div>
+    <div class="card" id="notificationsCard">
+      <div class="sectionHeader"><h2 data-i18n="notifications.title">Notifications</h2><span class="levelPill" id="notificationPermissionBadge">Not enabled</span></div>
+      <div class="small" data-i18n="notifications.intro">Optional device notifications. Fasting Tracker never asks for notification permission until you turn them on.</div>
+      <div class="row">
+        <div><strong id="notificationMasterLabel" data-i18n="notifications.master">Device notifications</strong><div class="small" id="notificationMasterHelp" data-i18n="notifications.masterHelp">Master switch for the notification types selected below.</div></div>
+        <label class="toggleWrap"><input id="notificationMasterToggle" type="checkbox" aria-labelledby="notificationMasterLabel" aria-describedby="notificationMasterHelp"><span aria-hidden="true" data-i18n="notifications.enable">Enable</span></label>
+      </div>
+      <div class="row">
+        <div><strong id="notificationTargetLabel" data-i18n="notifications.targetReached">Target reached</strong><div class="small" data-i18n="notifications.targetReachedHelp">Notify once when the active fast reaches its selected target. It does not encourage continuing longer.</div></div>
+        <label class="toggleWrap"><input id="notificationTargetToggle" type="checkbox" aria-labelledby="notificationTargetLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
+      </div>
+      <div class="row">
+        <div><strong id="notificationBackupLabel" data-i18n="notifications.backupDue">Backup reminder</strong><div class="small" data-i18n="notifications.backupDueHelp">Notify once when the 7-day external JSON backup reminder becomes due.</div></div>
+        <label class="toggleWrap"><input id="notificationBackupToggle" type="checkbox" aria-labelledby="notificationBackupLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
+      </div>
+      <div class="row">
+        <div><strong id="notificationSafetyLabel" data-i18n="notifications.longFastSafety">Prolonged-fast safety reminder</strong><div class="small" data-i18n="notifications.longFastSafetyHelp">Notify once when an active fast reaches 24 hours, using neutral safety wording.</div></div>
+        <label class="toggleWrap"><input id="notificationSafetyToggle" type="checkbox" aria-labelledby="notificationSafetyLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
+      </div>
+      <div class="row">
+        <div><strong id="notificationWeighLabel" data-i18n="notifications.weighIn">Weigh-in reminder</strong><div class="small" data-i18n="notifications.weighInHelp">Optional reminder after the selected interval has passed since the latest weight entry.</div></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><select id="notificationWeighCadence" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><option value="daily" data-i18n="notifications.daily">Daily</option><option value="weekly" data-i18n="notifications.weekly">Weekly</option></select><label class="toggleWrap"><input id="notificationWeighToggle" type="checkbox" aria-labelledby="notificationWeighLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
+      </div>
+      <div class="row">
+        <div><strong id="notificationCycleLabel" data-i18n="notifications.cycleComplete">24-hour-cycle remainder completed</strong><div class="small" data-i18n="notifications.cycleCompleteHelp">Optional neutral timing notice when the mathematical remainder after a sub-24-hour fast reaches zero.</div></div>
+        <label class="toggleWrap"><input id="notificationCycleToggle" type="checkbox" aria-labelledby="notificationCycleLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
+      </div>
+      <div class="row">
+        <div><strong data-i18n="notifications.statusTitle">Device permission</strong><div class="small" id="notificationStatusText" aria-live="polite"></div></div>
+        <button type="button" id="notificationTestBtn" class="secondary" data-i18n="notifications.test">Send test</button>
+      </div>
+      <div class="small" data-i18n="notifications.deliveryLimit">Privacy-first limitation: this app has no push server. Notifications are checked while the app is running and when it is reopened; a fully closed or suspended PWA may not deliver them at the exact due time.</div>
+      <div class="small" style="margin-top:6px" data-i18n="notifications.lockScreenPrivacy">Depending on your device settings, notification text may appear on the lock screen. Use the device's notification settings if you prefer to hide previews.</div>
+    </div>
+    <div class="card">
       <div class="row" style="margin-top:10px">
         <div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div></div>
         <button id="exportBtn" class="secondary" data-i18n="common.export">Export</button>
@@ -716,7 +772,7 @@ layout: null
         <input id="importFile" type="file" accept="application/json,.json" hidden>
       </div>
       <div class="row">
-        <div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting and weight history on this device</div></div>
+        <div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting, deleted-fast audit history and weight history on this device</div></div>
         <button id="resetBtn" class="dangerText" data-i18n="common.delete">Delete</button>
       </div>
     </div>
@@ -780,7 +836,7 @@ layout: null
 
 <div class="modalBackdrop" id="setupModal" hidden>
   <div class="modalCard setupModalCard" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
-    <div class="setupTopRow"><div class="setupProgress" id="setupProgress">Step 1 of 5</div><button id="setupDismissBtn" type="button" class="secondary" data-i18n="setup.notNow">Not now</button></div>
+    <div class="setupTopRow"><div class="setupProgress" id="setupProgress">Step 1 of 6</div><button id="setupDismissBtn" type="button" class="secondary" data-i18n="setup.notNow">Not now</button></div>
     <h2 id="setupTitle" data-i18n="setup.title">Recommended first setup</h2>
 
     <div class="setupStep" id="setupStepInstall" data-setup-step="1">
@@ -830,7 +886,7 @@ layout: null
           <label for="setupGoalInput" data-i18n="setup.goal">Default fasting target</label>
           <input id="setupGoalInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Default fasting target" data-i18n-aria="setup.goal">
           <div class="presetWrap" style="margin-top:8px">
-            <button type="button" class="chip" data-setup-goal="16">16h</button><button type="button" class="chip" data-setup-goal="18">18h</button><button type="button" class="chip" data-setup-goal="22">22h</button><button type="button" class="chip" data-setup-goal="23">23h</button><button type="button" class="chip" data-setup-goal="24">24h</button>
+            <button type="button" class="chip" data-setup-goal="12">12h</button><button type="button" class="chip" data-setup-goal="14">14h</button><button type="button" class="chip" data-setup-goal="16">16h</button><button type="button" class="chip" data-setup-goal="18">18h</button><button type="button" class="chip" data-setup-goal="20">20h</button><button type="button" class="chip" data-setup-goal="22">22h</button><button type="button" class="chip" data-setup-goal="23">23h</button><button type="button" class="chip" data-setup-goal="24">24h</button>
           </div>
         </div>
         <div>
@@ -842,8 +898,26 @@ layout: null
       </div>
     </div>
 
-    <div class="setupStep" id="setupStepReady" data-setup-step="5" hidden>
-      <h3 data-i18n="setup.readyTitle">5. Ready to track</h3>
+    <div class="setupStep" id="setupStepNotifications" data-setup-step="5" hidden>
+      <h3 data-i18n="setup.notificationsTitle">5. Choose notifications</h3>
+      <div class="setupStepText" data-i18n="setup.notificationsIntro">Optional alerts can tell you when your fasting target is reached, remind you about backups, and provide selected safety or tracking reminders. Permission is requested only after you press Enable notifications.</div>
+      <div class="setupBasicsGrid" style="margin-top:12px">
+        <label class="setupInlineToggle"><input id="setupNotificationTargetToggle" type="checkbox"><span data-i18n="notifications.targetReached">Target reached</span></label>
+        <label class="setupInlineToggle"><input id="setupNotificationBackupToggle" type="checkbox"><span data-i18n="notifications.backupDue">Backup reminder</span></label>
+        <label class="setupInlineToggle"><input id="setupNotificationSafetyToggle" type="checkbox"><span data-i18n="notifications.longFastSafety">Prolonged-fast safety reminder</span></label>
+        <div class="row" style="padding:0;border:0;align-items:center">
+          <label class="setupInlineToggle" style="margin:0"><input id="setupNotificationWeighToggle" type="checkbox"><span data-i18n="notifications.weighIn">Weigh-in reminder</span></label>
+          <select id="setupNotificationWeighCadence" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><option value="daily" data-i18n="notifications.daily">Daily</option><option value="weekly" data-i18n="notifications.weekly">Weekly</option></select>
+        </div>
+        <label class="setupInlineToggle"><input id="setupNotificationCycleToggle" type="checkbox"><span data-i18n="notifications.cycleComplete">24-hour-cycle remainder completed</span></label>
+      </div>
+      <div class="setupStatus" id="setupNotificationStatus" style="margin-top:12px"></div>
+      <div class="setupActionRow"><button id="setupEnableNotificationsBtn" type="button" class="primary" data-i18n="setup.notificationsEnable">Enable notifications</button><button id="setupSkipNotificationsBtn" type="button" class="secondary" data-i18n="setup.notificationsSkip">Not now</button></div>
+      <div class="small" data-i18n="setup.notificationsLimit" style="margin-top:8px">Fasting Tracker has no push server. Alerts are checked while the app is running and when it is reopened, so exact background delivery cannot be guaranteed when the app is fully suspended.</div>
+    </div>
+
+    <div class="setupStep" id="setupStepReady" data-setup-step="6" hidden>
+      <h3 data-i18n="setup.readyTitle">6. Ready to track</h3>
       <div class="setupStepText" data-i18n="setup.readyIntro">Use the Home Screen app when possible, keep external JSON backups, and review the health and safety guidance before fasting.</div>
       <div class="setupChecklist" id="setupReadySummary"></div>
       <div class="small" data-i18n="setup.readyBackupReminder" style="margin-top:10px">Internal recovery snapshots stay inside this installation. Keep external JSON backups because uninstalling, clearing website data or losing the device can remove local records.</div>
@@ -894,14 +968,17 @@ layout: null
 <div class="modalBackdrop" id="activeTargetModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="activeTargetModalTitle">
     <h2 id="activeTargetModalTitle" data-i18n="activeTarget.title">Change active fasting target</h2>
-    <div class="small" data-i18n="activeTarget.help">This changes the target for the current fast only. The default target in Settings is not changed.</div>
+    <div class="small" data-i18n="activeTarget.help">This changes the target for the current fast. When this fast is saved, that target becomes the default for the next fast.</div>
     <div class="formGroup" style="margin-top:14px">
       <label for="activeTargetInput" data-i18n="activeTarget.targetHours">Target hours</label>
       <input id="activeTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
     </div>
     <div class="presetWrap" id="activeTargetPresets" aria-label="Quick active fasting targets" data-i18n-aria="activeTarget.quickAria">
+      <button type="button" class="chip" data-active-goal="12">12h</button>
+      <button type="button" class="chip" data-active-goal="14">14h</button>
       <button type="button" class="chip" data-active-goal="16">16h</button>
       <button type="button" class="chip" data-active-goal="18">18h</button>
+      <button type="button" class="chip" data-active-goal="20">20h</button>
       <button type="button" class="chip" data-active-goal="22">22h</button>
       <button type="button" class="chip" data-active-goal="23">23h</button>
       <button type="button" class="chip" data-active-goal="24">24h</button>
@@ -911,6 +988,7 @@ layout: null
       <button type="button" class="chip" data-active-goal="96">96h</button>
       <button type="button" class="chip" data-active-goal="120">120h</button>
     </div>
+    <div class="small cycleHelp" id="activeGoalCycleHelp"></div>
     <div class="formError" id="activeTargetError" hidden></div>
     <div class="modalActions">
       <button id="activeTargetCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
@@ -1066,18 +1144,19 @@ layout: null
   const SETUP_GUIDE_VERSION = 1;
   const LONG_FAST_NOTICE_KEY = 'fastingTracker.longFastNoticeSeen';
   const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';
+  const NOTIFICATION_STATE_KEY = 'fastingTracker.notificationState';
   const DATA_VERSION = 1;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 12;
+  const I18N_SOURCE_REVISION = 17;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.13';
+  const APP_VERSION = '1.8.18';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1090,11 +1169,12 @@ layout: null
   const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
   const MAX_IMPORT_FASTS = 100000;
   const MAX_IMPORT_WEIGHTS = 100000;
+  const MAX_IMPORT_DELETED_FASTS = 100000;
   const HISTORY_PAGE_SIZE = 50;
   const MAX_DATE_MS = 8.64e15;
   // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
   const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
-  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], weights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, language: 'system', appearance: 'system', iconChoice: 'plate' };
+  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false }, language: 'system', appearance: 'system', iconChoice: 'plate' };
   const timeZoneValidityCache = new Map();
   const numberSymbolsCache = new Map();
   const zonedFormatterCache = new Map();
@@ -1128,6 +1208,8 @@ layout: null
   let setupStorageResult = null;
   let setupWeightUnitChoice = 'kg';
   let setupGuideAutoOpened = false;
+  let notificationRuntimeState = loadNotificationRuntimeState();
+  let latestCompletedFastCache = undefined;
   const el = id => document.getElementById(id);
   let uiReady = false;
   const versionTransitionSnapshotOK = await initializePersistentStorage();
@@ -1157,6 +1239,7 @@ layout: null
   let completedDayMapCache = null;
   let currentStreakCache = null;
   let historyVisibleCount = HISTORY_PAGE_SIZE;
+  let deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
   let weightVisibleCount = HISTORY_PAGE_SIZE;
   let fastActionLocked = false;
   let pendingStopUndo = null;
@@ -1686,6 +1769,7 @@ layout: null
       const dbPrimary = await idbGet('state', 'primary');
       let loaded = dbPrimary?.data || null;
       let migratedLegacy = false;
+      let canonicalizedStored = false;
       if (!loaded) {
         const legacyRaw = getStoredDataRaw();
         if (legacyRaw) {
@@ -1696,8 +1780,12 @@ layout: null
       if (loaded) {
         // Data already written by this app is canonical; avoid O(n) re-validation
         // on every launch. Full validation remains mandatory for legacy/import data.
-        if (!migratedLegacy && loaded.dataVersion === DATA_VERSION && Array.isArray(loaded.records) && Array.isArray(loaded.weights) && loaded.records.length <= MAX_IMPORT_FASTS && loaded.weights.length <= MAX_IMPORT_WEIGHTS) data = loaded;
-        else data = validateCompatibleData(loaded).data;
+        if (!migratedLegacy && loaded.dataVersion === DATA_VERSION && Array.isArray(loaded.records) && Array.isArray(loaded.deletedFasts) && Array.isArray(loaded.weights) && loaded.records.length <= MAX_IMPORT_FASTS && loaded.deletedFasts.length <= MAX_IMPORT_DELETED_FASTS && loaded.weights.length <= MAX_IMPORT_WEIGHTS) data = loaded;
+        else {
+          const prepared = validateCompatibleData(loaded);
+          data = prepared.data;
+          canonicalizedStored = prepared.changed;
+        }
       } else data = cloneDefault();
 
       snapshotCache = (await idbGetAll('snapshotMeta')).map(normalizeSnapshot).filter(Boolean);
@@ -1727,7 +1815,7 @@ layout: null
       persistedRecordMap = new Map(data.records.map(r => [r.id, r]));
       persistSmallPreferences();
 
-      if (migratedLegacy) await persistPrimaryNow(data);
+      if (migratedLegacy || canonicalizedStored) await persistPrimaryNow(data);
       try { localStorage.removeItem(DATA_KEY); localStorage.removeItem(SNAPSHOT_KEY); } catch {}
 
       let appMeta = {};
@@ -2005,6 +2093,38 @@ layout: null
     };
   }
 
+  function normalizeDeletedFast(r) {
+    const record = normalizeRecord(r);
+    const deletedAt = validDate(r?.deletedAt);
+    if (!record || !deletedAt) return null;
+    const reason = typeof r.deletionReason === 'string' && r.deletionReason.length <= 80 ? r.deletionReason : 'user';
+    return { ...record, deleted: true, deletedAt: deletedAt.toISOString(), deletedTimeZone: normalizeTimeZone(r.deletedTimeZone), deletionReason: reason };
+  }
+
+  function normalizeNotificationPreferences(raw) {
+    const value = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    return {
+      enabled: value.enabled === true,
+      targetReached: value.targetReached !== false,
+      backupDue: value.backupDue !== false,
+      longFastSafety: value.longFastSafety !== false,
+      weighIn: value.weighIn === true,
+      weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
+      cycleComplete: value.cycleComplete === true
+    };
+  }
+
+  function loadNotificationRuntimeState() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(NOTIFICATION_STATE_KEY) || '{}');
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch { return {}; }
+  }
+
+  function saveNotificationRuntimeState() {
+    try { localStorage.setItem(NOTIFICATION_STATE_KEY, JSON.stringify(notificationRuntimeState)); } catch {}
+  }
+
   function normalizeData(parsed) {
     parsed = migrateData(parsed);
     if (parsed.dataVersion !== DATA_VERSION) throw new Error('unsupported data format');
@@ -2022,10 +2142,12 @@ layout: null
       activeCreatedAt: activeValid ? normalizeAuditTimestamp(parsed.activeCreatedAt) : null,
       activeModifiedAt: activeValid ? normalizeAuditTimestamp(parsed.activeModifiedAt) : null,
       records: Array.isArray(parsed.records) ? parsed.records.map(normalizeRecord).filter(Boolean) : [],
+      deletedFasts: Array.isArray(parsed.deletedFasts) ? parsed.deletedFasts.map(normalizeDeletedFast).filter(Boolean) : [],
       weights: Array.isArray(parsed.weights) ? parsed.weights.map(normalizeWeightEntry).filter(Boolean) : [],
       weightUnit: normalizeWeightUnit(parsed.weightUnit),
       targetWeightKg: sanitizeWeightKg(parsed.targetWeightKg, null),
       gamificationEnabled: parsed.gamificationEnabled !== false,
+      notificationPreferences: normalizeNotificationPreferences(parsed.notificationPreferences),
       language: normalizeLanguage(parsed.language),
       appearance: normalizeAppearance(parsed.appearance),
       iconChoice: normalizeIconChoice(parsed.iconChoice)
@@ -2047,6 +2169,7 @@ layout: null
     if (Number(candidate.dataVersion) !== DATA_VERSION) return { data: candidate, changed };
     if (candidate.dataVersion !== DATA_VERSION) mark('dataVersion', DATA_VERSION);
     if (candidate.records === undefined) { candidate.records = []; changed = true; }
+    if (candidate.deletedFasts === undefined) { candidate.deletedFasts = []; changed = true; }
     if (candidate.weights === undefined) { candidate.weights = []; changed = true; }
 
     if (candidate.revision != null && (!Number.isInteger(candidate.revision) || candidate.revision < 0)) mark('revision', 0);
@@ -2066,6 +2189,8 @@ layout: null
     const iconChoice = normalizeIconChoice(candidate.iconChoice);
     if (candidate.iconChoice !== iconChoice) mark('iconChoice', iconChoice);
     if (typeof candidate.gamificationEnabled !== 'boolean') mark('gamificationEnabled', true);
+    const notificationPreferences = normalizeNotificationPreferences(candidate.notificationPreferences);
+    if (JSON.stringify(candidate.notificationPreferences) !== JSON.stringify(notificationPreferences)) { candidate.notificationPreferences = notificationPreferences; changed = true; }
     if (candidate.targetWeightKg != null) {
       const target = sanitizeWeightKg(candidate.targetWeightKg, null);
       if (target == null) mark('targetWeightKg', null);
@@ -2099,6 +2224,42 @@ layout: null
         // Canonicalize valid timestamps without guessing damaged core dates.
         if (start && next.start !== start.toISOString()) { next.start = start.toISOString(); changed = true; }
         if (end && next.end !== end.toISOString()) { next.end = end.toISOString(); changed = true; }
+        return next;
+      });
+    }
+
+    const usedDeletedFastIds = new Set();
+    if (Array.isArray(candidate.deletedFasts)) {
+      candidate.deletedFasts = candidate.deletedFasts.map((record, index) => {
+        if (!record || typeof record !== 'object' || Array.isArray(record)) return record;
+        const next = {...record};
+        const start = validDate(next.start), end = validDate(next.end);
+        const baseId = `deleted-fast-${index + 1}-${start ? start.getTime() : index}`.slice(0, 110);
+        let id = typeof next.id === 'string' && next.id && next.id.length <= 120 ? next.id : baseId;
+        if (usedDeletedFastIds.has(id)) {
+          let suffix = 2;
+          while (usedDeletedFastIds.has(`${baseId}-${suffix}`)) suffix++;
+          id = `${baseId}-${suffix}`.slice(0, 120);
+        }
+        usedDeletedFastIds.add(id);
+        if (next.id !== id) { next.id = id; changed = true; }
+        const goal = sanitizeGoal(next.goalHours, fallbackGoal);
+        if (next.goalHours !== goal) { next.goalHours = goal; changed = true; }
+        const zone = normalizeTimeZone(next.timeZone, fallbackZone);
+        if (next.timeZone !== zone) { next.timeZone = zone; changed = true; }
+        for (const key of ['createdAt','modifiedAt']) {
+          const audit = normalizeAuditTimestamp(next[key]);
+          if (next[key] !== audit) { next[key] = audit; changed = true; }
+        }
+        if (start && next.start !== start.toISOString()) { next.start = start.toISOString(); changed = true; }
+        if (end && next.end !== end.toISOString()) { next.end = end.toISOString(); changed = true; }
+        const deletedAt = validDate(next.deletedAt);
+        if (deletedAt && next.deletedAt !== deletedAt.toISOString()) { next.deletedAt = deletedAt.toISOString(); changed = true; }
+        if (next.deleted !== true) { next.deleted = true; changed = true; }
+        const deletedZone = normalizeTimeZone(next.deletedTimeZone, fallbackZone);
+        if (next.deletedTimeZone !== deletedZone) { next.deletedTimeZone = deletedZone; changed = true; }
+        const reason = typeof next.deletionReason === 'string' && next.deletionReason.length <= 80 ? next.deletionReason : 'user';
+        if (next.deletionReason !== reason) { next.deletionReason = reason; changed = true; }
         return next;
       });
     }
@@ -2162,16 +2323,22 @@ layout: null
   function validateImportedData(rawData) {
     rawData = migrateData(rawData);
     if (rawData.dataVersion !== DATA_VERSION) throw new Error('unsupported data format');
-    if (!Array.isArray(rawData.records) || !Array.isArray(rawData.weights)) throw new Error('missing arrays');
+    if (!Array.isArray(rawData.records) || !Array.isArray(rawData.deletedFasts) || !Array.isArray(rawData.weights)) throw new Error('missing arrays');
     if (rawData.revision != null && (!Number.isInteger(rawData.revision) || rawData.revision < 0)) throw new Error('invalid revision');
     if (rawData.updatedAt != null && !validDate(rawData.updatedAt)) throw new Error('invalid updated time');
-    if (rawData.records.length > MAX_IMPORT_FASTS || rawData.weights.length > MAX_IMPORT_WEIGHTS) throw new Error('too many records');
+    if (rawData.records.length > MAX_IMPORT_FASTS || rawData.deletedFasts.length > MAX_IMPORT_DELETED_FASTS || rawData.weights.length > MAX_IMPORT_WEIGHTS) throw new Error('too many records');
     if (!Number.isFinite(parseLocalizedNumber(rawData.goalHours)) || parseLocalizedNumber(rawData.goalHours) <= 0 || parseLocalizedNumber(rawData.goalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid default goal');
     if (!['kg','lb'].includes(rawData.weightUnit)) throw new Error('invalid weight unit');
     if (rawData.language != null && typeof rawData.language !== 'string') throw new Error('invalid language');
     if (!['system','light','dark'].includes(rawData.appearance)) throw new Error('invalid appearance');
     if (rawData.iconChoice != null && !['plate','moon','hourglass','timer'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
     if (typeof rawData.gamificationEnabled !== 'boolean') throw new Error('invalid gamification setting');
+    const notificationPreferences = rawData.notificationPreferences;
+    if (!notificationPreferences || typeof notificationPreferences !== 'object' || Array.isArray(notificationPreferences) ||
+        typeof notificationPreferences.enabled !== 'boolean' || typeof notificationPreferences.targetReached !== 'boolean' ||
+        typeof notificationPreferences.backupDue !== 'boolean' || typeof notificationPreferences.longFastSafety !== 'boolean' ||
+        typeof notificationPreferences.weighIn !== 'boolean' || !['daily','weekly'].includes(notificationPreferences.weighInCadence) ||
+        typeof notificationPreferences.cycleComplete !== 'boolean') throw new Error('invalid notification preferences');
     if (rawData.targetWeightKg != null && sanitizeWeightKg(rawData.targetWeightKg, null) == null) throw new Error('invalid target weight');
     if (rawData.activeStart != null) {
       if (!validDate(rawData.activeStart) || validDate(rawData.activeStart).getTime() > Date.now() + FUTURE_TOLERANCE_MS) throw new Error('invalid active fast');
@@ -2194,6 +2361,24 @@ layout: null
       return normalized;
     });
     if (new Set(records.map(r => r.id)).size !== records.length) throw new Error('duplicate fasting ids');
+
+    const deletedFasts = rawData.deletedFasts.map(r => {
+      if (!r || typeof r !== 'object' || typeof r.id !== 'string' || !r.id || r.id.length > 120) throw new Error('invalid deleted fast id');
+      if (r.deleted !== true) throw new Error('invalid deleted fast marker');
+      if (!validDate(r.deletedAt)) throw new Error('invalid deleted fast deletion time');
+      if (!isValidTimeZone(r.deletedTimeZone)) throw new Error('invalid deleted fast deletion timezone');
+      if (typeof r.deletionReason !== 'string' || !r.deletionReason || r.deletionReason.length > 80) throw new Error('invalid deleted fast reason');
+      if (!Number.isFinite(parseLocalizedNumber(r.goalHours)) || parseLocalizedNumber(r.goalHours) <= 0 || parseLocalizedNumber(r.goalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid deleted fast goal');
+      if (!isValidTimeZone(r.timeZone)) throw new Error('invalid deleted fast timezone');
+      if (r.createdAt != null && !validDate(r.createdAt)) throw new Error('invalid deleted fast creation time');
+      if (r.modifiedAt != null && !validDate(r.modifiedAt)) throw new Error('invalid deleted fast modification time');
+      const normalized = normalizeDeletedFast(r);
+      if (!normalized) throw new Error('invalid deleted fasting record');
+      return normalized;
+    });
+    if (new Set(deletedFasts.map(r => r.id)).size !== deletedFasts.length) throw new Error('duplicate deleted fasting ids');
+    const liveFastIds = new Set(records.map(r => r.id));
+    if (deletedFasts.some(r => liveFastIds.has(r.id))) throw new Error('fast id present in active and deleted history');
     // Legacy overlap is a semantic conflict, not unreadable storage. Preserve it
     // instead of trapping the whole app in Recovery mode; editing/backdating UI
     // continues to prevent creation of new overlaps.
@@ -2214,6 +2399,7 @@ layout: null
     // Preserve legacy active/history overlap as-is. Recovery mode is for data that
     // cannot be read safely, not for a correctable historical business-rule clash.
     normalized.records = records;
+    normalized.deletedFasts = deletedFasts;
     normalized.weights = weights;
     return normalized;
   }
@@ -2232,6 +2418,7 @@ layout: null
     weightAggregateCache.clear();
     weightChartScaleCache = null;
     weightChartBuckets = [];
+    latestCompletedFastCache = undefined;
   }
 
   function markViewsDirty(...views) {
@@ -2249,12 +2436,14 @@ layout: null
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
         (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal' || openModal.id === 'activeTargetModal')) ||
         activeField === goalHours || activeField === el('weightTargetInput') || activeField === el('activeTargetInput'));
+      if (!Array.isArray(next.deletedFasts)) next.deletedFasts = [];
       data = next;
       const daily = await idbGet('state', 'dailyTotals');
       storedDayTotalsMap = daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)
         ? new Map(daily.entries) : buildStoredDayTotals(data.records);
       persistedRecordMap = new Map(data.records.map(r => [r.id, r]));
       historyVisibleCount = HISTORY_PAGE_SIZE;
+      deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
       weightVisibleCount = HISTORY_PAGE_SIZE;
       invalidateDerivedCaches();
       if (interruptedEdit) {
@@ -2311,7 +2500,7 @@ layout: null
       return false;
     }
     try {
-      if (!Array.isArray(data.records) || !Array.isArray(data.weights) || data.records.length > MAX_IMPORT_FASTS || data.weights.length > MAX_IMPORT_WEIGHTS) throw new Error('record limit exceeded');
+      if (!Array.isArray(data.records) || !Array.isArray(data.deletedFasts) || !Array.isArray(data.weights) || data.records.length > MAX_IMPORT_FASTS || data.deletedFasts.length > MAX_IMPORT_DELETED_FASTS || data.weights.length > MAX_IMPORT_WEIGHTS) throw new Error('record limit exceeded');
       const fastingHistoryMayHaveChanged = !Array.isArray(dirtyViews) || dirtyViews.includes('history') || dirtyViews.includes('fasting');
       if (fastingHistoryMayHaveChanged) updateStoredDayTotalsIncrementally();
       data.revision = Math.max(0, Number(data.revision) || 0) + 1;
@@ -2464,8 +2653,272 @@ layout: null
     document.querySelectorAll('.chip[data-goal]').forEach(chip => {
       const active = Number(chip.dataset.goal) === data.goalHours; chip.classList.toggle('active', active); chip.setAttribute('aria-pressed', String(active));
     });
+    updateCycleHelpers();
   }
 
+
+  function cycleHelperText(hours) {
+    const target = sanitizeGoal(hours, data.goalHours);
+    if (target < 24) {
+      const nonFastingMs = Math.max(0, (24 - target) * 3600000);
+      return t('settings.cycleUnder24', {fast: formatGoal(target), nonfast: friendlyDuration(nonFastingMs)});
+    }
+    if (target === 24) return t('settings.cycle24');
+    return t('settings.cycleExtended');
+  }
+
+  function updateCycleHelpers() {
+    const goalHelp = el('goalCycleHelp');
+    if (goalHelp) goalHelp.textContent = cycleHelperText(data.goalHours);
+    const activeHelp = el('activeGoalCycleHelp');
+    if (activeHelp) {
+      const parsed = parseLocalizedNumber(el('activeTargetInput')?.value);
+      activeHelp.textContent = cycleHelperText(Number.isFinite(parsed) && parsed > 0 ? parsed : activeTargetHours());
+    }
+  }
+
+  function latestCompletedFast() {
+    if (latestCompletedFastCache !== undefined) return latestCompletedFastCache;
+    let latest = null, latestEnd = -Infinity;
+    for (const record of data.records) {
+      const endMs = new Date(record.end).getTime();
+      if (Number.isFinite(endMs) && endMs > latestEnd) { latest = record; latestEnd = endMs; }
+    }
+    latestCompletedFastCache = latest;
+    return latest;
+  }
+
+  function nextFastCycleInfo(nowMs = Date.now()) {
+    if (data.activeStart) return null;
+    const record = latestCompletedFast();
+    if (!record) return null;
+    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
+    const durationMs = endMs - startMs;
+    const dayMs = 24 * 3600000;
+    if (durationMs >= dayMs) return null;
+    const suggestedStartMs = startMs + dayMs;
+    const remainingMs = suggestedStartMs - nowMs;
+    if (remainingMs <= 0) return null;
+    return { record, durationMs, nonFastingMs: dayMs - durationMs, suggestedStartMs, remainingMs };
+  }
+
+  function updateNextFastCountdown() {
+    const card = el('nextFastCard');
+    if (!card) return;
+    const info = nextFastCycleInfo();
+    card.hidden = !info;
+    if (!info) return;
+    el('nextFastCountdown').textContent = exactDuration(info.remainingMs);
+    el('nextFastAt').textContent = t('fasting.nextAt', {date: localDateTimeLabel(info.suggestedStartMs, info.record.timeZone)});
+    // Derive both displayed parts from the same completed whole-minute value so
+    // the visible arithmetic always adds up to exactly 24h. The countdown itself
+    // remains second-accurate.
+    const fastMinutes = Math.max(0, Math.min(1439, Math.floor(info.durationMs / 60000)));
+    const nonFastMinutes = 1440 - fastMinutes;
+    el('nextFastBasis').textContent = t('fasting.nextBasis', {
+      fasted: totalHoursDuration(fastMinutes * 60000),
+      nonfast: totalHoursDuration(nonFastMinutes * 60000)
+    });
+  }
+
+  function nativeNotificationsSupported() {
+    return typeof Notification !== 'undefined' && typeof Notification.requestPermission === 'function';
+  }
+
+  function notificationPermissionState() {
+    if (!nativeNotificationsSupported()) return 'unsupported';
+    return Notification.permission || 'default';
+  }
+
+  function notificationPrefs() {
+    data.notificationPreferences = normalizeNotificationPreferences(data.notificationPreferences);
+    return data.notificationPreferences;
+  }
+
+  function notificationEnabledFor(key) {
+    const prefs = notificationPrefs();
+    return prefs.enabled === true && prefs[key] === true && notificationPermissionState() === 'granted';
+  }
+
+  async function sendDeviceNotification(kind, title, body, {screen='fasting', tag=null} = {}) {
+    if (notificationPermissionState() !== 'granted') return false;
+    const options = {
+      body,
+      tag: tag || `fasting-tracker-${kind}`,
+      renotify: false,
+      icon: 'icons/icon-192.png',
+      badge: 'icons/favicon-32.png',
+      data: { screen }
+    };
+    try {
+      if (navigator.serviceWorker?.ready) {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration?.showNotification) { await registration.showNotification(title, options); return true; }
+      }
+    } catch {}
+    try { new Notification(title, options); return true; } catch { return false; }
+  }
+
+  async function maybeNotifyTargetReached(nowMs = Date.now()) {
+    if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
+    const startMs = new Date(data.activeStart).getTime();
+    const target = activeTargetHours();
+    const targetMs = goalMs(target);
+    if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
+    const token = `${data.activeStart}|${target}`;
+    if (notificationRuntimeState.targetReachedToken === token) return false;
+    const sent = await sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBody', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`});
+    if (sent) { notificationRuntimeState.targetReachedToken = token; saveNotificationRuntimeState(); }
+    return sent;
+  }
+
+  async function maybeNotifyLongFastSafety(nowMs = Date.now()) {
+    if (!notificationEnabledFor('longFastSafety') || !data.activeStart) return false;
+    const startMs = new Date(data.activeStart).getTime();
+    if (!Number.isFinite(startMs) || nowMs < startMs + 24 * 3600000) return false;
+    const token = String(data.activeStart);
+    if (notificationRuntimeState.longFastSafetyToken === token) return false;
+    const sent = await sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBody'), {screen:'fasting',tag:`fasting-safety-${token}`});
+    if (sent) { notificationRuntimeState.longFastSafetyToken = token; saveNotificationRuntimeState(); }
+    return sent;
+  }
+
+  async function maybeNotifyCycleComplete(nowMs = Date.now()) {
+    if (!notificationEnabledFor('cycleComplete') || data.activeStart) return false;
+    const record = latestCompletedFast();
+    if (!record) return false;
+    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || endMs - startMs >= 24 * 3600000) return false;
+    const cycleEnd = startMs + 24 * 3600000;
+    if (nowMs < cycleEnd) return false;
+    const enabledAt = validDate(notificationRuntimeState.enabledAt);
+    if (!enabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
+    if (cycleEnd < enabledAt.getTime()) return false;
+    if (notificationRuntimeState.cycleCompleteToken === record.id) return false;
+    const sent = await sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBody'), {screen:'fasting',tag:`fasting-cycle-${record.id}`});
+    if (sent) { notificationRuntimeState.cycleCompleteToken = record.id; saveNotificationRuntimeState(); }
+    return sent;
+  }
+
+  function backupDueToken() {
+    if (!backupIsDue()) return null;
+    const first = validDate(backupMeta.firstDataAt);
+    const last = validDate(backupMeta.lastExternalBackupAt);
+    const base = last && first ? new Date(Math.max(last.getTime(), first.getTime())) : (last || first);
+    return base ? base.toISOString() : 'due';
+  }
+
+  async function maybeNotifyBackupDue() {
+    if (!notificationEnabledFor('backupDue')) return false;
+    const token = backupDueToken();
+    if (!token || notificationRuntimeState.backupDueToken === token) return false;
+    const sent = await sendDeviceNotification('backup', t('notifications.backupTitle'), t('notifications.backupBody'), {screen:'settings',tag:`fasting-backup-${token}`});
+    if (sent) { notificationRuntimeState.backupDueToken = token; saveNotificationRuntimeState(); }
+    return sent;
+  }
+
+  function latestWeightRecord() {
+    let latest = null, latestMs = -Infinity;
+    for (const weight of data.weights) {
+      const ms = new Date(weight.when).getTime();
+      if (Number.isFinite(ms) && ms > latestMs) { latest = weight; latestMs = ms; }
+    }
+    return latest;
+  }
+
+  async function maybeNotifyWeighIn(nowMs = Date.now()) {
+    const prefs = notificationPrefs();
+    if (!notificationEnabledFor('weighIn')) return false;
+    const cadenceMs = prefs.weighInCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
+    const latest = latestWeightRecord();
+    let anchorMs, tokenBase;
+    if (latest) { anchorMs = new Date(latest.when).getTime(); tokenBase = latest.id; }
+    else {
+      let anchor = validDate(notificationRuntimeState.weighInAnchorAt);
+      if (!anchor) { anchor = new Date(nowMs); notificationRuntimeState.weighInAnchorAt = anchor.toISOString(); saveNotificationRuntimeState(); }
+      anchorMs = anchor.getTime(); tokenBase = notificationRuntimeState.weighInAnchorAt;
+    }
+    if (!Number.isFinite(anchorMs) || nowMs < anchorMs + cadenceMs) return false;
+    const token = `${prefs.weighInCadence}:${tokenBase}`;
+    if (notificationRuntimeState.weighInToken === token) return false;
+    const cadence = t(prefs.weighInCadence === 'daily' ? 'notifications.daily' : 'notifications.weekly').toLowerCase();
+    const sent = await sendDeviceNotification('weigh-in', t('notifications.weighTitle'), t('notifications.weighBody', {cadence}), {screen:'weight',tag:`fasting-weigh-${token}`});
+    if (sent) { notificationRuntimeState.weighInToken = token; saveNotificationRuntimeState(); }
+    return sent;
+  }
+
+  async function checkFastNotifications() {
+    await maybeNotifyTargetReached();
+    await maybeNotifyLongFastSafety();
+    await maybeNotifyCycleComplete();
+  }
+
+  async function checkMaintenanceNotifications() {
+    await maybeNotifyBackupDue();
+    await maybeNotifyWeighIn();
+  }
+
+  function notificationStatusKey() {
+    if (!nativeNotificationsSupported()) return isIOSDevice() && !isStandaloneApp() ? 'notifications.statusInstallIOS' : 'notifications.statusUnsupported';
+    if (Notification.permission === 'granted') return notificationPrefs().enabled ? 'notifications.statusAllowed' : 'notifications.statusOff';
+    if (Notification.permission === 'denied') return 'notifications.statusBlocked';
+    return notificationPrefs().enabled ? 'notifications.statusPermissionNeeded' : 'notifications.statusOff';
+  }
+
+  function renderNotificationSettings() {
+    const prefs = notificationPrefs();
+    const master = el('notificationMasterToggle');
+    if (!master) return;
+    master.checked = prefs.enabled;
+    master.disabled = !nativeNotificationsSupported();
+    el('notificationTargetToggle').checked = prefs.targetReached;
+    el('notificationBackupToggle').checked = prefs.backupDue;
+    el('notificationSafetyToggle').checked = prefs.longFastSafety;
+    el('notificationWeighToggle').checked = prefs.weighIn;
+    el('notificationCycleToggle').checked = prefs.cycleComplete;
+    el('notificationWeighCadence').value = prefs.weighInCadence;
+    el('notificationWeighCadence').disabled = !prefs.weighIn;
+    const permission = notificationPermissionState();
+    const badge = el('notificationPermissionBadge');
+    badge.textContent = t(permission === 'granted' && prefs.enabled ? 'notifications.badgeOn' : permission === 'denied' ? 'notifications.badgeBlocked' : permission === 'unsupported' ? 'notifications.badgeUnavailable' : 'notifications.badgeOff');
+    el('notificationStatusText').textContent = t(notificationStatusKey());
+    el('notificationTestBtn').disabled = !(prefs.enabled && permission === 'granted');
+  }
+
+  async function setNotificationMasterEnabled(wantEnabled) {
+    const prefs = notificationPrefs();
+    if (!wantEnabled) {
+      prefs.enabled = false;
+      save({invalidateDerived:false, dirtyViews:['settings']});
+      renderNotificationSettings();
+      return;
+    }
+    if (!nativeNotificationsSupported()) { prefs.enabled = false; renderNotificationSettings(); return; }
+    let permission = Notification.permission;
+    if (permission === 'default') {
+      try { permission = await Notification.requestPermission(); } catch { permission = Notification.permission || 'denied'; }
+    }
+    prefs.enabled = permission === 'granted';
+    if (prefs.enabled && !validDate(notificationRuntimeState.enabledAt)) { notificationRuntimeState.enabledAt = new Date().toISOString(); saveNotificationRuntimeState(); }
+    if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
+    renderNotificationSettings();
+    if (prefs.enabled) { checkFastNotifications(); checkMaintenanceNotifications(); }
+  }
+
+  function saveNotificationOption(key, value) {
+    const prefs = notificationPrefs();
+    prefs[key] = value;
+    if (key === 'weighIn' && value && !validDate(notificationRuntimeState.weighInAnchorAt)) { notificationRuntimeState.weighInAnchorAt = new Date().toISOString(); saveNotificationRuntimeState(); }
+    if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return false; }
+    renderNotificationSettings();
+    return true;
+  }
+
+  async function sendTestNotification() {
+    if (!notificationPrefs().enabled || notificationPermissionState() !== 'granted') { renderNotificationSettings(); return; }
+    await sendDeviceNotification('test', t('notifications.testTitle'), t('notifications.testBody'), {screen:'settings',tag:'fasting-tracker-test'});
+  }
 
   const SCIENCE_STAGES = [
     { max: 8, key: 0 }, { max: 12, key: 1 }, { max: 24, key: 2 },
@@ -2499,6 +2952,7 @@ layout: null
     updateGoalChips();
 
     if (data.activeStart) {
+      el('nextFastCard').hidden = true;
       const startMs = new Date(data.activeStart).getTime();
       const elapsed = Math.max(0, Date.now() - startMs);
       const targetMs = goalMs(targetHours);
@@ -2547,6 +3001,7 @@ layout: null
       progressDetail.classList.remove('good');
       el('targetMoment').hidden = true;
       el('targetMoment').textContent = '';
+      updateNextFastCountdown();
     }
 
     updateScienceCard();
@@ -2667,8 +3122,9 @@ layout: null
     if (backdateConflictRecords.length !== 1) return;
     const record = backdateConflictRecords[0];
     if (!confirm(t('backdate.deleteConfirm'))) return;
-    data.records = data.records.filter(r => r.id !== record.id);
-    if (!save()) { renderAll(); return; }
+    const move = moveFastToDeleted(record, 'backdate-conflict');
+    if (!move) return;
+    if (!save()) { rollbackDeletedFastMove(move); renderAll(); return; }
     clearBackdateConflict();
     saveBackdatedActiveFast();
   }
@@ -2752,6 +3208,7 @@ layout: null
     const activeSnapshot = {
       activeStart: start.toISOString(),
       activeGoalHours: activeTargetHours(),
+      previousGoalHours: data.goalHours,
       activeTimeZone: data.activeTimeZone || currentTimeZone(),
       activeCreatedAt: normalizeAuditTimestamp(data.activeCreatedAt),
       activeModifiedAt: normalizeAuditTimestamp(data.activeModifiedAt)
@@ -2766,6 +3223,9 @@ layout: null
       modifiedAt: activeSnapshot.activeModifiedAt
     };
     data.records.push(record);
+    // The target used for the most recently completed fast becomes the default
+    // for the next interval. Historical records still keep their own target.
+    data.goalHours = activeSnapshot.activeGoalHours;
     data.activeStart = null;
     data.activeGoalHours = null;
     data.activeTimeZone = null;
@@ -2773,7 +3233,12 @@ layout: null
     data.activeModifiedAt = null;
     if (!save()) {
       data.records = data.records.filter(r => r.id !== record.id);
-      Object.assign(data, activeSnapshot);
+      data.goalHours = activeSnapshot.previousGoalHours;
+      data.activeStart = activeSnapshot.activeStart;
+      data.activeGoalHours = activeSnapshot.activeGoalHours;
+      data.activeTimeZone = activeSnapshot.activeTimeZone;
+      data.activeCreatedAt = activeSnapshot.activeCreatedAt;
+      data.activeModifiedAt = activeSnapshot.activeModifiedAt;
       closeStopFastModal();
       renderAll();
       return;
@@ -2793,7 +3258,13 @@ layout: null
     }
     const removed = data.records.find(r => r.id === pending.recordId);
     data.records = data.records.filter(r => r.id !== pending.recordId);
-    Object.assign(data, pending.activeSnapshot);
+    data.activeStart = pending.activeSnapshot.activeStart;
+    data.activeGoalHours = pending.activeSnapshot.activeGoalHours;
+    data.activeTimeZone = pending.activeSnapshot.activeTimeZone;
+    data.activeCreatedAt = pending.activeSnapshot.activeCreatedAt;
+    data.activeModifiedAt = pending.activeSnapshot.activeModifiedAt;
+    // Keep the last selected target as the next default even after Undo.
+    data.goalHours = pending.activeSnapshot.activeGoalHours;
     if (!save()) {
       data.records.push(removed);
       data.activeStart = null;
@@ -2841,6 +3312,7 @@ layout: null
       btn.classList.toggle('active', selected);
       btn.setAttribute('aria-pressed', String(selected));
     });
+    updateCycleHelpers();
   }
 
   function openActiveTargetModal() {
@@ -2907,6 +3379,121 @@ layout: null
     el('streakValue').textContent = t(pluralKey('fasting.fastCount', s), {n:s});
   }
 
+  function deletedFastAuditFromRecord(record, deletionReason = 'user') {
+    return {
+      id: record.id,
+      start: record.start,
+      end: record.end,
+      goalHours: record.goalHours,
+      timeZone: record.timeZone,
+      createdAt: normalizeAuditTimestamp(record.createdAt),
+      modifiedAt: normalizeAuditTimestamp(record.modifiedAt),
+      deleted: true,
+      deletedAt: new Date().toISOString(),
+      deletedTimeZone: currentTimeZone(),
+      deletionReason
+    };
+  }
+
+  function moveFastToDeleted(record, deletionReason = 'user') {
+    if (!record || !Array.isArray(data.deletedFasts)) return null;
+    const index = data.records.findIndex(r => r.id === record.id);
+    if (index < 0 || data.deletedFasts.some(r => r.id === record.id)) return null;
+    const tombstone = deletedFastAuditFromRecord(record, deletionReason);
+    data.records.splice(index, 1);
+    data.deletedFasts.push(tombstone);
+    return { index, record, tombstone };
+  }
+
+  function rollbackDeletedFastMove(move) {
+    if (!move) return;
+    data.deletedFasts = data.deletedFasts.filter(r => r !== move.tombstone && r.id !== move.tombstone.id);
+    data.records.splice(Math.min(move.index, data.records.length), 0, move.record);
+  }
+
+  function deleteFastToAudit(record, deletionReason = 'user') {
+    const move = moveFastToDeleted(record, deletionReason);
+    if (!move) return false;
+    if (!save()) { rollbackDeletedFastMove(move); renderAll(); return false; }
+    renderAll();
+    return true;
+  }
+
+  function restoreDeletedFast(id) {
+    const index = data.deletedFasts.findIndex(r => r.id === id);
+    if (index < 0) return;
+    const deleted = data.deletedFasts[index];
+    if (data.records.some(r => r.id === deleted.id)) { alert(t('history.deletedRestoreIdConflict')); return; }
+    const start = validDate(deleted.start), end = validDate(deleted.end);
+    if (!start || !end || intervalOverlaps(start, end)) { alert(t('history.deletedRestoreOverlap')); return; }
+    const restored = {
+      id: deleted.id, start: deleted.start, end: deleted.end, goalHours: deleted.goalHours,
+      timeZone: deleted.timeZone, createdAt: normalizeAuditTimestamp(deleted.createdAt), modifiedAt: normalizeAuditTimestamp(deleted.modifiedAt)
+    };
+    data.deletedFasts.splice(index, 1);
+    data.records.push(restored);
+    if (!save()) {
+      data.records = data.records.filter(r => r.id !== restored.id);
+      data.deletedFasts.splice(Math.min(index, data.deletedFasts.length), 0, deleted);
+      renderAll();
+      return;
+    }
+    renderAll();
+  }
+
+  function permanentlyDeleteFast(id) {
+    const index = data.deletedFasts.findIndex(r => r.id === id);
+    if (index < 0 || !confirm(t('history.deletedPermanentConfirm'))) return;
+    const [removed] = data.deletedFasts.splice(index, 1);
+    if (!save({ invalidateDerived:false, dirtyViews:['history','settings'] })) {
+      data.deletedFasts.splice(Math.min(index, data.deletedFasts.length), 0, removed);
+      renderAll();
+      return;
+    }
+    renderHistory();
+    viewDirty.history = false;
+    renderBackupStatus();
+  }
+
+  function deletionReasonLabel(reason) {
+    return reason === 'backdate-conflict' ? t('history.deletedReasonBackdate') : t('history.deletedReasonUser');
+  }
+
+  function renderDeletedFasts() {
+    const card = el('deletedFastsCard');
+    const box = el('deletedFastsList');
+    const count = Array.isArray(data.deletedFasts) ? data.deletedFasts.length : 0;
+    card.hidden = count === 0;
+    el('deletedFastsCount').textContent = count ? t('history.deletedCount', {n:count}) : '';
+    box.replaceChildren();
+    if (!count) return;
+    const sorted = [...data.deletedFasts].sort((a,b) => String(b.deletedAt).localeCompare(String(a.deletedAt)));
+    const visible = sorted.slice(0, deletedHistoryVisibleCount);
+    for (const r of visible) {
+      const row = document.createElement('div'); row.className = 'row historyRow';
+      const left = document.createElement('div'); left.style.minWidth = '0';
+      const strong = document.createElement('strong'); strong.textContent = localDateLabel(r.end, r.timeZone); left.append(strong);
+      const times = document.createElement('div'); times.className = 'small'; times.textContent = `${localDateTimeLabel(r.start, r.timeZone)} → ${localDateTimeLabel(r.end, r.timeZone)}`; left.append(times);
+      const targetLine = document.createElement('div'); targetLine.className = 'small'; targetLine.textContent = t('history.target', {goal:formatGoal(r.goalHours ?? data.goalHours)}); left.append(targetLine);
+      const deletedLine = document.createElement('div'); deletedLine.className = 'small';
+      deletedLine.textContent = t('history.deletedAt', {date:localDateTimeLabel(r.deletedAt, r.deletedTimeZone), reason:deletionReasonLabel(r.deletionReason)}); left.append(deletedLine);
+      const right = document.createElement('div'); right.style.textAlign = 'right'; right.style.flex = '0 0 auto';
+      const dur = document.createElement('div'); dur.className = 'duration'; dur.textContent = friendlyDuration(recordMs(r)); right.append(dur);
+      const actions = document.createElement('div'); actions.className = 'historyActions';
+      const restore = document.createElement('button'); restore.className = 'secondary'; restore.textContent = t('history.deletedRestore'); restore.addEventListener('click', () => restoreDeletedFast(r.id));
+      const permanent = document.createElement('button'); permanent.className = 'dangerText'; permanent.textContent = t('history.deletedPermanent'); permanent.addEventListener('click', () => permanentlyDeleteFast(r.id));
+      actions.append(restore, permanent); right.append(actions);
+      row.append(left, right); box.append(row);
+    }
+    if (visible.length < sorted.length) {
+      const wrap = document.createElement('div'); wrap.className = 'loadMoreWrap';
+      const more = document.createElement('button'); more.className = 'secondary';
+      more.textContent = t('common.loadMoreCount', {n: sorted.length - visible.length});
+      more.addEventListener('click', () => { deletedHistoryVisibleCount += HISTORY_PAGE_SIZE; renderDeletedFasts(); });
+      wrap.append(more); box.append(wrap);
+    }
+  }
+
   function renderHistory() {
     const box = el('historyList');
     box.replaceChildren();
@@ -2915,6 +3502,7 @@ layout: null
       empty.className = 'historyEmpty';
       empty.textContent = t('history.empty');
       box.append(empty);
+      renderDeletedFasts();
       return;
     }
     const sorted = [...data.records].sort((a, b) => new Date(b.end) - new Date(a.end));
@@ -2934,11 +3522,7 @@ layout: null
       const actions = document.createElement('div'); actions.className = 'historyActions';
       const edit = document.createElement('button'); edit.className = 'secondary'; edit.textContent = t('common.edit'); edit.addEventListener('click', () => openEntryModal(r));
       const del = document.createElement('button'); del.className = 'dangerText'; del.textContent = t('common.delete'); del.addEventListener('click', () => {
-        if (confirm(t('history.deleteConfirm'))) {
-          data.records = data.records.filter(x => x.id !== r.id);
-          save();
-          renderAll();
-        }
+        if (confirm(t('history.deleteConfirm'))) deleteFastToAudit(r, 'user');
       });
       actions.append(edit, del); right.append(actions);
       row.append(left, right);
@@ -2951,6 +3535,7 @@ layout: null
       more.addEventListener('click', () => { historyVisibleCount += HISTORY_PAGE_SIZE; renderHistory(); });
       wrap.append(more); box.append(wrap);
     }
+    renderDeletedFasts();
   }
 
   function startOfWeek(dateLike = new Date()) {
@@ -4325,7 +4910,7 @@ layout: null
   }
 
   function hasBackupWorthyData() {
-    return !!data.activeStart || data.records.length > 0 || data.weights.length > 0;
+    return !!data.activeStart || data.records.length > 0 || data.deletedFasts.length > 0 || data.weights.length > 0;
   }
 
   function normalizeBackupClockSkew() {
@@ -4470,14 +5055,6 @@ layout: null
     return selectedIconInstallUrl();
   }
 
-  function latestCompletedFast() {
-    if (!data.records.length) return null;
-    let latest = null;
-    for (const record of data.records) {
-      if (!latest || String(record.end) > String(latest.end)) latest = record;
-    }
-    return latest;
-  }
 
   function buildShareProgressLines() {
     const lines = ['Fasting Tracker'];
@@ -4960,6 +5537,7 @@ layout: null
       queueStorageProtectionRefresh();
       renderGamificationDetail();
       renderGamificationSummary();
+      renderNotificationSettings();
     }
     viewDirty[screen] = false;
   }
@@ -5057,6 +5635,22 @@ layout: null
     if (el('stats').classList.contains('active')) viewDirty.stats = false;
   });
 
+  el('notificationMasterToggle').addEventListener('change', () => setNotificationMasterEnabled(el('notificationMasterToggle').checked));
+  el('notificationTargetToggle').addEventListener('change', () => saveNotificationOption('targetReached', el('notificationTargetToggle').checked));
+  el('notificationBackupToggle').addEventListener('change', () => saveNotificationOption('backupDue', el('notificationBackupToggle').checked));
+  el('notificationSafetyToggle').addEventListener('change', () => saveNotificationOption('longFastSafety', el('notificationSafetyToggle').checked));
+  el('notificationWeighToggle').addEventListener('change', () => saveNotificationOption('weighIn', el('notificationWeighToggle').checked));
+  el('notificationWeighCadence').addEventListener('change', () => {
+    const prefs = notificationPrefs();
+    prefs.weighInCadence = el('notificationWeighCadence').value === 'daily' ? 'daily' : 'weekly';
+    notificationRuntimeState.weighInToken = null;
+    saveNotificationRuntimeState();
+    if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
+    renderNotificationSettings();
+  });
+  el('notificationCycleToggle').addEventListener('change', () => saveNotificationOption('cycleComplete', el('notificationCycleToggle').checked));
+  el('notificationTestBtn').addEventListener('click', sendTestNotification);
+
   const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html']);
   function rememberDocumentReturn(event) {
     const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
@@ -5108,6 +5702,8 @@ layout: null
   bindResponsiveAction(el('activeTargetSaveBtn'), () => requestActiveGoalChange(el('activeTargetInput').value));
   el('activeTargetInput').addEventListener('input', () => { showActiveTargetError(''); syncActiveTargetPresetState(); });
   el('activeTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') requestActiveGoalChange(el('activeTargetInput').value); });
+  el('activeTargetInput').addEventListener('input', syncActiveTargetPresetState);
+
   document.querySelectorAll('[data-active-goal]').forEach(btn => bindResponsiveAction(btn, () => {
     el('activeTargetInput').value = formatNumber(Number(btn.dataset.activeGoal), 0, 3);
     showActiveTargetError('');
@@ -5194,7 +5790,7 @@ layout: null
         throw new Error('invalid backup metadata');
       }
       const imported = validateCompatibleData(raw.data).data;
-      if (!confirm(t('import.confirm', {fasts: imported.records.length, fastWord: t(pluralKey('import.fast', imported.records.length)), weights: imported.weights.length, weightWord: t(pluralKey('import.weight', imported.weights.length))}))) {
+      if (!confirm(t('import.confirm', {fasts: imported.records.length, fastWord: t(pluralKey('import.fast', imported.records.length)), deleted: imported.deletedFasts.length, weights: imported.weights.length, weightWord: t(pluralKey('import.weight', imported.weights.length))}))) {
         e.target.value = '';
         return;
       }
@@ -5221,7 +5817,8 @@ layout: null
       await persistPrimaryNow(data);
       snapshotCache = [];
       await Promise.all([idbClear('snapshotMeta'), idbClear('snapshotPayload')]);
-      try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); } catch {}
+      try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); localStorage.removeItem(NOTIFICATION_STATE_KEY); } catch {}
+      notificationRuntimeState = {};
       backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null, snapshotProtectionStatus: 'ok', snapshotProtectionAt: null, snapshotStoredCount: 0, snapshotDesiredCount: 0 };
       snapshotProtectionState = { status: 'ok', kept: 0, desired: 0 };
       automaticSnapshotFailureAlerted = false;
@@ -5268,6 +5865,12 @@ layout: null
   window.addEventListener('resize', () => { markViewsDirty('stats','weight'); if (el('stats').classList.contains('active')) renderScreen('stats'); if (el('weight').classList.contains('active')) renderScreen('weight'); });
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('offline', () => setUpdateUI('offline', t('update.offlineExplicit')));
+  if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type !== 'OPEN_SCREEN') return;
+    const screen = APP_SCREENS.includes(event.data.screen) ? event.data.screen : 'fasting';
+    activateScreen(screen);
+    try { window.focus(); } catch {}
+  });
   window.addEventListener('storage', event => {
     if (event.storageArea !== localStorage) return;
     if (event.key === DATA_REVISION_SIGNAL_KEY) {
@@ -5279,7 +5882,7 @@ layout: null
       renderBackupStatus(); renderSnapshotStatus(); renderGamificationSummary(); if (el('stats').classList.contains('active') || el('settings').classList.contains('active')) renderGamificationDetail();
     }
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderScreen(activeScreenId()); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderScreen(activeScreenId()); checkFastNotifications(); checkMaintenanceNotifications(); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('pagehide', () => { flushPrimaryPersistence(); });
 
   el('installStorageDismiss').addEventListener('click', () => { try { localStorage.setItem(INSTALL_NOTICE_KEY, '1'); } catch {} renderInstallStorageNotice(); });
@@ -5295,6 +5898,9 @@ layout: null
   el('setupProtectBtn').addEventListener('click', () => refreshSetupStorageStatus(true));
   el('setupStorageImportBtn').addEventListener('click', () => el('importFile').click());
   el('setupExportBtn').addEventListener('click', () => exportSetupBackup());
+  el('setupEnableNotificationsBtn').addEventListener('click', enableSetupNotifications);
+  el('setupSkipNotificationsBtn').addEventListener('click', skipSetupNotifications);
+  el('setupNotificationWeighToggle').addEventListener('change', () => { const cadence=el('setupNotificationWeighCadence'); if (cadence) cadence.disabled=!el('setupNotificationWeighToggle').checked; });
   document.querySelectorAll('#setupIconArea .iconChoice[data-icon-choice]').forEach(btn => btn.addEventListener('click', () => {
     if (isStandaloneApp()) return;
     try { const u=new URL(location.href); u.searchParams.set('icon', normalizeIconChoice(btn.dataset.iconChoice)); history.replaceState(null,'',u); } catch {}
@@ -5326,7 +5932,14 @@ layout: null
   renderScreen(activeScreenId(), { force:true });
   if (activeScreenId() === 'settings') queueStorageProtectionRefresh();
   if (!versionTransitionSnapshotOK && !recoveryMode) setTimeout(() => alert(t('backup.snapshotFailed')), 0);
-  setInterval(() => { if (data.activeStart && !document.hidden && activeScreenId() === 'fasting') updateTimer(); }, 1000);
+  setInterval(() => {
+    if (document.hidden || activeScreenId() !== 'fasting') return;
+    if (data.activeStart) updateTimer();
+    else updateNextFastCountdown();
+  }, 1000);
+  setTimeout(() => { checkFastNotifications(); checkMaintenanceNotifications(); }, 700);
+  setInterval(checkFastNotifications, 15000);
+  setInterval(checkMaintenanceNotifications, 15 * 60 * 1000);
   setInterval(() => {
     if (document.hidden) return;
     const screen = activeScreenId();
@@ -5441,6 +6054,83 @@ layout: null
     if (error) { error.hidden = true; error.textContent = ''; }
   }
 
+  function initializeSetupNotificationControls() {
+    const prefs = notificationPrefs();
+    const pairs = [
+      ['setupNotificationTargetToggle','targetReached'],
+      ['setupNotificationBackupToggle','backupDue'],
+      ['setupNotificationSafetyToggle','longFastSafety'],
+      ['setupNotificationWeighToggle','weighIn'],
+      ['setupNotificationCycleToggle','cycleComplete']
+    ];
+    pairs.forEach(([id,key]) => { const node=el(id); if (node) node.checked=!!prefs[key]; });
+    const cadence=el('setupNotificationWeighCadence');
+    if (cadence) { cadence.value=prefs.weighInCadence === 'daily' ? 'daily' : 'weekly'; cadence.disabled=!prefs.weighIn; }
+    renderSetupNotificationStatus();
+  }
+
+  function renderSetupNotificationStatus() {
+    const status=el('setupNotificationStatus'), enable=el('setupEnableNotificationsBtn');
+    if (!status || !enable) return;
+    const permission=notificationPermissionState();
+    if (permission === 'unsupported') {
+      setSetupStatus(status, t(isIOSDevice() && !isStandaloneApp() ? 'notifications.statusInstallIOS' : 'setup.notificationsUnavailable'), 'warn');
+      enable.hidden=true;
+      return;
+    }
+    enable.hidden=false;
+    if (permission === 'denied') {
+      setSetupStatus(status, t('setup.notificationsBlocked'), 'warn');
+      enable.disabled=true;
+      return;
+    }
+    enable.disabled=false;
+    if (permission === 'granted' && notificationPrefs().enabled) setSetupStatus(status, t('setup.notificationsEnabled'), 'good');
+    else setSetupStatus(status, t('setup.notificationsReady'));
+  }
+
+  function applySetupNotificationChoices() {
+    const prefs=notificationPrefs();
+    prefs.targetReached=!!el('setupNotificationTargetToggle')?.checked;
+    prefs.backupDue=!!el('setupNotificationBackupToggle')?.checked;
+    prefs.longFastSafety=!!el('setupNotificationSafetyToggle')?.checked;
+    prefs.weighIn=!!el('setupNotificationWeighToggle')?.checked;
+    prefs.cycleComplete=!!el('setupNotificationCycleToggle')?.checked;
+    prefs.weighInCadence=el('setupNotificationWeighCadence')?.value === 'daily' ? 'daily' : 'weekly';
+    if (prefs.weighIn && !validDate(notificationRuntimeState.weighInAnchorAt)) {
+      notificationRuntimeState.weighInAnchorAt=new Date().toISOString();
+      saveNotificationRuntimeState();
+    }
+    return save({invalidateDerived:false, dirtyViews:['settings']});
+  }
+
+  async function enableSetupNotifications() {
+    if (!nativeNotificationsSupported()) { renderSetupNotificationStatus(); return; }
+    const btn=el('setupEnableNotificationsBtn');
+    if (btn) btn.disabled=true;
+    try {
+      if (!applySetupNotificationChoices()) return;
+      await setNotificationMasterEnabled(true);
+      const permission=notificationPermissionState();
+      saveSetupGuideState({notificationAttempted:true, notificationEnabled:permission === 'granted' && notificationPrefs().enabled, notificationPermission:permission});
+      renderSetupNotificationStatus();
+      setSetupGuideStep(6);
+    } finally { if (btn && !btn.hidden) btn.disabled=notificationPermissionState() === 'denied'; }
+  }
+
+  function skipSetupNotifications() {
+    saveSetupGuideState({notificationAttempted:false, notificationEnabled:notificationPrefs().enabled === true, notificationPermission:notificationPermissionState()});
+    setSetupGuideStep(6);
+  }
+
+  function setupNotificationSummary() {
+    const permission=notificationPermissionState();
+    if (permission === 'unsupported') return {text:t('setup.statusUnavailable'),good:false};
+    if (permission === 'denied') return {text:t('notifications.badgeBlocked'),good:false};
+    if (permission === 'granted' && notificationPrefs().enabled) return {text:t('notifications.badgeOn'),good:true};
+    return {text:t('notifications.badgeOff'),good:false};
+  }
+
   function setupReadyRow(label, value, kind = '') {
     const row = document.createElement('div'); row.className = 'setupChecklistRow';
     const left = document.createElement('span'); left.textContent = label;
@@ -5462,25 +6152,32 @@ layout: null
     const last = validDate(backupMeta.lastExternalBackupAt);
     box.append(setupReadyRow(t('setup.readyBackup'), last ? t('setup.statusDone') : t('setup.statusNotDone'), last ? 'good' : ''));
     box.append(setupReadyRow(t('setup.readyDefaults'), `${formatNumber(data.goalHours,0,3)}${t('unit.h')} • ${data.weightUnit}`));
+    const notificationSummary=setupNotificationSummary();
+    box.append(setupReadyRow(t('setup.readyNotifications'), notificationSummary.text, notificationSummary.good ? 'good' : ''));
   }
 
   function renderSetupGuide() {
-    const total = 5;
+    const total = 6;
     setupGuideStep = Math.max(1, Math.min(total, Number(setupGuideStep) || 1));
     document.querySelectorAll('#setupModal [data-setup-step]').forEach(node => { node.hidden = Number(node.dataset.setupStep) !== setupGuideStep; });
     const progress = el('setupProgress'); if (progress) progress.textContent = t('setup.stepProgress', {step:setupGuideStep,total});
     const back = el('setupBackBtn'), next = el('setupNextBtn');
     if (back) back.hidden = setupGuideStep === 1;
-    if (next) { next.textContent = t(setupGuideStep === total ? 'setup.finish' : 'setup.continue'); next.disabled = false; }
+    if (next) {
+      next.hidden = setupGuideStep === 5;
+      next.textContent = t(setupGuideStep === total ? 'setup.finish' : 'setup.continue');
+      next.disabled = false;
+    }
     if (setupGuideStep === 1) renderSetupInstallStep();
     else if (setupGuideStep === 2) refreshSetupStorageStatus(false);
     else if (setupGuideStep === 3) renderSetupBackupStatus();
     else if (setupGuideStep === 4) initializeSetupBasicsControls();
-    else if (setupGuideStep === 5) { renderSetupReadySummary(); if (!setupStorageResult) refreshSetupStorageStatus(false); }
+    else if (setupGuideStep === 5) initializeSetupNotificationControls();
+    else if (setupGuideStep === 6) { renderSetupReadySummary(); if (!setupStorageResult) refreshSetupStorageStatus(false); }
   }
 
   function setSetupGuideStep(step) {
-    setupGuideStep = Math.max(1, Math.min(5, Number(step) || 1));
+    setupGuideStep = Math.max(1, Math.min(6, Number(step) || 1));
     saveSetupGuideState({started:true, dismissed:false, currentStep:setupGuideStep, awaitStandalone:setupGuideStep === 1 && isMobileInstallTarget() && !isStandaloneApp()});
     renderSetupGuide();
   }
@@ -5492,11 +6189,11 @@ layout: null
     let step = Number(state.currentStep) || 1;
     if (automatic && isStandaloneApp() && (state.awaitStandalone || !hadKnownInstallAtBoot)) step = Math.max(2, step);
     if (!automatic && state.completed) step = 1;
-    setupGuideStep = Math.max(1, Math.min(5, step));
+    setupGuideStep = Math.max(1, Math.min(6, step));
     setupWeightUnitChoice = normalizeWeightUnit(data.weightUnit);
     saveSetupGuideState({started:true, dismissed:false, currentStep:setupGuideStep, awaitStandalone:setupGuideStep === 1 && isMobileInstallTarget() && !isStandaloneApp()});
     renderSetupGuide();
-    showModal('setupModal', setupGuideStep === 1 ? 'setupDismissBtn' : 'setupNextBtn');
+    showModal('setupModal', setupGuideStep === 1 ? 'setupDismissBtn' : (setupGuideStep === 5 ? 'setupSkipNotificationsBtn' : 'setupNextBtn'));
   }
 
   function dismissSetupGuide() {
@@ -5505,7 +6202,7 @@ layout: null
   }
 
   function completeSetupGuide() {
-    saveSetupGuideState({started:false, dismissed:false, completed:true, currentStep:5, awaitStandalone:false, completedAt:new Date().toISOString()});
+    saveSetupGuideState({started:false, dismissed:false, completed:true, currentStep:6, awaitStandalone:false, completedAt:new Date().toISOString()});
     hideModal('setupModal');
     activateScreen('fasting');
     try { window.scrollTo({top:0, behavior:'auto'}); } catch { window.scrollTo(0,0); }
@@ -5533,7 +6230,7 @@ layout: null
       ? t('storage.usage', {used:formatBytes(result.used), quota:formatBytes(result.quota)})
       : t('storage.usageUnknown');
     if (request) saveSetupGuideState({storageAttempted:true, storageProtected:!!result.persistent});
-    if (setupGuideStep === 5) renderSetupReadySummary();
+    if (setupGuideStep === 6) renderSetupReadySummary();
     return result;
   }
 
@@ -5583,6 +6280,7 @@ layout: null
     if (setupGuideStep === 2) { setSetupGuideStep(3); return; }
     if (setupGuideStep === 3) { setSetupGuideStep(4); return; }
     if (setupGuideStep === 4) { if (applySetupBasics()) setSetupGuideStep(5); return; }
+    if (setupGuideStep === 5) { skipSetupNotifications(); return; }
     completeSetupGuide();
   }
 

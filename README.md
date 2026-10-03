@@ -117,6 +117,25 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+## v1.8.17 optional device notifications
+
+- Adds an opt-in Settings → Notifications section. The app does not request browser/device permission until the user enables notifications.
+- Recommended notification types default on inside the notification settings: fasting target reached, 7-day external-backup due, and one neutral prolonged-fast safety reminder at 24 hours.
+- Optional weigh-in reminders (daily or weekly) and the neutral 24-hour-cycle remainder completion notice default off.
+- Includes a test-notification button, lock-screen privacy warning, notification tap routing, and duplicate suppression across reloads.
+- Remains local-first with no push server. Exact delivery while the PWA is fully closed or suspended is therefore not guaranteed; due conditions are checked while running and again when the app is reopened.
+- Caches the latest completed fast so the one-second 24-hour-cycle display no longer rescans lifetime history on every tick.
+
+## v1.8.16 neutral 24-hour-cycle wording
+
+The sub-24-hour countdown is now described as the **remaining time in a 24-hour cycle**, not as a recommended non-fasting/eating interval or a prescribed time to start the next fast. For example, a completed 23h 40m fast displays a 20m cycle remainder. The card explicitly states that this is an optional arithmetic/timing reference, not a recommendation for how long to eat or when to begin another fast.
+
+
+## v1.8.15 deleted-fast audit trail
+
+Deleting a completed fast now moves it to **Recently deleted** instead of erasing it immediately. The active fasting record is removed from normal History, Statistics, streaks and XP, while an audit entry preserves the original start/end/target/time zone plus `deleted: true`, `deletedAt`, the deletion time zone and deletion reason. External JSON backups include these deleted audit entries, and restoring such a backup keeps them deleted. Recently deleted records can be restored when they do not overlap current history, or permanently deleted; **Delete all data** removes both live and deleted history.
+
+
 ## v1.8.13 Timeline continuation context
 
 Selecting a Timeline segment now softly highlights any continuation of the same fast or non-fasting gap across adjacent day columns while keeping the selected piece strongly outlined. Midnight-spanning detail text uses “end of day” rather than pairing `23:59` with a full 24-hour duration, and full-fast comparisons use total hours (for example `28h 0m of 16h 0m target — 12h 0m beyond target`).
@@ -156,3 +175,7 @@ Stopping an active fast uses one explicit in-app confirmation showing the elapse
 ## v1.8.0 performance architecture
 
 Primary fasting/weight history and recovery snapshot payloads use IndexedDB instead of large `localStorage` JSON blobs. Small preferences/version metadata remain in `localStorage` so public information pages can follow language/theme immediately. Daily fasting totals are persisted and updated incrementally, expensive statistics are range-limited/lazy, and the supported history ceiling is 100,000 fasting records plus 100,000 weight records. The portable external backup remains JSON. Regression coverage includes both the 2,000+2,000 smoke test and a 70-year test with 25,567 fasting plus 25,567 weight records.
+
+## v1.8.18 notification onboarding
+
+The optional first-run setup now includes a dedicated Notifications step after the basic preferences and before the Ready summary. Recommended alerts (target reached, backup reminder and prolonged-fast safety) remain preselected; weigh-in and 24-hour-cycle remainder alerts remain off by default. The app does not request browser/device notification permission merely by showing the step. Permission is requested only after the user explicitly presses **Enable notifications**. **Not now** continues setup without changing the existing notification preferences. Unsupported and blocked notification environments are explained without blocking onboarding, and the final Ready summary shows notification status.

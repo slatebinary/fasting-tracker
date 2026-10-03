@@ -16,6 +16,11 @@ EXTRA_SHIM = r"""() => {
   },configurable:true});
   Object.defineProperty(navigator,'canShare',{value:()=>true,configurable:true});
   Object.defineProperty(navigator,'share',{value:async()=>{ window.__setupShared=(window.__setupShared||0)+1; },configurable:true});
+  window.__setupNotificationRequests=0;
+  const MockNotification={permission:'default',requestPermission:async()=>{ window.__setupNotificationRequests+=1; MockNotification.permission='granted'; return 'granted'; }};
+  Object.defineProperty(window,'Notification',{value:MockNotification,configurable:true});
+  const registration={showNotification:async()=>{}};
+  Object.defineProperty(navigator,'serviceWorker',{value:{ready:Promise.resolve(registration),register:async()=>({}),addEventListener:()=>{},controller:null},configurable:true});
 } """
 
 with sync_playwright() as p:
@@ -26,9 +31,9 @@ with sync_playwright() as p:
     errors=[]; page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM); page.evaluate(EXTRA_SHIM)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.13'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.18'",timeout=20000)
     page.wait_for_function("document.querySelector('#setupModal') && !document.querySelector('#setupModal').hidden",timeout=5000)
-    if 'Step 1 of 5' not in page.locator('#setupProgress').inner_text():
+    if 'Step 1 of 6' not in page.locator('#setupProgress').inner_text():
         print('FAIL: fresh installation did not start at setup step 1'); sys.exit(1)
 
     page.locator('#setupNextBtn').click()
@@ -49,9 +54,25 @@ with sync_playwright() as p:
     page.locator('#setupUnitLbBtn').click()
     page.locator('#setupGameToggle').uncheck()
     page.locator('#setupNextBtn').click()
+    page.wait_for_function("!document.querySelector('#setupStepNotifications').hidden",timeout=5000)
+    if page.evaluate("window.__setupNotificationRequests") != 0:
+        print('FAIL: notification permission was requested before explicit onboarding action'); sys.exit(1)
+    defaults={
+        'setupNotificationTargetToggle':True,
+        'setupNotificationBackupToggle':True,
+        'setupNotificationSafetyToggle':True,
+        'setupNotificationWeighToggle':False,
+        'setupNotificationCycleToggle':False,
+    }
+    for control,expected in defaults.items():
+        if page.locator('#'+control).is_checked() != expected:
+            print('FAIL: onboarding notification default mismatch for',control); sys.exit(1)
+    page.locator('#setupEnableNotificationsBtn').click()
     page.wait_for_function("!document.querySelector('#setupStepReady').hidden",timeout=5000)
+    if page.evaluate("window.__setupNotificationRequests") != 1:
+        print('FAIL: notification permission was not requested exactly once after Enable notifications'); sys.exit(1)
     summary=page.locator('#setupReadySummary').inner_text()
-    if '18h' not in summary or 'lb' not in summary or summary.count('Done') < 2:
+    if '18h' not in summary or 'lb' not in summary or summary.count('Done') < 2 or 'Notifications' not in summary or 'On' not in summary:
         print('FAIL: readiness summary does not reflect protected storage/backup/defaults:',summary); sys.exit(1)
 
     page.locator('#setupNextBtn').click()
@@ -73,9 +94,9 @@ with sync_playwright() as p:
     standalone.evaluate(STORAGE_SHIM); standalone.evaluate(EXTRA_SHIM)
     standalone.evaluate("() => Object.defineProperty(navigator,'standalone',{value:true,configurable:true})")
     standalone.set_content(inlined_html(),wait_until='domcontentloaded')
-    standalone.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.13'",timeout=20000)
+    standalone.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.18'",timeout=20000)
     standalone.wait_for_function("document.querySelector('#setupModal') && !document.querySelector('#setupModal').hidden",timeout=5000)
-    if 'Step 2 of 5' not in standalone.locator('#setupProgress').inner_text() or standalone.locator('#setupStepStorage').is_hidden():
+    if 'Step 2 of 6' not in standalone.locator('#setupProgress').inner_text() or standalone.locator('#setupStepStorage').is_hidden():
         print('FAIL: Home Screen launch did not resume at storage-protection step'); sys.exit(1)
 
     # On iPhone Safari, recommended flow blocks Next until the Home Screen app is opened, while still allowing an explicit browser-only path.
@@ -91,4 +112,4 @@ with sync_playwright() as p:
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: optional first-run setup covers Home Screen, persistent storage, first JSON backup and core defaults')
+print('PASS: optional first-run setup covers Home Screen, persistent storage, first JSON backup, core defaults and explicit notification opt-in')

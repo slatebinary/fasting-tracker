@@ -26,7 +26,7 @@ def build_data(count, base=1_767_225_600_000):
         'dataVersion': 1, 'revision': 1, 'updatedAt': '2026-01-01T00:00:00.000Z', 'goalHours': 16,
         'activeStart': None, 'activeGoalHours': None, 'activeTimeZone': None,
         'activeCreatedAt': None, 'activeModifiedAt': None,
-        'records': records, 'weights': weights, 'weightUnit': 'kg', 'targetWeightKg': 75,
+        'records': records, 'deletedFasts': [], 'weights': weights, 'weightUnit': 'kg', 'targetWeightKg': 75,
         'gamificationEnabled': True, 'language': 'en', 'appearance': 'system', 'iconChoice': 'plate'
     }
 
