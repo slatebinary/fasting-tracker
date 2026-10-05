@@ -194,9 +194,28 @@ self.addEventListener('notificationclick', event => {
   })());
 });
 
+async function releaseHealthReport() {
+  const active = await activeRelease();
+  if (!active) return {ok:false, activeVersion:null, cacheComplete:false, missingAssets:0, reason:'no-active-release', protocolVersion:UPDATE_PROTOCOL_VERSION};
+  const cache = await caches.open(releaseCacheName(active.version));
+  let missing = 0;
+  for (const canonical of active.shell) if (!(await cache.match(canonical, {ignoreSearch:true}))) missing++;
+  return {ok:true, activeVersion:active.version, cacheComplete:missing===0, missingAssets:missing, shellAssets:active.shell.length, protocolVersion:UPDATE_PROTOCOL_VERSION};
+}
+
 self.addEventListener('message', event => {
-  if (!event.data || event.data.type !== 'REFRESH_RELEASE') return;
+  if (!event.data) return;
   const port = event.ports && event.ports[0];
+  if (event.data.type === 'CHECK_HEALTH') {
+    event.waitUntil((async () => {
+      try {
+        if (Number(event.data.protocolVersion) !== UPDATE_PROTOCOL_VERSION) throw new Error('unsupported update protocol');
+        port?.postMessage(await releaseHealthReport());
+      } catch (err) { port?.postMessage({ok:false, error:String(err && err.message || err), protocolVersion:UPDATE_PROTOCOL_VERSION}); }
+    })());
+    return;
+  }
+  if (event.data.type !== 'REFRESH_RELEASE') return;
   event.waitUntil((async () => {
     try {
       if (Number(event.data.protocolVersion) !== UPDATE_PROTOCOL_VERSION) throw new Error('unsupported update protocol');
