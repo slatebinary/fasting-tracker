@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.9.1" />
+  <meta name="ft-app-version" content="1.9.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -773,6 +773,7 @@ layout: null
         <div><strong data-i18n="notifications.statusTitle">Device permission</strong><div class="small" id="notificationStatusText" aria-live="polite"></div></div>
         <button type="button" id="notificationTestBtn" class="secondary" data-i18n="notifications.test">Send test</button>
       </div>
+      <div class="small" id="notificationBlockedHelp" style="margin-top:6px" data-i18n="notifications.blockedHelp" hidden>On iPhone/iPad, check Settings → Notifications → Fasting Tracker. Home Screen web apps are managed there. If Fasting Tracker is absent there too, export a JSON backup before removing and reinstalling the Home Screen web app, then enable notifications when prompted.</div>
       <div class="small" data-i18n="notifications.deliveryLimit">Privacy-first limitation: this app has no push server. Notifications are checked while the app is running and when it is reopened; a fully closed or suspended PWA may not deliver them at the exact due time.</div>
       <div class="small" style="margin-top:6px" data-i18n="notifications.lockScreenPrivacy">Depending on your device settings, notification text may appear on the lock screen. Use the device's notification settings if you prefer to hide previews.</div>
     </div>
@@ -1194,14 +1195,14 @@ layout: null
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 19;
+  const I18N_SOURCE_REVISION = 20;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.9.1';
+  const APP_VERSION = '1.9.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -3131,6 +3132,8 @@ layout: null
     const badge = el('notificationPermissionBadge');
     badge.textContent = t(permission === 'granted' && prefs.enabled ? 'notifications.badgeOn' : permission === 'denied' ? 'notifications.badgeBlocked' : permission === 'unsupported' ? 'notifications.badgeUnavailable' : 'notifications.badgeOff');
     el('notificationStatusText').textContent = t(notificationStatusKey());
+    const blockedHelp = el('notificationBlockedHelp');
+    if (blockedHelp) blockedHelp.hidden = permission !== 'denied';
     el('notificationTestBtn').disabled = !(prefs.enabled && permission === 'granted');
   }
 
@@ -5237,13 +5240,13 @@ layout: null
     const spacing=weightPeriodMode==='daily'?(buckets.length<=30?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,(viewport-30)/29))):(buckets.length<=5?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):68);
     const first=Math.max(0,Math.floor((scroll-16)/Math.max(1,spacing))-1), last=Math.min(buckets.length-1,Math.ceil((scroll+viewport-16)/Math.max(1,spacing))+1);
     const ul=document.createElement('ul');
-    for(let i=first;i<=last;i++){const b=buckets[i];if(!b.count)continue;const li=document.createElement('li');li.textContent=`${weightBucketLongLabel(b)} — ${formatWeight(b.averageKg,data.weightUnit)}${b.count>1?` • ${b.count} ${t(pluralKey('weight.measurement',b.count))}`:''}`;ul.append(li);} box.append(ul);
+    for(let i=last;i>=first;i--){const b=buckets[i];if(!b.count)continue;const li=document.createElement('li');li.textContent=`${weightBucketLongLabel(b)} — ${formatWeight(b.averageKg,data.weightUnit)}${b.count>1?` • ${b.count} ${t(pluralKey('weight.measurement',b.count))}`:''}`;ul.append(li);} box.append(ul);
   }
   function renderStatsChartData(){
     const box=el('statsChartData'); if(!box||box.hidden)return; box.replaceChildren(); const ul=document.createElement('ul');
-    if(statsVizMode==='timeline'){for(const d of timelineChartDays){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}`;ul.append(li);}}
-    else if(statsVizMode==='trend'){for(const d of (trendChartDaysCache||[])){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber((d.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
-    else if(statsVizMode==='weeks'){for(const w of (weeklySummariesCache||[])){const li=document.createElement('li');li.textContent=`${w.label||w.key||''} — ${formatNumber((w.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
+    if(statsVizMode==='timeline'){for(const d of [...timelineChartDays].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}`;ul.append(li);}}
+    else if(statsVizMode==='trend'){for(const d of [...(trendChartDaysCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber((d.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
+    else if(statsVizMode==='weeks'){for(const w of [...(weeklySummariesCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${w.label||w.key||''} — ${formatNumber((w.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
     else { const month=el('calendarMonthTitle')?.textContent||''; const li=document.createElement('li'); li.textContent=t('a11y.calendarDataHint',{month}); ul.append(li); }
     if(!ul.children.length){const li=document.createElement('li');li.textContent=t('a11y.noChartData');ul.append(li);} box.append(ul);
   }

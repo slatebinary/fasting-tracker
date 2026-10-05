@@ -31,8 +31,8 @@ index=(ROOT/'index.html').read_text()
 en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.9.1','version must be 1.9.1')
-ok(ver.get('released')=='2026-10-04','release date must be 2026-10-03')
+ok(ver.get('version')=='1.9.2','version must be 1.9.2')
+ok(ver.get('released')=='2026-10-05','release date must be 2026-10-05')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
 for item in ver.get('shell',[]):
@@ -140,8 +140,8 @@ try:
         evaluated=json.loads(subprocess.check_output(['node',runtime_js],text=True))
         ok(evaluated==lang_dicts[lang],f'i18n runtime is stale for {lang}; run tools/build_i18n_runtime.py')
     source=json.loads((ROOT/'i18n-source.json').read_text())
-    ok(source.get('sourceRevision')==19, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.9.1', 'i18n source app version mismatch')
+    ok(source.get('sourceRevision')==20, 'i18n source revision mismatch')
+    ok(source.get('appVersion')=='1.9.2', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -261,7 +261,7 @@ ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guid
 
 
 # Internationalization-readiness regression checks
-ok('const I18N_SOURCE_REVISION = 19;' in index, 'canonical i18n source revision missing')
+ok('const I18N_SOURCE_REVISION = 20;' in index, 'canonical i18n source revision missing')
 ok('const LANGUAGE_META = Object.freeze({' in index and 'const SUPPORTED_LANGUAGES' in index, 'central language metadata missing')
 ok('new Intl.PluralRules(currentLocale()).select' in index, 'Intl.PluralRules pluralization missing')
 ok('function resolveSystemLanguage()' in index and 'navigator.languages' in index, 'system-language resolution is not future-ready')
@@ -470,14 +470,14 @@ ok("navigator.share({ files: [file] })" in index and "navigator.share({files:[fi
 ok("title: t('backup.shareTitle')" not in index and "title:t('backup.shareTitle')" not in index, 'share title can create an unwanted companion text item on iOS/cloud targets')
 
 
-# v1.9.1 completed-fast edit audit regression checks
+# v1.9.2 completed-fast edit audit regression checks
 ok('function substantialFastEdit(previous, next)' in index, 'completed-fast material-change confirmation logic missing')
 ok('editHistory: normalizeFastEditHistory(r.editHistory)' in index, 'completed-fast edit audit history is not normalized')
 ok('fastEditAuditEntry(existingRecord, nowAudit)' in index, 'completed-fast previous values are not retained before edit')
 ok("t('history.editedAt'" in index, 'edited completed fasts are not visibly marked in History')
 ok('entryAuditHelp' in index and 'history.editMaterialConfirm' in en_source, 'completed-fast edit audit/confirmation UI missing')
 
-# v1.9.1 fasting-cycle preset/countdown regression checks
+# v1.9.2 fasting-cycle preset/countdown regression checks
 ok('data-goal="12"' in index and 'data-goal="14"' in index and 'data-goal="20"' in index, '12h/14h/20h settings presets missing')
 ok('data-active-goal="12"' in index and 'data-active-goal="14"' in index and 'data-active-goal="20"' in index, '12h/14h/20h active-target presets missing')
 ok('id="nextFastCard"' in index and 'function nextFastCycleInfo' in index and 'durationMs >= dayMs' in index, 'next-fast countdown implementation missing')
@@ -572,7 +572,7 @@ ok("if (Math.abs(ms - dayEndMs) < 1000) return '23:59';" in index, 'Timeline clo
 
 
 
-# v1.9.1 soft-delete/audit regression checks
+# v1.9.2 soft-delete/audit regression checks
 ok('deletedFasts: []' in index and 'function normalizeDeletedFast(' in index, 'deleted-fast audit data model missing')
 ok('deleted: true' in index and 'deletedAt:' in index and 'deletedTimeZone:' in index, 'deleted-fast audit metadata missing')
 ok('function moveFastToDeleted(' in index and "deleteFastToAudit(r, 'user')" in index, 'History deletion is not soft-delete/audit based')
@@ -582,13 +582,13 @@ ok('deleted-fast audit record' in privacy_text.lower() and 'одитните з�
 ok((ROOT/'tests'/'test_soft_delete_audit.py').is_file(), 'soft-delete audit browser regression test missing')
 
 
-# v1.9.1 cross-day continuation/detail regression checks
+# v1.9.2 cross-day continuation/detail regression checks
 ok('stats.endOfDay' in en_source and 'stats.detailFastSplitTargetBeyond' in en_source, 'cross-day Timeline detail localization missing')
 ok('function totalHoursDuration(ms)' in index and "t('stats.endOfDay')" in index, 'cross-day Timeline must use exact end-of-day wording and total-hour duration formatting')
 ok('segment.continuationKey' in index and 'isRelatedContinuation' in index and 'ctx.setLineDash([4, 3])' in index, 'selected fast/gap continuation highlighting missing')
 ok((ROOT/'tests'/'test_timeline_continuation_highlight.py').is_file(), 'Timeline continuation browser regression test missing')
 
-# v1.9.1 optional device-notification regression checks
+# v1.9.2 optional device-notification regression checks
 ok('id="notificationsCard"' in index and 'id="notificationMasterToggle"' in index and 'id="notificationTestBtn"' in index, 'notification settings UI missing')
 ok('notificationPreferences:' in index and 'function normalizeNotificationPreferences(' in index, 'notification preferences data model missing')
 ok("targetReached: true" in index and "backupDue: true" in index and "longFastSafety: true" in index and "weighIn: false" in index and "cycleComplete: false" in index, 'notification recommended defaults are incorrect')
@@ -599,7 +599,7 @@ ok("self.addEventListener('notificationclick'" in (ROOT/'sw.js').read_text(), 's
 ok('Notifications</h2>' in privacy_text and 'Известия</h2>' in privacy_text and 'Notificaciones</h2>' in privacy_text, 'localized notification privacy disclosure missing')
 ok((ROOT/'tests'/'test_notifications.py').is_file(), 'notification browser regression test missing')
 
-# v1.9.1 notification onboarding regression checks
+# v1.9.2 notification onboarding regression checks
 ok('id="setupStepNotifications" data-setup-step="5"' in index and 'id="setupStepReady" data-setup-step="6"' in index, 'notification onboarding step/order missing')
 ok('id="setupEnableNotificationsBtn"' in index and 'id="setupSkipNotificationsBtn"' in index, 'notification onboarding explicit actions missing')
 ok('function enableSetupNotifications()' in index and 'Notification.requestPermission' in index and 'function skipSetupNotifications()' in index, 'notification onboarding explicit permission flow missing')
@@ -607,7 +607,7 @@ ok('next.hidden = setupGuideStep === 5' in index, 'generic setup Continue must n
 ok('setup.notificationsIntro' in en_source and 'setup.readyNotifications' in en_source, 'notification onboarding localization missing')
 ok((ROOT/'tests'/'test_setup_notifications.py').is_file(), 'notification-onboarding browser regression test missing')
 
-# v1.9.1 weigh-in reminder cadence interaction regression checks
+# v1.9.2 weigh-in reminder cadence interaction regression checks
 ok('id="notificationWeighDailyBtn"' in index and 'id="notificationWeighWeeklyBtn"' in index, 'Settings Daily/Weekly weigh-in cadence buttons missing')
 ok('id="setupNotificationWeighDailyBtn"' in index and 'id="setupNotificationWeighWeeklyBtn"' in index, 'onboarding Daily/Weekly weigh-in cadence buttons missing')
 ok('function renderWeighCadenceButtons(' in index and 'function setSettingsWeighCadence(' in index, 'weigh-in cadence interaction helpers missing')

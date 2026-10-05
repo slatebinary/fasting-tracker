@@ -121,6 +121,10 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+## v1.9.2 notification recovery & newest-first chart data
+
+When notification permission is blocked, Settings now gives iPhone/iPad-specific recovery guidance: use Settings → Notifications → Fasting Tracker, and if the Home Screen web app is absent there too, export a JSON backup before any reinstall. The textual **Show chart data** views now list the most recent visible data first for weight, fasting Timeline, Trend and Weeks.
+
 ## v1.9.1 completed-fast corrections
 
 Completed fasts can be corrected without deleting/recreating them. Edits preserve the record ID, reject overlaps, recalculate history/statistics/XP automatically, retain up to 100 prior values in a per-record audit trail, visibly mark edited records, and ask for confirmation only when a correction materially changes times, duration, target, calendar day, or target-completion status.

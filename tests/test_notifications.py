@@ -35,9 +35,9 @@ with sync_playwright() as p:
         'activeCreatedAt':start.isoformat().replace('+00:00','Z'),
         'activeModifiedAt':None,
     })
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.9.1',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.9.2',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.9.1'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.9.2'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click()
     page.wait_for_function("document.querySelector('#notificationsCard') && !document.querySelector('#notificationsCard').hidden",timeout=5000)
 
@@ -94,6 +94,26 @@ with sync_playwright() as p:
     test=page.evaluate("window.__ftNotifications[window.__ftNotifications.length-1]")
     if 'enabled' not in test['options']['body'].lower():
         print('FAIL: test notification content unexpected:',test); sys.exit(1)
+
+
+    denied=browser.new_page(viewport={'width':390,'height':844})
+    denied.evaluate(STORAGE_SHIM)
+    denied.evaluate("""() => {
+      const MockNotification={permission:'denied',requestPermission:async()=> 'denied'};
+      Object.defineProperty(window,'Notification',{value:MockNotification,configurable:true});
+      const sw={ready:Promise.resolve({showNotification:async()=>{}}),register:async()=>({}),addEventListener:()=>{},controller:null};
+      Object.defineProperty(navigator,'serviceWorker',{value:sw,configurable:true});
+    }""")
+    denied_data=build_data(1)
+    denied.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.9.2'})); }", denied_data)
+    denied.set_content(inlined_html(),wait_until='domcontentloaded')
+    denied.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.9.2'",timeout=20000)
+    denied.locator('.tab[data-screen="settings"]').click()
+    denied.wait_for_function("!document.querySelector('#notificationBlockedHelp')?.hidden",timeout=5000)
+    help_text=denied.locator('#notificationBlockedHelp').inner_text()
+    if 'Settings' not in help_text or 'Notifications' not in help_text or 'JSON backup' not in help_text:
+        print('FAIL: blocked notification recovery guidance is incomplete:',help_text);sys.exit(1)
+    denied.close()
 
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)

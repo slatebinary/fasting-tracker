@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 19,
-  "appVersion": "1.9.1",
+  "sourceRevision": 20,
+  "appVersion": "1.9.2",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -604,6 +604,7 @@
     "notifications.statusAllowed": "Allowed by this device. Selected notifications are active.",
     "notifications.statusOff": "Notifications are off. Turn them on to request device permission.",
     "notifications.statusBlocked": "Notifications are blocked in browser/device settings. Fasting Tracker cannot change that setting for you.",
+    "notifications.blockedHelp": "On iPhone/iPad, check Settings → Notifications → Fasting Tracker. Home Screen web apps are managed there. If Fasting Tracker is absent there too, export a JSON backup before removing and reinstalling the Home Screen web app, then enable notifications when prompted.",
     "notifications.statusPermissionNeeded": "Permission has not been granted yet. Turn notifications off and on again to request it.",
     "notifications.statusUnsupported": "Device notifications are not available in this browser or app context.",
     "notifications.statusInstallIOS": "On iPhone/iPad, install and open Fasting Tracker from the Home Screen to enable supported web-app notifications.",

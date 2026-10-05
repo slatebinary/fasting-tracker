@@ -600,6 +600,7 @@
   "notifications.statusAllowed": "Permitidas por este dispositivo. Las notificaciones seleccionadas están activas.",
   "notifications.statusOff": "Las notificaciones están desactivadas. Actívalas para solicitar permiso al dispositivo.",
   "notifications.statusBlocked": "Las notificaciones están bloqueadas en los ajustes del navegador/dispositivo. Fasting Tracker no puede cambiar ese ajuste por ti.",
+  "notifications.blockedHelp": "En iPhone/iPad, revisa Ajustes → Notificaciones → Fasting Tracker. Las apps web de la pantalla de inicio se gestionan allí. Si Fasting Tracker tampoco aparece, exporta primero una copia JSON antes de eliminar y reinstalar la app web de la pantalla de inicio; después, permite las notificaciones cuando se solicite.",
   "notifications.statusPermissionNeeded": "Todavía no se ha concedido permiso. Desactiva y vuelve a activar las notificaciones para solicitarlo.",
   "notifications.statusUnsupported": "Las notificaciones del dispositivo no están disponibles en este navegador o contexto de la app.",
   "notifications.statusInstallIOS": "En iPhone/iPad, instala y abre Fasting Tracker desde la pantalla de inicio para usar las notificaciones web compatibles.",
