@@ -244,3 +244,4 @@ The optional first-run setup now includes a dedicated Notifications step after t
 - Main-page support logic is beginning to move into versioned helper modules under `js/` to reduce the maintenance risk of one monolithic script.
 - Added four fasting graphic views: 12-month totals, duration distribution, monthly target-success rate and start-time pattern. All expose text equivalents through Show chart data.
 - `ACCESSIBILITY-CHECKLIST.txt` adds a real-device VoiceOver/Dynamic Type/orientation release pass.
+
