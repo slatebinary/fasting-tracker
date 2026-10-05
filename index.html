@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.8.18" />
+  <meta name="ft-app-version" content="1.9.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -201,6 +201,9 @@ layout: null
     .small { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
     .goalInputWrap { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
     select { max-width: 190px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
+    .notificationCadenceToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); gap:2px; }
+    .notificationCadenceToggle button { min-width:74px; padding:8px 11px; border-radius:9px; background:transparent; color:var(--text); font-size:13px; }
+    .notificationCadenceToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 3px rgba(0,0,0,.08); }
     input.numericInput { width: 112px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; text-align: end; }
     .presetWrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .chip { padding: 9px 12px; border-radius: 999px; background: var(--line); color: var(--text); font-size: 13px; }
@@ -268,6 +271,8 @@ layout: null
     .weightChartShell { display:grid; grid-template-columns:46px minmax(0,1fr); align-items:start; width:100%; margin-top:4px; }
     .weightChartYAxis { width:46px; height:240px; display:block; pointer-events:none; }
     .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; }
+    .chartDataList { margin-top:10px; border-top:1px solid var(--line); padding-top:8px; }
+    .chartDataList ul { margin:6px 0 0; padding-left:20px; }
     .weightChartTrack { position:relative; min-width:100%; height:240px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
     .weightPeriodSwitcher { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:4px 2px 8px; margin:2px -2px 10px; touch-action:pan-x; }
@@ -578,8 +583,15 @@ layout: null
       </div>
       <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Daily shows individual measurements. Other views show one average point per calendar period. Tap a point for its value and time/period. Scroll left for older data; the chart opens at the newest values. All individual entries remain available below.</div>
       <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
+      <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
+      <div id="weightChartData" class="chartDataList small" hidden></div>
     </div>
     <div class="card weightHistory" id="weightHistoryList"></div>
+    <div class="card" id="deletedWeightsCard" style="margin-top:14px" hidden>
+      <div class="sectionHeader"><h2 data-i18n="weight.deletedTitle">Recently deleted weights</h2><span class="small" id="deletedWeightsCount"></span></div>
+      <div class="small" data-i18n="weight.deletedHelp">Deleted weight entries are excluded from charts, statistics and XP, but remain in JSON backups until restored or permanently deleted.</div>
+      <div id="deletedWeightsList" style="margin-top:10px"></div>
+    </div>
   </section>
 
   <section id="stats" class="screen">
@@ -630,6 +642,8 @@ layout: null
         <div class="small" id="chartDetailText" data-i18n="stats.chartDetailDefaultText" style="margin-top:6px">Tap a date, segment, point or week for details.</div>
       </div>
       <div class="small" id="statsVizHelp" data-i18n="stats.timelineHelp">Timeline shows each day's 24 hours vertically: colored sections are fasting and gaps are eating/non-fasting time.</div>
+      <button id="statsChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
+      <div id="statsChartData" class="chartDataList small" hidden></div>
     </div>
     <div class="card gamificationDetail" id="gamificationDetail" style="margin-top:14px">
       <div class="sectionHeader"><h2 data-i18n="game.progress">Progress &amp; achievements</h2><span class="levelPill" id="gDetailLevel">Level 1</span></div>
@@ -662,6 +676,19 @@ layout: null
         <div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup, basic preferences and notifications.</div></div>
         <button id="setupGuideBtn" class="secondary" data-i18n="setup.open">Setup guide</button>
       </div>
+    </div>
+    <div class="card" id="storageHealthCard">
+      <div class="sectionHeader"><h2 data-i18n="storage.healthTitle">Data &amp; storage health</h2><button id="diagnosticExportBtn" class="secondary" type="button" data-i18n="diagnostics.export">Export diagnostics</button></div>
+      <div class="grid" style="margin-top:10px">
+        <div class="metric"><div class="value" id="healthRecordCount">—</div><div class="label" data-i18n="storage.healthRecords">Active records</div></div>
+        <div class="metric"><div class="value" id="healthDeletedCount">—</div><div class="label" data-i18n="storage.healthDeleted">Deleted audit records</div></div>
+        <div class="metric"><div class="value" id="healthSnapshotCount">—</div><div class="label" data-i18n="storage.healthSnapshots">Recovery snapshots</div></div>
+        <div class="metric"><div class="value" id="healthBackupAge">—</div><div class="label" data-i18n="storage.healthBackup">External backup</div></div>
+      </div>
+      <div class="small" id="healthPersistence" style="margin-top:10px"></div>
+      <div class="small" id="healthUsage"></div>
+      <div class="small" id="healthLastSave"></div>
+      <div class="small" id="healthProtection"></div>
     </div>
     <div class="card">
       <div class="row">
@@ -736,7 +763,7 @@ layout: null
       </div>
       <div class="row">
         <div><strong id="notificationWeighLabel" data-i18n="notifications.weighIn">Weigh-in reminder</strong><div class="small" data-i18n="notifications.weighInHelp">Optional reminder after the selected interval has passed since the latest weight entry.</div></div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><select id="notificationWeighCadence" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><option value="daily" data-i18n="notifications.daily">Daily</option><option value="weekly" data-i18n="notifications.weekly">Weekly</option></select><label class="toggleWrap"><input id="notificationWeighToggle" type="checkbox" aria-labelledby="notificationWeighLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><input id="notificationWeighCadence" type="hidden" value="weekly"><div class="notificationCadenceToggle" id="notificationWeighCadenceButtons" role="group" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><button id="notificationWeighDailyBtn" type="button" data-notification-cadence="daily" aria-pressed="false" data-i18n="notifications.daily">Daily</button><button id="notificationWeighWeeklyBtn" type="button" data-notification-cadence="weekly" aria-pressed="true" class="active" data-i18n="notifications.weekly">Weekly</button></div><label class="toggleWrap"><input id="notificationWeighToggle" type="checkbox" aria-labelledby="notificationWeighLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
       </div>
       <div class="row">
         <div><strong id="notificationCycleLabel" data-i18n="notifications.cycleComplete">24-hour-cycle remainder completed</strong><div class="small" data-i18n="notifications.cycleCompleteHelp">Optional neutral timing notice when the mathematical remainder after a sub-24-hour fast reaches zero.</div></div>
@@ -772,7 +799,7 @@ layout: null
         <input id="importFile" type="file" accept="application/json,.json" hidden>
       </div>
       <div class="row">
-        <div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting, deleted-fast audit history and weight history on this device</div></div>
+        <div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting history, deleted-fast audit history, weight history and deleted-weight audit history on this device</div></div>
         <button id="resetBtn" class="dangerText" data-i18n="common.delete">Delete</button>
       </div>
     </div>
@@ -907,7 +934,8 @@ layout: null
         <label class="setupInlineToggle"><input id="setupNotificationSafetyToggle" type="checkbox"><span data-i18n="notifications.longFastSafety">Prolonged-fast safety reminder</span></label>
         <div class="row" style="padding:0;border:0;align-items:center">
           <label class="setupInlineToggle" style="margin:0"><input id="setupNotificationWeighToggle" type="checkbox"><span data-i18n="notifications.weighIn">Weigh-in reminder</span></label>
-          <select id="setupNotificationWeighCadence" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><option value="daily" data-i18n="notifications.daily">Daily</option><option value="weekly" data-i18n="notifications.weekly">Weekly</option></select>
+          <input id="setupNotificationWeighCadence" type="hidden" value="weekly">
+          <div class="notificationCadenceToggle" id="setupNotificationWeighCadenceButtons" role="group" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><button id="setupNotificationWeighDailyBtn" type="button" data-setup-notification-cadence="daily" aria-pressed="false" data-i18n="notifications.daily">Daily</button><button id="setupNotificationWeighWeeklyBtn" type="button" data-setup-notification-cadence="weekly" aria-pressed="true" class="active" data-i18n="notifications.weekly">Weekly</button></div>
         </div>
         <label class="setupInlineToggle"><input id="setupNotificationCycleToggle" type="checkbox"><span data-i18n="notifications.cycleComplete">24-hour-cycle remainder completed</span></label>
       </div>
@@ -1013,6 +1041,7 @@ layout: null
       <input id="entryGoal" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
     </div>
     <div class="small" data-i18n="history.overlapHelp">Manual entries cannot overlap another saved fast or the current active fast.</div>
+    <div class="small" id="entryAuditHelp" data-i18n="history.editAuditHelp" hidden>Corrections keep the same record ID. Previous values are retained in the edit audit history and included in JSON backups.</div>
     <div class="formError" id="entryError" hidden></div>
     <div class="modalActions">
       <button id="entryCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
@@ -1036,6 +1065,22 @@ layout: null
     <div class="modalActions">
       <button id="weightCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
       <button id="weightSaveBtn" class="primary" data-i18n="common.save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="importPreviewModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="importPreviewTitle">
+    <h2 id="importPreviewTitle" data-i18n="import.previewTitle">Preview backup import</h2>
+    <div class="small" id="importPreviewMeta"></div>
+    <div class="small" id="importPreviewCounts" style="margin-top:8px"></div>
+    <div class="small" id="importPreviewRange" style="margin-top:6px"></div>
+    <div class="small" data-i18n="import.previewHelp" style="margin-top:8px">Replace overwrites this installation. Merge keeps both datasets, removes exact duplicates and stops if conflicting fasting records are detected.</div>
+    <div class="formError" id="importPreviewError" hidden></div>
+    <div class="modalActions wrap">
+      <button id="importPreviewCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button>
+      <button id="importPreviewMergeBtn" class="secondary" type="button" data-i18n="import.merge">Merge backup</button>
+      <button id="importPreviewReplaceBtn" class="primary" type="button" data-i18n="import.replace">Replace data</button>
     </div>
   </div>
 </div>
@@ -1136,7 +1181,7 @@ layout: null
   const DATA_REVISION_SIGNAL_KEY = 'fastingTracker.dataRevision';
   const PREFS_KEY = 'fastingTracker.preferences';
   const IDB_NAME = 'FastingTrackerDB';
-  const IDB_VERSION = 1;
+  const IDB_VERSION = 2;
   const BACKUP_META_KEY = 'fastingTracker.backupMeta';
   const APP_META_KEY = 'fastingTracker.appMeta';
   const INSTALL_NOTICE_KEY = 'fastingTracker.installStorageNoticeDismissed';
@@ -1149,14 +1194,14 @@ layout: null
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 17;
+  const I18N_SOURCE_REVISION = 19;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.8.18';
+  const APP_VERSION = '1.9.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1170,11 +1215,12 @@ layout: null
   const MAX_IMPORT_FASTS = 100000;
   const MAX_IMPORT_WEIGHTS = 100000;
   const MAX_IMPORT_DELETED_FASTS = 100000;
+  const MAX_FAST_EDIT_AUDIT = 100;
   const HISTORY_PAGE_SIZE = 50;
   const MAX_DATE_MS = 8.64e15;
   // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
   const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
-  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false }, language: 'system', appearance: 'system', iconChoice: 'plate' };
+  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false }, language: 'system', appearance: 'system', iconChoice: 'plate' };
   const timeZoneValidityCache = new Map();
   const numberSymbolsCache = new Map();
   const zonedFormatterCache = new Map();
@@ -1201,6 +1247,12 @@ layout: null
   let snapshotCache = [];
   let storedDayTotalsMap = new Map();
   let persistedRecordMap = new Map();
+  let dayTotalsRecordMap = new Map();
+  let persistedDeletedFastMap = new Map();
+  let persistedWeightMap = new Map();
+  let persistedDeletedWeightMap = new Map();
+  let lastSuccessfulIdbSaveAt = null;
+  const diagnosticErrors = [];
   let primaryPersistTicket = 0;
   let primaryPersistPromise = Promise.resolve();
   let appDbPromise = null;
@@ -1565,6 +1617,33 @@ layout: null
     };
   }
 
+  function normalizeDeletedWeight(w) {
+    const weight = normalizeWeightEntry(w);
+    const deletedAt = validDate(w?.deletedAt);
+    if (!weight || !deletedAt) return null;
+    const reason = typeof w.deletionReason === 'string' && w.deletionReason.length <= 80 ? w.deletionReason : 'user';
+    return {...weight, deleted:true, deletedAt:deletedAt.toISOString(), deletedTimeZone:normalizeTimeZone(w.deletedTimeZone), deletionReason:reason};
+  }
+
+  function normalizeFastEditAuditEntry(entry) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+    const editedAt = validDate(entry.editedAt), start = validDate(entry.start), end = validDate(entry.end);
+    if (!editedAt || !start || !end || end <= start) return null;
+    return {
+      editedAt: editedAt.toISOString(),
+      editedTimeZone: normalizeTimeZone(entry.editedTimeZone),
+      start: start.toISOString(),
+      end: end.toISOString(),
+      goalHours: sanitizeGoal(entry.goalHours, 16),
+      timeZone: normalizeTimeZone(entry.timeZone)
+    };
+  }
+
+  function normalizeFastEditHistory(value) {
+    if (!Array.isArray(value)) return [];
+    return value.map(normalizeFastEditAuditEntry).filter(Boolean).slice(-MAX_FAST_EDIT_AUDIT);
+  }
+
   function formatGoal(hours) {
     const n = sanitizeGoal(hours, 16);
     return `${n.toLocaleString(currentLocale(), { maximumFractionDigits: 3 })} ${t(pluralKey('unit.hour', n))}`;
@@ -1585,6 +1664,10 @@ layout: null
         if (!db.objectStoreNames.contains('state')) db.createObjectStore('state', {keyPath:'key'});
         if (!db.objectStoreNames.contains('snapshotMeta')) db.createObjectStore('snapshotMeta', {keyPath:'id'});
         if (!db.objectStoreNames.contains('snapshotPayload')) db.createObjectStore('snapshotPayload', {keyPath:'id'});
+        if (!db.objectStoreNames.contains('records')) db.createObjectStore('records', {keyPath:'id'});
+        if (!db.objectStoreNames.contains('deletedFasts')) db.createObjectStore('deletedFasts', {keyPath:'id'});
+        if (!db.objectStoreNames.contains('weights')) db.createObjectStore('weights', {keyPath:'id'});
+        if (!db.objectStoreNames.contains('deletedWeights')) db.createObjectStore('deletedWeights', {keyPath:'id'});
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
@@ -1645,6 +1728,66 @@ layout: null
     });
   }
 
+  function dataSettingsOnly(source = data) {
+    const out = {...source};
+    delete out.records; delete out.deletedFasts; delete out.weights; delete out.deletedWeights;
+    return out;
+  }
+
+  function recordMap(list) { return new Map((Array.isArray(list) ? list : []).map(item => [item.id, item])); }
+  function sameStoredValue(a, b) { return a === b || (a && b && JSON.stringify(a) === JSON.stringify(b)); }
+
+  async function loadRecordBasedData() {
+    const settingsRow = await idbGet('state', 'settings');
+    if (!settingsRow?.data) return null;
+    const [records, deletedFasts, weights, deletedWeights] = await Promise.all([
+      idbGetAll('records'), idbGetAll('deletedFasts'), idbGetAll('weights'), idbGetAll('deletedWeights')
+    ]);
+    return {...cloneDefault(), ...settingsRow.data, records, deletedFasts, weights, deletedWeights};
+  }
+
+  function noteDiagnosticError(code) {
+    const safe = String(code || 'unknown').replace(/[^a-z0-9_.-]/gi,'').slice(0,60) || 'unknown';
+    diagnosticErrors.push({code:safe, at:new Date().toISOString()});
+    if (diagnosticErrors.length > 20) diagnosticErrors.splice(0, diagnosticErrors.length - 20);
+  }
+
+  async function persistRecordStores(snapshotData = data, {force = false} = {}) {
+    const db = await openAppDb();
+    const stores = ['state','records','deletedFasts','weights','deletedWeights'];
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(stores, 'readwrite');
+      const state = tx.objectStore('state');
+      const targetRecordMap = recordMap(snapshotData.records), targetDeletedFastMap = recordMap(snapshotData.deletedFasts), targetWeightMap = recordMap(snapshotData.weights), targetDeletedWeightMap = recordMap(snapshotData.deletedWeights);
+      const collections = [
+        ['records', targetRecordMap, persistedRecordMap],
+        ['deletedFasts', targetDeletedFastMap, persistedDeletedFastMap],
+        ['weights', targetWeightMap, persistedWeightMap],
+        ['deletedWeights', targetDeletedWeightMap, persistedDeletedWeightMap]
+      ];
+      state.put({key:'settings', data:dataSettingsOnly(snapshotData)});
+      state.put({key:'dailyTotals', revision:snapshotData.revision, entries:[...storedDayTotalsMap.entries()]});
+      for (const [storeName, next, previous] of collections) {
+        const store = tx.objectStore(storeName);
+        if (force) store.clear();
+        else for (const id of previous.keys()) if (!next.has(id)) store.delete(id);
+        for (const [id, value] of next) if (force || !sameStoredValue(previous.get(id), value)) store.put(value);
+      }
+      const savedAt = new Date().toISOString();
+      state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:snapshotData.revision});
+      tx.oncomplete = () => {
+        persistedRecordMap = targetRecordMap;
+        persistedDeletedFastMap = targetDeletedFastMap;
+        persistedWeightMap = targetWeightMap;
+        persistedDeletedWeightMap = targetDeletedWeightMap;
+        lastSuccessfulIdbSaveAt = savedAt;
+        resolve(true);
+      };
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB record persistence failed'));
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB record persistence aborted'));
+    });
+  }
+
   function canonicalRecordFingerprint(r) {
     return `${r.start}|${r.end}|${r.timeZone || ''}`;
   }
@@ -1681,7 +1824,7 @@ layout: null
   function updateStoredDayTotalsIncrementally() {
     const nextMap = new Map(data.records.map(r => [r.id, r]));
     // Remove deleted or changed old contributions.
-    for (const [id, oldRecord] of persistedRecordMap) {
+    for (const [id, oldRecord] of dayTotalsRecordMap) {
       const next = nextMap.get(id);
       if (next && canonicalRecordFingerprint(next) === canonicalRecordFingerprint(oldRecord)) continue;
       for (const [key, ms] of recordDayContribution(oldRecord)) {
@@ -1691,11 +1834,11 @@ layout: null
     }
     // Add new or changed contributions.
     for (const [id, next] of nextMap) {
-      const oldRecord = persistedRecordMap.get(id);
+      const oldRecord = dayTotalsRecordMap.get(id);
       if (oldRecord && canonicalRecordFingerprint(next) === canonicalRecordFingerprint(oldRecord)) continue;
       for (const [key, ms] of recordDayContribution(next)) storedDayTotalsMap.set(key, (storedDayTotalsMap.get(key)||0) + ms);
     }
-    persistedRecordMap = nextMap;
+    dayTotalsRecordMap = nextMap;
   }
 
   function persistSmallPreferences() {
@@ -1714,12 +1857,16 @@ layout: null
     await idbPut('state', {key:'dailyTotals', revision, entries:[...storedDayTotalsMap.entries()]});
   }
 
-  async function persistPrimaryNow(snapshotData = data) {
+  async function persistPrimaryNow(snapshotData = data, options = {}) {
     persistSmallPreferences();
-    await idbPut('state', {key:'primary', data:snapshotData});
-    await persistDailyTotals(snapshotData.revision);
-    try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:snapshotData.revision, at:Date.now()})); } catch {}
-    return true;
+    try {
+      await persistRecordStores(snapshotData, options);
+      try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:snapshotData.revision, at:Date.now()})); } catch {}
+      return true;
+    } catch (err) {
+      noteDiagnosticError('idb_save_failed');
+      throw err;
+    }
   }
 
   let primaryPersistScheduled = false;
@@ -1748,11 +1895,37 @@ layout: null
     try { await persistPrimaryNow(data); } catch {}
   }
 
+  async function encodeSnapshotPayload(snapshotData) {
+    const json = JSON.stringify(snapshotData);
+    if (typeof CompressionStream === 'function') {
+      try {
+        const stream = new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));
+        const blob = await new Response(stream).blob();
+        return {encoding:'gzip-json', blob, originalBytes:new Blob([json]).size, storedBytes:blob.size};
+      } catch {}
+    }
+    return {encoding:'json', json, originalBytes:new Blob([json]).size, storedBytes:new Blob([json]).size};
+  }
+
+  async function decodeSnapshotPayload(row) {
+    if (!row) return null;
+    if (row.data) return row.data; // v1.8.x compatibility
+    if (row.encoding === 'json' && typeof row.json === 'string') return JSON.parse(row.json);
+    if (row.encoding === 'gzip-json' && row.blob && typeof DecompressionStream === 'function') {
+      const text = await new Response(row.blob.stream().pipeThrough(new DecompressionStream('gzip'))).text();
+      return JSON.parse(text);
+    }
+    return null;
+  }
+
   async function persistSnapshotRecord(meta, snapshotData) {
+    const payload = await encodeSnapshotPayload(snapshotData);
+    const enriched = {...meta, payloadEncoding:payload.encoding, originalBytes:payload.originalBytes, storedBytes:payload.storedBytes};
     await Promise.all([
-      idbPut('snapshotMeta', meta),
-      idbPut('snapshotPayload', {id:meta.id, data:snapshotData})
+      idbPut('snapshotMeta', enriched),
+      idbPut('snapshotPayload', {id:meta.id, ...payload})
     ]);
+    Object.assign(meta, enriched);
   }
 
   async function deleteSnapshotRecord(id) {
@@ -1761,14 +1934,16 @@ layout: null
 
   async function loadSnapshotPayload(id) {
     const row = await idbGet('snapshotPayload', id);
-    return row?.data || null;
+    return decodeSnapshotPayload(row);
   }
 
   async function initializePersistentStorage() {
     try {
-      const dbPrimary = await idbGet('state', 'primary');
-      let loaded = dbPrimary?.data || null;
+      const recordBased = await loadRecordBasedData();
+      const dbPrimary = recordBased ? null : await idbGet('state', 'primary');
+      let loaded = recordBased || dbPrimary?.data || null;
       let migratedLegacy = false;
+      let migratedPrimaryObject = !!dbPrimary?.data && !recordBased;
       let canonicalizedStored = false;
       if (!loaded) {
         const legacyRaw = getStoredDataRaw();
@@ -1780,7 +1955,7 @@ layout: null
       if (loaded) {
         // Data already written by this app is canonical; avoid O(n) re-validation
         // on every launch. Full validation remains mandatory for legacy/import data.
-        if (!migratedLegacy && loaded.dataVersion === DATA_VERSION && Array.isArray(loaded.records) && Array.isArray(loaded.deletedFasts) && Array.isArray(loaded.weights) && loaded.records.length <= MAX_IMPORT_FASTS && loaded.deletedFasts.length <= MAX_IMPORT_DELETED_FASTS && loaded.weights.length <= MAX_IMPORT_WEIGHTS) data = loaded;
+        if (!migratedLegacy && loaded.dataVersion === DATA_VERSION && Array.isArray(loaded.records) && Array.isArray(loaded.deletedFasts) && Array.isArray(loaded.weights) && Array.isArray(loaded.deletedWeights) && loaded.records.length <= MAX_IMPORT_FASTS && loaded.deletedFasts.length <= MAX_IMPORT_DELETED_FASTS && loaded.weights.length <= MAX_IMPORT_WEIGHTS) data = loaded;
         else {
           const prepared = validateCompatibleData(loaded);
           data = prepared.data;
@@ -1812,10 +1987,19 @@ layout: null
         storedDayTotalsMap = buildStoredDayTotals(data.records);
         await persistDailyTotals(data.revision);
       }
-      persistedRecordMap = new Map(data.records.map(r => [r.id, r]));
+      persistedRecordMap = recordBased ? recordMap(data.records) : new Map();
+      persistedDeletedFastMap = recordBased ? recordMap(data.deletedFasts) : new Map();
+      persistedWeightMap = recordBased ? recordMap(data.weights) : new Map();
+      persistedDeletedWeightMap = recordBased ? recordMap(data.deletedWeights) : new Map();
+      dayTotalsRecordMap = recordMap(data.records);
+      const persistenceMeta = await idbGet('state', 'persistenceMeta');
+      lastSuccessfulIdbSaveAt = persistenceMeta?.lastSuccessfulSaveAt || null;
       persistSmallPreferences();
 
-      if (migratedLegacy || canonicalizedStored) await persistPrimaryNow(data);
+      if (migratedLegacy || canonicalizedStored || migratedPrimaryObject) {
+        await persistPrimaryNow(data, {force:true});
+        try { await idbDelete('state', 'primary'); } catch {}
+      }
       try { localStorage.removeItem(DATA_KEY); localStorage.removeItem(SNAPSHOT_KEY); } catch {}
 
       let appMeta = {};
@@ -2089,7 +2273,8 @@ layout: null
       goalHours: sanitizeGoal(r.goalHours, 16),
       timeZone: normalizeTimeZone(r.timeZone),
       createdAt: normalizeAuditTimestamp(r.createdAt),
-      modifiedAt: normalizeAuditTimestamp(r.modifiedAt)
+      modifiedAt: normalizeAuditTimestamp(r.modifiedAt),
+      editHistory: normalizeFastEditHistory(r.editHistory)
     };
   }
 
@@ -2144,6 +2329,7 @@ layout: null
       records: Array.isArray(parsed.records) ? parsed.records.map(normalizeRecord).filter(Boolean) : [],
       deletedFasts: Array.isArray(parsed.deletedFasts) ? parsed.deletedFasts.map(normalizeDeletedFast).filter(Boolean) : [],
       weights: Array.isArray(parsed.weights) ? parsed.weights.map(normalizeWeightEntry).filter(Boolean) : [],
+      deletedWeights: Array.isArray(parsed.deletedWeights) ? parsed.deletedWeights.map(normalizeDeletedWeight).filter(Boolean) : [],
       weightUnit: normalizeWeightUnit(parsed.weightUnit),
       targetWeightKg: sanitizeWeightKg(parsed.targetWeightKg, null),
       gamificationEnabled: parsed.gamificationEnabled !== false,
@@ -2171,6 +2357,7 @@ layout: null
     if (candidate.records === undefined) { candidate.records = []; changed = true; }
     if (candidate.deletedFasts === undefined) { candidate.deletedFasts = []; changed = true; }
     if (candidate.weights === undefined) { candidate.weights = []; changed = true; }
+    if (candidate.deletedWeights === undefined) { candidate.deletedWeights = []; changed = true; }
 
     if (candidate.revision != null && (!Number.isInteger(candidate.revision) || candidate.revision < 0)) mark('revision', 0);
     if (candidate.updatedAt != null && !validDate(candidate.updatedAt)) mark('updatedAt', null);
@@ -2221,6 +2408,8 @@ layout: null
           const audit = normalizeAuditTimestamp(next[key]);
           if (next[key] !== audit) { next[key] = audit; changed = true; }
         }
+        const editHistory = normalizeFastEditHistory(next.editHistory);
+        if (!Array.isArray(next.editHistory) || JSON.stringify(next.editHistory) !== JSON.stringify(editHistory)) { next.editHistory = editHistory; changed = true; }
         // Canonicalize valid timestamps without guessing damaged core dates.
         if (start && next.start !== start.toISOString()) { next.start = start.toISOString(); changed = true; }
         if (end && next.end !== end.toISOString()) { next.end = end.toISOString(); changed = true; }
@@ -2251,6 +2440,8 @@ layout: null
           const audit = normalizeAuditTimestamp(next[key]);
           if (next[key] !== audit) { next[key] = audit; changed = true; }
         }
+        const editHistory = normalizeFastEditHistory(next.editHistory);
+        if (!Array.isArray(next.editHistory) || JSON.stringify(next.editHistory) !== JSON.stringify(editHistory)) { next.editHistory = editHistory; changed = true; }
         if (start && next.start !== start.toISOString()) { next.start = start.toISOString(); changed = true; }
         if (end && next.end !== end.toISOString()) { next.end = end.toISOString(); changed = true; }
         const deletedAt = validDate(next.deletedAt);
@@ -2292,6 +2483,29 @@ layout: null
       });
     }
 
+    const usedDeletedWeightIds = new Set();
+    if (Array.isArray(candidate.deletedWeights)) {
+      candidate.deletedWeights = candidate.deletedWeights.map((weight, index) => {
+        if (!weight || typeof weight !== 'object' || Array.isArray(weight)) return weight;
+        const next = {...weight};
+        const when = validDate(next.when);
+        const baseId = `deleted-weight-${index + 1}-${when ? when.getTime() : index}`.slice(0,110);
+        let id = typeof next.id === 'string' && next.id && next.id.length <= 120 ? next.id : baseId;
+        if (usedDeletedWeightIds.has(id)) { let suffix=2; while (usedDeletedWeightIds.has(`${baseId}-${suffix}`)) suffix++; id=`${baseId}-${suffix}`.slice(0,120); }
+        usedDeletedWeightIds.add(id);
+        if (next.id !== id) { next.id=id; changed=true; }
+        const zone=normalizeTimeZone(next.timeZone,fallbackZone); if(next.timeZone!==zone){next.timeZone=zone;changed=true;}
+        const kg=sanitizeWeightKg(next.kg,null); if(kg!=null&&next.kg!==kg){next.kg=kg;changed=true;}
+        for (const key of ['createdAt','modifiedAt']) { const audit=normalizeAuditTimestamp(next[key]); if(next[key]!==audit){next[key]=audit;changed=true;} }
+        if(when&&next.when!==when.toISOString()){next.when=when.toISOString();changed=true;}
+        const deletedAt=validDate(next.deletedAt); if(deletedAt&&next.deletedAt!==deletedAt.toISOString()){next.deletedAt=deletedAt.toISOString();changed=true;}
+        if(next.deleted!==true){next.deleted=true;changed=true;}
+        const deletedZone=normalizeTimeZone(next.deletedTimeZone,fallbackZone); if(next.deletedTimeZone!==deletedZone){next.deletedTimeZone=deletedZone;changed=true;}
+        const reason=typeof next.deletionReason==='string'&&next.deletionReason.length<=80?next.deletionReason:'user'; if(next.deletionReason!==reason){next.deletionReason=reason;changed=true;}
+        return next;
+      });
+    }
+
     if (candidate.activeStart != null) {
       const active = validDate(candidate.activeStart);
       if (active && candidate.activeStart !== active.toISOString()) mark('activeStart', active.toISOString());
@@ -2323,10 +2537,10 @@ layout: null
   function validateImportedData(rawData) {
     rawData = migrateData(rawData);
     if (rawData.dataVersion !== DATA_VERSION) throw new Error('unsupported data format');
-    if (!Array.isArray(rawData.records) || !Array.isArray(rawData.deletedFasts) || !Array.isArray(rawData.weights)) throw new Error('missing arrays');
+    if (!Array.isArray(rawData.records) || !Array.isArray(rawData.deletedFasts) || !Array.isArray(rawData.weights) || !Array.isArray(rawData.deletedWeights)) throw new Error('missing arrays');
     if (rawData.revision != null && (!Number.isInteger(rawData.revision) || rawData.revision < 0)) throw new Error('invalid revision');
     if (rawData.updatedAt != null && !validDate(rawData.updatedAt)) throw new Error('invalid updated time');
-    if (rawData.records.length > MAX_IMPORT_FASTS || rawData.deletedFasts.length > MAX_IMPORT_DELETED_FASTS || rawData.weights.length > MAX_IMPORT_WEIGHTS) throw new Error('too many records');
+    if (rawData.records.length > MAX_IMPORT_FASTS || rawData.deletedFasts.length > MAX_IMPORT_DELETED_FASTS || rawData.weights.length > MAX_IMPORT_WEIGHTS || rawData.deletedWeights.length > MAX_IMPORT_WEIGHTS) throw new Error('too many records');
     if (!Number.isFinite(parseLocalizedNumber(rawData.goalHours)) || parseLocalizedNumber(rawData.goalHours) <= 0 || parseLocalizedNumber(rawData.goalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid default goal');
     if (!['kg','lb'].includes(rawData.weightUnit)) throw new Error('invalid weight unit');
     if (rawData.language != null && typeof rawData.language !== 'string') throw new Error('invalid language');
@@ -2356,6 +2570,7 @@ layout: null
       if (!isValidTimeZone(r.timeZone)) throw new Error('invalid record timezone');
       if (r.createdAt != null && !validDate(r.createdAt)) throw new Error('invalid record creation time');
       if (r.modifiedAt != null && !validDate(r.modifiedAt)) throw new Error('invalid record modification time');
+      if (!Array.isArray(r.editHistory) || r.editHistory.length > MAX_FAST_EDIT_AUDIT || normalizeFastEditHistory(r.editHistory).length !== r.editHistory.length) throw new Error('invalid record edit audit');
       const normalized = normalizeRecord(r);
       if (!normalized) throw new Error('invalid fasting record');
       return normalized;
@@ -2372,6 +2587,7 @@ layout: null
       if (!isValidTimeZone(r.timeZone)) throw new Error('invalid deleted fast timezone');
       if (r.createdAt != null && !validDate(r.createdAt)) throw new Error('invalid deleted fast creation time');
       if (r.modifiedAt != null && !validDate(r.modifiedAt)) throw new Error('invalid deleted fast modification time');
+      if (!Array.isArray(r.editHistory) || r.editHistory.length > MAX_FAST_EDIT_AUDIT || normalizeFastEditHistory(r.editHistory).length !== r.editHistory.length) throw new Error('invalid deleted fast edit audit');
       const normalized = normalizeDeletedFast(r);
       if (!normalized) throw new Error('invalid deleted fasting record');
       return normalized;
@@ -2395,12 +2611,24 @@ layout: null
     });
     if (new Set(weights.map(w => w.id)).size !== weights.length) throw new Error('duplicate weight ids');
 
+    const deletedWeights = rawData.deletedWeights.map(w => {
+      if (!w || typeof w !== 'object' || typeof w.id !== 'string' || !w.id || w.id.length > 120) throw new Error('invalid deleted weight id');
+      if (w.deleted !== true || !validDate(w.deletedAt) || !isValidTimeZone(w.deletedTimeZone)) throw new Error('invalid deleted weight audit');
+      if (typeof w.deletionReason !== 'string' || !w.deletionReason || w.deletionReason.length > 80) throw new Error('invalid deleted weight reason');
+      if (sanitizeWeightKg(w.kg,null) == null || !isValidTimeZone(w.timeZone)) throw new Error('invalid deleted weight value');
+      const normalized = normalizeDeletedWeight(w); if (!normalized) throw new Error('invalid deleted weight record'); return normalized;
+    });
+    if (new Set(deletedWeights.map(w=>w.id)).size !== deletedWeights.length) throw new Error('duplicate deleted weight ids');
+    const liveWeightIds = new Set(weights.map(w=>w.id));
+    if (deletedWeights.some(w=>liveWeightIds.has(w.id))) throw new Error('weight id present in active and deleted history');
+
     const normalized = normalizeData(rawData);
     // Preserve legacy active/history overlap as-is. Recovery mode is for data that
     // cannot be read safely, not for a correctable historical business-rule clash.
     normalized.records = records;
     normalized.deletedFasts = deletedFasts;
     normalized.weights = weights;
+    normalized.deletedWeights = deletedWeights;
     return normalized;
   }
 
@@ -2429,19 +2657,22 @@ layout: null
   async function reloadFromIndexedDB({ notify = false } = {}) {
     if (recoveryMode) return false;
     try {
-      const row = await idbGet('state', 'primary');
-      const next = row?.data || cloneDefault();
+      const next = (await loadRecordBasedData()) || cloneDefault();
       const openModal = visibleModal();
       const activeField = document.activeElement;
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
         (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal' || openModal.id === 'activeTargetModal')) ||
         activeField === goalHours || activeField === el('weightTargetInput') || activeField === el('activeTargetInput'));
       if (!Array.isArray(next.deletedFasts)) next.deletedFasts = [];
+      if (!Array.isArray(next.deletedWeights)) next.deletedWeights = [];
       data = next;
       const daily = await idbGet('state', 'dailyTotals');
       storedDayTotalsMap = daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)
         ? new Map(daily.entries) : buildStoredDayTotals(data.records);
-      persistedRecordMap = new Map(data.records.map(r => [r.id, r]));
+      persistedRecordMap = recordMap(data.records);
+      persistedDeletedFastMap = recordMap(data.deletedFasts);
+      persistedWeightMap = recordMap(data.weights);
+      persistedDeletedWeightMap = recordMap(data.deletedWeights);
       historyVisibleCount = HISTORY_PAGE_SIZE;
       deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
       weightVisibleCount = HISTORY_PAGE_SIZE;
@@ -2480,7 +2711,7 @@ layout: null
       normalized.updatedAt = new Date().toISOString();
       data = normalized;
       storedDayTotalsMap = buildStoredDayTotals(data.records);
-      persistedRecordMap = new Map(data.records.map(r => [r.id, r]));
+      dayTotalsRecordMap = recordMap(data.records);
       recoveryMode = null;
       invalidateDerivedCaches();
       rememberCurrentAppVersion();
@@ -2500,7 +2731,7 @@ layout: null
       return false;
     }
     try {
-      if (!Array.isArray(data.records) || !Array.isArray(data.deletedFasts) || !Array.isArray(data.weights) || data.records.length > MAX_IMPORT_FASTS || data.deletedFasts.length > MAX_IMPORT_DELETED_FASTS || data.weights.length > MAX_IMPORT_WEIGHTS) throw new Error('record limit exceeded');
+      if (!Array.isArray(data.records) || !Array.isArray(data.deletedFasts) || !Array.isArray(data.weights) || !Array.isArray(data.deletedWeights) || data.records.length > MAX_IMPORT_FASTS || data.deletedFasts.length > MAX_IMPORT_DELETED_FASTS || data.weights.length > MAX_IMPORT_WEIGHTS || data.deletedWeights.length > MAX_IMPORT_WEIGHTS) throw new Error('record limit exceeded');
       const fastingHistoryMayHaveChanged = !Array.isArray(dirtyViews) || dirtyViews.includes('history') || dirtyViews.includes('fasting');
       if (fastingHistoryMayHaveChanged) updateStoredDayTotalsIncrementally();
       data.revision = Math.max(0, Number(data.revision) || 0) + 1;
@@ -2866,6 +3097,24 @@ layout: null
     return notificationPrefs().enabled ? 'notifications.statusPermissionNeeded' : 'notifications.statusOff';
   }
 
+  function renderWeighCadenceButtons(prefix, cadence) {
+    const value = cadence === 'daily' ? 'daily' : 'weekly';
+    const input = el(`${prefix}WeighCadence`);
+    if (input) input.value = value;
+    const daily = el(`${prefix}WeighDailyBtn`), weekly = el(`${prefix}WeighWeeklyBtn`);
+    if (daily) { const active=value==='daily'; daily.classList.toggle('active',active); daily.setAttribute('aria-pressed',String(active)); }
+    if (weekly) { const active=value==='weekly'; weekly.classList.toggle('active',active); weekly.setAttribute('aria-pressed',String(active)); }
+  }
+
+  function setSettingsWeighCadence(cadence) {
+    const prefs = notificationPrefs();
+    prefs.weighInCadence = cadence === 'daily' ? 'daily' : 'weekly';
+    notificationRuntimeState.weighInToken = null;
+    saveNotificationRuntimeState();
+    if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
+    renderNotificationSettings();
+  }
+
   function renderNotificationSettings() {
     const prefs = notificationPrefs();
     const master = el('notificationMasterToggle');
@@ -2877,8 +3126,7 @@ layout: null
     el('notificationSafetyToggle').checked = prefs.longFastSafety;
     el('notificationWeighToggle').checked = prefs.weighIn;
     el('notificationCycleToggle').checked = prefs.cycleComplete;
-    el('notificationWeighCadence').value = prefs.weighInCadence;
-    el('notificationWeighCadence').disabled = !prefs.weighIn;
+    renderWeighCadenceButtons('notification', prefs.weighInCadence);
     const permission = notificationPermissionState();
     const badge = el('notificationPermissionBadge');
     badge.textContent = t(permission === 'granted' && prefs.enabled ? 'notifications.badgeOn' : permission === 'denied' ? 'notifications.badgeBlocked' : permission === 'unsupported' ? 'notifications.badgeUnavailable' : 'notifications.badgeOff');
@@ -3388,6 +3636,7 @@ layout: null
       timeZone: record.timeZone,
       createdAt: normalizeAuditTimestamp(record.createdAt),
       modifiedAt: normalizeAuditTimestamp(record.modifiedAt),
+      editHistory: normalizeFastEditHistory(record.editHistory),
       deleted: true,
       deletedAt: new Date().toISOString(),
       deletedTimeZone: currentTimeZone(),
@@ -3428,7 +3677,8 @@ layout: null
     if (!start || !end || intervalOverlaps(start, end)) { alert(t('history.deletedRestoreOverlap')); return; }
     const restored = {
       id: deleted.id, start: deleted.start, end: deleted.end, goalHours: deleted.goalHours,
-      timeZone: deleted.timeZone, createdAt: normalizeAuditTimestamp(deleted.createdAt), modifiedAt: normalizeAuditTimestamp(deleted.modifiedAt)
+      timeZone: deleted.timeZone, createdAt: normalizeAuditTimestamp(deleted.createdAt), modifiedAt: normalizeAuditTimestamp(deleted.modifiedAt),
+      editHistory: normalizeFastEditHistory(deleted.editHistory)
     };
     data.deletedFasts.splice(index, 1);
     data.records.push(restored);
@@ -3475,6 +3725,12 @@ layout: null
       const strong = document.createElement('strong'); strong.textContent = localDateLabel(r.end, r.timeZone); left.append(strong);
       const times = document.createElement('div'); times.className = 'small'; times.textContent = `${localDateTimeLabel(r.start, r.timeZone)} → ${localDateTimeLabel(r.end, r.timeZone)}`; left.append(times);
       const targetLine = document.createElement('div'); targetLine.className = 'small'; targetLine.textContent = t('history.target', {goal:formatGoal(r.goalHours ?? data.goalHours)}); left.append(targetLine);
+      if (r.modifiedAt) {
+        const latestAudit = Array.isArray(r.editHistory) && r.editHistory.length ? r.editHistory[r.editHistory.length - 1] : null;
+        const editLine = document.createElement('div'); editLine.className = 'small';
+        editLine.textContent = t('history.editedAt', {date:localDateTimeLabel(r.modifiedAt, latestAudit?.editedTimeZone || currentTimeZone())});
+        left.append(editLine);
+      }
       const deletedLine = document.createElement('div'); deletedLine.className = 'small';
       deletedLine.textContent = t('history.deletedAt', {date:localDateTimeLabel(r.deletedAt, r.deletedTimeZone), reason:deletionReasonLabel(r.deletionReason)}); left.append(deletedLine);
       const right = document.createElement('div'); right.style.textAlign = 'right'; right.style.flex = '0 0 auto';
@@ -3513,6 +3769,12 @@ layout: null
       const strong = document.createElement('strong'); strong.textContent = localDateLabel(r.end, r.timeZone); left.append(strong);
       const times = document.createElement('div'); times.className = 'small'; times.textContent = `${localDateTimeLabel(r.start, r.timeZone)} → ${localDateTimeLabel(r.end, r.timeZone)}`; left.append(times);
       const targetLine = document.createElement('div'); targetLine.className = 'small'; targetLine.textContent = t('history.target', {goal: formatGoal(r.goalHours ?? data.goalHours)}); left.append(targetLine);
+      if (r.modifiedAt) {
+        const latestAudit = Array.isArray(r.editHistory) && r.editHistory.length ? r.editHistory[r.editHistory.length - 1] : null;
+        const editLine = document.createElement('div'); editLine.className = 'small';
+        editLine.textContent = t('history.editedAt', {date:localDateTimeLabel(r.modifiedAt, latestAudit?.editedTimeZone || currentTimeZone())});
+        left.append(editLine);
+      }
       if (recordMetGoal(r)) {
         const badge = document.createElement('div'); badge.className = 'goalBadge'; badge.textContent = t('history.targetReached'); left.append(badge);
       }
@@ -4341,6 +4603,7 @@ layout: null
     editingRecordId = record?.id || null;
     editingRecordTimeZone = record ? normalizeTimeZone(record.timeZone) : currentTimeZone();
     el('entryModalTitle').textContent = record ? t('history.editTitle') : t('history.addTitle');
+    el('entryAuditHelp').hidden = !record;
     if (record) {
       el('entryStart').value = toLocalInputValue(record.start, editingRecordTimeZone);
       el('entryEnd').value = toLocalInputValue(record.end, editingRecordTimeZone);
@@ -4370,6 +4633,43 @@ layout: null
     return false;
   }
 
+  function fastingRecordCoreEqual(a, b) {
+    if (!a || !b) return false;
+    return String(a.start) === String(b.start) && String(a.end) === String(b.end) &&
+      sanitizeGoal(a.goalHours, data.goalHours) === sanitizeGoal(b.goalHours, data.goalHours) &&
+      normalizeTimeZone(a.timeZone) === normalizeTimeZone(b.timeZone);
+  }
+
+  function fastEditAuditEntry(record, editedAt = new Date().toISOString()) {
+    return {
+      editedAt, editedTimeZone: currentTimeZone(),
+      start: record.start, end: record.end, goalHours: sanitizeGoal(record.goalHours, data.goalHours),
+      timeZone: normalizeTimeZone(record.timeZone)
+    };
+  }
+
+  function substantialFastEdit(previous, next) {
+    const oldStart = validDate(previous?.start), oldEnd = validDate(previous?.end), newStart = validDate(next?.start), newEnd = validDate(next?.end);
+    if (!oldStart || !oldEnd || !newStart || !newEnd) return true;
+    const threshold = 30 * 60 * 1000;
+    const startShift = Math.abs(newStart - oldStart), endShift = Math.abs(newEnd - oldEnd);
+    const durationShift = Math.abs((newEnd - newStart) - (oldEnd - oldStart));
+    const goalShift = Math.abs(sanitizeGoal(previous.goalHours, data.goalHours) - sanitizeGoal(next.goalHours, data.goalHours));
+    const oldStartDay = dayKeyFast(previous.start, previous.timeZone), newStartDay = dayKeyFast(next.start, next.timeZone);
+    const oldEndDay = dayKeyFast(previous.end, previous.timeZone), newEndDay = dayKeyFast(next.end, next.timeZone);
+    return startShift >= threshold || endShift >= threshold || durationShift >= threshold || goalShift >= 1 ||
+      oldStartDay !== newStartDay || oldEndDay !== newEndDay || recordMetGoal(previous) !== recordMetGoal(next);
+  }
+
+  function fastEditSummary(record) {
+    const zone = normalizeTimeZone(record.timeZone);
+    return t('history.editSummary', {
+      start: localDateTimeLabel(record.start, zone),
+      end: localDateTimeLabel(record.end, zone),
+      goal: formatGoal(record.goalHours)
+    });
+  }
+
   function saveManualEntry() {
     const tz = editingRecordTimeZone || currentTimeZone();
     const start = zonedLocalToDate(el('entryStart').value, tz);
@@ -4384,17 +4684,25 @@ layout: null
 
     const existingRecord = editingRecordId ? data.records.find(r => r.id === editingRecordId) : null;
     const nowAudit = new Date().toISOString();
-    const record = {
+    const draft = {
       id: editingRecordId || makeId(),
       start: start.toISOString(),
       end: end.toISOString(),
       goalHours: sanitizeGoal(target, data.goalHours),
       timeZone: tz,
       createdAt: existingRecord ? normalizeAuditTimestamp(existingRecord.createdAt) : nowAudit,
-      modifiedAt: existingRecord ? nowAudit : null
+      modifiedAt: existingRecord ? nowAudit : null,
+      editHistory: existingRecord ? normalizeFastEditHistory(existingRecord.editHistory) : []
     };
-    if (editingRecordId) data.records = data.records.map(r => r.id === editingRecordId ? record : r);
-    else data.records.push(record);
+    if (existingRecord && fastingRecordCoreEqual(existingRecord, draft)) { closeEntryModal(); return; }
+    if (existingRecord && substantialFastEdit(existingRecord, draft)) {
+      const message = t('history.editMaterialConfirm', {before:fastEditSummary(existingRecord), after:fastEditSummary(draft)});
+      if (!confirm(message)) return;
+    }
+    if (existingRecord) {
+      draft.editHistory = [...draft.editHistory, fastEditAuditEntry(existingRecord, nowAudit)].slice(-MAX_FAST_EDIT_AUDIT);
+      data.records = data.records.map(r => r.id === editingRecordId ? draft : r);
+    } else data.records.push(draft);
     if (!save()) { renderAll(); return; }
     closeEntryModal();
     renderAll();
@@ -4679,6 +4987,40 @@ layout: null
     const asc = sortedWeightsAsc();
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
+    renderDeletedWeights();
+  }
+
+  function softDeleteWeightById(id, reason = 'user') {
+    const index=data.weights.findIndex(w=>w.id===id); if(index<0||data.deletedWeights.some(w=>w.id===id)) return false;
+    const original=data.weights[index];
+    const tombstone={...original,deleted:true,deletedAt:new Date().toISOString(),deletedTimeZone:currentTimeZone(),deletionReason:String(reason||'user').slice(0,80)};
+    data.weights.splice(index,1); data.deletedWeights.push(tombstone);
+    return save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']});
+  }
+  function restoreDeletedWeightById(id){
+    const index=data.deletedWeights.findIndex(w=>w.id===id); if(index<0)return false;
+    const deleted=data.deletedWeights[index]; if(data.weights.some(w=>w.id===deleted.id)){alert(t('weight.restoreConflict'));return false;}
+    const restored=normalizeWeightEntry(deleted); if(!restored)return false;
+    data.deletedWeights.splice(index,1); data.weights.push(restored);
+    if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.weights=data.weights.filter(w=>w!==restored&&w.id!==restored.id);data.deletedWeights.splice(index,0,deleted);return false;} return true;
+  }
+  function permanentlyDeleteWeightById(id){
+    const index=data.deletedWeights.findIndex(w=>w.id===id); if(index<0)return false;
+    const [removed]=data.deletedWeights.splice(index,1);
+    if(!save({invalidateDerived:false,dirtyViews:['weight','settings']})){data.deletedWeights.splice(index,0,removed);return false;} return true;
+  }
+  function renderDeletedWeights(){
+    const card=el('deletedWeightsCard'),box=el('deletedWeightsList'); if(!card||!box)return;
+    const count=data.deletedWeights.length; card.hidden=!count; el('deletedWeightsCount').textContent=count?t('weight.deletedCount',{n:count}):''; box.replaceChildren();
+    const sorted=[...data.deletedWeights].sort((a,b)=>String(b.deletedAt).localeCompare(String(a.deletedAt))).slice(0,HISTORY_PAGE_SIZE);
+    for(const w of sorted){
+      const row=document.createElement('div');row.className='row historyRow';
+      const left=document.createElement('div');const strong=document.createElement('strong');strong.textContent=`${localDateTimeLabel(w.when,w.timeZone)} • ${formatWeight(w.kg,data.weightUnit)}`;const small=document.createElement('div');small.className='small';small.textContent=t('weight.deletedAt',{date:localDateTimeLabel(w.deletedAt,w.deletedTimeZone)});left.append(strong,small);
+      const actions=document.createElement('div');actions.className='historyActions';
+      const restore=document.createElement('button');restore.className='secondary';restore.textContent=t('common.restore');restore.addEventListener('click',()=>{if(restoreDeletedWeightById(w.id))renderWeight();});
+      const purge=document.createElement('button');purge.className='dangerText';purge.textContent=t('weight.deletePermanently');purge.addEventListener('click',()=>{if(confirm(t('weight.deletePermanentConfirm'))&&permanentlyDeleteWeightById(w.id))renderWeight();});
+      actions.append(restore,purge);row.append(left,actions);box.append(row);
+    }
   }
 
   function renderWeight() {
@@ -4722,8 +5064,7 @@ layout: null
         const del = document.createElement('button'); del.className = 'dangerText'; del.textContent = t('common.delete');
         bindResponsiveAction(del, () => {
           if (!confirm(t('weight.deleteConfirm'))) return;
-          data.weights = data.weights.filter(x => x.id !== w.id);
-          if (!save({ invalidateDerived: false, dirtyViews:['weight','stats','settings'] })) { renderAll(); return; }
+          if (!softDeleteWeightById(w.id, 'user')) { renderAll(); return; }
           row.remove();
           scheduleWeightUiRefresh();
         });
@@ -4739,6 +5080,7 @@ layout: null
     }
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
+    renderDeletedWeights();
   }
 
   function drawWeightChartYAxis(minV, maxV) {
@@ -4884,7 +5226,26 @@ layout: null
   function cancelWeightChartPointer(){weightChartPointerStart=null;}
   function handleWeightChartScroll(){
     if(weightChartScrollFrame)return;
-    weightChartScrollFrame=requestAnimationFrame(()=>{weightChartScrollFrame=0;drawWeightChart();});
+    weightChartScrollFrame=requestAnimationFrame(()=>{weightChartScrollFrame=0;drawWeightChart();renderWeightChartData();});
+  }
+
+  function renderWeightChartData() {
+    const box=el('weightChartData'),btn=el('weightChartDataBtn'); if(!box||box.hidden)return;
+    const scroller=el('weightChartScroller'), buckets=weightChartBuckets; box.replaceChildren();
+    if(!buckets.length){box.textContent=t('a11y.noChartData');return;}
+    const viewport=Math.max(1,scroller?.clientWidth||600), scroll=scroller?.scrollLeft||0;
+    const spacing=weightPeriodMode==='daily'?(buckets.length<=30?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,(viewport-30)/29))):(buckets.length<=5?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):68);
+    const first=Math.max(0,Math.floor((scroll-16)/Math.max(1,spacing))-1), last=Math.min(buckets.length-1,Math.ceil((scroll+viewport-16)/Math.max(1,spacing))+1);
+    const ul=document.createElement('ul');
+    for(let i=first;i<=last;i++){const b=buckets[i];if(!b.count)continue;const li=document.createElement('li');li.textContent=`${weightBucketLongLabel(b)} — ${formatWeight(b.averageKg,data.weightUnit)}${b.count>1?` • ${b.count} ${t(pluralKey('weight.measurement',b.count))}`:''}`;ul.append(li);} box.append(ul);
+  }
+  function renderStatsChartData(){
+    const box=el('statsChartData'); if(!box||box.hidden)return; box.replaceChildren(); const ul=document.createElement('ul');
+    if(statsVizMode==='timeline'){for(const d of timelineChartDays){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}`;ul.append(li);}}
+    else if(statsVizMode==='trend'){for(const d of (trendChartDaysCache||[])){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber((d.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
+    else if(statsVizMode==='weeks'){for(const w of (weeklySummariesCache||[])){const li=document.createElement('li');li.textContent=`${w.label||w.key||''} — ${formatNumber((w.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
+    else { const month=el('calendarMonthTitle')?.textContent||''; const li=document.createElement('li'); li.textContent=t('a11y.calendarDataHint',{month}); ul.append(li); }
+    if(!ul.children.length){const li=document.createElement('li');li.textContent=t('a11y.noChartData');ul.append(li);} box.append(ul);
   }
 
   function setWeightUnit(unit) {
@@ -4910,7 +5271,7 @@ layout: null
   }
 
   function hasBackupWorthyData() {
-    return !!data.activeStart || data.records.length > 0 || data.deletedFasts.length > 0 || data.weights.length > 0;
+    return !!data.activeStart || data.records.length > 0 || data.deletedFasts.length > 0 || data.weights.length > 0 || data.deletedWeights.length > 0;
   }
 
   function normalizeBackupClockSkew() {
@@ -5041,6 +5402,33 @@ layout: null
     }
   }
 
+
+  async function renderStorageHealth() {
+    const rc=el('healthRecordCount'); if(!rc)return;
+    rc.textContent=formatNumber(data.records.length+data.weights.length);
+    el('healthDeletedCount').textContent=formatNumber(data.deletedFasts.length+data.deletedWeights.length);
+    el('healthSnapshotCount').textContent=formatNumber(loadSnapshots().length);
+    const last=validDate(backupMeta.lastExternalBackupAt); el('healthBackupAge').textContent=last?localDateLabel(last):t('common.never');
+    let persisted=null; try{if(navigator.storage?.persisted)persisted=await navigator.storage.persisted();}catch{}
+    el('healthPersistence').textContent=t('storage.healthPersistence',{status:persisted===true?t('storage.healthProtected'):persisted===false?t('storage.healthNotProtected'):t('storage.healthUnavailable')});
+    let usageText=t('storage.usageUnknown'); try{const est=await navigator.storage?.estimate?.();if(est&&Number.isFinite(est.usage)&&Number.isFinite(est.quota)){const mb=n=>formatNumber(n/1048576,0,1);usageText=t('storage.healthUsage',{used:mb(est.usage),quota:mb(est.quota)});}}catch{}
+    el('healthUsage').textContent=usageText;
+    el('healthLastSave').textContent=t('storage.healthLastSave',{date:lastSuccessfulIdbSaveAt?localDateTimeLabel(lastSuccessfulIdbSaveAt):t('common.never')});
+    const prot=snapshotProtectionState.status==='ok'?t('storage.healthGood'):snapshotProtectionState.status==='reduced'?t('storage.healthReduced'):t('storage.healthNeedsAttention');
+    el('healthProtection').textContent=t('storage.healthRecovery',{status:prot});
+  }
+
+  async function exportDiagnostics(){
+    let estimate=null,persistent=null; try{estimate=await navigator.storage?.estimate?.()||null;}catch{} try{persistent=await navigator.storage?.persisted?.()??null;}catch{}
+    const payload={
+      format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, exportedAt:new Date().toISOString(),
+      environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null},
+      database:{schemaVersion:IDB_VERSION,lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:loadSnapshots().length,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null},
+      recoveryMode:recoveryMode?String(recoveryMode.reason||recoveryMode):null,
+      recentErrorCodes:diagnosticErrors.slice(-20)
+    };
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`fasting-tracker-diagnostics-${dayKey(new Date())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
 
   function selectedIconInstallUrl() {
     const u = new URL(location.href);
@@ -5538,6 +5926,7 @@ layout: null
       renderGamificationDetail();
       renderGamificationSummary();
       renderNotificationSettings();
+      renderStorageHealth();
     }
     viewDirty[screen] = false;
   }
@@ -5640,14 +6029,7 @@ layout: null
   el('notificationBackupToggle').addEventListener('change', () => saveNotificationOption('backupDue', el('notificationBackupToggle').checked));
   el('notificationSafetyToggle').addEventListener('change', () => saveNotificationOption('longFastSafety', el('notificationSafetyToggle').checked));
   el('notificationWeighToggle').addEventListener('change', () => saveNotificationOption('weighIn', el('notificationWeighToggle').checked));
-  el('notificationWeighCadence').addEventListener('change', () => {
-    const prefs = notificationPrefs();
-    prefs.weighInCadence = el('notificationWeighCadence').value === 'daily' ? 'daily' : 'weekly';
-    notificationRuntimeState.weighInToken = null;
-    saveNotificationRuntimeState();
-    if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
-    renderNotificationSettings();
-  });
+  document.querySelectorAll('[data-notification-cadence]').forEach(btn => bindResponsiveAction(btn, () => setSettingsWeighCadence(btn.dataset.notificationCadence)));
   el('notificationCycleToggle').addEventListener('change', () => saveNotificationOption('cycleComplete', el('notificationCycleToggle').checked));
   el('notificationTestBtn').addEventListener('click', sendTestNotification);
 
@@ -5741,6 +6123,7 @@ layout: null
       else if (modal.id === 'weightModal') closeWeightModal();
       else if (modal.id === 'updateModal') closeUpdateModal();
       else if (modal.id === 'snapshotModal') closeSnapshotModal();
+      else if (modal.id === 'importPreviewModal') el('importPreviewCancelBtn').click();
       else if (modal.id === 'stopFastModal') closeStopFastModal();
       else if (modal.id === 'setupModal') dismissSetupGuide();
       else if (modal.id === 'longFastModal') { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); }
@@ -5776,6 +6159,39 @@ layout: null
   el('backupReminderBtn').addEventListener('click', exportBackup);
   el('settingsBackupNowBtn').addEventListener('click', exportBackup);
 
+  function backupDateRange(candidate){
+    const dates=[]; for(const r of [...candidate.records,...candidate.deletedFasts]){const a=validDate(r.start),b=validDate(r.end);if(a)dates.push(a);if(b)dates.push(b);} for(const w of [...candidate.weights,...candidate.deletedWeights]){const d=validDate(w.when);if(d)dates.push(d);} if(!dates.length)return null; dates.sort((a,b)=>a-b); return [dates[0],dates[dates.length-1]];
+  }
+  function stableRecordString(v){const c={...v};delete c.deleted;delete c.deletedAt;delete c.deletedTimeZone;delete c.deletionReason;return JSON.stringify(c);}
+  function mergeByIdAndFingerprint(current,incoming,fingerprint,label){
+    const out=[...current], byId=new Map(current.map(x=>[x.id,x])), byFp=new Map(current.map(x=>[fingerprint(x),x])); let duplicates=0;
+    for(const item of incoming){const existing=byId.get(item.id);if(existing){if(stableRecordString(existing)!==stableRecordString(item))throw new Error(`${label}: same id differs (${item.id})`);duplicates++;continue;}const fp=fingerprint(item);if(byFp.has(fp)){duplicates++;continue;}out.push(item);byId.set(item.id,item);byFp.set(fp,item);}return {out,duplicates};
+  }
+  function mergeImportedData(imported){
+    const result=JSON.parse(JSON.stringify(data));
+    const live=mergeByIdAndFingerprint(result.records,imported.records,r=>`${r.start}|${r.end}|${r.timeZone}|${r.goalHours}`,'fast');
+    const del=mergeByIdAndFingerprint(result.deletedFasts,imported.deletedFasts,r=>`${r.start}|${r.end}|${r.deletedAt}|${r.timeZone}`,'deleted fast');
+    const weights=mergeByIdAndFingerprint(result.weights,imported.weights,w=>`${w.when}|${w.kg}|${w.timeZone}`,'weight');
+    const delWeights=mergeByIdAndFingerprint(result.deletedWeights,imported.deletedWeights,w=>`${w.when}|${w.kg}|${w.deletedAt}|${w.timeZone}`,'deleted weight');
+    result.records=live.out;result.deletedFasts=del.out;result.weights=weights.out;result.deletedWeights=delWeights.out;
+    const liveIds=new Set(result.records.map(r=>r.id)); if(result.deletedFasts.some(r=>liveIds.has(r.id)))throw new Error('fast exists in both live and deleted history');
+    const weightIds=new Set(result.weights.map(w=>w.id)); if(result.deletedWeights.some(w=>weightIds.has(w.id)))throw new Error('weight exists in both live and deleted history');
+    const sorted=[...result.records].sort((a,b)=>new Date(a.start)-new Date(b.start)); for(let i=1;i<sorted.length;i++)if(new Date(sorted[i].start)<new Date(sorted[i-1].end))throw new Error('fasting time conflict');
+    if(result.activeStart&&imported.activeStart&&result.activeStart!==imported.activeStart)throw new Error('both installations have different active fasts');
+    if(!result.activeStart&&imported.activeStart){result.activeStart=imported.activeStart;result.activeGoalHours=imported.activeGoalHours;result.activeTimeZone=imported.activeTimeZone;result.activeCreatedAt=imported.activeCreatedAt;result.activeModifiedAt=imported.activeModifiedAt;}
+    return {data:validateCompatibleData(result).data, duplicates:live.duplicates+del.duplicates+weights.duplicates+delWeights.duplicates};
+  }
+  function showImportPreview(raw, imported){
+    return new Promise(resolve=>{
+      const range=backupDateRange(imported); el('importPreviewMeta').textContent=t('import.previewMeta',{version:raw.appVersion,date:localDateTimeLabel(raw.exportedAt)});
+      el('importPreviewCounts').textContent=t('import.previewCounts',{fasts:imported.records.length,deletedFasts:imported.deletedFasts.length,weights:imported.weights.length,deletedWeights:imported.deletedWeights.length});
+      el('importPreviewRange').textContent=range?t('import.previewRange',{from:localDateLabel(range[0]),to:localDateLabel(range[1])}):t('import.previewEmpty'); el('importPreviewError').hidden=true;
+      const finish=v=>{hideModal('importPreviewModal');resolve(v);};
+      const c=el('importPreviewCancelBtn'),r=el('importPreviewReplaceBtn'),m=el('importPreviewMergeBtn');
+      c.onclick=()=>finish('cancel');r.onclick=()=>finish('replace');m.onclick=()=>finish('merge');showModal('importPreviewModal','importPreviewCancelBtn');
+    });
+  }
+
   el('importBtn').addEventListener('click', () => el('importFile').click());
   el('importFile').addEventListener('change', async e => {
     const f = e.target.files?.[0];
@@ -5790,14 +6206,17 @@ layout: null
         throw new Error('invalid backup metadata');
       }
       const imported = validateCompatibleData(raw.data).data;
-      if (!confirm(t('import.confirm', {fasts: imported.records.length, fastWord: t(pluralKey('import.fast', imported.records.length)), deleted: imported.deletedFasts.length, weights: imported.weights.length, weightWord: t(pluralKey('import.weight', imported.weights.length))}))) {
-        e.target.value = '';
-        return;
+      const choice = await showImportPreview(raw, imported);
+      if (choice === 'cancel') { e.target.value=''; return; }
+      let resolved = imported;
+      if (choice === 'merge') {
+        try { const merged=mergeImportedData(imported); resolved=merged.data; }
+        catch(err){ alert(t('import.mergeConflict',{detail:String(err?.message||err)})); e.target.value=''; return; }
       }
       if (!recoveryMode) {
         if (!await createInternalSnapshotAsync('before importing an external backup')) { alert(t('backup.snapshotFailed')); e.target.value = ''; return; }
       }
-      if (!persistResolvedData(imported)) { e.target.value = ''; return; }
+      if (!persistResolvedData(resolved)) { e.target.value = ''; return; }
       await flushPrimaryPersistence();
       renderAll();
       if (!el('setupModal')?.hidden) renderSetupGuide();
@@ -5812,11 +6231,11 @@ layout: null
     if (confirm(t('reset.confirm'))) {
       data = cloneDefault();
       storedDayTotalsMap = new Map();
-      persistedRecordMap = new Map();
+      persistedRecordMap = new Map(); dayTotalsRecordMap = new Map(); persistedDeletedFastMap = new Map(); persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
       data.revision = 1; data.updatedAt = new Date().toISOString();
       await persistPrimaryNow(data);
       snapshotCache = [];
-      await Promise.all([idbClear('snapshotMeta'), idbClear('snapshotPayload')]);
+      await Promise.all([idbClear('snapshotMeta'), idbClear('snapshotPayload'), idbClear('records'), idbClear('deletedFasts'), idbClear('weights'), idbClear('deletedWeights')]);
       try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); localStorage.removeItem(NOTIFICATION_STATE_KEY); } catch {}
       notificationRuntimeState = {};
       backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null, snapshotProtectionStatus: 'ok', snapshotProtectionAt: null, snapshotStoredCount: 0, snapshotDesiredCount: 0 };
@@ -5861,6 +6280,9 @@ layout: null
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
+  el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();});
+  el('statsChartDataBtn').addEventListener('click',()=>{const box=el('statsChartData'),btn=el('statsChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderStatsChartData();});
+  el('diagnosticExportBtn').addEventListener('click',exportDiagnostics);
   el('weightChartScroller').addEventListener('scroll', handleWeightChartScroll, {passive:true});
   window.addEventListener('resize', () => { markViewsDirty('stats','weight'); if (el('stats').classList.contains('active')) renderScreen('stats'); if (el('weight').classList.contains('active')) renderScreen('weight'); });
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
@@ -5900,7 +6322,7 @@ layout: null
   el('setupExportBtn').addEventListener('click', () => exportSetupBackup());
   el('setupEnableNotificationsBtn').addEventListener('click', enableSetupNotifications);
   el('setupSkipNotificationsBtn').addEventListener('click', skipSetupNotifications);
-  el('setupNotificationWeighToggle').addEventListener('change', () => { const cadence=el('setupNotificationWeighCadence'); if (cadence) cadence.disabled=!el('setupNotificationWeighToggle').checked; });
+  document.querySelectorAll('[data-setup-notification-cadence]').forEach(btn => bindResponsiveAction(btn, () => renderWeighCadenceButtons('setupNotification', btn.dataset.setupNotificationCadence)));
   document.querySelectorAll('#setupIconArea .iconChoice[data-icon-choice]').forEach(btn => btn.addEventListener('click', () => {
     if (isStandaloneApp()) return;
     try { const u=new URL(location.href); u.searchParams.set('icon', normalizeIconChoice(btn.dataset.iconChoice)); history.replaceState(null,'',u); } catch {}
@@ -6065,7 +6487,7 @@ layout: null
     ];
     pairs.forEach(([id,key]) => { const node=el(id); if (node) node.checked=!!prefs[key]; });
     const cadence=el('setupNotificationWeighCadence');
-    if (cadence) { cadence.value=prefs.weighInCadence === 'daily' ? 'daily' : 'weekly'; cadence.disabled=!prefs.weighIn; }
+    if (cadence) renderWeighCadenceButtons('setupNotification', prefs.weighInCadence);
     renderSetupNotificationStatus();
   }
 

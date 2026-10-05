@@ -21,10 +21,10 @@ Fasting Tracker is designed to work locally on your device, including offline af
 - System, light, and dark appearance modes
 - Offline PWA support
 - Local JSON export/import backups
-- Automatic rolling internal JSON recovery snapshots (5 recent, 7 daily, 4 weekly, 6 monthly) and update safeguards
+- Automatic rolling internal recovery snapshots (5 recent, 7 daily, 4 weekly, 6 monthly), compressed when supported, plus update safeguards
 - Snapshot-storage pressure detection: main records stay the priority, recovery retention is reduced gracefully if local storage is tight, and the app prompts for an external backup
-- Privacy-focused local storage model
-- Accessibility improvements for keyboard and assistive technologies
+- Privacy-focused record-level IndexedDB storage model
+- Accessibility improvements for keyboard and assistive technologies, including textual chart-data views
 
 ## Install on iPhone / iPad
 
@@ -82,10 +82,13 @@ The app can follow the device language automatically or use a manually selected 
 The app supports:
 
 - external JSON backup/export
-- validated import/restore
-- internal recovery snapshots
+- validated import/restore with a metadata/count/date-range preview
+- optional safe merge import with duplicate and conflict detection
+- compressed internal recovery snapshots where the browser supports gzip compression
 - recovery mode for damaged local data
-- persistent-storage status where the browser exposes the relevant API
+- soft-delete/restore audit trails for fasting and weight records
+- persistent-storage status and a Data & storage health panel
+- privacy-preserving diagnostic export that contains technical metadata/counts, not fasting timestamps or weight values
 
 Regular external backups are recommended because browser storage is not an absolute guarantee of permanent retention.
 
@@ -116,6 +119,19 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+
+
+## v1.9.1 completed-fast corrections
+
+Completed fasts can be corrected without deleting/recreating them. Edits preserve the record ID, reject overlaps, recalculate history/statistics/XP automatically, retain up to 100 prior values in a per-record audit trail, visibly mark edited records, and ask for confirmation only when a correction materially changes times, duration, target, calendar day, or target-completion status.
+
+## v1.9.0 long-term robustness architecture
+
+v1.9.0 moves fasting records, deleted-fast audit entries, weight records and deleted-weight audit entries into separate record-level IndexedDB stores. Small settings remain separate, so ordinary edits no longer rewrite one lifetime-sized database object. Existing v1.8.x IndexedDB data and older local-storage data migrate automatically.
+
+Recovery snapshot payloads are gzip-compressed when the browser supports `CompressionStream`, with backward-compatible JSON fallback and support for older snapshot formats. Weight records now use the same soft-delete/restore/permanent-delete audit model as fasting records. Settings includes a **Data & storage health** panel with persistent-storage status, storage usage/quota where available, record/audit counts, recovery snapshot count, last database save and last external backup, plus a privacy-preserving diagnostic export.
+
+External JSON import now shows a preview with backup version, timestamp, record counts and covered date range. Users may replace the current dataset or use a safe merge mode that deduplicates identical records and rejects ID, live/deleted, active-fast or fasting-overlap conflicts. Weight and fasting charts provide optional textual data views for precise values and assistive technology. Regression coverage includes DST spring gaps, repeated autumn hours, multi-day elapsed durations across clock changes, 2,000-record responsiveness and the 70-year 25,567+25,567 lifetime dataset.
 
 ## v1.8.17 optional device notifications
 
@@ -175,6 +191,11 @@ Stopping an active fast uses one explicit in-app confirmation showing the elapse
 ## v1.8.0 performance architecture
 
 Primary fasting/weight history and recovery snapshot payloads use IndexedDB instead of large `localStorage` JSON blobs. Small preferences/version metadata remain in `localStorage` so public information pages can follow language/theme immediately. Daily fasting totals are persisted and updated incrementally, expensive statistics are range-limited/lazy, and the supported history ceiling is 100,000 fasting records plus 100,000 weight records. The portable external backup remains JSON. Regression coverage includes both the 2,000+2,000 smoke test and a 70-year test with 25,567 fasting plus 25,567 weight records.
+
+## v1.8.19 weigh-in reminder cadence fix
+
+The weigh-in reminder interval is now selected with explicit **Daily** and **Weekly** buttons in both Settings and the optional onboarding flow. The cadence can be chosen even while the reminder itself is off, so users can configure the interval first and then enable the reminder. The selected cadence is persisted and its active state is clearly visible, improving reliability on touch devices and iOS PWAs.
+
 
 ## v1.8.18 notification onboarding
 

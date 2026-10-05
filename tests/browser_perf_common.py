@@ -26,7 +26,7 @@ def build_data(count, base=1_767_225_600_000):
         'dataVersion': 1, 'revision': 1, 'updatedAt': '2026-01-01T00:00:00.000Z', 'goalHours': 16,
         'activeStart': None, 'activeGoalHours': None, 'activeTimeZone': None,
         'activeCreatedAt': None, 'activeModifiedAt': None,
-        'records': records, 'deletedFasts': [], 'weights': weights, 'weightUnit': 'kg', 'targetWeightKg': 75,
+        'records': records, 'deletedFasts': [], 'weights': weights, 'deletedWeights': [], 'weightUnit': 'kg', 'targetWeightKg': 75,
         'gamificationEnabled': True, 'language': 'en', 'appearance': 'system', 'iconChoice': 'plate'
     }
 
@@ -61,7 +61,7 @@ STORAGE_SHIM = r"""() => {
     return r;
   };
   const makeDb = () => {
-    const db={stores:new Map()};
+    const db={stores:new Map(),version:0};
     db.objectStoreNames={contains:n=>db.stores.has(n)};
     db.createObjectStore=(name,opts={})=>{ db.stores.set(name,{map:new Map(),keyPath:opts.keyPath||null}); return {}; };
     db.transaction=(names,mode)=>{
@@ -89,7 +89,9 @@ STORAGE_SHIM = r"""() => {
           let db=databases.get(name); const fresh=!db;
           if(!db){ db=makeDb(); databases.set(name,db); }
           r.result=db;
-          if(fresh && r.onupgradeneeded) r.onupgradeneeded({target:r});
+          const needsUpgrade=fresh || Number(version||1)>Number(db.version||0);
+          if(needsUpgrade && r.onupgradeneeded) r.onupgradeneeded({target:r,oldVersion:db.version||0,newVersion:Number(version||1)});
+          if(needsUpgrade) db.version=Number(version||1);
           if(r.onsuccess) r.onsuccess({target:r});
         } catch(e){ r.error=e; if(r.onerror) r.onerror({target:r}); }
       },0);
@@ -101,8 +103,23 @@ STORAGE_SHIM = r"""() => {
     db.createObjectStore('state',{keyPath:'key'});
     db.createObjectStore('snapshotMeta',{keyPath:'id'});
     db.createObjectStore('snapshotPayload',{keyPath:'id'});
+    db.version=1;
     db.stores.get('state').map.set('primary',{key:'primary',data:data});
     db.stores.get('state').map.set('dailyTotals',{key:'dailyTotals',revision:data.revision,entries:dailyEntries});
+    databases.set('FastingTrackerDB',db);
+  };
+  window.__seedFastingDbV2=(data,dailyEntries)=>{
+    const db=makeDb();
+    for(const [name,keyPath] of [['state','key'],['snapshotMeta','id'],['snapshotPayload','id'],['records','id'],['deletedFasts','id'],['weights','id'],['deletedWeights','id']]) db.createObjectStore(name,{keyPath});
+    db.version=2;
+    const settings={...data}; delete settings.records; delete settings.deletedFasts; delete settings.weights; delete settings.deletedWeights;
+    db.stores.get('state').map.set('settings',{key:'settings',data:settings});
+    db.stores.get('state').map.set('dailyTotals',{key:'dailyTotals',revision:data.revision,entries:dailyEntries});
+    db.stores.get('state').map.set('persistenceMeta',{key:'persistenceMeta',lastSuccessfulSaveAt:new Date().toISOString(),revision:data.revision});
+    for(const r of (data.records||[])) db.stores.get('records').map.set(r.id,r);
+    for(const r of (data.deletedFasts||[])) db.stores.get('deletedFasts').map.set(r.id,r);
+    for(const w of (data.weights||[])) db.stores.get('weights').map.set(w.id,w);
+    for(const w of (data.deletedWeights||[])) db.stores.get('deletedWeights').map.set(w.id,w);
     databases.set('FastingTrackerDB',db);
   };
 }"""

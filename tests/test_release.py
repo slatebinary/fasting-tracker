@@ -31,8 +31,8 @@ index=(ROOT/'index.html').read_text()
 en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
-ok(ver.get('version')=='1.8.18','version must be 1.8.18')
-ok(ver.get('released')=='2026-10-03','release date must be 2026-10-03')
+ok(ver.get('version')=='1.9.1','version must be 1.9.1')
+ok(ver.get('released')=='2026-10-04','release date must be 2026-10-03')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
 for item in ver.get('shell',[]):
@@ -140,8 +140,8 @@ try:
         evaluated=json.loads(subprocess.check_output(['node',runtime_js],text=True))
         ok(evaluated==lang_dicts[lang],f'i18n runtime is stale for {lang}; run tools/build_i18n_runtime.py')
     source=json.loads((ROOT/'i18n-source.json').read_text())
-    ok(source.get('sourceRevision')==17, 'i18n source revision mismatch')
-    ok(source.get('appVersion')=='1.8.18', 'i18n source app version mismatch')
+    ok(source.get('sourceRevision')==19, 'i18n source revision mismatch')
+    ok(source.get('appVersion')=='1.9.1', 'i18n source app version mismatch')
     ok(source.get('language')=='en', 'i18n source language must be en')
     ok(source.get('strings')==canonical, 'i18n-source.json is stale; run tools/export_i18n_source.py')
 except Exception as e:
@@ -261,7 +261,7 @@ ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guid
 
 
 # Internationalization-readiness regression checks
-ok('const I18N_SOURCE_REVISION = 17;' in index, 'canonical i18n source revision missing')
+ok('const I18N_SOURCE_REVISION = 19;' in index, 'canonical i18n source revision missing')
 ok('const LANGUAGE_META = Object.freeze({' in index and 'const SUPPORTED_LANGUAGES' in index, 'central language metadata missing')
 ok('new Intl.PluralRules(currentLocale()).select' in index, 'Intl.PluralRules pluralization missing')
 ok('function resolveSystemLanguage()' in index and 'navigator.languages' in index, 'system-language resolution is not future-ready')
@@ -337,7 +337,7 @@ ok(index.index('let emergencyBoot =') < boot_load, 'emergencyBoot must be initia
 # v1.6.2 recovery hardening + exact documentation return regressions
 ok("const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';" in index and 'sessionStorage.setItem(DOC_RETURN_KEY, location.href)' in index, 'exact documentation return capture missing')
 ok('data.records.length > MAX_IMPORT_FASTS' in index and 'data.deletedFasts.length > MAX_IMPORT_DELETED_FASTS' in index and 'data.weights.length > MAX_IMPORT_WEIGHTS' in index and 'queuePrimaryPersistence()' in index, 'save must enforce lifetime record limits and queue IndexedDB persistence')
-ok('async function reloadFromIndexedDB' in index and "idbGet('state', 'primary')" in index and 'DATA_REVISION_SIGNAL_KEY' in index, 'cross-context storage sync must reload validated IndexedDB state')
+ok('async function reloadFromIndexedDB' in index and 'loadRecordBasedData()' in index and 'DATA_REVISION_SIGNAL_KEY' in index, 'cross-context storage sync must reload record-based IndexedDB state')
 ok("throw new Error('overlapping fasting records')" not in index and "throw new Error('active fast overlaps history')" not in index, 'legacy semantic overlap must not force Recovery mode')
 ok('id="recoveryDiagnostic"' in index and "recoveryMode.error" in index, 'Recovery mode diagnostic reason missing')
 for rel in ['about.html','privacy.html','branding.html','license.html']:
@@ -364,12 +364,12 @@ ok("el('calendarPrevBtn').addEventListener('click'" in index and "el('calendarNe
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
 try:
-    compat_names=['pad','normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','dayKey','dayKeyFast','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','migrateData','normalizeRecord','normalizeDeletedFast','normalizeNotificationPreferences','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
+    compat_names=['pad','normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','dayKey','dayKeyFast','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','normalizeDeletedWeight','normalizeFastEditAuditEntry','normalizeFastEditHistory','migrateData','normalizeRecord','normalizeDeletedFast','normalizeNotificationPreferences','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
     compat_funcs='\n'.join(extract_func(n) for n in compat_names)
     compat_test=r'''
 const DATA_VERSION=1, SUPPORTED_LANGUAGES=['en','bg','es'];
 const FUTURE_TOLERANCE_MS=60*1000, MAX_SAFE_GOAL_HOURS=2_000_000_000;
-const MAX_IMPORT_FASTS=100000, MAX_IMPORT_DELETED_FASTS=100000, MAX_IMPORT_WEIGHTS=100000;
+const MAX_IMPORT_FASTS=100000, MAX_IMPORT_DELETED_FASTS=100000, MAX_IMPORT_WEIGHTS=100000, MAX_FAST_EDIT_AUDIT=100;
 const numberSymbolsCache=new Map(), timeZoneValidityCache=new Map(), zonedFormatterCache=new Map();
 function currentLocale(){return 'en-US'}
 '''+compat_funcs+r'''
@@ -383,6 +383,7 @@ assert(d.notificationPreferences && d.notificationPreferences.enabled===false &&
 assert(d.activeStart===null && d.activeGoalHours===null && d.activeTimeZone===null && d.activeCreatedAt===null && d.activeModifiedAt===null,'orphan active metadata repair');
 assert(new Set(d.records.map(x=>x.id)).size===2 && d.records.length===2,'duplicate IDs repaired and overlap preserved');
 assert(Array.isArray(d.deletedFasts) && d.deletedFasts.length===0,'legacy data must gain an empty deleted-fast audit array');
+assert(Array.isArray(d.deletedWeights) && d.deletedWeights.length===0,'legacy data must gain an empty deleted-weight audit array');
 assert(new Set(d.weights.map(x=>x.id)).size===2 && d.weights[0].kg===80.5,'weight metadata repair');
 assert(d.records.every(x=>x.createdAt===null && x.modifiedAt===null),'legacy fast audit times must remain unknown');
 assert(d.weights.every(x=>x.createdAt===null && x.modifiedAt===null),'legacy weight audit times must remain unknown');
@@ -469,7 +470,14 @@ ok("navigator.share({ files: [file] })" in index and "navigator.share({files:[fi
 ok("title: t('backup.shareTitle')" not in index and "title:t('backup.shareTitle')" not in index, 'share title can create an unwanted companion text item on iOS/cloud targets')
 
 
-# v1.8.18 fasting-cycle preset/countdown regression checks
+# v1.9.1 completed-fast edit audit regression checks
+ok('function substantialFastEdit(previous, next)' in index, 'completed-fast material-change confirmation logic missing')
+ok('editHistory: normalizeFastEditHistory(r.editHistory)' in index, 'completed-fast edit audit history is not normalized')
+ok('fastEditAuditEntry(existingRecord, nowAudit)' in index, 'completed-fast previous values are not retained before edit')
+ok("t('history.editedAt'" in index, 'edited completed fasts are not visibly marked in History')
+ok('entryAuditHelp' in index and 'history.editMaterialConfirm' in en_source, 'completed-fast edit audit/confirmation UI missing')
+
+# v1.9.1 fasting-cycle preset/countdown regression checks
 ok('data-goal="12"' in index and 'data-goal="14"' in index and 'data-goal="20"' in index, '12h/14h/20h settings presets missing')
 ok('data-active-goal="12"' in index and 'data-active-goal="14"' in index and 'data-active-goal="20"' in index, '12h/14h/20h active-target presets missing')
 ok('id="nextFastCard"' in index and 'function nextFastCycleInfo' in index and 'durationMs >= dayMs' in index, 'next-fast countdown implementation missing')
@@ -564,7 +572,7 @@ ok("if (Math.abs(ms - dayEndMs) < 1000) return '23:59';" in index, 'Timeline clo
 
 
 
-# v1.8.18 soft-delete/audit regression checks
+# v1.9.1 soft-delete/audit regression checks
 ok('deletedFasts: []' in index and 'function normalizeDeletedFast(' in index, 'deleted-fast audit data model missing')
 ok('deleted: true' in index and 'deletedAt:' in index and 'deletedTimeZone:' in index, 'deleted-fast audit metadata missing')
 ok('function moveFastToDeleted(' in index and "deleteFastToAudit(r, 'user')" in index, 'History deletion is not soft-delete/audit based')
@@ -574,13 +582,13 @@ ok('deleted-fast audit record' in privacy_text.lower() and 'одитните з�
 ok((ROOT/'tests'/'test_soft_delete_audit.py').is_file(), 'soft-delete audit browser regression test missing')
 
 
-# v1.8.18 cross-day continuation/detail regression checks
+# v1.9.1 cross-day continuation/detail regression checks
 ok('stats.endOfDay' in en_source and 'stats.detailFastSplitTargetBeyond' in en_source, 'cross-day Timeline detail localization missing')
 ok('function totalHoursDuration(ms)' in index and "t('stats.endOfDay')" in index, 'cross-day Timeline must use exact end-of-day wording and total-hour duration formatting')
 ok('segment.continuationKey' in index and 'isRelatedContinuation' in index and 'ctx.setLineDash([4, 3])' in index, 'selected fast/gap continuation highlighting missing')
 ok((ROOT/'tests'/'test_timeline_continuation_highlight.py').is_file(), 'Timeline continuation browser regression test missing')
 
-# v1.8.18 optional device-notification regression checks
+# v1.9.1 optional device-notification regression checks
 ok('id="notificationsCard"' in index and 'id="notificationMasterToggle"' in index and 'id="notificationTestBtn"' in index, 'notification settings UI missing')
 ok('notificationPreferences:' in index and 'function normalizeNotificationPreferences(' in index, 'notification preferences data model missing')
 ok("targetReached: true" in index and "backupDue: true" in index and "longFastSafety: true" in index and "weighIn: false" in index and "cycleComplete: false" in index, 'notification recommended defaults are incorrect')
@@ -591,13 +599,21 @@ ok("self.addEventListener('notificationclick'" in (ROOT/'sw.js').read_text(), 's
 ok('Notifications</h2>' in privacy_text and 'Известия</h2>' in privacy_text and 'Notificaciones</h2>' in privacy_text, 'localized notification privacy disclosure missing')
 ok((ROOT/'tests'/'test_notifications.py').is_file(), 'notification browser regression test missing')
 
-# v1.8.18 notification onboarding regression checks
+# v1.9.1 notification onboarding regression checks
 ok('id="setupStepNotifications" data-setup-step="5"' in index and 'id="setupStepReady" data-setup-step="6"' in index, 'notification onboarding step/order missing')
 ok('id="setupEnableNotificationsBtn"' in index and 'id="setupSkipNotificationsBtn"' in index, 'notification onboarding explicit actions missing')
 ok('function enableSetupNotifications()' in index and 'Notification.requestPermission' in index and 'function skipSetupNotifications()' in index, 'notification onboarding explicit permission flow missing')
 ok('next.hidden = setupGuideStep === 5' in index, 'generic setup Continue must not bypass notification choice UI')
 ok('setup.notificationsIntro' in en_source and 'setup.readyNotifications' in en_source, 'notification onboarding localization missing')
 ok((ROOT/'tests'/'test_setup_notifications.py').is_file(), 'notification-onboarding browser regression test missing')
+
+# v1.9.1 weigh-in reminder cadence interaction regression checks
+ok('id="notificationWeighDailyBtn"' in index and 'id="notificationWeighWeeklyBtn"' in index, 'Settings Daily/Weekly weigh-in cadence buttons missing')
+ok('id="setupNotificationWeighDailyBtn"' in index and 'id="setupNotificationWeighWeeklyBtn"' in index, 'onboarding Daily/Weekly weigh-in cadence buttons missing')
+ok('function renderWeighCadenceButtons(' in index and 'function setSettingsWeighCadence(' in index, 'weigh-in cadence interaction helpers missing')
+ok("renderWeighCadenceButtons('notification', prefs.weighInCadence)" in index, 'Settings cadence control is not rendered from saved preference')
+ok("renderWeighCadenceButtons('setupNotification', prefs.weighInCadence)" in index, 'onboarding cadence control is not rendered from saved preference')
+ok("disabled=!prefs.weighIn" not in index and "disabled = !prefs.weighIn" not in index, 'cadence must remain selectable while weigh-in reminder is off')
 
 if errors:
     print('FAIL')

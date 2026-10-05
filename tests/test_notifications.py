@@ -35,9 +35,9 @@ with sync_playwright() as p:
         'activeCreatedAt':start.isoformat().replace('+00:00','Z'),
         'activeModifiedAt':None,
     })
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.18',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.9.1',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.18'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.9.1'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click()
     page.wait_for_function("document.querySelector('#notificationsCard') && !document.querySelector('#notificationsCard').hidden",timeout=5000)
 
@@ -55,6 +55,20 @@ with sync_playwright() as p:
             print(f'FAIL: {control} default is {actual}, expected {expected}'); sys.exit(1)
     if page.locator('#notificationWeighCadence').input_value() != 'weekly':
         print('FAIL: weigh-in reminder cadence does not default to weekly'); sys.exit(1)
+    # Cadence must be selectable even while the weigh-in reminder itself is off.
+    if page.locator('#notificationWeighDailyBtn').is_disabled() or page.locator('#notificationWeighWeeklyBtn').is_disabled():
+        print('FAIL: weigh-in cadence controls are disabled while reminder is off'); sys.exit(1)
+    page.locator('#notificationWeighDailyBtn').click()
+    page.wait_for_function("document.querySelector('#notificationWeighCadence')?.value === 'daily'",timeout=5000)
+    if page.locator('#notificationWeighDailyBtn').get_attribute('aria-pressed') != 'true':
+        print('FAIL: Daily cadence did not become visibly selected'); sys.exit(1)
+    # Turning the reminder on must keep the cadence that was preselected.
+    page.locator('#notificationWeighToggle').click()
+    page.wait_for_function("document.querySelector('#notificationWeighToggle')?.checked && document.querySelector('#notificationWeighCadence')?.value === 'daily'",timeout=5000)
+    page.locator('#notificationWeighWeeklyBtn').click()
+    page.wait_for_function("document.querySelector('#notificationWeighCadence')?.value === 'weekly'",timeout=5000)
+    if page.locator('#notificationWeighWeeklyBtn').get_attribute('aria-pressed') != 'true':
+        print('FAIL: Weekly cadence did not become visibly selected'); sys.exit(1)
     if 'no push server' not in page.locator('#notificationsCard').inner_text().lower():
         print('FAIL: notification delivery limitation is not disclosed'); sys.exit(1)
     if 'lock screen' not in page.locator('#notificationsCard').inner_text().lower():

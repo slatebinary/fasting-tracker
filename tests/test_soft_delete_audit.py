@@ -10,13 +10,19 @@ except Exception as exc:
 
 def read_primary(page):
     return page.evaluate("""() => new Promise((resolve,reject) => {
-      const req=indexedDB.open('FastingTrackerDB',1);
+      const req=indexedDB.open('FastingTrackerDB',2);
       req.onerror=()=>reject(req.error);
       req.onsuccess=()=>{
-        const r=req.result.transaction('state','readonly').objectStore('state').get('primary');
-        r.onerror=()=>reject(r.error); r.onsuccess=()=>resolve(r.result?.data || null);
+        const db=req.result, names=['records','deletedFasts','weights','deletedWeights'];
+        const tx=db.transaction(['state',...names],'readonly');
+        const sreq=tx.objectStore('state').get('settings');
+        const result={}; let pending=names.length+1;
+        const done=()=>{ if(--pending===0) resolve({...sreq.result?.data,...result}); };
+        sreq.onerror=()=>reject(sreq.error); sreq.onsuccess=done;
+        for(const name of names){const r=tx.objectStore(name).getAll();r.onerror=()=>reject(r.error);r.onsuccess=()=>{result[name]=r.result;done();};}
       };
     })""")
+
 
 
 data=build_data(3)
@@ -29,9 +35,9 @@ with sync_playwright() as p:
         dialogs.append(d.message); d.accept()
     page.on('dialog',handle_dialog)
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.18',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.9.1',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.8.18'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.9.1'",timeout=20000)
 
     page.locator('.tab[data-screen="history"]').click()
     page.wait_for_function("document.querySelectorAll('#historyList .historyRow').length === 3",timeout=5000)
