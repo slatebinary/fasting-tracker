@@ -245,3 +245,5 @@ The optional first-run setup now includes a dedicated Notifications step after t
 - Added four fasting graphic views: 12-month totals, duration distribution, monthly target-success rate and start-time pattern. All expose text equivalents through Show chart data.
 - `ACCESSIBILITY-CHECKLIST.txt` adds a real-device VoiceOver/Dynamic Type/orientation release pass.
 
+
+
