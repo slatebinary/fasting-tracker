@@ -1,14 +1,21 @@
 FASTING TRACKER — RELEASE GUIDE
 
-Ordinary release process
+Canonical version source
 
-1. Start from the latest complete release folder.
-2. Update APP_VERSION, the ft-app-version meta value, public About/Privacy footer versions, version.json version/date/notes, and release-specific tests.
-3. Keep sw.js byte-for-byte unchanged unless the update protocol itself must change. Any protocol change must remain backward-compatible with already installed versions.
-4. Run tools/build_release.py to regenerate SHA-256 hashes for every version.json shell asset.
-5. Run tests/test_release.py and JavaScript syntax checks. Do not package a release unless all checks pass.
-6. Package the CONTENTS as a complete release. Upload the entire release contents together so index.html, version.json, manifests and hashes cannot become mismatched.
-7. After GitHub Pages deploys, verify live version.json and the app version shown in Settings.
+1. Edit only version.json for the release version/date/notes.
+2. Make the intended source, translation and documentation changes.
+3. Run tools/build_i18n_runtime.py after editing i18n/*.json.
+4. Run tools/export_i18n_source.py after translation/source changes.
+5. Run tools/build_release.py. It stamps the application/public-page version from version.json and regenerates the SHA-256 shell hashes.
+6. Run tools/build_release.py --check and tests/test_release.py. Run the browser regressions relevant to changed behavior.
+7. Complete ACCESSIBILITY-CHECKLIST.txt on real devices for releases that change UI, charts, dialogs, navigation or accessibility.
+
+GitHub Pages deployment
+
+- The repository includes .github/workflows/pages.yml. It validates the committed release, runs the release gate, builds a deployment-only _site artifact, and then deploys that artifact.
+- In GitHub repository Settings -> Pages, select GitHub Actions as the publishing source before relying on this workflow.
+- Do not publish a partially uploaded working directory. A release is valid only when version.json, index.html, helper scripts, translations, manifests and integrity hashes belong to the same committed release.
+- After deployment, open the live app and run Settings -> Updates -> Check. Data & storage health should report matching live metadata and live entry versions.
 
 Data-safety rules
 
@@ -17,3 +24,4 @@ Data-safety rules
 - Before update/import/restore operations that replace data, require a verified internal recovery snapshot when the workflow depends on it.
 - Before removing/reinstalling a Home Screen PWA (including icon changes), export an external JSON backup first.
 - Do not describe persistent browser storage as surviving uninstall; it only reduces ordinary eviction risk.
+- CSV files are data exports, not the canonical restore format. The JSON backup or Export Everything bundle contains the restorable backup.

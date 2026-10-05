@@ -19,3 +19,9 @@ Use this checklist for the current release shown in version.json.
 15. If changing a Home Screen icon, create an external backup first; reinstalling a PWA can remove that installation's local data and internal snapshots.
 
 The release regression suite is in tests/test_release.py.
+
+VALIDATED PAGES WORKFLOW (v1.11+)
+- Repository Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+- Confirm the “Validate and deploy Fasting Tracker” workflow succeeds on main.
+- A failed release/hash gate must block deployment; fix the repository rather than bypassing the gate.
+- After deployment, Settings -> Updates -> Check must report matching live metadata and live entry versions.

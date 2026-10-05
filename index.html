@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.10.1" />
+  <meta name="ft-app-version" content="1.11.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -145,7 +145,7 @@ layout: null
     .vizSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:7px; border-radius:16px; background:var(--line); margin:6px 0 16px; touch-action:manipulation; }
     .vizSwitcher button { min-height:58px; padding:14px 12px; border-radius:12px; background:transparent; color:var(--text); font-size:16px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; position:relative; z-index:1; }
     .screen:not(.active) { content-visibility:hidden; contain-intrinsic-size:1px 900px; }
-    #chart, #fastTrendChart, #fastWeeksChart, #weightChart { contain:layout paint; }
+    #chart, #fastTrendChart, #fastWeeksChart, #fastMonthsChart, #fastDistributionChart, #fastSuccessChart, #fastStartPatternChart, #weightChart { contain:layout paint; }
     .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
     .vizSwitcher button.pressed { transform:scale(.985); background:color-mix(in srgb,var(--card) 86%,var(--accent) 14%); }
     .statsVizView[hidden] { display:none !important; }
@@ -671,6 +671,10 @@ layout: null
         <button type="button" data-viz="calendar" role="tab" aria-selected="false" data-i18n="stats.vizCalendar">Calendar</button>
         <button type="button" data-viz="trend" role="tab" aria-selected="false" data-i18n="stats.vizTrend">Trend</button>
         <button type="button" data-viz="weeks" role="tab" aria-selected="false" data-i18n="stats.vizWeeks">Weeks</button>
+        <button type="button" data-viz="months" role="tab" aria-selected="false" data-i18n="stats.vizMonths">Months</button>
+        <button type="button" data-viz="distribution" role="tab" aria-selected="false" data-i18n="stats.vizDistribution">Durations</button>
+        <button type="button" data-viz="success" role="tab" aria-selected="false" data-i18n="stats.vizSuccess">Target success</button>
+        <button type="button" data-viz="startpattern" role="tab" aria-selected="false" data-i18n="stats.vizStartPattern">Start times</button>
       </div>
       <div class="statsVizView" id="statsTimelineView">
         <div class="timelineShell">
@@ -695,7 +699,19 @@ layout: null
         <canvas id="fastTrendChart" width="660" height="260" role="img" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
       </div>
       <div class="statsVizView" id="statsWeeksView" hidden>
-        <canvas id="fastWeeksChart" width="660" height="260" role="img" aria-label="Weekly fasting hours for the last 8 weeks" data-i18n-aria="a11y.fastWeeksChart"></canvas>
+        <canvas id="fastWeeksChart" width="660" height="260" role="img" tabindex="0" aria-label="Weekly fasting hours for the last 8 weeks" data-i18n-aria="a11y.fastWeeksChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsMonthsView" hidden>
+        <canvas id="fastMonthsChart" width="660" height="260" role="img" tabindex="0" aria-label="Monthly fasting hours for the last 12 months" data-i18n-aria="a11y.fastMonthsChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsDistributionView" hidden>
+        <canvas id="fastDistributionChart" width="660" height="260" role="img" tabindex="0" aria-label="Distribution of completed fasting durations" data-i18n-aria="a11y.fastDistributionChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsSuccessView" hidden>
+        <canvas id="fastSuccessChart" width="660" height="260" role="img" tabindex="0" aria-label="Monthly target success rate for the last 12 months" data-i18n-aria="a11y.fastSuccessChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsStartPatternView" hidden>
+        <canvas id="fastStartPatternChart" width="660" height="260" role="img" tabindex="0" aria-label="Fasting start-time pattern" data-i18n-aria="a11y.fastStartPatternChart"></canvas>
       </div>
       <div class="notice" id="chartDetailBox" style="margin-top:10px;padding:12px 14px">
         <strong id="chartDetailTitle" data-i18n="stats.chartDetailDefaultTitle">Chart details</strong>
@@ -754,6 +770,9 @@ layout: null
       <div class="small" id="healthIntegrityStatus" aria-live="polite"></div>
       <div class="small" id="healthInstallState"></div>
       <div class="small" id="healthServiceWorker"></div>
+      <div class="small" id="healthDeploymentStatus"></div>
+      <div class="small" id="healthDeploymentVersions"></div>
+      <div class="small" id="healthDeletedStorage"></div>
       <div class="small" id="healthPerformance"></div>
       <div class="small storagePressure" id="storagePressureWarning" role="status" aria-live="polite"></div>
       <div class="diagnosticActions">
@@ -761,6 +780,8 @@ layout: null
         <button id="createSnapshotBtn" class="secondary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button>
         <button id="repairCacheBtn" class="secondary" type="button" data-i18n="cache.repair">Repair app cache</button>
         <button id="performanceTestBtn" class="secondary" type="button" data-i18n="performance.run">Run local benchmark</button>
+        <button id="deviceChecksBtn" class="secondary" type="button" data-i18n="deviceChecks.run">Run device checks</button>
+        <button id="emptyDeletedBtn" class="dangerText" type="button" data-i18n="deleted.empty">Empty Recently Deleted</button>
       </div>
     </div>
     <div class="card" id="dataLocationsCard">
@@ -1225,6 +1246,15 @@ layout: null
   </div>
 </div>
 
+<div class="modalBackdrop" id="deviceCheckModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="deviceCheckModalTitle">
+    <h2 id="deviceCheckModalTitle" data-i18n="deviceChecks.title">Device compatibility checks</h2>
+    <div class="small" data-i18n="deviceChecks.help">These checks run only on this device and do not upload your data.</div>
+    <ul id="deviceCheckList" class="small" style="padding-left:22px"></ul>
+    <div class="modalActions"><button id="deviceCheckCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+  </div>
+</div>
+
 <div class="modalBackdrop" id="editAuditModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editAuditTitle">
     <h2 id="editAuditTitle" data-i18n="history.editHistoryTitle">Edit history</h2>
@@ -1300,6 +1330,9 @@ layout: null
 <script src="i18n/en.js"></script>
 <script src="i18n/bg.js"></script>
 <script src="i18n/es.js"></script>
+<script src="js/release-health.js"></script>
+<script src="js/fasting-visuals.js"></script>
+<script src="js/platform-diagnostics.js"></script>
 <script>
 (async () => {
   'use strict';
@@ -1323,14 +1356,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 22;
+  const I18N_SOURCE_REVISION = 23;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.10.1';
+  const APP_VERSION = '1.11.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1343,6 +1376,7 @@ layout: null
   const STORAGE_PRESSURE_FREE_BYTES = 50 * 1024 * 1024;
   const UNDO_WINDOW_MS = 7000;
   const PERF_META_KEY = 'fastingTracker.performance';
+  const UPDATE_STATUS_META_KEY = 'fastingTracker.updateStatus';
   const LONG_FAST_NOTICE_HOURS = 72;
   const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
   const MAX_IMPORT_FASTS = 100000;
@@ -1400,11 +1434,15 @@ layout: null
   let sortedWeightsAscCache = null;
   let lastIntegrityCheck = null;
   let lastServiceWorkerHealth = null;
+  let liveMetadataVersion = null, liveEntryVersion = null, deploymentConsistencyState = 'unknown', lastUpdateCheckAt = null;
+  let monthSummariesCache = null, durationDistributionCache = null, targetSuccessCache = null, startPatternCache = null;
+  let genericChartHitLayout = [];
   let historyBulkMode = false, weightBulkMode = false;
   const selectedFastIds = new Set(), selectedDeletedFastIds = new Set(), selectedWeightIds = new Set(), selectedDeletedWeightIds = new Set();
   let undoToastTimer = 0, undoToastAction = null;
   const el = id => document.getElementById(id);
   let uiReady = false;
+  loadUpdateStatusMeta();
   const versionTransitionSnapshotOK = await initializePersistentStorage();
   if (versionTransitionSnapshotOK && !recoveryMode) rememberCurrentAppVersion();
 
@@ -1458,6 +1496,7 @@ layout: null
   let statsDetailOverride = null;
   let trendInteractiveLayout = [];
   let weekInteractiveLayout = [];
+  let genericChartSelectedKey = null;
   let trendSelectedDayKey = null;
   let weekSelectedKey = null;
   let timelinePointerStart = null;
@@ -1907,6 +1946,9 @@ layout: null
     diagnosticErrors.push({code:safe, at:new Date().toISOString()});
     if (diagnosticErrors.length > 20) diagnosticErrors.splice(0, diagnosticErrors.length - 20);
   }
+
+  window.addEventListener('error',event=>{try{noteDiagnosticError('runtime.'+FTPlatform.errorCategory(event.error||event.message));}catch{}});
+  window.addEventListener('unhandledrejection',event=>{try{noteDiagnosticError('promise.'+FTPlatform.errorCategory(event.reason));}catch{}});
 
   async function persistRecordStores(snapshotData = data, {force = false} = {}) {
     const db = await openAppDb();
@@ -2367,6 +2409,7 @@ layout: null
       return meta;
     } catch (err) {
       console.error('Recovery snapshot persistence failed', err);
+      noteDiagnosticError('snapshot.persist');
       setSnapshotProtectionState('failed', snapshotCache.length, snapshotCache.length + 1);
       return null;
     }
@@ -2884,6 +2927,10 @@ layout: null
     statsVizRendered.clear();
     trendChartDaysCache = null;
     weeklySummariesCache = null;
+    monthSummariesCache = null;
+    durationDistributionCache = null;
+    targetSuccessCache = null;
+    startPatternCache = null;
     calendarDaysCache.clear();
     weightAggregateCache.clear();
     weightChartScaleCache = null;
@@ -4713,7 +4760,7 @@ layout: null
   }
 
   function defaultStatsHelpKey() {
-    return statsVizMode === 'calendar' ? 'stats.calendarHelp' : statsVizMode === 'trend' ? 'stats.trendHelp' : statsVizMode === 'weeks' ? 'stats.weeksHelp' : 'stats.timelineHelp';
+    return statsVizMode === 'calendar' ? 'stats.calendarHelp' : statsVizMode === 'trend' ? 'stats.trendHelp' : statsVizMode === 'weeks' ? 'stats.weeksHelp' : statsVizMode === 'months' ? 'stats.monthsHelp' : statsVizMode === 'distribution' ? 'stats.distributionHelp' : statsVizMode === 'success' ? 'stats.successHelp' : statsVizMode === 'startpattern' ? 'stats.startPatternHelp' : 'stats.timelineHelp';
   }
 
   function renderChartDetailForMode(days = null) {
@@ -4750,7 +4797,7 @@ layout: null
   }
 
   function showStatsVizView(mode) {
-    const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView' };
+    const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView', months:'statsMonthsView', distribution:'statsDistributionView', success:'statsSuccessView', startpattern:'statsStartPatternView' };
     for (const [key,id] of Object.entries(map)) el(id).hidden = key !== mode;
   }
 
@@ -4758,8 +4805,13 @@ layout: null
     if (mode === 'calendar') renderFastCalendar();
     else if (mode === 'trend') drawFastTrendChart();
     else if (mode === 'weeks') drawFastWeeksChart();
+    else if (mode === 'months') drawFastMonthsChart();
+    else if (mode === 'distribution') drawFastDistributionChart();
+    else if (mode === 'success') drawFastSuccessChart();
+    else if (mode === 'startpattern') drawFastStartPatternChart();
     else drawChart();
     statsVizRendered.add(mode);
+    if(el('statsChartData')&&!el('statsChartData').hidden)renderStatsChartData();
   }
 
   function scheduleStatsVizRender(mode) {
@@ -4783,11 +4835,12 @@ layout: null
   }
 
   function setStatsVizMode(mode) {
-    const allowed = ['timeline','calendar','trend','weeks'];
+    const allowed = ['timeline','calendar','trend','weeks','months','distribution','success','startpattern'];
     const nextMode = allowed.includes(mode) ? mode : 'timeline';
     if (statsVizMode === nextMode) return;
     statsVizMode = nextMode;
     statsDetailOverride = null;
+    genericChartSelectedKey = null;
     if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;
     document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(btn => {
       const active = btn.dataset.viz === statsVizMode;
@@ -4926,6 +4979,32 @@ layout: null
   }
 
   function handleWeeksPointer(event) { const c=el('fastWeeksChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=weekInteractiveLayout.find(item=>x>=item.x&&x<=item.x+item.w&&y>=item.y&&y<=item.y+item.h);if(!hit)return;weekSelectedKey=hit.week.key;statsDetailOverride={dayKey:hit.week.key,title:t('stats.weekOf',{date:hit.week.label}),text:t('stats.detailWeek',{duration:compactDuration(hit.week.totalFastMs),days:formatNumber(hit.week.daysWithFast)})};drawFastWeeksChart(); }
+
+
+  function buildMonthSummaries(){
+    if(monthSummariesCache)return monthSummariesCache;
+    const buckets=FTVisuals.monthBuckets(data.records,{months:12,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),by=new Map(buckets.map(x=>[x.key,x]));
+    for(const x of buckets){x.totalMs=0;x.hours=0;}
+    for(const [day,totalMs] of completedFastingByStoredCalendarDay()){const b=by.get(String(day).slice(0,7));if(b){b.totalMs+=Number(totalMs)||0;b.hours=b.totalMs/3600000;}}
+    monthSummariesCache=buckets;return monthSummariesCache;
+  }
+  function buildDurationDistribution(){if(!durationDistributionCache)durationDistributionCache=FTVisuals.durationDistribution(data.records,{recordMs});return durationDistributionCache;}
+  function buildTargetSuccessSummaries(){if(!targetSuccessCache)targetSuccessCache=buildMonthSummaries().map(x=>({...x}));return targetSuccessCache;}
+  function buildStartPattern(){if(!startPatternCache)startPatternCache=FTVisuals.startTimeBuckets(data.records,{partsForRecord:r=>zonedParts(r.start,r.timeZone)});return startPatternCache;}
+
+  function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false}={}){
+    const c=el(canvasId),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
+    const top=18,bottom=44,left=44,right=10,w=cssW-left-right,h=cssH-top-bottom,peak=Math.max(percent?100:1,maxValue==null?FTVisuals.maxValue(items,valueKey,1):maxValue);
+    const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
+    [0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(peak*fr,0,percent?0:1)}${valueSuffix}`,left-5,y+3);});
+    const n=Math.max(1,items.length),gap=Math.max(4,Math.min(10,w/(n*5))),bw=Math.max(5,(w-gap*(n-1))/n);genericChartHitLayout=[];
+    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));}ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';const label=String(item.label||item.key||'');ctx.fillText(label.length>11?label.slice(0,10)+'…':label,x+bw/2,cssH-15);genericChartHitLayout.push({item,x,y:top,w:bw,h,canvasId,detailBuilder});});renderChartDetailForMode();
+  }
+  function handleGenericChartPointer(event){const c=event.currentTarget,rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=genericChartHitLayout.find(h=>h.canvasId===c.id&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);if(!hit)return;genericChartSelectedKey=hit.item.key;statsDetailOverride=hit.detailBuilder?hit.detailBuilder(hit.item):null;renderStatsVisualizationMode(statsVizMode);renderStatsChartData();}
+  function drawFastMonthsChart(){const items=buildMonthSummaries();drawGenericBarChart('fastMonthsChart',items,'hours',{valueSuffix:t('unit.h'),selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailMonth',{duration:compactDuration(x.totalMs),count:formatNumber(x.count)})})});}
+  function drawFastDistributionChart(){const items=buildDurationDistribution();drawGenericBarChart('fastDistributionChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailDistribution',{count:formatNumber(x.count),hours:formatNumber(x.totalHours,0,1)})})});}
+  function drawFastSuccessChart(){const items=buildTargetSuccessSummaries();drawGenericBarChart('fastSuccessChart',items,'successRate',{maxValue:100,valueSuffix:'%',percent:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailSuccess',{rate:formatNumber(x.successRate,0,0),reached:formatNumber(x.reached),count:formatNumber(x.count)})})});}
+  function drawFastStartPatternChart(){const items=buildStartPattern();drawGenericBarChart('fastStartPatternChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailStartPattern',{count:formatNumber(x.count)})})});}
 
   function toLocalInputValue(dateLike, timeZone = currentTimeZone()) {
     const d = new Date(dateLike); if (!Number.isFinite(d.getTime())) return '';
@@ -5538,6 +5617,10 @@ layout: null
     if(statsVizMode==='timeline'){for(const d of [...timelineChartDays].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}`;ul.append(li);}}
     else if(statsVizMode==='trend'){for(const d of [...(trendChartDaysCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber((d.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
     else if(statsVizMode==='weeks'){for(const w of [...(weeklySummariesCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${w.label||w.key||''} — ${formatNumber((w.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
+    else if(statsVizMode==='months'){for(const x of [...buildMonthSummaries()].reverse()){const li=document.createElement('li');li.textContent=`${x.label} — ${formatNumber(x.hours,0,1)} ${t('unit.h')} • ${x.count}`;ul.append(li);}}
+    else if(statsVizMode==='success'){for(const x of [...buildTargetSuccessSummaries()].reverse()){const li=document.createElement('li');li.textContent=`${x.label} — ${formatNumber(x.successRate,0,0)}% • ${x.reached}/${x.count}`;ul.append(li);}}
+    else if(statsVizMode==='distribution'){for(const x of buildDurationDistribution()){const li=document.createElement('li');li.textContent=`${x.label} — ${x.count}`;ul.append(li);}}
+    else if(statsVizMode==='startpattern'){for(const x of buildStartPattern()){const li=document.createElement('li');li.textContent=`${x.label} — ${x.count}`;ul.append(li);}}
     else { const month=el('calendarMonthTitle')?.textContent||''; const li=document.createElement('li'); li.textContent=t('a11y.calendarDataHint',{month}); ul.append(li); }
     if(!ul.children.length){const li=document.createElement('li');li.textContent=t('a11y.noChartData');ul.append(li);} box.append(ul);
   }
@@ -5810,8 +5893,8 @@ layout: null
     const weightHeaders=['id','when','when_local','weight_kg','time_zone','created_at','modified_at'];
     const weightRows=sortedWeightsAsc().slice().reverse().map(w=>[w.id,w.when,localDateTimeLabel(w.when,w.timeZone),w.kg,w.timeZone,w.createdAt||'',w.modifiedAt||'']);
     const files=[new File([json],jsonName,{type:'application/json'}),new File([csvText(fastHeaders,fastRows)],fastName,{type:'text/csv'}),new File([csvText(weightHeaders,weightRows)],weightName,{type:'text/csv'})];
-    try{if(navigator.share&&navigator.canShare?.({files})){await navigator.share({files});markExternalBackupNow();return true;}}catch(err){if(err?.name==='AbortError')return false;}
-    try{for(const file of files){const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}const confirmed=confirm(t('backup.everythingDownloadConfirm'));if(confirmed)markExternalBackupNow();return confirmed;}catch{alert(t('backup.errCreate'));return false;}
+    try{if(navigator.share&&navigator.canShare?.({files})){await navigator.share({files});markExternalBackupNow();return true;}}catch(err){if(err?.name==='AbortError')return false;noteDiagnosticError('export.share');}
+    try{const bundle={format:'fasting-tracker-export-bundle',bundleVersion:1,appVersion:APP_VERSION,exportedAt:new Date().toISOString(),backup,files:{fastingCsv:csvText(fastHeaders,fastRows),weightCsv:csvText(weightHeaders,weightRows)}};const name=`fasting-tracker-export-all-${stamp}.json`;await shareOrDownloadText(JSON.stringify(bundle,null,2),name,'application/json');const confirmed=confirm(t('backup.everythingBundleConfirm'));if(confirmed)markExternalBackupNow();return confirmed;}catch{noteDiagnosticError('export.bundle');alert(t('backup.errCreate'));return false;}
   }
 
   function storagePressureFromEstimate(estimate){if(!estimate||!Number.isFinite(estimate.usage)||!Number.isFinite(estimate.quota)||estimate.quota<=0)return {known:false,warning:false,ratio:null,free:null};const ratio=estimate.usage/estimate.quota,free=Math.max(0,estimate.quota-estimate.usage);return {known:true,warning:ratio>=STORAGE_PRESSURE_RATIO||free<STORAGE_PRESSURE_FREE_BYTES,ratio,free};}
@@ -5821,8 +5904,26 @@ layout: null
   function savePerformanceMeta(value){try{localStorage.setItem(PERF_META_KEY,JSON.stringify(value));}catch{}}
   async function runLocalBenchmark(){const btn=el('performanceTestBtn');if(btn)btn.disabled=true;await new Promise(r=>setTimeout(r,0));const p=globalThis.performance?.now?()=>performance.now():()=>Date.now();const t0=p();const rec=[...data.records].sort((a,b)=>String(a.end).localeCompare(String(b.end)));const t1=p();buildStoredDayTotals(rec);const t2=p();JSON.stringify({records:data.records,weights:data.weights,deletedFasts:data.deletedFasts,deletedWeights:data.deletedWeights});const t3=p();const result={at:new Date().toISOString(),records:data.records.length,weights:data.weights.length,sortMs:+(t1-t0).toFixed(2),totalsMs:+(t2-t1).toFixed(2),serializeMs:+(t3-t2).toFixed(2),totalMs:+(t3-t0).toFixed(2)};savePerformanceMeta(result);if(btn)btn.disabled=false;renderStorageHealth();return result;}
   async function queryServiceWorkerHealth(){if(!('serviceWorker'in navigator))return {supported:false};try{const reg=await navigator.serviceWorker.getRegistration();const worker=navigator.serviceWorker.controller||reg?.active;if(!worker)return {supported:true,registered:!!reg,controlled:false};return await new Promise(resolve=>{const ch=new MessageChannel(),timer=setTimeout(()=>resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,timeout:true}),4000);ch.port1.onmessage=e=>{clearTimeout(timer);resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,...(e.data||{})});};worker.postMessage({type:'CHECK_HEALTH',protocolVersion:UPDATE_PROTOCOL_VERSION},[ch.port2]);});}catch(err){return {supported:true,error:String(err?.message||err)};}}
-  async function repairAppCache(){if(!confirm(t('cache.repairConfirm')))return false;const btn=el('repairCacheBtn');if(btn)btn.disabled=true;try{await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();renderStorageHealth();alert(t('cache.repaired'));return true;}catch{alert(t('cache.repairFailed'));return false;}finally{if(btn)btn.disabled=false;}}
+  async function repairAppCache(){if(!confirm(t('cache.repairConfirm')))return false;const btn=el('repairCacheBtn');if(btn)btn.disabled=true;try{const info=await fetchLiveReleaseStatus();if(info&&!info.consistency.ok){alert(t('update.deploymentIncomplete'));return false;}if(info?.metadataVersion&&compareVersions(info.metadataVersion,APP_VERSION)>0){latestVersion=info.metadataVersion;alert(t('cache.updateInstead',{version:info.metadataVersion}));setUpdateUI('available');return false;}await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();renderStorageHealth();alert(t('cache.repaired'));return true;}catch(err){noteDiagnosticError('cache.repair');alert(t('cache.repairFailed'));return false;}finally{if(btn)btn.disabled=false;}}
 
+
+  function deletedAuditApproxBytes(){try{return new Blob([JSON.stringify({fasts:data.deletedFasts,weights:data.deletedWeights})]).size;}catch{return 0;}}
+  function renderDeploymentStatus(){const status=el('healthDeploymentStatus'),versions=el('healthDeploymentVersions');if(!status||!versions)return;status.textContent=deploymentConsistencyState==='ok'?t('deployment.ok'):deploymentConsistencyState==='mismatch'?t('deployment.mismatch'):t('deployment.unknown');versions.textContent=t('deployment.versions',{installed:APP_VERSION,metadata:liveMetadataVersion||'—',entry:liveEntryVersion||'—',worker:lastServiceWorkerHealth?.activeVersion||'—',checked:lastUpdateCheckAt?localDateTimeLabel(lastUpdateCheckAt):t('common.never')});}
+  async function runDeviceChecks(){
+    const btn=el('deviceChecksBtn');if(btn)btn.disabled=true;const checks=[];const add=(key,ok,detail='')=>checks.push({key,ok,detail});
+    try{const key='device-check';await idbPut('state',{key,data:{at:new Date().toISOString()}});const row=await idbGet('state',key);await idbDelete('state',key);add('indexeddb',!!row);}catch(e){add('indexeddb',false);noteDiagnosticError('device.indexeddb');}
+    try{const persistent=await navigator.storage?.persisted?.();add('storage',persistent===true,persistent===true?'persistent':persistent===false?'not-persistent':'unknown');}catch{add('storage',false,'unavailable');}
+    try{const sw=await queryServiceWorkerHealth();add('serviceworker',!!(sw?.supported&&sw?.controlled&&sw?.cacheComplete!==false),sw?.activeVersion||'');}catch{add('serviceworker',false);}
+    const caps=FTPlatform.shareCapabilities();add('files',caps.fileShare||caps.downloads,caps.fileShare?'file-share':caps.downloads?'download':'unsupported');
+    add('notifications','Notification'in window,notificationPermissionState());add('standalone',isStandaloneApp(),installStateCode());
+    const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}if(btn)btn.disabled=false;showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+  }
+  async function emptyRecentlyDeleted(){
+    const total=data.deletedFasts.length+data.deletedWeights.length;if(!total){alert(t('deleted.none'));return false;}
+    if(!confirm(t('deleted.emptyConfirm',{n:total,size:humanBytes(deletedAuditApproxBytes())})))return false;
+    if(backupFreshnessState().state!=='current'&&confirm(t('deleted.backupFirst'))){const ok=await exportBackup();if(!ok)return false;}
+    const oldF=data.deletedFasts.slice(),oldW=data.deletedWeights.slice();data.deletedFasts=[];data.deletedWeights=[];if(!save({invalidateDerived:false,dirtyViews:['history','weight','settings']})){data.deletedFasts=oldF;data.deletedWeights=oldW;renderAll();return false;}renderAll();return true;
+  }
   async function renderStorageHealth() {
     const rc=el('healthRecordCount'); if(!rc)return;
     rc.textContent=formatNumber(data.records.length+data.weights.length);
@@ -5840,7 +5941,7 @@ layout: null
     el('healthSnapshotDetail').textContent=ss.count?t('storage.healthSnapshotDetail',{newest:localDateTimeLabel(ss.newest),oldest:localDateTimeLabel(ss.oldest),size:humanBytes(ss.storedBytes),recent:ss.recent,daily:ss.daily,weekly:ss.weekly,monthly:ss.monthly}):t('storage.healthSnapshotNone');
     const migration=migrationStatusMeta();
     el('healthMigrationStatus').textContent=migration.pending?t('storage.healthMigrationPending',{from:migration.pending.from,to:migration.pending.to}):migration.last?.status==='success'?t('storage.healthMigrationSuccess',{from:migration.last.from,to:migration.last.to,date:localDateTimeLabel(migration.last.completedAt)}):migration.last?.status==='failed'?t('storage.healthMigrationFailed',{from:migration.last.from,to:migration.last.to,date:localDateTimeLabel(migration.last.completedAt)}):t('storage.healthMigrationNone');
-    const install=installStateCode();el('healthInstallState').textContent=t(`installState.${install}`);lastServiceWorkerHealth=await queryServiceWorkerHealth();const sw=lastServiceWorkerHealth;el('healthServiceWorker').textContent=!sw?.supported?t('cache.unsupported'):sw.error||sw.timeout?t('cache.unavailable'):sw.cacheComplete===false?t('cache.incomplete',{n:sw.missingAssets||0}):sw.activeVersion?t('cache.healthy',{version:sw.activeVersion}):t('cache.notControlled');const perf=loadPerformanceMeta();el('healthPerformance').textContent=perf?t('performance.last',{date:localDateTimeLabel(perf.at),ms:formatNumber(perf.totalMs,0,2),records:perf.records,weights:perf.weights}):t('performance.none');
+    const install=installStateCode();el('healthInstallState').textContent=t(`installState.${install}`);lastServiceWorkerHealth=await queryServiceWorkerHealth();const sw=lastServiceWorkerHealth;el('healthServiceWorker').textContent=!sw?.supported?t('cache.unsupported'):sw.error||sw.timeout?t('cache.unavailable'):sw.cacheComplete===false?t('cache.incomplete',{n:sw.missingAssets||0}):sw.activeVersion?t('cache.healthy',{version:sw.activeVersion}):t('cache.notControlled');renderDeploymentStatus();el('healthDeletedStorage').textContent=t('deleted.storage',{n:data.deletedFasts.length+data.deletedWeights.length,size:humanBytes(deletedAuditApproxBytes())});const perf=loadPerformanceMeta();el('healthPerformance').textContent=perf?t('performance.last',{date:localDateTimeLabel(perf.at),ms:formatNumber(perf.totalMs,0,2),records:perf.records,weights:perf.weights}):t('performance.none');
     el('healthIntegrityStatus').textContent=lastIntegrityCheck?(lastIntegrityCheck.ok?t('integrity.lastOk',{date:localDateTimeLabel(lastIntegrityCheck.at)}):t('integrity.lastIssues',{n:lastIntegrityCheck.issues.length,date:localDateTimeLabel(lastIntegrityCheck.at)})):t('integrity.notChecked');
   }
 
@@ -5904,7 +6005,7 @@ layout: null
     const ss=snapshotCoverageStats(),migration=migrationStatusMeta();
     const payload={
       format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, updateProtocolVersion:UPDATE_PROTOCOL_VERSION, exportedAt:new Date().toISOString(),
-      environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth},
+      environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth,deployment:{state:deploymentConsistencyState,metadataVersion:liveMetadataVersion,entryVersion:liveEntryVersion,lastCheckedAt:lastUpdateCheckAt}},
       database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
       migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,completedAt:migration.last.completedAt}:null},
       integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code)}:null,
@@ -6270,6 +6371,8 @@ layout: null
     } else if (state === 'updating') {
       status.textContent = t('update.installing'); status.classList.add('warn'); btn.textContent = t('update.updating'); btn.disabled = true;
       bannerText.textContent = t('update.installingShort'); banner.hidden = false;
+    } else if (state === 'deploymentMismatch') {
+      updateAvailable = false; status.textContent = message || t('update.deploymentIncomplete'); status.classList.add('warn'); btn.textContent = t('update.check'); btn.disabled = false; banner.hidden = true;
     } else if (state === 'offline') {
       updateAvailable = false; status.textContent = message || t('update.offline'); btn.textContent = t('update.check'); btn.disabled = false; banner.hidden = true;
     } else {
@@ -6277,6 +6380,14 @@ layout: null
     }
   }
 
+
+  function saveUpdateStatusMeta(){try{localStorage.setItem(UPDATE_STATUS_META_KEY,JSON.stringify({metadataVersion:liveMetadataVersion,entryVersion:liveEntryVersion,state:deploymentConsistencyState,checkedAt:lastUpdateCheckAt}));}catch{}}
+  function loadUpdateStatusMeta(){try{const x=JSON.parse(localStorage.getItem(UPDATE_STATUS_META_KEY)||'null');if(x){liveMetadataVersion=x.metadataVersion||null;liveEntryVersion=x.entryVersion||null;deploymentConsistencyState=x.state||'unknown';lastUpdateCheckAt=x.checkedAt||null;}}catch{}}
+  async function fetchLiveReleaseStatus(signal){
+    const response=await fetch(`./version.json?t=${Date.now()}`,{cache:'no-store',signal});if(!response.ok)throw new Error('version check failed');
+    const info=FTReleaseHealth.validateMetadata(await response.json(),UPDATE_PROTOCOL_VERSION);const entryVersion=await FTReleaseHealth.fetchLiveEntryVersion(info.entry,7000);const consistency=FTReleaseHealth.consistency(info.version,entryVersion);
+    liveMetadataVersion=info.version;liveEntryVersion=entryVersion;deploymentConsistencyState=consistency.ok?'ok':'mismatch';lastUpdateCheckAt=new Date().toISOString();saveUpdateStatusMeta();return {info,metadataVersion:info.version,entryVersion,consistency};
+  }
   async function checkForUpdates({ quiet = false } = {}) {
     if (!quiet) setUpdateUI('checking');
     if (navigator.onLine === false) {
@@ -6286,16 +6397,14 @@ layout: null
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 7000);
     try {
-      const response = await fetch(`./version.json?t=${Date.now()}`, { cache: 'no-store', signal: controller.signal });
-      if (!response.ok) throw new Error('version check failed');
-      const info = await response.json();
-      if (Number(info.protocolVersion) !== UPDATE_PROTOCOL_VERSION || !Array.isArray(info.shell) || typeof info.entry !== 'string') throw new Error('unsupported update metadata');
-      const remote = typeof info.version === 'string' ? info.version.trim() : '';
-      if (!/^\d+\.\d+\.\d+$/.test(remote)) throw new Error('invalid version');
+      const live = await fetchLiveReleaseStatus(controller.signal), remote=live.metadataVersion;
       latestVersion = remote;
-      if (compareVersions(remote, APP_VERSION) > 0) setUpdateUI('available');
+      if (!live.consistency.ok) { setUpdateUI('deploymentMismatch', t('update.deploymentMismatch',{metadata:live.metadataVersion||'—',entry:live.entryVersion||'—'})); noteDiagnosticError('update.deployment-mismatch'); }
+      else if (compareVersions(remote, APP_VERSION) > 0) setUpdateUI('available');
       else setUpdateUI('current');
-    } catch {
+      renderDeploymentStatus();
+    } catch (err) {
+      noteDiagnosticError('update.'+FTPlatform.errorCategory(err));
       const msg = navigator.onLine === false
         ? t('update.offlineExplicit')
         : t('update.failed');
@@ -6333,7 +6442,8 @@ layout: null
       if (navigator.onLine === false) throw new Error('offline');
       await requestShellRefresh(latestVersion);
       window.location.reload();
-    } catch {
+    } catch (err) {
+      noteDiagnosticError('update.stage');
       failPendingMigration(latestVersion, 'update-stage-failed');
       updateInProgress = false; setUpdateUI('offline', t('update.failedInstall'));
     }
@@ -6745,7 +6855,8 @@ layout: null
     try {
       if (!(await allowStorageIntensiveOperation())) { e.target.value=''; return; }
       if (f.size > MAX_IMPORT_BYTES) throw new Error('backup file too large');
-      const raw = JSON.parse(await f.text());
+      const parsedImport = JSON.parse(await f.text());
+      const raw = parsedImport?.format === 'fasting-tracker-export-bundle' && parsedImport.backup ? parsedImport.backup : parsedImport;
       if (!raw || typeof raw !== 'object' || raw.format !== BACKUP_FORMAT || !Number.isInteger(Number(raw.backupVersion)) || Number(raw.backupVersion) < BACKUP_MIN_VERSION || Number(raw.backupVersion) > BACKUP_VERSION || !raw.data) {
         throw new Error('invalid backup format');
       }
@@ -6825,6 +6936,8 @@ layout: null
   el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
   el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);
   el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer);
+  ['fastTrendChart','fastWeeksChart'].forEach(id=>el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}}));
+  ['fastMonthsChart','fastDistributionChart','fastSuccessChart','fastStartPatternChart'].forEach(id=>{el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});});
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
@@ -6842,6 +6955,9 @@ layout: null
   el('manualSnapshotModal').addEventListener('click',e=>{if(e.target===el('manualSnapshotModal'))hideModal('manualSnapshotModal');});
   el('repairCacheBtn').addEventListener('click',repairAppCache);
   el('performanceTestBtn').addEventListener('click',runLocalBenchmark);
+  el('deviceChecksBtn').addEventListener('click',runDeviceChecks);
+  el('deviceCheckCloseBtn').addEventListener('click',()=>hideModal('deviceCheckModal'));
+  el('emptyDeletedBtn').addEventListener('click',emptyRecentlyDeleted);
   el('snapshotPreviewCancelBtn').addEventListener('click',()=>{pendingSnapshotRestoreId=null;hideModal('snapshotPreviewModal');});
   el('snapshotPreviewRestoreBtn').addEventListener('click',()=>{if(pendingSnapshotRestoreId)performSnapshotRestore(pendingSnapshotRestoreId);});
   el('editAuditCloseBtn').addEventListener('click',()=>hideModal('editAuditModal'));
@@ -7354,7 +7470,11 @@ layout: null
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(async () => { if (emergencyBoot) await repairEmergencyBoot(); else checkForUpdates({ quiet: true }); })
+      .then(async reg => {
+        const promote=worker=>{if(!worker)return;const send=()=>{if(worker.state==='installed')try{worker.postMessage({type:'SKIP_WAITING'});}catch{}};send();worker.addEventListener?.('statechange',send);};
+        promote(reg.waiting);promote(reg.installing);reg.addEventListener?.('updatefound',()=>promote(reg.installing));try{await reg.update();promote(reg.waiting);promote(reg.installing);}catch{}
+        if (emergencyBoot) await repairEmergencyBoot(); else checkForUpdates({ quiet: true });
+      })
       .catch(() => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   } else if (!emergencyBoot) {
     checkForUpdates({ quiet: true });

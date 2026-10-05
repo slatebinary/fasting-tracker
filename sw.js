@@ -206,6 +206,7 @@ async function releaseHealthReport() {
 self.addEventListener('message', event => {
   if (!event.data) return;
   const port = event.ports && event.ports[0];
+  if (event.data.type === 'SKIP_WAITING') { event.waitUntil(self.skipWaiting()); return; }
   if (event.data.type === 'CHECK_HEALTH') {
     event.waitUntil((async () => {
       try {
@@ -241,7 +242,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.origin !== SCOPE_URL.origin || !url.href.startsWith(SCOPE_URL.href)) return;
 
-  if (url.pathname.endsWith('/version.json')) {
+  if (url.pathname.endsWith('/version.json') || url.searchParams.has('__ft_probe') || event.request.headers.get('X-Fasting-Tracker-Probe') === '1') {
     event.respondWith(fetch(new Request(event.request, {cache:'no-store'})));
     return;
   }

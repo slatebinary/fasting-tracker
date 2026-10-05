@@ -37,6 +37,9 @@ def inlined_html():
     for lang in ('en', 'bg', 'es'):
         runtime = (ROOT / 'i18n' / f'{lang}.js').read_text(encoding='utf-8')
         html = html.replace(f'<script src="i18n/{lang}.js"></script>', f'<script>{runtime}</script>')
+    for rel in ('js/release-health.js','js/fasting-visuals.js','js/platform-diagnostics.js'):
+        runtime = (ROOT / rel).read_text(encoding='utf-8')
+        html = html.replace(f'<script src="{rel}"></script>', f'<script>{runtime}</script>')
     return html
 
 

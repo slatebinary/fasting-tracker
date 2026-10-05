@@ -1,0 +1,28 @@
+FASTING TRACKER — REAL-DEVICE ACCESSIBILITY RELEASE CHECKLIST
+
+Run on at least one iPhone/iPad Home Screen installation and one desktop/mobile browser.
+
+1. VoiceOver / screen reader
+- Read the Fasting, History, Weight, Statistics and Settings screens in DOM order.
+- Confirm every control has a meaningful name and state.
+- Confirm chart canvases announce their chart purpose and “Show chart data” exposes equivalent values.
+- Confirm modal focus moves inside the modal and returns to the invoking control when closed.
+
+2. Dynamic text / zoom
+- Test the largest practical Dynamic Type / browser text size.
+- Verify timers, buttons, filters, chart tabs and Settings rows do not overlap or clip essential content.
+
+3. Touch targets and orientation
+- Verify primary controls and chart tabs remain comfortably tappable on narrow portrait screens.
+- Test landscape orientation and rotation while a modal is open.
+
+4. Motion and contrast
+- Enable Reduce Motion and verify no essential information depends on animation.
+- Check light and dark appearance for text, selection outlines, chart labels and disabled controls.
+
+5. Keyboard
+- Tab through all screens on desktop/tablet.
+- Use arrow keys in tab/radio groups and Enter/Space on charts and buttons.
+- Verify no keyboard trap exists in dialogs.
+
+Record device/iOS/browser versions and any failure before publishing the release.

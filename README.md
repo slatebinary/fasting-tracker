@@ -228,3 +228,19 @@ The weigh-in reminder interval is now selected with explicit **Daily** and **Wee
 ## v1.8.18 notification onboarding
 
 The optional first-run setup now includes a dedicated Notifications step after the basic preferences and before the Ready summary. Recommended alerts (target reached, backup reminder and prolonged-fast safety) remain preselected; weigh-in and 24-hour-cycle remainder alerts remain off by default. The app does not request browser/device notification permission merely by showing the step. Permission is requested only after the user explicitly presses **Enable notifications**. **Not now** continues setup without changing the existing notification preferences. Unsupported and blocked notification environments are explained without blocking onboarding, and the final Ready summary shows notification status.
+
+## v1.11.0 reliability & fasting visualizations
+
+- GitHub Pages deployment can now be gated by `.github/workflows/pages.yml`: the release metadata/hashes and release regression gate must pass before the Pages artifact is deployed.
+- `version.json` is the canonical release-version source used by `tools/build_release.py` to stamp the runtime/public pages and rebuild release hashes.
+- Update checks compare live `version.json` with the live entry page. Mixed deployments are reported as incomplete and are not installed.
+- Settings shows deployment status: installed version, live metadata version, live entry version, service-worker version and last update check.
+- Export Everything retains multi-file Web Share where available; its download fallback is now one restorable JSON bundle containing the canonical backup plus both CSV exports.
+- Cache repair distinguishes a damaged same-version cache from a server that already contains a newer release.
+- Device checks test IndexedDB, storage persistence, offline service worker, file export/share support, notifications support and installed-app mode locally.
+- Recently Deleted reports approximate storage size and can be emptied deliberately with an external-backup prompt when the current backup is stale.
+- Browser storage wording now makes clear that reported quota/usage is origin-wide and can include cache/other site data.
+- Privacy-safe diagnostics capture broader sanitized failure categories and deployment state without including fasting times or weight values.
+- Main-page support logic is beginning to move into versioned helper modules under `js/` to reduce the maintenance risk of one monolithic script.
+- Added four fasting graphic views: 12-month totals, duration distribution, monthly target-success rate and start-time pattern. All expose text equivalents through Show chart data.
+- `ACCESSIBILITY-CHECKLIST.txt` adds a real-device VoiceOver/Dynamic Type/orientation release pass.
