@@ -121,6 +121,30 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+## v1.10.1 quality, recovery & history tools
+
+- Adds backup-freshness status so Settings distinguishes a current external backup from data changed since the last backup.
+- Adds Export everything for the canonical JSON backup plus fasting and weight CSV data exports.
+- Manual recovery snapshots may carry optional labels, and restore previews compare the snapshot with current data before confirmation.
+- Adds immediate Undo after deleting individual fasting or weight entries.
+- Adds collapsible history filters and bulk selection/export/delete/restore/permanent-delete tools.
+- Adds storage-pressure warnings, install-state diagnostics, service-worker cache health/repair, and a local-only performance benchmark.
+- Improves keyboard navigation, focus visibility, reduced-motion handling, touch targets and locale-aware CSV display fields.
+- Expands regression coverage for backup schema restoration, storage-loss recovery, bulk/history quality tools and accessibility/keyboard behavior.
+
+## v1.10.0 reliability, recovery & data transparency
+
+- Adds detailed recovery-snapshot age/tier/storage visibility and a manual recovery-point action.
+- Adds on-device data-integrity checks for IDs, overlaps, cached totals, IndexedDB state and snapshot pairs.
+- JSON backups now include a record manifest plus checksum verification; v1 legacy backups remain importable.
+- Snapshot restores now show a preview with version, reason and record counts before data changes.
+- Completed-fast edit history can be opened directly from History and Recently deleted.
+- Snapshot writes and full import/restore commits use atomic IndexedDB transactions.
+- Adds CSV exports for fasting and weight history (for analysis, not restoration).
+- Adds update-migration rollback tracking, richer privacy-safe diagnostics and clearer notification-permission state.
+- Extends large-history caching and adds migration/fault regression coverage.
+- Clarifies Current data vs Recovery snapshots vs External JSON backups in Settings.
+
 ## v1.9.2 notification recovery & newest-first chart data
 
 When notification permission is blocked, Settings now gives iPhone/iPad-specific recovery guidance: use Settings → Notifications → Fasting Tracker, and if the Home Screen web app is absent there too, export a JSON backup before any reinstall. The textual **Show chart data** views now list the most recent visible data first for weight, fasting Timeline, Trend and Weeks.

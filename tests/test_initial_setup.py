@@ -31,7 +31,7 @@ with sync_playwright() as p:
     errors=[]; page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM); page.evaluate(EXTRA_SHIM)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.9.2'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.10.1'",timeout=20000)
     page.wait_for_function("document.querySelector('#setupModal') && !document.querySelector('#setupModal').hidden",timeout=5000)
     if 'Step 1 of 6' not in page.locator('#setupProgress').inner_text():
         print('FAIL: fresh installation did not start at setup step 1'); sys.exit(1)
@@ -94,7 +94,7 @@ with sync_playwright() as p:
     standalone.evaluate(STORAGE_SHIM); standalone.evaluate(EXTRA_SHIM)
     standalone.evaluate("() => Object.defineProperty(navigator,'standalone',{value:true,configurable:true})")
     standalone.set_content(inlined_html(),wait_until='domcontentloaded')
-    standalone.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.9.2'",timeout=20000)
+    standalone.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.10.1'",timeout=20000)
     standalone.wait_for_function("document.querySelector('#setupModal') && !document.querySelector('#setupModal').hidden",timeout=5000)
     if 'Step 2 of 6' not in standalone.locator('#setupProgress').inner_text() or standalone.locator('#setupStepStorage').is_hidden():
         print('FAIL: Home Screen launch did not resume at storage-protection step'); sys.exit(1)

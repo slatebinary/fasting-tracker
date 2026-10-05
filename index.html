@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.9.2" />
+  <meta name="ft-app-version" content="1.10.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -233,6 +233,41 @@ layout: null
     .snapshotItem { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
     .snapshotItem:last-child { border-bottom: 0; }
     .snapshotItem button { padding: 9px 12px; flex: 0 0 auto; }
+    .snapshotSummary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 12px; margin-top:10px; }
+    .snapshotSummary .small { min-width:0; }
+    .healthActions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .dataLocationRow { padding:10px 0; border-bottom:1px solid var(--line); }
+    .dataLocationRow:last-child { border-bottom:0; }
+    .auditEntry { padding:10px 0; border-bottom:1px solid var(--line); }
+    .auditEntry:last-child { border-bottom:0; }
+    .integrityList { margin:10px 0 0; padding-left:20px; }
+    .historyTools { display:grid; gap:10px; margin-bottom:14px; }
+    .historyFilterGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 10px; }
+    .historyFilterGrid label { display:grid; gap:4px; color:var(--muted); font-size:12px; }
+    .historyFilterGrid input, .historyFilterGrid select { width:100%; max-width:none; min-height:44px; }
+    .historyToolActions, .bulkActionBar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .bulkActionBar { padding:10px 0; border-bottom:1px solid var(--line); }
+    .bulkActionBar[hidden] { display:none !important; }
+    .bulkSelectCell { display:flex; align-items:center; justify-content:center; flex:0 0 44px; }
+    .bulkSelectCell input { width:22px; height:22px; }
+    .historyRow.bulkSelectable { align-items:flex-start; }
+    .backupState { font-weight:700; }
+    .backupState.good { color:var(--good); }
+    .backupState.warn { color:var(--danger); }
+    .storagePressure { margin-top:8px; }
+    .storagePressure.warn { color:var(--danger); font-weight:650; }
+    .diagnosticActions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .undoToast { position:fixed; left:50%; bottom:calc(78px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:90; max-width:min(92vw,620px); width:max-content; background:var(--text); color:var(--bg); border-radius:14px; padding:10px 12px; display:flex; align-items:center; gap:12px; box-shadow:0 8px 28px rgba(0,0,0,.28); }
+    .undoToast[hidden] { display:none !important; }
+    .undoToast button { min-height:44px; padding:8px 12px; background:transparent; color:inherit; text-decoration:underline; }
+    .snapshotLabel { font-weight:700; overflow-wrap:anywhere; }
+    .comparisonList { margin:8px 0 0; padding-left:20px; }
+    .historyActions button, .textButton, .calendarHeader button { min-height:44px; }
+    canvas[tabindex="0"]:focus-visible, .chartDataList:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent); outline-offset:3px; }
+    html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:0.001ms !important; animation-duration:0.001ms !important; animation-iteration-count:1 !important; } }
+    .textButton { border:0; background:transparent; color:var(--accent); padding:0; font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+    .csvActions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     .modalActions.wrap { flex-wrap: wrap; }
     .version { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 0 2px; }
     .helpSteps { margin: 8px 0 0; padding-inline-start: 22px; }
@@ -397,6 +432,7 @@ layout: null
     .evidenceBadge { flex: 0 1 auto; max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: center; }
     @media (max-width: 520px) {
       #settings .row, .updateBanner, .backupBanner, .snapshotItem, .sectionHeader, .xpHeader, .weightTop { flex-wrap: wrap; }
+      .historyFilterGrid { grid-template-columns:1fr; }
       #settings .row > button, .updateBanner > button, .backupBanner > button, .snapshotItem > button, .sectionHeader > button { margin-inline-start: auto; }
       .modalActions { flex-wrap: wrap; }
     }
@@ -522,16 +558,39 @@ layout: null
 
   <section id="history" class="screen">
     <div class="sectionHeader"><h1 data-i18n="nav.history">History</h1><button id="addEntryBtn" class="secondary" data-i18n="history.add">Add entry</button></div>
-    <div class="card" id="historyList"></div>
+    <details class="card historyTools" id="historyTools">
+      <summary data-i18n="history.tools">Filter &amp; bulk tools</summary>
+      <div class="historyFilterGrid">
+        <label><span data-i18n="history.filterFrom">From date</span><input id="historyFilterFrom" type="date"></label>
+        <label><span data-i18n="history.filterTo">To date</span><input id="historyFilterTo" type="date"></label>
+        <label><span data-i18n="history.filterMin">Minimum hours</span><input id="historyFilterMin" type="number" min="0" step="0.25" inputmode="decimal"></label>
+        <label><span data-i18n="history.filterMax">Maximum hours</span><input id="historyFilterMax" type="number" min="0" step="0.25" inputmode="decimal"></label>
+        <label><span data-i18n="history.filterTarget">Target result</span><select id="historyFilterTarget"><option value="all" data-i18n="common.all">All</option><option value="reached" data-i18n="history.filterReached">Reached</option><option value="missed" data-i18n="history.filterMissed">Not reached</option></select></label>
+        <label><span data-i18n="history.filterEdited">Edit status</span><select id="historyFilterEdited"><option value="all" data-i18n="common.all">All</option><option value="edited" data-i18n="history.filterEditedOnly">Edited</option><option value="original" data-i18n="history.filterOriginalOnly">Not edited</option></select></label>
+      </div>
+      <label class="setupInlineToggle"><input id="historyIncludeDeleted" type="checkbox" checked><span data-i18n="history.filterDeleted">Include Recently Deleted</span></label>
+      <div class="historyToolActions"><button id="historyClearFiltersBtn" class="secondary" type="button" data-i18n="history.clearFilters">Clear filters</button><button id="historyBulkModeBtn" class="secondary" type="button" aria-pressed="false" data-i18n="bulk.select">Select records</button><span class="small" id="historyFilterStatus" aria-live="polite"></span></div>
+    </details>
+    <div class="card">
+      <div class="bulkActionBar" id="historyBulkBar" hidden><button id="historySelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="historyBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="historyBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="historyBulkCount"></span></div>
+      <div id="historyList"></div>
+    </div>
     <div class="card" id="deletedFastsCard" style="margin-top:14px" hidden>
       <div class="sectionHeader"><h2 data-i18n="history.deletedTitle">Recently deleted</h2><span class="small" id="deletedFastsCount"></span></div>
       <div class="small" data-i18n="history.deletedHelp">Deleted fasts are excluded from History, Statistics and XP, but their audit records stay in JSON backups until you restore or permanently delete them.</div>
+      <div class="bulkActionBar" id="deletedFastBulkBar" hidden><button id="deletedFastSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="deletedFastBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="deletedFastBulkRestoreBtn" class="secondary" type="button" data-i18n="bulk.restore">Restore selected</button><button id="deletedFastBulkPurgeBtn" class="dangerText" type="button" data-i18n="bulk.purge">Delete permanently</button><span class="small" id="deletedFastBulkCount"></span></div>
       <div id="deletedFastsList" style="margin-top:10px"></div>
     </div>
   </section>
 
   <section id="weight" class="screen">
     <div class="sectionHeader"><h1 data-i18n="nav.weight">Weight</h1><button id="addWeightBtn" class="secondary" data-i18n="weight.add">Add weight</button></div>
+    <details class="card historyTools" id="weightTools">
+      <summary data-i18n="weight.tools">History tools</summary>
+      <div class="historyFilterGrid"><label><span data-i18n="history.filterFrom">From date</span><input id="weightFilterFrom" type="date"></label><label><span data-i18n="history.filterTo">To date</span><input id="weightFilterTo" type="date"></label></div>
+      <label class="setupInlineToggle"><input id="weightIncludeDeleted" type="checkbox" checked><span data-i18n="history.filterDeleted">Include Recently Deleted</span></label>
+      <div class="historyToolActions"><button id="weightClearFiltersBtn" class="secondary" type="button" data-i18n="history.clearFilters">Clear filters</button><button id="weightBulkModeBtn" class="secondary" type="button" aria-pressed="false" data-i18n="bulk.select">Select records</button><span class="small" id="weightFilterStatus" aria-live="polite"></span></div>
+    </details>
     <div class="weightTop">
       <div class="small" data-i18n="weight.intro">Track body weight alongside your fasting history.</div>
       <div class="weightUnitToggle" aria-label="Weight unit" data-i18n-aria="a11y.weightUnit">
@@ -577,7 +636,7 @@ layout: null
         <canvas id="weightChartYAxis" class="weightChartYAxis" width="46" height="240" aria-hidden="true"></canvas>
         <div id="weightChartScroller" class="weightChartScroller" aria-label="Scrollable weight trend" data-i18n-aria="a11y.weightChartScroller">
           <div id="weightChartTrack" class="weightChartTrack">
-            <canvas id="weightChart" width="614" height="240" role="img" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
+            <canvas id="weightChart" width="614" height="240" role="img" tabindex="0" aria-describedby="weightChartNote" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
           </div>
         </div>
       </div>
@@ -586,10 +645,11 @@ layout: null
       <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
       <div id="weightChartData" class="chartDataList small" hidden></div>
     </div>
-    <div class="card weightHistory" id="weightHistoryList"></div>
+    <div class="card weightHistory"><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
     <div class="card" id="deletedWeightsCard" style="margin-top:14px" hidden>
       <div class="sectionHeader"><h2 data-i18n="weight.deletedTitle">Recently deleted weights</h2><span class="small" id="deletedWeightsCount"></span></div>
       <div class="small" data-i18n="weight.deletedHelp">Deleted weight entries are excluded from charts, statistics and XP, but remain in JSON backups until restored or permanently deleted.</div>
+      <div class="bulkActionBar" id="deletedWeightBulkBar" hidden><button id="deletedWeightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="deletedWeightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="deletedWeightBulkRestoreBtn" class="secondary" type="button" data-i18n="bulk.restore">Restore selected</button><button id="deletedWeightBulkPurgeBtn" class="dangerText" type="button" data-i18n="bulk.purge">Delete permanently</button><span class="small" id="deletedWeightBulkCount"></span></div>
       <div id="deletedWeightsList" style="margin-top:10px"></div>
     </div>
   </section>
@@ -616,7 +676,7 @@ layout: null
         <div class="timelineShell">
           <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
           <div class="timelineScroller" id="timelineScroller">
-            <canvas id="chart" width="700" height="310" role="img" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
+            <canvas id="chart" width="700" height="310" role="img" tabindex="0" aria-describedby="statsVizHelp" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
           </div>
           <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
         </div>
@@ -689,6 +749,25 @@ layout: null
       <div class="small" id="healthUsage"></div>
       <div class="small" id="healthLastSave"></div>
       <div class="small" id="healthProtection"></div>
+      <div class="small" id="healthSnapshotDetail"></div>
+      <div class="small" id="healthMigrationStatus"></div>
+      <div class="small" id="healthIntegrityStatus" aria-live="polite"></div>
+      <div class="small" id="healthInstallState"></div>
+      <div class="small" id="healthServiceWorker"></div>
+      <div class="small" id="healthPerformance"></div>
+      <div class="small storagePressure" id="storagePressureWarning" role="status" aria-live="polite"></div>
+      <div class="diagnosticActions">
+        <button id="integrityCheckBtn" class="secondary" type="button" data-i18n="integrity.check">Check data integrity</button>
+        <button id="createSnapshotBtn" class="secondary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button>
+        <button id="repairCacheBtn" class="secondary" type="button" data-i18n="cache.repair">Repair app cache</button>
+        <button id="performanceTestBtn" class="secondary" type="button" data-i18n="performance.run">Run local benchmark</button>
+      </div>
+    </div>
+    <div class="card" id="dataLocationsCard">
+      <h2 data-i18n="storage.locationsTitle">Where your data lives</h2>
+      <div class="dataLocationRow"><strong data-i18n="storage.currentDataTitle">Current data</strong><div class="small" data-i18n="storage.currentDataText">Your working fasting, weight, settings and audit records are stored locally in IndexedDB on this installation.</div></div>
+      <div class="dataLocationRow"><strong data-i18n="storage.snapshotsTitle">Recovery snapshots</strong><div class="small" data-i18n="storage.snapshotsText">Automatic rollback points are also stored locally inside this installation. They are not cloud backups and can disappear if the app/site data is removed.</div></div>
+      <div class="dataLocationRow"><strong data-i18n="storage.externalTitle">External JSON backup</strong><div class="small" data-i18n="storage.externalText">An exported JSON file is an independent copy you save outside the app. It is the safest recovery option after reinstalling or losing local storage.</div></div>
     </div>
     <div class="card">
       <div class="row">
@@ -779,8 +858,8 @@ layout: null
     </div>
     <div class="card">
       <div class="row" style="margin-top:10px">
-        <div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div></div>
-        <button id="exportBtn" class="secondary" data-i18n="common.export">Export</button>
+        <div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div><div class="small" id="backupContentSummary"></div><div class="small backupState" id="backupFreshnessLabel"></div></div>
+        <div class="csvActions"><button id="exportBtn" class="secondary" data-i18n="common.export">Export</button><button id="exportEverythingBtn" class="secondary" type="button" data-i18n="backup.exportEverything">Export everything</button></div>
       </div>
       <div class="row">
         <div><strong data-i18n="backup.last">Last external backup</strong><div class="small" data-i18n="backup.lastHelp">A reminder appears after 7 days without one.</div></div>
@@ -791,13 +870,17 @@ layout: null
         <button id="settingsBackupNowBtn" class="secondary" data-i18n="backup.now">Back up now</button>
       </div>
       <div class="row">
-        <div><strong data-i18n="backup.snapshots">Automatic internal JSON snapshots</strong><div class="small" id="snapshotStatus">Keeps recent, daily, weekly and monthly recovery points automatically.</div></div>
-        <button id="restoreSnapshotBtn" class="secondary" data-i18n="common.restore">Restore</button>
+        <div><strong data-i18n="backup.snapshots">Automatic internal JSON snapshots</strong><div class="small" id="snapshotStatus">Keeps recent, daily, weekly and monthly recovery points automatically.</div><div class="small" id="snapshotTransparency"></div></div>
+        <button id="restoreSnapshotBtn" class="secondary" data-i18n="backup.browse">Browse</button>
       </div>
       <div class="row">
         <div><strong data-i18n="backup.importTitle">Import backup</strong><div class="small" data-i18n="backup.importHelp">Restore from an exported JSON file</div></div>
         <button id="importBtn" class="secondary" data-i18n="common.import">Import</button>
         <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div class="row">
+        <div><strong data-i18n="csv.title">CSV data export</strong><div class="small" data-i18n="csv.help">Human-readable exports for spreadsheets. CSV is not a restorable backup; keep JSON backups too.</div></div>
+        <div class="csvActions"><button id="exportFastCsvBtn" class="secondary" type="button" data-i18n="csv.fasts">Fasting CSV</button><button id="exportWeightCsvBtn" class="secondary" type="button" data-i18n="csv.weights">Weight CSV</button></div>
       </div>
       <div class="row">
         <div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting history, deleted-fast audit history, weight history and deleted-weight audit history on this device</div></div>
@@ -1102,10 +1185,52 @@ layout: null
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="snapshotModalTitle">
     <h2 id="snapshotModalTitle" data-i18n="backup.snapshots">Internal recovery snapshots</h2>
     <div class="small" data-i18n="backup.snapshotsHelp">These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. If local storage becomes limited, it may keep fewer snapshots and will warn you. They do not replace an external backup.</div>
+    <div class="snapshotSummary" id="snapshotModalSummary"></div>
+    <div class="healthActions"><button id="snapshotCreateNowBtn" class="secondary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button></div>
     <div id="snapshotList" style="margin-top:10px"></div>
     <div class="modalActions">
       <button id="snapshotCloseBtn" class="secondary" data-i18n="common.close">Close</button>
     </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="snapshotPreviewModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="snapshotPreviewTitle">
+    <h2 id="snapshotPreviewTitle" data-i18n="backup.previewTitle">Recovery snapshot preview</h2>
+    <div class="small" id="snapshotPreviewDate"></div>
+    <div class="small" id="snapshotPreviewReason" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewLabel" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewCounts" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewSize" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewComparison" style="margin-top:8px"></div>
+    <div class="modalActions wrap"><button id="snapshotPreviewCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="snapshotPreviewRestoreBtn" class="primary" type="button" data-i18n="common.restore">Restore</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="manualSnapshotModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="manualSnapshotTitle">
+    <h2 id="manualSnapshotTitle" data-i18n="backup.manualTitle">Create recovery snapshot</h2>
+    <div class="formGroup"><label for="manualSnapshotLabel" data-i18n="backup.manualLabel">Optional label</label><input id="manualSnapshotLabel" type="text" maxlength="80" autocomplete="off" placeholder="" data-i18n-placeholder="backup.manualPlaceholder"></div>
+    <div class="small" data-i18n="backup.manualHelp">A short label can help you recognize this recovery point later.</div>
+    <div class="modalActions"><button id="manualSnapshotCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="manualSnapshotSaveBtn" class="primary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="integrityModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="integrityModalTitle">
+    <h2 id="integrityModalTitle" data-i18n="integrity.title">Data integrity check</h2>
+    <div id="integritySummary" class="small"></div>
+    <ul id="integrityIssueList" class="integrityList small"></ul>
+    <div class="modalActions"><button id="integrityCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="editAuditModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editAuditTitle">
+    <h2 id="editAuditTitle" data-i18n="history.editHistoryTitle">Edit history</h2>
+    <div class="small" id="editAuditCurrent"></div>
+    <div id="editAuditList" style="margin-top:10px"></div>
+    <div class="modalActions"><button id="editAuditCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
   </div>
 </div>
 
@@ -1160,13 +1285,15 @@ layout: null
   <button id="stopUndoBtn" type="button" data-i18n="fasting.undo">Undo</button>
 </div>
 
+<div class="undoToast" id="undoToast" role="status" aria-live="polite" hidden><span id="undoToastText"></span><button id="undoToastBtn" type="button" data-i18n="common.undo">Undo</button></div>
+
 <nav>
-  <div class="tabs">
-    <button class="tab active" data-screen="fasting" aria-current="page"><span class="ico">⏱</span><span data-i18n="nav.fasting">Fasting</span></button>
-    <button class="tab" data-screen="history"><span class="ico">🗓</span><span data-i18n="nav.history">History</span></button>
-    <button class="tab" data-screen="weight"><span class="ico">⚖︎</span><span data-i18n="nav.weight">Weight</span></button>
-    <button class="tab" data-screen="stats"><span class="ico">▥</span><span data-i18n="nav.stats">Stats</span></button>
-    <button class="tab" data-screen="settings"><span class="ico">⚙︎</span><span data-i18n="nav.settings">Settings</span></button>
+  <div class="tabs" role="tablist">
+    <button class="tab active" role="tab" data-screen="fasting" aria-current="page" aria-selected="true"><span class="ico">⏱</span><span data-i18n="nav.fasting">Fasting</span></button>
+    <button class="tab" role="tab" data-screen="history" aria-selected="false"><span class="ico">🗓</span><span data-i18n="nav.history">History</span></button>
+    <button class="tab" role="tab" data-screen="weight" aria-selected="false"><span class="ico">⚖︎</span><span data-i18n="nav.weight">Weight</span></button>
+    <button class="tab" role="tab" data-screen="stats" aria-selected="false"><span class="ico">▥</span><span data-i18n="nav.stats">Stats</span></button>
+    <button class="tab" role="tab" data-screen="settings" aria-selected="false"><span class="ico">⚙︎</span><span data-i18n="nav.settings">Settings</span></button>
   </div>
 </nav>
 
@@ -1193,16 +1320,17 @@ layout: null
   const NOTIFICATION_STATE_KEY = 'fastingTracker.notificationState';
   const DATA_VERSION = 1;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
-  const BACKUP_VERSION = 1;
+  const BACKUP_VERSION = 2;
+  const BACKUP_MIN_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 20;
+  const I18N_SOURCE_REVISION = 22;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.9.2';
+  const APP_VERSION = '1.10.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1211,6 +1339,10 @@ layout: null
   const SNAPSHOT_MONTHLY_KEEP = 6;
   const SNAPSHOT_SCAN_LIMIT = 80;
   const BACKUP_REMINDER_MS = 7 * 24 * 60 * 60 * 1000;
+  const STORAGE_PRESSURE_RATIO = 0.80;
+  const STORAGE_PRESSURE_FREE_BYTES = 50 * 1024 * 1024;
+  const UNDO_WINDOW_MS = 7000;
+  const PERF_META_KEY = 'fastingTracker.performance';
   const LONG_FAST_NOTICE_HOURS = 72;
   const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
   const MAX_IMPORT_FASTS = 100000;
@@ -1263,6 +1395,14 @@ layout: null
   let setupGuideAutoOpened = false;
   let notificationRuntimeState = loadNotificationRuntimeState();
   let latestCompletedFastCache = undefined;
+  let sortedRecordsDescCache = null;
+  let sortedRecordsAscCache = null;
+  let sortedWeightsAscCache = null;
+  let lastIntegrityCheck = null;
+  let lastServiceWorkerHealth = null;
+  let historyBulkMode = false, weightBulkMode = false;
+  const selectedFastIds = new Set(), selectedDeletedFastIds = new Set(), selectedWeightIds = new Set(), selectedDeletedWeightIds = new Set();
+  let undoToastTimer = 0, undoToastAction = null;
   const el = id => document.getElementById(id);
   let uiReady = false;
   const versionTransitionSnapshotOK = await initializePersistentStorage();
@@ -1289,6 +1429,7 @@ layout: null
   let pendingLongFastGoal = null;
   let pendingLongFastScope = 'default';
   let lastModalFocus = null;
+  let pendingSnapshotRestoreId = null;
   let completedDayMapCache = null;
   let currentStreakCache = null;
   let historyVisibleCount = HISTORY_PAGE_SIZE;
@@ -1416,6 +1557,7 @@ layout: null
     document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = t(node.dataset.i18n); });
     document.querySelectorAll('[data-i18n-html]').forEach(node => { node.innerHTML = t(node.dataset.i18nHtml); });
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(node => { node.setAttribute('placeholder', t(node.dataset.i18nPlaceholder)); });
     renderLanguageOptions();
     applyIconChoice();
     const appleTitle = document.getElementById('appleAppTitle');
@@ -1729,6 +1871,19 @@ layout: null
     });
   }
 
+  async function idbClearStoresAtomic(storeNames) {
+    const db = await openAppDb();
+    const names = [...new Set(storeNames)].filter(name => db.objectStoreNames.contains(name));
+    if (!names.length) return true;
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(names, 'readwrite');
+      for (const name of names) tx.objectStore(name).clear();
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB atomic clear failed'));
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB atomic clear aborted'));
+    });
+  }
+
   function dataSettingsOnly(source = data) {
     const out = {...source};
     delete out.records; delete out.deletedFasts; delete out.weights; delete out.deletedWeights;
@@ -1921,16 +2076,37 @@ layout: null
 
   async function persistSnapshotRecord(meta, snapshotData) {
     const payload = await encodeSnapshotPayload(snapshotData);
-    const enriched = {...meta, payloadEncoding:payload.encoding, originalBytes:payload.originalBytes, storedBytes:payload.storedBytes};
-    await Promise.all([
-      idbPut('snapshotMeta', enriched),
-      idbPut('snapshotPayload', {id:meta.id, ...payload})
-    ]);
+    const enriched = {
+      ...meta,
+      payloadEncoding:payload.encoding, originalBytes:payload.originalBytes, storedBytes:payload.storedBytes,
+      fastingRecords:Array.isArray(snapshotData.records)?snapshotData.records.length:0,
+      deletedFasts:Array.isArray(snapshotData.deletedFasts)?snapshotData.deletedFasts.length:0,
+      weightRecords:Array.isArray(snapshotData.weights)?snapshotData.weights.length:0,
+      deletedWeights:Array.isArray(snapshotData.deletedWeights)?snapshotData.deletedWeights.length:0,
+      activeFasts:snapshotData.activeStart?1:0
+    };
+    const db = await openAppDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(['snapshotMeta','snapshotPayload'], 'readwrite');
+      tx.objectStore('snapshotMeta').put(enriched);
+      tx.objectStore('snapshotPayload').put({id:meta.id, ...payload});
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error || new Error('Atomic snapshot write failed'));
+      tx.onabort = () => reject(tx.error || new Error('Atomic snapshot write aborted'));
+    });
     Object.assign(meta, enriched);
   }
 
   async function deleteSnapshotRecord(id) {
-    await Promise.all([idbDelete('snapshotMeta', id), idbDelete('snapshotPayload', id)]);
+    const db = await openAppDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(['snapshotMeta','snapshotPayload'], 'readwrite');
+      tx.objectStore('snapshotMeta').delete(id);
+      tx.objectStore('snapshotPayload').delete(id);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error || new Error('Atomic snapshot delete failed'));
+      tx.onabort = () => reject(tx.error || new Error('Atomic snapshot delete aborted'));
+    });
   }
 
   async function loadSnapshotPayload(id) {
@@ -2005,11 +2181,14 @@ layout: null
 
       let appMeta = {};
       try { appMeta = JSON.parse(localStorage.getItem(APP_META_KEY) || '{}') || {}; } catch {}
-      if (appMeta.lastAppVersion !== APP_VERSION && hasBackupWorthyData()) {
+      const pending = appMeta.pendingMigration;
+      const controlledPreUpdateSnapshot = !!(pending && pending.to === APP_VERSION && pending.snapshotId && snapshotCache.some(x => x.id === pending.snapshotId));
+      if (appMeta.lastAppVersion !== APP_VERSION && hasBackupWorthyData() && !controlledPreUpdateSnapshot) {
         const sourceVersion = appMeta.lastAppVersion || 'previous version';
         const ok = await createInternalSnapshotAsync(`before first launch of v${APP_VERSION}`, sourceVersion);
         if (!ok) return false;
       }
+      finalizePendingMigrationSuccess();
       return true;
     } catch (err) {
       recoveryMode = { raw:'', error:String(err && err.message || err), enteredAt:new Date().toISOString() };
@@ -2045,10 +2224,19 @@ layout: null
       createdAt: created.toISOString(),
       sourceAppVersion: String(snapshot.sourceAppVersion || 'unknown'),
       reason: String(snapshot.reason || 'recovery'),
+      label: typeof snapshot.label === 'string' ? snapshot.label.trim().slice(0,80) : '',
       dayBucket: typeof snapshot.dayBucket === 'string' ? snapshot.dayBucket : snapshotDayBucket(created),
       weekBucket: typeof snapshot.weekBucket === 'string' ? snapshot.weekBucket : snapshotWeekBucket(created),
       monthBucket: typeof snapshot.monthBucket === 'string' ? snapshot.monthBucket : snapshotMonthBucket(created),
-      revision: Math.max(0, Number(snapshot.revision) || 0)
+      revision: Math.max(0, Number(snapshot.revision) || 0),
+      payloadEncoding: typeof snapshot.payloadEncoding === 'string' ? snapshot.payloadEncoding : null,
+      originalBytes: Math.max(0, Number(snapshot.originalBytes) || 0),
+      storedBytes: Math.max(0, Number(snapshot.storedBytes) || 0),
+      fastingRecords: Math.max(0, Number(snapshot.fastingRecords) || 0),
+      deletedFasts: Math.max(0, Number(snapshot.deletedFasts) || 0),
+      weightRecords: Math.max(0, Number(snapshot.weightRecords) || 0),
+      deletedWeights: Math.max(0, Number(snapshot.deletedWeights) || 0),
+      activeFasts: Math.max(0, Number(snapshot.activeFasts) || 0)
     };
   }
 
@@ -2094,6 +2282,29 @@ layout: null
     return keys;
   }
 
+  function snapshotCoverageStats(snapshots = loadSnapshots()) {
+    const tiers = {recent:0,daily:0,weekly:0,monthly:0};
+    for (const snapshot of snapshots) {
+      const keys = snapshotTierKeys(snapshot, snapshots);
+      if (keys.includes('backup.tierRecent')) tiers.recent++;
+      if (keys.includes('backup.tierDaily')) tiers.daily++;
+      if (keys.includes('backup.tierWeekly')) tiers.weekly++;
+      if (keys.includes('backup.tierMonthly')) tiers.monthly++;
+    }
+    const newest = snapshots.length ? snapshots[0].createdAt : null;
+    const oldest = snapshots.length ? snapshots[snapshots.length-1].createdAt : null;
+    const storedBytes = snapshots.reduce((n,x)=>n+(Number(x.storedBytes)||0),0);
+    const originalBytes = snapshots.reduce((n,x)=>n+(Number(x.originalBytes)||0),0);
+    return {count:snapshots.length,newest,oldest,storedBytes,originalBytes,...tiers};
+  }
+
+  function humanBytes(bytes) {
+    const n = Math.max(0, Number(bytes) || 0);
+    if (n < 1024) return `${formatNumber(n,0,0)} B`;
+    if (n < 1048576) return `${formatNumber(n/1024,0,1)} KB`;
+    return `${formatNumber(n/1048576,0,1)} MB`;
+  }
+
   function loadSnapshots() {
     return pruneSnapshots(snapshotCache.slice(0, SNAPSHOT_SCAN_LIMIT));
   }
@@ -2128,19 +2339,22 @@ layout: null
     return true;
   }
 
-  async function createInternalSnapshotAsync(reason = 'recovery', sourceAppVersion = APP_VERSION) {
+  async function createInternalSnapshotAsync(reason = 'recovery', sourceAppVersion = APP_VERSION, label = '') {
     if (typeof data === 'undefined' || !data) return null;
     try {
       const now = new Date();
       const meta = {
         id: makeId(), createdAt: now.toISOString(),
-        sourceAppVersion: String(sourceAppVersion || 'unknown'), reason: String(reason || 'recovery'),
+        sourceAppVersion: String(sourceAppVersion || 'unknown'), reason: String(reason || 'recovery'), label:String(label||'').trim().slice(0,80),
         dayBucket: snapshotDayBucket(now), weekBucket: snapshotWeekBucket(now), monthBucket: snapshotMonthBucket(now),
         revision: Math.max(0, Number(data.revision) || 0)
       };
       const before = snapshotCache.map(x => x.id);
-      snapshotCache = pruneSnapshots([meta, ...snapshotCache]);
+      // Do not expose a snapshot in the in-memory catalogue until both its
+      // metadata and payload have committed successfully. persistSnapshotRecord
+      // enriches `meta` with payload size/count information before it returns.
       await persistSnapshotRecord(meta, data);
+      snapshotCache = pruneSnapshots([meta, ...snapshotCache]);
       await pruneSnapshotStorage(before);
       setSnapshotProtectionState('ok', snapshotCache.length, snapshotCache.length);
       // During startup/migration the DOM helpers exist, but the rest of the UI
@@ -2211,6 +2425,8 @@ layout: null
       firstSeenAt: first ? first.toISOString() : now,
       firstDataAt: firstData ? firstData.toISOString() : null,
       lastExternalBackupAt: last ? last.toISOString() : null,
+      lastExternalBackupRevision: Math.max(0, Number(meta.lastExternalBackupRevision) || 0),
+      lastExternalBackupDataUpdatedAt: validDate(meta.lastExternalBackupDataUpdatedAt)?.toISOString() || null,
       snapshotProtectionStatus: ['ok','reduced','failed'].includes(meta.snapshotProtectionStatus) ? meta.snapshotProtectionStatus : 'ok',
       snapshotProtectionAt: snapshotAt ? snapshotAt.toISOString() : null,
       snapshotStoredCount: Math.max(0, Number(meta.snapshotStoredCount) || 0),
@@ -2259,8 +2475,33 @@ layout: null
     }
   }
 
+  function readAppMeta() {
+    try { return JSON.parse(localStorage.getItem(APP_META_KEY) || '{}') || {}; } catch { return {}; }
+  }
+
+  function writeAppMeta(meta) { try { localStorage.setItem(APP_META_KEY, JSON.stringify(meta || {})); } catch {} }
+
+  function beginPendingMigration(fromVersion, toVersion, snapshotId) {
+    const meta = readAppMeta();
+    meta.pendingMigration = {from:String(fromVersion||'unknown'),to:String(toVersion||'unknown'),snapshotId:snapshotId||null,startedAt:new Date().toISOString()};
+    writeAppMeta(meta);
+  }
+
+  function finalizePendingMigrationSuccess() {
+    const meta = readAppMeta(), pending = meta.pendingMigration;
+    if (pending && pending.to === APP_VERSION) {
+      meta.lastMigration = {...pending,status:'success',completedAt:new Date().toISOString()};
+      delete meta.pendingMigration;
+      writeAppMeta(meta);
+    }
+  }
+
+  function failPendingMigration(toVersion, reason='update-failed') { const meta=readAppMeta(),pending=meta.pendingMigration; if(pending&&pending.to===String(toVersion)){meta.lastMigration={...pending,status:'failed',reason,completedAt:new Date().toISOString()};delete meta.pendingMigration;writeAppMeta(meta);} }
+
+  function migrationStatusMeta() { const meta=readAppMeta(); return {pending:meta.pendingMigration||null,last:meta.lastMigration||null}; }
+
   function rememberCurrentAppVersion() {
-    try { localStorage.setItem(APP_META_KEY, JSON.stringify({ lastAppVersion: APP_VERSION, seenAt: new Date().toISOString() })); } catch {}
+    const meta = readAppMeta(); meta.lastAppVersion = APP_VERSION; meta.seenAt = new Date().toISOString(); writeAppMeta(meta);
   }
 
   function normalizeRecord(r) {
@@ -2648,6 +2889,9 @@ layout: null
     weightChartScaleCache = null;
     weightChartBuckets = [];
     latestCompletedFastCache = undefined;
+    sortedRecordsDescCache = null;
+    sortedRecordsAscCache = null;
+    sortedWeightsAscCache = null;
   }
 
   function markViewsDirty(...views) {
@@ -2703,6 +2947,26 @@ layout: null
   function writePrimaryDataWithSnapshotReclaim(_serialized) {
     queuePrimaryPersistence();
     return true;
+  }
+
+  async function persistResolvedDataAtomic(candidate) {
+    if (recoveryMode && candidate !== defaultData) { /* recovery restore is allowed below */ }
+    const previous = {data, storedDayTotalsMap, dayTotalsRecordMap, persistedRecordMap, persistedDeletedFastMap, persistedWeightMap, persistedDeletedWeightMap, recoveryMode};
+    try {
+      const normalized = validateCompatibleData(candidate).data;
+      normalized.revision = Math.max(0, Number(normalized.revision) || 0) + 1;
+      normalized.updatedAt = new Date().toISOString();
+      data = normalized;
+      storedDayTotalsMap = buildStoredDayTotals(data.records); dayTotalsRecordMap = recordMap(data.records);
+      recoveryMode = null; invalidateDerivedCaches(); persistSmallPreferences();
+      await persistRecordStores(data, {force:true});
+      try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:data.revision, at:Date.now()})); } catch {}
+      rememberCurrentAppVersion(); markViewsDirty();
+      return true;
+    } catch (err) {
+      ({data, storedDayTotalsMap, dayTotalsRecordMap, persistedRecordMap, persistedDeletedFastMap, persistedWeightMap, persistedDeletedWeightMap, recoveryMode} = previous);
+      noteDiagnosticError('atomic_commit_failed'); alert(t('error.save')); return false;
+    }
   }
 
   function persistResolvedData(candidate) {
@@ -3091,11 +3355,16 @@ layout: null
     await maybeNotifyWeighIn();
   }
 
+  function notificationDiagnosticState() {
+    if (!nativeNotificationsSupported()) return isIOSDevice() && !isStandaloneApp() ? 'install-required' : 'unsupported';
+    if (Notification.permission === 'denied') return 'blocked';
+    if (Notification.permission === 'granted') return notificationPrefs().enabled ? 'enabled' : 'permission-granted-off';
+    return 'not-requested';
+  }
+
   function notificationStatusKey() {
-    if (!nativeNotificationsSupported()) return isIOSDevice() && !isStandaloneApp() ? 'notifications.statusInstallIOS' : 'notifications.statusUnsupported';
-    if (Notification.permission === 'granted') return notificationPrefs().enabled ? 'notifications.statusAllowed' : 'notifications.statusOff';
-    if (Notification.permission === 'denied') return 'notifications.statusBlocked';
-    return notificationPrefs().enabled ? 'notifications.statusPermissionNeeded' : 'notifications.statusOff';
+    const state = notificationDiagnosticState();
+    return ({'install-required':'notifications.statusInstallIOS','unsupported':'notifications.statusUnsupported','blocked':'notifications.statusBlocked','enabled':'notifications.statusAllowed','permission-granted-off':'notifications.statusPermissionGrantedOff','not-requested':'notifications.statusNotRequested'})[state];
   }
 
   function renderWeighCadenceButtons(prefix, cadence) {
@@ -3611,9 +3880,19 @@ layout: null
     applyActiveGoalValue(next);
   }
 
+  function sortedRecordsDesc() {
+    if (!sortedRecordsDescCache) sortedRecordsDescCache = [...data.records].sort((a,b)=>String(b.end).localeCompare(String(a.end)));
+    return sortedRecordsDescCache;
+  }
+
+  function sortedRecordsAsc() {
+    if (!sortedRecordsAscCache) sortedRecordsAscCache = [...data.records].sort((a,b)=>String(a.end).localeCompare(String(b.end)));
+    return sortedRecordsAscCache;
+  }
+
   function currentStreak() {
     if (currentStreakCache != null) return currentStreakCache;
-    const sorted = [...data.records].sort((a, b) => String(b.end).localeCompare(String(a.end)));
+    const sorted = sortedRecordsDesc();
     let streak = 0;
     for (const r of sorted) {
       if (!recordMetGoal(r)) break;
@@ -3629,6 +3908,107 @@ layout: null
     const s = currentStreak();
     el('streakValue').textContent = t(pluralKey('fasting.fastCount', s), {n:s});
   }
+
+  function clearUndoToast() {
+    if (undoToastTimer) clearTimeout(undoToastTimer);
+    undoToastTimer = 0; undoToastAction = null;
+    const toast=el('undoToast'); if(toast) toast.hidden=true;
+  }
+
+  function showUndoToast(message, action) {
+    clearUndoToast();
+    const toast=el('undoToast'), text=el('undoToastText'); if(!toast||!text)return;
+    text.textContent=message; undoToastAction=typeof action==='function'?action:null; toast.hidden=false;
+    undoToastTimer=setTimeout(clearUndoToast,UNDO_WINDOW_MS);
+  }
+
+  function historyFilterSpec() {
+    const numberOrNull=id=>{const v=parseFloat(el(id)?.value||'');return Number.isFinite(v)&&v>=0?v:null;};
+    return {
+      from:el('historyFilterFrom')?.value||'', to:el('historyFilterTo')?.value||'',
+      min:numberOrNull('historyFilterMin'), max:numberOrNull('historyFilterMax'),
+      target:el('historyFilterTarget')?.value||'all', edited:el('historyFilterEdited')?.value||'all',
+      includeDeleted:el('historyIncludeDeleted')?.checked!==false
+    };
+  }
+
+  function fastPassesHistoryFilter(record, spec=historyFilterSpec()) {
+    const key=dayKey(record.end,record.timeZone);
+    if(spec.from&&key<spec.from)return false; if(spec.to&&key>spec.to)return false;
+    const hours=recordMs(record)/3600000; if(spec.min!=null&&hours<spec.min)return false; if(spec.max!=null&&hours>spec.max)return false;
+    const met=recordMetGoal(record); if(spec.target==='reached'&&!met)return false; if(spec.target==='missed'&&met)return false;
+    const edited=Array.isArray(record.editHistory)&&record.editHistory.length>0; if(spec.edited==='edited'&&!edited)return false; if(spec.edited==='original'&&edited)return false;
+    return true;
+  }
+
+  function historyFilterActive(spec=historyFilterSpec()) { return !!(spec.from||spec.to||spec.min!=null||spec.max!=null||spec.target!=='all'||spec.edited!=='all'); }
+  function weightFilterSpec() { return {from:el('weightFilterFrom')?.value||'',to:el('weightFilterTo')?.value||'',includeDeleted:el('weightIncludeDeleted')?.checked!==false}; }
+  function weightFilterActive(spec=weightFilterSpec()) { return !!(spec.from||spec.to); }
+  function weightPassesFilter(record,spec=weightFilterSpec()){const key=dayKey(record.when,record.timeZone);return !(spec.from&&key<spec.from)&&!(spec.to&&key>spec.to);}
+
+  function bulkCheckbox(id,set,label) {
+    const wrap=document.createElement('label'); wrap.className='bulkSelectCell';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=set.has(id); cb.setAttribute('aria-label',label);
+    cb.addEventListener('change',()=>{if(cb.checked)set.add(id);else set.delete(id);updateBulkActionBars();}); wrap.append(cb); return wrap;
+  }
+
+  function updateBulkActionBars() {
+    const hb=el('historyBulkBar'),dfb=el('deletedFastBulkBar'),wb=el('weightBulkBar'),dwb=el('deletedWeightBulkBar');
+    if(hb)hb.hidden=!historyBulkMode; if(dfb)dfb.hidden=!historyBulkMode; if(wb)wb.hidden=!weightBulkMode; if(dwb)dwb.hidden=!weightBulkMode;
+    if(el('historyBulkCount'))el('historyBulkCount').textContent=t('bulk.selected',{n:selectedFastIds.size});
+    if(el('deletedFastBulkCount'))el('deletedFastBulkCount').textContent=t('bulk.selected',{n:selectedDeletedFastIds.size});
+    if(el('weightBulkCount'))el('weightBulkCount').textContent=t('bulk.selected',{n:selectedWeightIds.size});
+    if(el('deletedWeightBulkCount'))el('deletedWeightBulkCount').textContent=t('bulk.selected',{n:selectedDeletedWeightIds.size});
+    for(const [id,count] of [['historyBulkExportBtn',selectedFastIds.size],['historyBulkDeleteBtn',selectedFastIds.size],['deletedFastBulkExportBtn',selectedDeletedFastIds.size],['deletedFastBulkRestoreBtn',selectedDeletedFastIds.size],['deletedFastBulkPurgeBtn',selectedDeletedFastIds.size],['weightBulkExportBtn',selectedWeightIds.size],['weightBulkDeleteBtn',selectedWeightIds.size],['deletedWeightBulkExportBtn',selectedDeletedWeightIds.size],['deletedWeightBulkRestoreBtn',selectedDeletedWeightIds.size],['deletedWeightBulkPurgeBtn',selectedDeletedWeightIds.size]]){const node=el(id);if(node)node.disabled=!count;}
+    const hbtn=el('historyBulkModeBtn'); if(hbtn){hbtn.setAttribute('aria-pressed',String(historyBulkMode));hbtn.textContent=t(historyBulkMode?'bulk.done':'bulk.select');}
+    const wbtn=el('weightBulkModeBtn'); if(wbtn){wbtn.setAttribute('aria-pressed',String(weightBulkMode));wbtn.textContent=t(weightBulkMode?'bulk.done':'bulk.select');}
+  }
+
+  function clearHistoryFilters(){for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax'])if(el(id))el(id).value='';if(el('historyFilterTarget'))el('historyFilterTarget').value='all';if(el('historyFilterEdited'))el('historyFilterEdited').value='all';if(el('historyIncludeDeleted'))el('historyIncludeDeleted').checked=true;historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;renderHistory();}
+  function clearWeightFilters(){for(const id of ['weightFilterFrom','weightFilterTo'])if(el(id))el(id).value='';if(el('weightIncludeDeleted'))el('weightIncludeDeleted').checked=true;weightVisibleCount=HISTORY_PAGE_SIZE;renderWeight();}
+
+  function exportFastRecordsCsv(records, namePrefix='fasting-selected') {
+    const headers=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','time_zone','created_at','modified_at','edit_count','deleted_at'];
+    const rows=records.map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0,r.deletedAt||'']);
+    return shareOrDownloadText(csvText(headers,rows),`${namePrefix}-${csvTimestamp()}.csv`);
+  }
+  function exportWeightRecordsCsv(records,namePrefix='weight-selected'){
+    const headers=['id','when','when_local','weight_kg','time_zone','created_at','modified_at','deleted_at'];
+    const rows=records.map(w=>[w.id,w.when,localDateTimeLabel(w.when,w.timeZone),w.kg,w.timeZone,w.createdAt||'',w.modifiedAt||'',w.deletedAt||'']);
+    return shareOrDownloadText(csvText(headers,rows),`${namePrefix}-${csvTimestamp()}.csv`);
+  }
+
+  function canRestoreFastBatch(records){
+    const intervals=data.records.map(r=>[new Date(r.start).getTime(),new Date(r.end).getTime()]);
+    if(data.activeStart) intervals.push([new Date(data.activeStart).getTime(),Date.now()+FUTURE_TOLERANCE_MS]);
+    for(const r of records){const a=new Date(r.start).getTime(),b=new Date(r.end).getTime();if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)return false;for(const [x,y] of intervals)if(a<y&&b>x)return false;intervals.push([a,b]);}
+    return true;
+  }
+
+  function bulkDeleteFasts(ids=[...selectedFastIds],showConfirm=true){
+    const targets=ids.map(id=>data.records.find(r=>r.id===id)).filter(Boolean); if(!targets.length)return false;
+    if(showConfirm&&!confirm(t('bulk.deleteConfirm',{n:targets.length})))return false;
+    const moves=[]; for(const r of targets){const m=moveFastToDeleted(r,'user');if(!m){moves.reverse().forEach(rollbackDeletedFastMove);return false;}moves.push(m);}
+    if(!save()){moves.reverse().forEach(rollbackDeletedFastMove);renderAll();return false;}
+    const movedIds=moves.map(m=>m.tombstone.id); selectedFastIds.clear(); renderAll();
+    showUndoToast(t('bulk.deleted',{n:movedIds.length}),()=>{bulkRestoreDeletedFasts(movedIds,false);}); return true;
+  }
+
+  function bulkRestoreDeletedFasts(ids=[...selectedDeletedFastIds],showConfirm=true){
+    const targets=ids.map(id=>data.deletedFasts.find(r=>r.id===id)).filter(Boolean); if(!targets.length)return false;
+    if(showConfirm&&!confirm(t('bulk.restoreConfirm',{n:targets.length})))return false;
+    if(targets.some(r=>data.records.some(x=>x.id===r.id))||!canRestoreFastBatch(targets)){alert(t('history.deletedRestoreOverlap'));return false;}
+    const oldDeleted=data.deletedFasts.slice(),oldRecords=data.records.slice();
+    const idsSet=new Set(targets.map(r=>r.id));data.deletedFasts=data.deletedFasts.filter(r=>!idsSet.has(r.id));
+    data.records.push(...targets.map(deleted=>({id:deleted.id,start:deleted.start,end:deleted.end,goalHours:deleted.goalHours,timeZone:deleted.timeZone,createdAt:normalizeAuditTimestamp(deleted.createdAt),modifiedAt:normalizeAuditTimestamp(deleted.modifiedAt),editHistory:normalizeFastEditHistory(deleted.editHistory)})));
+    if(!save()){data.deletedFasts=oldDeleted;data.records=oldRecords;renderAll();return false;} selectedDeletedFastIds.clear();renderAll();return true;
+  }
+
+  function bulkPurgeDeletedFasts(ids=[...selectedDeletedFastIds]){const set=new Set(ids.filter(id=>data.deletedFasts.some(r=>r.id===id)));if(!set.size)return false;if(!confirm(t('bulk.purgeConfirm',{n:set.size})))return false;const old=data.deletedFasts.slice();data.deletedFasts=data.deletedFasts.filter(r=>!set.has(r.id));if(!save({invalidateDerived:false,dirtyViews:['history','settings']})){data.deletedFasts=old;renderAll();return false;}selectedDeletedFastIds.clear();renderHistory();renderBackupStatus();return true;}
+
+  function bulkDeleteWeights(ids=[...selectedWeightIds],showConfirm=true){const targets=ids.map(id=>data.weights.find(w=>w.id===id)).filter(Boolean);if(!targets.length)return false;if(showConfirm&&!confirm(t('bulk.deleteConfirm',{n:targets.length})))return false;const oldW=data.weights.slice(),oldD=data.deletedWeights.slice(),now=new Date().toISOString(),tz=currentTimeZone(),set=new Set(targets.map(w=>w.id));data.weights=data.weights.filter(w=>!set.has(w.id));data.deletedWeights.push(...targets.map(w=>({...w,deleted:true,deletedAt:now,deletedTimeZone:tz,deletionReason:'user'})));if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.weights=oldW;data.deletedWeights=oldD;renderAll();return false;}const moved=[...set];selectedWeightIds.clear();renderAll();showUndoToast(t('bulk.deleted',{n:moved.length}),()=>bulkRestoreDeletedWeights(moved,false));return true;}
+  function bulkRestoreDeletedWeights(ids=[...selectedDeletedWeightIds],showConfirm=true){const targets=ids.map(id=>data.deletedWeights.find(w=>w.id===id)).filter(Boolean);if(!targets.length)return false;if(showConfirm&&!confirm(t('bulk.restoreConfirm',{n:targets.length})))return false;if(targets.some(w=>data.weights.some(x=>x.id===w.id))){alert(t('weight.restoreConflict'));return false;}const restored=targets.map(normalizeWeightEntry);if(restored.some(x=>!x))return false;const oldW=data.weights.slice(),oldD=data.deletedWeights.slice(),set=new Set(targets.map(w=>w.id));data.deletedWeights=data.deletedWeights.filter(w=>!set.has(w.id));data.weights.push(...restored);if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.weights=oldW;data.deletedWeights=oldD;renderAll();return false;}selectedDeletedWeightIds.clear();renderAll();return true;}
+  function bulkPurgeDeletedWeights(ids=[...selectedDeletedWeightIds]){const set=new Set(ids.filter(id=>data.deletedWeights.some(w=>w.id===id)));if(!set.size)return false;if(!confirm(t('bulk.purgeConfirm',{n:set.size})))return false;const old=data.deletedWeights.slice();data.deletedWeights=data.deletedWeights.filter(w=>!set.has(w.id));if(!save({invalidateDerived:false,dirtyViews:['weight','settings']})){data.deletedWeights=old;renderAll();return false;}selectedDeletedWeightIds.clear();renderWeight();return true;}
 
   function deletedFastAuditFromRecord(record, deletionReason = 'user') {
     return {
@@ -3673,25 +4053,15 @@ layout: null
 
   function restoreDeletedFast(id) {
     const index = data.deletedFasts.findIndex(r => r.id === id);
-    if (index < 0) return;
+    if (index < 0) return false;
     const deleted = data.deletedFasts[index];
-    if (data.records.some(r => r.id === deleted.id)) { alert(t('history.deletedRestoreIdConflict')); return; }
+    if (data.records.some(r => r.id === deleted.id)) { alert(t('history.deletedRestoreIdConflict')); return false; }
     const start = validDate(deleted.start), end = validDate(deleted.end);
-    if (!start || !end || intervalOverlaps(start, end)) { alert(t('history.deletedRestoreOverlap')); return; }
-    const restored = {
-      id: deleted.id, start: deleted.start, end: deleted.end, goalHours: deleted.goalHours,
-      timeZone: deleted.timeZone, createdAt: normalizeAuditTimestamp(deleted.createdAt), modifiedAt: normalizeAuditTimestamp(deleted.modifiedAt),
-      editHistory: normalizeFastEditHistory(deleted.editHistory)
-    };
-    data.deletedFasts.splice(index, 1);
-    data.records.push(restored);
-    if (!save()) {
-      data.records = data.records.filter(r => r.id !== restored.id);
-      data.deletedFasts.splice(Math.min(index, data.deletedFasts.length), 0, deleted);
-      renderAll();
-      return;
-    }
-    renderAll();
+    if (!start || !end || intervalOverlaps(start, end)) { alert(t('history.deletedRestoreOverlap')); return false; }
+    const restored = {id:deleted.id,start:deleted.start,end:deleted.end,goalHours:deleted.goalHours,timeZone:deleted.timeZone,createdAt:normalizeAuditTimestamp(deleted.createdAt),modifiedAt:normalizeAuditTimestamp(deleted.modifiedAt),editHistory:normalizeFastEditHistory(deleted.editHistory)};
+    data.deletedFasts.splice(index, 1); data.records.push(restored);
+    if (!save()) {data.records=data.records.filter(r=>r.id!==restored.id);data.deletedFasts.splice(Math.min(index,data.deletedFasts.length),0,deleted);renderAll();return false;}
+    renderAll(); return true;
   }
 
   function permanentlyDeleteFast(id) {
@@ -3712,95 +4082,69 @@ layout: null
     return reason === 'backdate-conflict' ? t('history.deletedReasonBackdate') : t('history.deletedReasonUser');
   }
 
+  function openFastEditHistory(record) {
+    const list=el('editAuditList'); list.replaceChildren();
+    el('editAuditCurrent').textContent=t('history.editHistoryCurrent',{summary:fastEditSummary(record)});
+    const history=normalizeFastEditHistory(record.editHistory);
+    if(!history.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=t('history.editHistoryEmpty');list.append(empty);}
+    else history.slice().reverse().forEach((entry,index)=>{
+      const row=document.createElement('div');row.className='auditEntry';
+      const title=document.createElement('strong');title.textContent=t('history.editHistoryRevision',{n:history.length-index,date:localDateTimeLabel(entry.editedAt,entry.editedTimeZone)});
+      const before=document.createElement('div');before.className='small';before.textContent=t('history.editHistoryPrevious',{summary:fastEditSummary(entry)});
+      row.append(title,before);list.append(row);
+    });
+    showModal('editAuditModal','editAuditCloseBtn');
+  }
+
+  function appendEditedIndicator(parent, record) {
+    if (!record?.modifiedAt) return;
+    const latestAudit=Array.isArray(record.editHistory)&&record.editHistory.length?record.editHistory[record.editHistory.length-1]:null;
+    const line=document.createElement('div');line.className='small';
+    const button=document.createElement('button');button.type='button';button.className='textButton';button.textContent=t('history.editedAt',{date:localDateTimeLabel(record.modifiedAt,latestAudit?.editedTimeZone||currentTimeZone())});
+    button.addEventListener('click',()=>openFastEditHistory(record)); line.append(button); parent.append(line);
+  }
+
   function renderDeletedFasts() {
-    const card = el('deletedFastsCard');
-    const box = el('deletedFastsList');
-    const count = Array.isArray(data.deletedFasts) ? data.deletedFasts.length : 0;
-    card.hidden = count === 0;
-    el('deletedFastsCount').textContent = count ? t('history.deletedCount', {n:count}) : '';
-    box.replaceChildren();
-    if (!count) return;
-    const sorted = [...data.deletedFasts].sort((a,b) => String(b.deletedAt).localeCompare(String(a.deletedAt)));
-    const visible = sorted.slice(0, deletedHistoryVisibleCount);
-    for (const r of visible) {
-      const row = document.createElement('div'); row.className = 'row historyRow';
-      const left = document.createElement('div'); left.style.minWidth = '0';
-      const strong = document.createElement('strong'); strong.textContent = localDateLabel(r.end, r.timeZone); left.append(strong);
-      const times = document.createElement('div'); times.className = 'small'; times.textContent = `${localDateTimeLabel(r.start, r.timeZone)} → ${localDateTimeLabel(r.end, r.timeZone)}`; left.append(times);
-      const targetLine = document.createElement('div'); targetLine.className = 'small'; targetLine.textContent = t('history.target', {goal:formatGoal(r.goalHours ?? data.goalHours)}); left.append(targetLine);
-      if (r.modifiedAt) {
-        const latestAudit = Array.isArray(r.editHistory) && r.editHistory.length ? r.editHistory[r.editHistory.length - 1] : null;
-        const editLine = document.createElement('div'); editLine.className = 'small';
-        editLine.textContent = t('history.editedAt', {date:localDateTimeLabel(r.modifiedAt, latestAudit?.editedTimeZone || currentTimeZone())});
-        left.append(editLine);
-      }
-      const deletedLine = document.createElement('div'); deletedLine.className = 'small';
-      deletedLine.textContent = t('history.deletedAt', {date:localDateTimeLabel(r.deletedAt, r.deletedTimeZone), reason:deletionReasonLabel(r.deletionReason)}); left.append(deletedLine);
-      const right = document.createElement('div'); right.style.textAlign = 'right'; right.style.flex = '0 0 auto';
-      const dur = document.createElement('div'); dur.className = 'duration'; dur.textContent = friendlyDuration(recordMs(r)); right.append(dur);
-      const actions = document.createElement('div'); actions.className = 'historyActions';
-      const restore = document.createElement('button'); restore.className = 'secondary'; restore.textContent = t('history.deletedRestore'); restore.addEventListener('click', () => restoreDeletedFast(r.id));
-      const permanent = document.createElement('button'); permanent.className = 'dangerText'; permanent.textContent = t('history.deletedPermanent'); permanent.addEventListener('click', () => permanentlyDeleteFast(r.id));
-      actions.append(restore, permanent); right.append(actions);
-      row.append(left, right); box.append(row);
+    const card=el('deletedFastsCard'),box=el('deletedFastsList'),spec=historyFilterSpec();
+    const total=data.deletedFasts.length; card.hidden=!spec.includeDeleted||total===0; box.replaceChildren();
+    if(!spec.includeDeleted||!total){updateBulkActionBars();return;}
+    const deletedSorted=[...data.deletedFasts].sort((a,b)=>String(b.deletedAt).localeCompare(String(a.deletedAt)));const filtered=historyFilterActive(spec)?deletedSorted.filter(r=>fastPassesHistoryFilter(r,spec)):deletedSorted;
+    el('deletedFastsCount').textContent=t('history.deletedFilteredCount',{shown:filtered.length,total});
+    const visible=filtered.slice(0,deletedHistoryVisibleCount);
+    if(!visible.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=t('history.filterNoMatch');box.append(empty);}
+    for(const r of visible){
+      const row=document.createElement('div');row.className='row historyRow'+(historyBulkMode?' bulkSelectable':'');
+      if(historyBulkMode)row.append(bulkCheckbox(r.id,selectedDeletedFastIds,t('bulk.selectFast',{date:localDateLabel(r.end,r.timeZone)})));
+      const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(r.end,r.timeZone);left.append(strong);
+      const times=document.createElement('div');times.className='small';times.textContent=`${localDateTimeLabel(r.start,r.timeZone)} → ${localDateTimeLabel(r.end,r.timeZone)}`;left.append(times);
+      const targetLine=document.createElement('div');targetLine.className='small';targetLine.textContent=t('history.target',{goal:formatGoal(r.goalHours??data.goalHours)});left.append(targetLine);appendEditedIndicator(left,r);
+      const deletedLine=document.createElement('div');deletedLine.className='small';deletedLine.textContent=t('history.deletedAt',{date:localDateTimeLabel(r.deletedAt,r.deletedTimeZone),reason:deletionReasonLabel(r.deletionReason)});left.append(deletedLine);
+      const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const dur=document.createElement('div');dur.className='duration';dur.textContent=friendlyDuration(recordMs(r));right.append(dur);
+      if(!historyBulkMode){const actions=document.createElement('div');actions.className='historyActions';const restore=document.createElement('button');restore.className='secondary';restore.textContent=t('history.deletedRestore');restore.addEventListener('click',()=>restoreDeletedFast(r.id));const permanent=document.createElement('button');permanent.className='dangerText';permanent.textContent=t('history.deletedPermanent');permanent.addEventListener('click',()=>permanentlyDeleteFast(r.id));actions.append(restore,permanent);right.append(actions);}
+      row.append(left,right);box.append(row);
     }
-    if (visible.length < sorted.length) {
-      const wrap = document.createElement('div'); wrap.className = 'loadMoreWrap';
-      const more = document.createElement('button'); more.className = 'secondary';
-      more.textContent = t('common.loadMoreCount', {n: sorted.length - visible.length});
-      more.addEventListener('click', () => { deletedHistoryVisibleCount += HISTORY_PAGE_SIZE; renderDeletedFasts(); });
-      wrap.append(more); box.append(wrap);
-    }
+    if(visible.length<filtered.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:filtered.length-visible.length});more.addEventListener('click',()=>{deletedHistoryVisibleCount+=HISTORY_PAGE_SIZE;renderDeletedFasts();});wrap.append(more);box.append(wrap);}
+    updateBulkActionBars();
   }
 
   function renderHistory() {
-    const box = el('historyList');
-    box.replaceChildren();
-    if (!data.records.length) {
-      const empty = document.createElement('div');
-      empty.className = 'historyEmpty';
-      empty.textContent = t('history.empty');
-      box.append(empty);
-      renderDeletedFasts();
-      return;
+    const box=el('historyList'),spec=historyFilterSpec();box.replaceChildren();
+    const allSorted=sortedRecordsDesc();const filtered=historyFilterActive(spec)?allSorted.filter(r=>fastPassesHistoryFilter(r,spec)):allSorted;
+    const status=el('historyFilterStatus');if(status)status.textContent=t('history.filterCount',{shown:filtered.length,total:data.records.length});
+    if(!filtered.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=data.records.length?t('history.filterNoMatch'):t('history.empty');box.append(empty);renderDeletedFasts();updateBulkActionBars();return;}
+    const visible=filtered.slice(0,historyVisibleCount);
+    for(const r of visible){
+      const row=document.createElement('div');row.className='row historyRow'+(historyBulkMode?' bulkSelectable':'');
+      if(historyBulkMode)row.append(bulkCheckbox(r.id,selectedFastIds,t('bulk.selectFast',{date:localDateLabel(r.end,r.timeZone)})));
+      const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(r.end,r.timeZone);left.append(strong);
+      const times=document.createElement('div');times.className='small';times.textContent=`${localDateTimeLabel(r.start,r.timeZone)} → ${localDateTimeLabel(r.end,r.timeZone)}`;left.append(times);
+      const targetLine=document.createElement('div');targetLine.className='small';targetLine.textContent=t('history.target',{goal:formatGoal(r.goalHours??data.goalHours)});left.append(targetLine);appendEditedIndicator(left,r);if(recordMetGoal(r)){const badge=document.createElement('div');badge.className='goalBadge';badge.textContent=t('history.targetReached');left.append(badge);}
+      const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const dur=document.createElement('div');dur.className='duration';dur.textContent=friendlyDuration(recordMs(r));right.append(dur);const exactHours=recordMs(r)/3600000;const exact=document.createElement('div');exact.className='small';exact.textContent=`${formatNumber(exactHours,0,2)}${t('unit.h')}`;right.append(exact);
+      if(!historyBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');edit.addEventListener('click',()=>openEntryModal(r));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');del.addEventListener('click',()=>{if(confirm(t('history.deleteConfirm'))&&deleteFastToAudit(r, 'user'))showUndoToast(t('history.deletedUndo'),()=>restoreDeletedFast(r.id));});actions.append(edit,del);right.append(actions);}
+      row.append(left,right);box.append(row);
     }
-    const sorted = [...data.records].sort((a, b) => new Date(b.end) - new Date(a.end));
-    const visible = sorted.slice(0, historyVisibleCount);
-    for (const r of visible) {
-      const row = document.createElement('div'); row.className = 'row historyRow';
-      const left = document.createElement('div'); left.style.minWidth = '0';
-      const strong = document.createElement('strong'); strong.textContent = localDateLabel(r.end, r.timeZone); left.append(strong);
-      const times = document.createElement('div'); times.className = 'small'; times.textContent = `${localDateTimeLabel(r.start, r.timeZone)} → ${localDateTimeLabel(r.end, r.timeZone)}`; left.append(times);
-      const targetLine = document.createElement('div'); targetLine.className = 'small'; targetLine.textContent = t('history.target', {goal: formatGoal(r.goalHours ?? data.goalHours)}); left.append(targetLine);
-      if (r.modifiedAt) {
-        const latestAudit = Array.isArray(r.editHistory) && r.editHistory.length ? r.editHistory[r.editHistory.length - 1] : null;
-        const editLine = document.createElement('div'); editLine.className = 'small';
-        editLine.textContent = t('history.editedAt', {date:localDateTimeLabel(r.modifiedAt, latestAudit?.editedTimeZone || currentTimeZone())});
-        left.append(editLine);
-      }
-      if (recordMetGoal(r)) {
-        const badge = document.createElement('div'); badge.className = 'goalBadge'; badge.textContent = t('history.targetReached'); left.append(badge);
-      }
-      const right = document.createElement('div'); right.style.textAlign = 'right'; right.style.flex = '0 0 auto';
-      const dur = document.createElement('div'); dur.className = 'duration'; dur.textContent = friendlyDuration(recordMs(r)); right.append(dur);
-      const exactHours = recordMs(r) / 3600000; const exact = document.createElement('div'); exact.className = 'small'; exact.textContent = `${formatNumber(exactHours, 0, 2)}${t('unit.h')}`; right.append(exact);
-      const actions = document.createElement('div'); actions.className = 'historyActions';
-      const edit = document.createElement('button'); edit.className = 'secondary'; edit.textContent = t('common.edit'); edit.addEventListener('click', () => openEntryModal(r));
-      const del = document.createElement('button'); del.className = 'dangerText'; del.textContent = t('common.delete'); del.addEventListener('click', () => {
-        if (confirm(t('history.deleteConfirm'))) deleteFastToAudit(r, 'user');
-      });
-      actions.append(edit, del); right.append(actions);
-      row.append(left, right);
-      box.append(row);
-    }
-    if (visible.length < sorted.length) {
-      const wrap = document.createElement('div'); wrap.className = 'loadMoreWrap';
-      const more = document.createElement('button'); more.className = 'secondary';
-      more.textContent = t('common.loadMoreCount', {n: sorted.length - visible.length});
-      more.addEventListener('click', () => { historyVisibleCount += HISTORY_PAGE_SIZE; renderHistory(); });
-      wrap.append(more); box.append(wrap);
-    }
-    renderDeletedFasts();
+    if(visible.length<filtered.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:filtered.length-visible.length});more.addEventListener('click',()=>{historyVisibleCount+=HISTORY_PAGE_SIZE;renderHistory();});wrap.append(more);box.append(wrap);}
+    renderDeletedFasts();updateBulkActionBars();
   }
 
   function startOfWeek(dateLike = new Date()) {
@@ -3842,7 +4186,7 @@ layout: null
     let total=0, reached=0;
     // Only the current week matters. Scan newest-first and stop once records are
     // clearly older than the week rather than converting a lifetime of dates.
-    const sorted=[...data.records].sort((a,b)=>String(b.end).localeCompare(String(a.end)));
+    const sorted=sortedRecordsDesc();
     for(const r of sorted){
       const day=dayKeyFast(r.end,r.timeZone||currentTimeZone());
       const wk=weekKeyFromDayString(day);
@@ -3874,7 +4218,7 @@ layout: null
   }
 
   function hasComebackAchievement() {
-    const sorted = [...data.records].sort((a, b) => String(a.end).localeCompare(String(b.end)));
+    const sorted = sortedRecordsAsc();
     for (let i = 1; i < sorted.length; i++) {
       if (!recordMetGoal(sorted[i - 1]) && recordMetGoal(sorted[i])) return true;
     }
@@ -4806,7 +5150,8 @@ layout: null
   }
 
   function sortedWeightsAsc() {
-    return [...data.weights].sort((a, b) => String(a.when).localeCompare(String(b.when)));
+    if (!sortedWeightsAscCache) sortedWeightsAscCache = [...data.weights].sort((a, b) => String(a.when).localeCompare(String(b.when)));
+    return sortedWeightsAscCache;
   }
 
   const WEIGHT_PERIOD_MODES = Object.freeze(['daily','week','month','quarter','halfyear','year']);
@@ -4994,36 +5339,17 @@ layout: null
   }
 
   function softDeleteWeightById(id, reason = 'user') {
-    const index=data.weights.findIndex(w=>w.id===id); if(index<0||data.deletedWeights.some(w=>w.id===id)) return false;
-    const original=data.weights[index];
-    const tombstone={...original,deleted:true,deletedAt:new Date().toISOString(),deletedTimeZone:currentTimeZone(),deletionReason:String(reason||'user').slice(0,80)};
-    data.weights.splice(index,1); data.deletedWeights.push(tombstone);
-    return save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']});
+    const index=data.weights.findIndex(w=>w.id===id);if(index<0||data.deletedWeights.some(w=>w.id===id))return false;
+    const original=data.weights[index],tombstone={...original,deleted:true,deletedAt:new Date().toISOString(),deletedTimeZone:currentTimeZone(),deletionReason:String(reason||'user').slice(0,80)};
+    data.weights.splice(index,1);data.deletedWeights.push(tombstone);if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.deletedWeights=data.deletedWeights.filter(w=>w!==tombstone);data.weights.splice(index,0,original);return false;}return true;
   }
-  function restoreDeletedWeightById(id){
-    const index=data.deletedWeights.findIndex(w=>w.id===id); if(index<0)return false;
-    const deleted=data.deletedWeights[index]; if(data.weights.some(w=>w.id===deleted.id)){alert(t('weight.restoreConflict'));return false;}
-    const restored=normalizeWeightEntry(deleted); if(!restored)return false;
-    data.deletedWeights.splice(index,1); data.weights.push(restored);
-    if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.weights=data.weights.filter(w=>w!==restored&&w.id!==restored.id);data.deletedWeights.splice(index,0,deleted);return false;} return true;
-  }
-  function permanentlyDeleteWeightById(id){
-    const index=data.deletedWeights.findIndex(w=>w.id===id); if(index<0)return false;
-    const [removed]=data.deletedWeights.splice(index,1);
-    if(!save({invalidateDerived:false,dirtyViews:['weight','settings']})){data.deletedWeights.splice(index,0,removed);return false;} return true;
-  }
+  function restoreDeletedWeightById(id){const index=data.deletedWeights.findIndex(w=>w.id===id);if(index<0)return false;const deleted=data.deletedWeights[index];if(data.weights.some(w=>w.id===deleted.id)){alert(t('weight.restoreConflict'));return false;}const restored=normalizeWeightEntry(deleted);if(!restored)return false;data.deletedWeights.splice(index,1);data.weights.push(restored);if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.weights=data.weights.filter(w=>w!==restored&&w.id!==restored.id);data.deletedWeights.splice(index,0,deleted);return false;}return true;}
+  function permanentlyDeleteWeightById(id){const index=data.deletedWeights.findIndex(w=>w.id===id);if(index<0)return false;const [removed]=data.deletedWeights.splice(index,1);if(!save({invalidateDerived:false,dirtyViews:['weight','settings']})){data.deletedWeights.splice(index,0,removed);return false;}return true;}
   function renderDeletedWeights(){
-    const card=el('deletedWeightsCard'),box=el('deletedWeightsList'); if(!card||!box)return;
-    const count=data.deletedWeights.length; card.hidden=!count; el('deletedWeightsCount').textContent=count?t('weight.deletedCount',{n:count}):''; box.replaceChildren();
-    const sorted=[...data.deletedWeights].sort((a,b)=>String(b.deletedAt).localeCompare(String(a.deletedAt))).slice(0,HISTORY_PAGE_SIZE);
-    for(const w of sorted){
-      const row=document.createElement('div');row.className='row historyRow';
-      const left=document.createElement('div');const strong=document.createElement('strong');strong.textContent=`${localDateTimeLabel(w.when,w.timeZone)} • ${formatWeight(w.kg,data.weightUnit)}`;const small=document.createElement('div');small.className='small';small.textContent=t('weight.deletedAt',{date:localDateTimeLabel(w.deletedAt,w.deletedTimeZone)});left.append(strong,small);
-      const actions=document.createElement('div');actions.className='historyActions';
-      const restore=document.createElement('button');restore.className='secondary';restore.textContent=t('common.restore');restore.addEventListener('click',()=>{if(restoreDeletedWeightById(w.id))renderWeight();});
-      const purge=document.createElement('button');purge.className='dangerText';purge.textContent=t('weight.deletePermanently');purge.addEventListener('click',()=>{if(confirm(t('weight.deletePermanentConfirm'))&&permanentlyDeleteWeightById(w.id))renderWeight();});
-      actions.append(restore,purge);row.append(left,actions);box.append(row);
-    }
+    const card=el('deletedWeightsCard'),box=el('deletedWeightsList'),spec=weightFilterSpec();if(!card||!box)return;const total=data.deletedWeights.length;card.hidden=!spec.includeDeleted||!total;box.replaceChildren();if(!spec.includeDeleted||!total){updateBulkActionBars();return;}
+    const deletedSorted=[...data.deletedWeights].sort((a,b)=>String(b.deletedAt).localeCompare(String(a.deletedAt)));const filtered=weightFilterActive(spec)?deletedSorted.filter(w=>weightPassesFilter(w,spec)):deletedSorted;el('deletedWeightsCount').textContent=t('weight.deletedFilteredCount',{shown:filtered.length,total});const visible=filtered.slice(0,HISTORY_PAGE_SIZE);
+    if(!visible.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=t('history.filterNoMatch');box.append(empty);}
+    for(const w of visible){const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedDeletedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');const strong=document.createElement('strong');strong.textContent=`${localDateTimeLabel(w.when,w.timeZone)} • ${formatWeight(w.kg,data.weightUnit)}`;const small=document.createElement('div');small.className='small';small.textContent=t('weight.deletedAt',{date:localDateTimeLabel(w.deletedAt,w.deletedTimeZone)});left.append(strong,small);const actions=document.createElement('div');actions.className='historyActions';if(!weightBulkMode){const restore=document.createElement('button');restore.className='secondary';restore.textContent=t('common.restore');restore.addEventListener('click',()=>{if(restoreDeletedWeightById(w.id))renderWeight();});const purge=document.createElement('button');purge.className='dangerText';purge.textContent=t('weight.deletePermanently');purge.addEventListener('click',()=>{if(confirm(t('weight.deletePermanentConfirm'))&&permanentlyDeleteWeightById(w.id))renderWeight();});actions.append(restore,purge);}row.append(left,actions);box.append(row);}updateBulkActionBars();
   }
 
   function renderWeight() {
@@ -5044,43 +5370,8 @@ layout: null
     el('wTarget').textContent = data.targetWeightKg == null ? '—' : formatWeight(data.targetWeightKg, unit);
     el('wToTarget').textContent = latest && data.targetWeightKg != null ? formatWeight(latest.kg - data.targetWeightKg, unit, true) : '—';
 
-    const box = el('weightHistoryList');
-    box.replaceChildren();
-    if (!asc.length) {
-      const empty = document.createElement('div');
-      empty.className = 'historyEmpty';
-      empty.textContent = t('weight.empty');
-      box.append(empty);
-    } else {
-      const sortedDesc = [...asc].reverse();
-      const visibleWeights = sortedDesc.slice(0, weightVisibleCount);
-      visibleWeights.forEach(w => {
-        const row = document.createElement('div'); row.className = 'row historyRow';
-        const left = document.createElement('div'); left.style.minWidth = '0';
-        const strong = document.createElement('strong'); strong.textContent = localDateLabel(w.when, w.timeZone); left.append(strong);
-        const when = document.createElement('div'); when.className = 'small'; when.textContent = localDateTimeLabel(w.when, w.timeZone); left.append(when);
-        const right = document.createElement('div'); right.style.textAlign = 'right'; right.style.flex = '0 0 auto';
-        const val = document.createElement('div'); val.className = 'duration'; val.textContent = formatWeight(w.kg, unit); right.append(val);
-        const actions = document.createElement('div'); actions.className = 'historyActions';
-        const edit = document.createElement('button'); edit.className = 'secondary'; edit.textContent = t('common.edit');
-        bindResponsiveAction(edit, () => openWeightModal(w));
-        const del = document.createElement('button'); del.className = 'dangerText'; del.textContent = t('common.delete');
-        bindResponsiveAction(del, () => {
-          if (!confirm(t('weight.deleteConfirm'))) return;
-          if (!softDeleteWeightById(w.id, 'user')) { renderAll(); return; }
-          row.remove();
-          scheduleWeightUiRefresh();
-        });
-        actions.append(edit, del); right.append(actions); row.append(left, right); box.append(row);
-      });
-      if (visibleWeights.length < sortedDesc.length) {
-        const wrap = document.createElement('div'); wrap.className = 'loadMoreWrap';
-        const more = document.createElement('button'); more.className = 'secondary';
-        more.textContent = t('common.loadMoreCount', {n: sortedDesc.length - visibleWeights.length});
-        more.addEventListener('click', () => { weightVisibleCount += HISTORY_PAGE_SIZE; renderWeight(); });
-        wrap.append(more); box.append(wrap);
-      }
-    }
+    const box=el('weightHistoryList');box.replaceChildren();const spec=weightFilterSpec();const allDesc=[...asc].reverse();const sortedDesc=weightFilterActive(spec)?allDesc.filter(w=>weightPassesFilter(w,spec)):allDesc;const filterStatus=el('weightFilterStatus');if(filterStatus)filterStatus.textContent=t('history.filterCount',{shown:sortedDesc.length,total:asc.length});
+    if(!sortedDesc.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=asc.length?t('history.filterNoMatch'):t('weight.empty');box.append(empty);}else{const visibleWeights=sortedDesc.slice(0,weightVisibleCount);visibleWeights.forEach(w=>{const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(w.when,w.timeZone);left.append(strong);const when=document.createElement('div');when.className='small';when.textContent=localDateTimeLabel(w.when,w.timeZone);left.append(when);const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const val=document.createElement('div');val.className='duration';val.textContent=formatWeight(w.kg,unit);right.append(val);if(!weightBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');bindResponsiveAction(edit, () => openWeightModal(w));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');bindResponsiveAction(del, () => {if(!confirm(t('weight.deleteConfirm')))return;if(!softDeleteWeightById(w.id,'user')){renderAll();return;}renderWeight();showUndoToast(t('weight.deletedUndo'),()=>{if(restoreDeletedWeightById(w.id))renderWeight();});});actions.append(edit,del);right.append(actions);}row.append(left,right);box.append(row);});if(visibleWeights.length<sortedDesc.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:sortedDesc.length-visibleWeights.length});more.addEventListener('click',()=>{weightVisibleCount+=HISTORY_PAGE_SIZE;renderWeight();});wrap.append(more);box.append(wrap);}}
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
     renderDeletedWeights();
@@ -5308,6 +5599,15 @@ layout: null
     return firstData;
   }
 
+  function backupFreshnessState() {
+    if (!hasBackupWorthyData()) return {state:'empty', changed:false, last:null};
+    const last=validDate(backupMeta.lastExternalBackupAt); if(!last)return {state:'never',changed:true,last:null};
+    const backedRevision=Math.max(0,Number(backupMeta.lastExternalBackupRevision)||0);
+    const updated=validDate(data.updatedAt), backedUpdated=validDate(backupMeta.lastExternalBackupDataUpdatedAt);
+    const changed=backedRevision ? Number(data.revision)>backedRevision : (!!updated && updated.getTime()>last.getTime()+1000);
+    return {state:changed?'stale':'current',changed,last,backedRevision,backedUpdated};
+  }
+
   function backupIsDue() {
     if (!hasBackupWorthyData()) return false;
     const firstData = ensureBackupTrackingStarted();
@@ -5323,9 +5623,12 @@ layout: null
     const titleBox = el('backupReminderTitle');
     const textBox = el('backupReminderText');
     const nextLabel = el('nextBackupLabel');
+    const freshnessLabel=el('backupFreshnessLabel');
     if (!label || !banner || !textBox) return;
     const last = validDate(backupMeta.lastExternalBackupAt);
     label.textContent = last ? localDateLabel(last) : t('backup.noneYet');
+    const freshness=backupFreshnessState();
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?t('backup.current'):freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
     banner.hidden = !(due || snapshotAttention);
@@ -5345,38 +5648,111 @@ layout: null
         nextLabel.textContent = !next ? t('backup.nextStarts') : (Date.now() >= next.getTime() ? t('backup.nextDueNow') : t('backup.nextOn', {date:localDateLabel(next)}));
       }
     }
+    const content=el('backupContentSummary');
+    if(content) content.textContent=t('backup.contentSummary',{fasts:data.records.length,deletedFasts:data.deletedFasts.length,weights:data.weights.length,deletedWeights:data.deletedWeights.length,snapshots:loadSnapshots().length});
   }
 
   function renderSnapshotStatus() {
     const status = el('snapshotStatus');
     const btn = el('restoreSnapshotBtn');
     if (!status || !btn) return;
-    const snapshots = loadSnapshots();
+    const snapshots = loadSnapshots(), stats=snapshotCoverageStats(snapshots);
     if (snapshotProtectionState.status === 'failed' && hasBackupWorthyData()) status.textContent = t('backup.snapshotFailedStatus');
     else if (snapshotProtectionState.status === 'reduced' && hasBackupWorthyData()) status.textContent = t('backup.snapshotReducedStatus', {n:snapshots.length});
     else status.textContent = snapshots.length ? t('backup.rollingPolicy', {n:snapshots.length}) : t('backup.snapshotNone');
+    const detail=el('snapshotTransparency');
+    if(detail) detail.textContent = snapshots.length ? t('backup.snapshotTransparency',{newest:localDateTimeLabel(stats.newest),oldest:localDateTimeLabel(stats.oldest),recent:stats.recent,daily:stats.daily,weekly:stats.weekly,monthly:stats.monthly,size:humanBytes(stats.storedBytes)}) : '';
     btn.disabled = snapshots.length === 0;
   }
 
+  async function createManualRecoverySnapshot(label = '') {
+    const meta = await createInternalSnapshotAsync('manual recovery point', APP_VERSION, label);
+    if (!meta) { alert(t('backup.snapshotFailed')); return false; }
+    renderSnapshotStatus(); renderStorageHealth();
+    if (!el('snapshotModal')?.hidden) openSnapshotModal();
+    return true;
+  }
+
+  function openManualSnapshotModal(){const input=el('manualSnapshotLabel');if(input)input.value='';showModal('manualSnapshotModal','manualSnapshotLabel');}
+  async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;try{if(!(await allowStorageIntensiveOperation()))return;const ok=await createManualRecoverySnapshot(input?.value||'');if(ok)hideModal('manualSnapshotModal');}finally{if(btn)btn.disabled=false;}}
+
   function markExternalBackupNow() {
     backupMeta.lastExternalBackupAt = new Date().toISOString();
+    backupMeta.lastExternalBackupRevision = Math.max(0,Number(data.revision)||0);
+    backupMeta.lastExternalBackupDataUpdatedAt = validDate(data.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
     saveBackupMeta();
     renderBackupStatus();
     renderGamification();
   }
 
-  function makeBackupPayload() {
+  function stableStringify(value) {
+    if (value === null || typeof value !== 'object') return JSON.stringify(value);
+    if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+    const keys = Object.keys(value).sort();
+    return `{${keys.map(k=>`${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
+  }
+
+  function fnv1a64Hex(text) {
+    let hash = 0xcbf29ce484222325n;
+    const prime = 0x100000001b3n;
+    const bytes = new TextEncoder().encode(text);
+    for (const byte of bytes) { hash ^= BigInt(byte); hash = BigInt.asUintN(64, hash * prime); }
+    return hash.toString(16).padStart(16,'0');
+  }
+
+  async function checksumText(text, preferred = 'SHA-256') {
+    if (preferred === 'SHA-256' && globalThis.crypto?.subtle) {
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return {algorithm:'SHA-256', digest:[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('')};
+    }
+    return {algorithm:'FNV-1a-64', digest:fnv1a64Hex(text)};
+  }
+
+  function backupManifest(sourceData = data) {
     return {
-      format: BACKUP_FORMAT,
-      backupVersion: BACKUP_VERSION,
-      appVersion: APP_VERSION,
-      exportedAt: new Date().toISOString(),
-      data: JSON.parse(JSON.stringify(data))
+      dataVersion: sourceData.dataVersion, databaseSchemaVersion: IDB_VERSION,
+      activeFasts: sourceData.activeStart ? 1 : 0,
+      fastingRecords: Array.isArray(sourceData.records) ? sourceData.records.length : 0,
+      deletedFasts: Array.isArray(sourceData.deletedFasts) ? sourceData.deletedFasts.length : 0,
+      weightRecords: Array.isArray(sourceData.weights) ? sourceData.weights.length : 0,
+      deletedWeights: Array.isArray(sourceData.deletedWeights) ? sourceData.deletedWeights.length : 0,
+      fastEditAuditEntries: [...(sourceData.records||[]),...(sourceData.deletedFasts||[])].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),
+      recoverySnapshotsOnDevice: loadSnapshots().length,
+      recoverySnapshotsEmbedded: 0
     };
   }
 
+  async function makeBackupPayload() {
+    const backupData = JSON.parse(JSON.stringify(data));
+    const canonical = stableStringify(backupData);
+    const integrity = await checksumText(canonical);
+    return {
+      format: BACKUP_FORMAT, backupVersion: BACKUP_VERSION, appVersion: APP_VERSION, exportedAt: new Date().toISOString(),
+      manifest: backupManifest(backupData),
+      integrity: {scope:'data', algorithm:integrity.algorithm, digest:integrity.digest},
+      data: backupData
+    };
+  }
+
+  function backupManifestMatches(raw) {
+    const m=raw?.manifest,d=raw?.data; if(!m||!d)return false;
+    const expected={activeFasts:d.activeStart?1:0,fastingRecords:(d.records||[]).length,deletedFasts:(d.deletedFasts||[]).length,weightRecords:(d.weights||[]).length,deletedWeights:(d.deletedWeights||[]).length};
+    return Object.entries(expected).every(([k,v])=>Number(m[k])===v);
+  }
+
+  async function verifyBackupEnvelope(raw) {
+    const version = Number(raw?.backupVersion);
+    if (!Number.isInteger(version) || version < BACKUP_MIN_VERSION || version > BACKUP_VERSION) throw new Error('unsupported backup version');
+    if (version === 1) return {verified:false, legacy:true};
+    if (!raw.integrity || raw.integrity.scope !== 'data' || typeof raw.integrity.digest !== 'string' || !backupManifestMatches(raw)) throw new Error('backup manifest invalid');
+    const algorithm = raw.integrity.algorithm === 'FNV-1a-64' ? 'FNV-1a-64' : 'SHA-256';
+    const actual = await checksumText(stableStringify(raw.data), algorithm);
+    if (actual.algorithm !== algorithm || actual.digest.toLowerCase() !== raw.integrity.digest.toLowerCase()) throw new Error('backup checksum mismatch');
+    return {verified:true, legacy:false, algorithm};
+  }
+
   async function exportBackup() {
-    const backup = makeBackupPayload();
+    const backup = await makeBackupPayload();
     const now = new Date();
     const stamp = `${dayKey(now)}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}-${String(now.getMilliseconds()).padStart(3, '0')}`;
     const name = `fasting-backup-${stamp}.json`;
@@ -5406,6 +5782,47 @@ layout: null
   }
 
 
+  function csvCell(value) { const text=String(value??''); return /[",\n\r]/.test(text)?`"${text.replace(/"/g,'""')}"`:text; }
+  function csvText(headers, rows) { return '\ufeff'+[headers,...rows].map(row=>row.map(csvCell).join(',')).join('\r\n'); }
+  async function shareOrDownloadText(text,name,type='text/csv') {
+    const file=new File([text],name,{type});
+    try{if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file]});return true;}}catch(err){if(err?.name==='AbortError')return false;}
+    const blob=new Blob([text],{type}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return true;
+  }
+  function csvTimestamp(){const n=new Date();return `${dayKey(n)}-${pad(n.getHours())}${pad(n.getMinutes())}`;}
+  async function exportFastingCsv(){
+    const headers=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','time_zone','created_at','modified_at','edit_count'];
+    const rows=sortedRecordsDesc().map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0]);
+    await shareOrDownloadText(csvText(headers,rows),`fasting-history-${csvTimestamp()}.csv`);
+  }
+  async function exportWeightCsv(){
+    const headers=['id','when','when_local','weight_kg','time_zone','created_at','modified_at'];
+    const rows=sortedWeightsAsc().slice().reverse().map(w=>[w.id,w.when,localDateTimeLabel(w.when,w.timeZone),w.kg,w.timeZone,w.createdAt||'',w.modifiedAt||'']);
+    await shareOrDownloadText(csvText(headers,rows),`weight-history-${csvTimestamp()}.csv`);
+  }
+
+  async function exportEverything(){
+    const backup=await makeBackupPayload(),stamp=csvTimestamp();
+    const jsonName=`fasting-backup-${stamp}.json`,fastName=`fasting-history-${stamp}.csv`,weightName=`weight-history-${stamp}.csv`;
+    const json=JSON.stringify(backup,null,2);
+    const fastHeaders=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','time_zone','created_at','modified_at','edit_count'];
+    const fastRows=sortedRecordsDesc().map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0]);
+    const weightHeaders=['id','when','when_local','weight_kg','time_zone','created_at','modified_at'];
+    const weightRows=sortedWeightsAsc().slice().reverse().map(w=>[w.id,w.when,localDateTimeLabel(w.when,w.timeZone),w.kg,w.timeZone,w.createdAt||'',w.modifiedAt||'']);
+    const files=[new File([json],jsonName,{type:'application/json'}),new File([csvText(fastHeaders,fastRows)],fastName,{type:'text/csv'}),new File([csvText(weightHeaders,weightRows)],weightName,{type:'text/csv'})];
+    try{if(navigator.share&&navigator.canShare?.({files})){await navigator.share({files});markExternalBackupNow();return true;}}catch(err){if(err?.name==='AbortError')return false;}
+    try{for(const file of files){const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}const confirmed=confirm(t('backup.everythingDownloadConfirm'));if(confirmed)markExternalBackupNow();return confirmed;}catch{alert(t('backup.errCreate'));return false;}
+  }
+
+  function storagePressureFromEstimate(estimate){if(!estimate||!Number.isFinite(estimate.usage)||!Number.isFinite(estimate.quota)||estimate.quota<=0)return {known:false,warning:false,ratio:null,free:null};const ratio=estimate.usage/estimate.quota,free=Math.max(0,estimate.quota-estimate.usage);return {known:true,warning:ratio>=STORAGE_PRESSURE_RATIO||free<STORAGE_PRESSURE_FREE_BYTES,ratio,free};}
+  async function allowStorageIntensiveOperation(){try{const est=await navigator.storage?.estimate?.();const pressure=storagePressureFromEstimate(est);if(pressure.warning)return confirm(t('storage.pressureContinue',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)}));}catch{}return true;}
+  function installStateCode(){if(isStandaloneApp())return isIOSDevice()?'installed-ios':isAndroidDevice()?'installed-android':'installed-desktop';return isIOSDevice()?'browser-ios':isAndroidDevice()?'browser-android':'browser-desktop';}
+  function loadPerformanceMeta(){try{return JSON.parse(localStorage.getItem(PERF_META_KEY)||'null');}catch{return null;}}
+  function savePerformanceMeta(value){try{localStorage.setItem(PERF_META_KEY,JSON.stringify(value));}catch{}}
+  async function runLocalBenchmark(){const btn=el('performanceTestBtn');if(btn)btn.disabled=true;await new Promise(r=>setTimeout(r,0));const p=globalThis.performance?.now?()=>performance.now():()=>Date.now();const t0=p();const rec=[...data.records].sort((a,b)=>String(a.end).localeCompare(String(b.end)));const t1=p();buildStoredDayTotals(rec);const t2=p();JSON.stringify({records:data.records,weights:data.weights,deletedFasts:data.deletedFasts,deletedWeights:data.deletedWeights});const t3=p();const result={at:new Date().toISOString(),records:data.records.length,weights:data.weights.length,sortMs:+(t1-t0).toFixed(2),totalsMs:+(t2-t1).toFixed(2),serializeMs:+(t3-t2).toFixed(2),totalMs:+(t3-t0).toFixed(2)};savePerformanceMeta(result);if(btn)btn.disabled=false;renderStorageHealth();return result;}
+  async function queryServiceWorkerHealth(){if(!('serviceWorker'in navigator))return {supported:false};try{const reg=await navigator.serviceWorker.getRegistration();const worker=navigator.serviceWorker.controller||reg?.active;if(!worker)return {supported:true,registered:!!reg,controlled:false};return await new Promise(resolve=>{const ch=new MessageChannel(),timer=setTimeout(()=>resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,timeout:true}),4000);ch.port1.onmessage=e=>{clearTimeout(timer);resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,...(e.data||{})});};worker.postMessage({type:'CHECK_HEALTH',protocolVersion:UPDATE_PROTOCOL_VERSION},[ch.port2]);});}catch(err){return {supported:true,error:String(err?.message||err)};}}
+  async function repairAppCache(){if(!confirm(t('cache.repairConfirm')))return false;const btn=el('repairCacheBtn');if(btn)btn.disabled=true;try{await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();renderStorageHealth();alert(t('cache.repaired'));return true;}catch{alert(t('cache.repairFailed'));return false;}finally{if(btn)btn.disabled=false;}}
+
   async function renderStorageHealth() {
     const rc=el('healthRecordCount'); if(!rc)return;
     rc.textContent=formatNumber(data.records.length+data.weights.length);
@@ -5414,20 +5831,85 @@ layout: null
     const last=validDate(backupMeta.lastExternalBackupAt); el('healthBackupAge').textContent=last?localDateLabel(last):t('common.never');
     let persisted=null; try{if(navigator.storage?.persisted)persisted=await navigator.storage.persisted();}catch{}
     el('healthPersistence').textContent=t('storage.healthPersistence',{status:persisted===true?t('storage.healthProtected'):persisted===false?t('storage.healthNotProtected'):t('storage.healthUnavailable')});
-    let usageText=t('storage.usageUnknown'); try{const est=await navigator.storage?.estimate?.();if(est&&Number.isFinite(est.usage)&&Number.isFinite(est.quota)){const mb=n=>formatNumber(n/1048576,0,1);usageText=t('storage.healthUsage',{used:mb(est.usage),quota:mb(est.quota)});}}catch{}
-    el('healthUsage').textContent=usageText;
+    let usageText=t('storage.usageUnknown'),estimate=null;try{estimate=await navigator.storage?.estimate?.()||null;if(estimate&&Number.isFinite(estimate.usage)&&Number.isFinite(estimate.quota)){const mb=n=>formatNumber(n/1048576,0,1);usageText=t('storage.healthUsage',{used:mb(estimate.usage),quota:mb(estimate.quota)});}}catch{}
+    el('healthUsage').textContent=usageText;const pressure=storagePressureFromEstimate(estimate),pressureNode=el('storagePressureWarning');if(pressureNode){pressureNode.classList.toggle('warn',pressure.warning);pressureNode.textContent=!pressure.known?t('storage.pressureUnknown'):pressure.warning?t('storage.pressureWarning',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)}):t('storage.pressureOk',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)});}
     el('healthLastSave').textContent=t('storage.healthLastSave',{date:lastSuccessfulIdbSaveAt?localDateTimeLabel(lastSuccessfulIdbSaveAt):t('common.never')});
     const prot=snapshotProtectionState.status==='ok'?t('storage.healthGood'):snapshotProtectionState.status==='reduced'?t('storage.healthReduced'):t('storage.healthNeedsAttention');
     el('healthProtection').textContent=t('storage.healthRecovery',{status:prot});
+    const ss=snapshotCoverageStats();
+    el('healthSnapshotDetail').textContent=ss.count?t('storage.healthSnapshotDetail',{newest:localDateTimeLabel(ss.newest),oldest:localDateTimeLabel(ss.oldest),size:humanBytes(ss.storedBytes),recent:ss.recent,daily:ss.daily,weekly:ss.weekly,monthly:ss.monthly}):t('storage.healthSnapshotNone');
+    const migration=migrationStatusMeta();
+    el('healthMigrationStatus').textContent=migration.pending?t('storage.healthMigrationPending',{from:migration.pending.from,to:migration.pending.to}):migration.last?.status==='success'?t('storage.healthMigrationSuccess',{from:migration.last.from,to:migration.last.to,date:localDateTimeLabel(migration.last.completedAt)}):migration.last?.status==='failed'?t('storage.healthMigrationFailed',{from:migration.last.from,to:migration.last.to,date:localDateTimeLabel(migration.last.completedAt)}):t('storage.healthMigrationNone');
+    const install=installStateCode();el('healthInstallState').textContent=t(`installState.${install}`);lastServiceWorkerHealth=await queryServiceWorkerHealth();const sw=lastServiceWorkerHealth;el('healthServiceWorker').textContent=!sw?.supported?t('cache.unsupported'):sw.error||sw.timeout?t('cache.unavailable'):sw.cacheComplete===false?t('cache.incomplete',{n:sw.missingAssets||0}):sw.activeVersion?t('cache.healthy',{version:sw.activeVersion}):t('cache.notControlled');const perf=loadPerformanceMeta();el('healthPerformance').textContent=perf?t('performance.last',{date:localDateTimeLabel(perf.at),ms:formatNumber(perf.totalMs,0,2),records:perf.records,weights:perf.weights}):t('performance.none');
+    el('healthIntegrityStatus').textContent=lastIntegrityCheck?(lastIntegrityCheck.ok?t('integrity.lastOk',{date:localDateTimeLabel(lastIntegrityCheck.at)}):t('integrity.lastIssues',{n:lastIntegrityCheck.issues.length,date:localDateTimeLabel(lastIntegrityCheck.at)})):t('integrity.notChecked');
+  }
+
+  function addIntegrityIssue(issues, code, detail='') { issues.push({code,detail:String(detail||'').slice(0,160)}); }
+
+  function mapsApproximatelyEqual(a,b,tolerance=2) {
+    const keys=new Set([...a.keys(),...b.keys()]);
+    for(const key of keys) if(Math.abs((a.get(key)||0)-(b.get(key)||0))>tolerance) return false;
+    return true;
+  }
+
+  async function collectIntegrityIssues() {
+    const issues=[];
+    try { validateCompatibleData(JSON.parse(JSON.stringify(data))); } catch(err) { addIntegrityIssue(issues,'primary-structure',err?.message); }
+    const liveIds=new Set(), deletedIds=new Set(), weightIds=new Set(), deletedWeightIds=new Set();
+    for(const r of data.records){if(liveIds.has(r.id))addIntegrityIssue(issues,'duplicate-fast-id');liveIds.add(r.id);if(normalizeFastEditHistory(r.editHistory).length!==(r.editHistory||[]).length)addIntegrityIssue(issues,'invalid-edit-audit');}
+    for(const r of data.deletedFasts){if(deletedIds.has(r.id))addIntegrityIssue(issues,'duplicate-deleted-fast-id');deletedIds.add(r.id);if(liveIds.has(r.id))addIntegrityIssue(issues,'fast-live-deleted-conflict');if(normalizeFastEditHistory(r.editHistory).length!==(r.editHistory||[]).length)addIntegrityIssue(issues,'invalid-edit-audit');}
+    for(const w of data.weights){if(weightIds.has(w.id))addIntegrityIssue(issues,'duplicate-weight-id');weightIds.add(w.id);}
+    for(const w of data.deletedWeights){if(deletedWeightIds.has(w.id))addIntegrityIssue(issues,'duplicate-deleted-weight-id');deletedWeightIds.add(w.id);if(weightIds.has(w.id))addIntegrityIssue(issues,'weight-live-deleted-conflict');}
+    const sorted=[...data.records].sort((a,b)=>String(a.start).localeCompare(String(b.start)));
+    for(let i=1;i<sorted.length;i++){if(new Date(sorted[i].start)<new Date(sorted[i-1].end)){addIntegrityIssue(issues,'overlapping-fasts');break;}}
+    if(data.activeStart){const a=new Date(data.activeStart).getTime();if(sorted.some(r=>a<new Date(r.end).getTime()&&Date.now()>new Date(r.start).getTime()))addIntegrityIssue(issues,'active-fast-overlap');}
+    const recalculated=buildStoredDayTotals(data.records); if(!mapsApproximatelyEqual(recalculated,storedDayTotalsMap))addIntegrityIssue(issues,'daily-totals-mismatch');
+    try {
+      const [metas,payloads]=await Promise.all([idbGetAll('snapshotMeta'),idbGetAll('snapshotPayload')]);
+      const metaIds=new Set(metas.map(x=>x.id)),payloadIds=new Set(payloads.map(x=>x.id));
+      if(metas.some(x=>!payloadIds.has(x.id)))addIntegrityIssue(issues,'snapshot-payload-missing');
+      if(payloads.some(x=>!metaIds.has(x.id)))addIntegrityIssue(issues,'snapshot-meta-missing');
+      for(const row of payloads){
+        try{const payload=await decodeSnapshotPayload(row);if(!payload)throw new Error('unreadable');validateCompatibleData(payload);}catch{addIntegrityIssue(issues,'snapshot-corrupt');break;}
+      }
+    } catch(err){addIntegrityIssue(issues,'snapshot-store-read',err?.message);}
+    try {
+      const stored=await loadRecordBasedData();
+      if(!stored)addIntegrityIssue(issues,'primary-store-missing');
+      else if(Number(stored.revision)!==Number(data.revision))addIntegrityIssue(issues,'revision-mismatch');
+    } catch(err){addIntegrityIssue(issues,'primary-store-read',err?.message);}
+    return issues;
+  }
+
+  function integrityIssueLabel(issue) {
+    const key=`integrity.issue.${issue.code}`; const translated=t(key);
+    return translated===key ? issue.code : translated;
+  }
+
+  async function runDataIntegrityCheck() {
+    const btn=el('integrityCheckBtn'); if(btn)btn.disabled=true;
+    const issues=await collectIntegrityIssues();
+    lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};
+    const summary=el('integritySummary'),list=el('integrityIssueList'); list.replaceChildren();
+    summary.textContent=issues.length?t('integrity.issuesFound',{n:issues.length}):t('integrity.ok');
+    if(!issues.length){const li=document.createElement('li');li.textContent=t('integrity.noProblems');list.append(li);}
+    else for(const issue of issues){const li=document.createElement('li');li.textContent=integrityIssueLabel(issue);list.append(li);}
+    if(btn)btn.disabled=false; renderStorageHealth(); showModal('integrityModal','integrityCloseBtn');
+    return lastIntegrityCheck;
   }
 
   async function exportDiagnostics(){
     let estimate=null,persistent=null; try{estimate=await navigator.storage?.estimate?.()||null;}catch{} try{persistent=await navigator.storage?.persisted?.()??null;}catch{}
+    let swInfo=null; try{const reg=await navigator.serviceWorker?.getRegistration?.();swInfo=reg?{scope:reg.scope,active:!!reg.active,waiting:!!reg.waiting,installing:!!reg.installing}:null;}catch{}
+    const ss=snapshotCoverageStats(),migration=migrationStatusMeta();
     const payload={
-      format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, exportedAt:new Date().toISOString(),
-      environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null},
-      database:{schemaVersion:IDB_VERSION,lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:loadSnapshots().length,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null},
+      format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, updateProtocolVersion:UPDATE_PROTOCOL_VERSION, exportedAt:new Date().toISOString(),
+      environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth},
+      database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
+      migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,completedAt:migration.last.completedAt}:null},
+      integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code)}:null,
       recoveryMode:recoveryMode?String(recoveryMode.reason||recoveryMode):null,
+      performance:loadPerformanceMeta(),
       recentErrorCodes:diagnosticErrors.slice(-20)
     };
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`fasting-tracker-diagnostics-${dayKey(new Date())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
@@ -5664,12 +6146,9 @@ layout: null
     hideModal('snapshotModal');
   }
 
-  async function restoreSnapshot(snapshotId) {
+  async function performSnapshotRestore(snapshotId) {
     const selected = loadSnapshots().find(s => s.id === snapshotId);
     if (!selected) { alert(t('backup.snapshotUnavailable')); return; }
-    const when = validDate(selected.createdAt);
-    const label = when ? localDateTimeLabel(when) : 'the selected time';
-    if (!confirm(t('backup.snapshotRestoreConfirm', {date:label}))) return;
     try {
       const payload = await loadSnapshotPayload(snapshotId);
       if (!payload) { alert(t('backup.snapshotUnavailable')); return; }
@@ -5678,11 +6157,8 @@ layout: null
         const safety = await createInternalSnapshotAsync('before restoring another snapshot');
         if (!safety) { alert(t('backup.snapshotFailed')); return; }
       }
-      if (!persistResolvedData(restored)) return;
-      await flushPrimaryPersistence();
-      closeSnapshotModal();
-      renderAll();
-      alert(t('backup.snapshotRestored'));
+      if (!await persistResolvedDataAtomic(restored)) return;
+      pendingSnapshotRestoreId=null; hideModal('snapshotPreviewModal'); closeSnapshotModal(); renderAll(); alert(t('backup.snapshotRestored'));
     } catch { alert(t('backup.snapshotUnavailable')); }
   }
 
@@ -5695,35 +6171,65 @@ layout: null
     if (m) return t('backup.reason.update', {from:m[1], to:m[2]});
     if (text === 'before importing an external backup') return t('backup.reason.import');
     if (text === 'automatic change') return t('backup.autoReason');
+    if (text === 'manual recovery point') return t('backup.manualReason');
     return text || '—';
+  }
+
+  async function snapshotPayloadSummary(snapshot) {
+    let payload=null; try{payload=await loadSnapshotPayload(snapshot.id);}catch{}
+    if(!payload)return null;
+    const summary={fasts:(payload.records||[]).length,deletedFasts:(payload.deletedFasts||[]).length,weights:(payload.weights||[]).length,deletedWeights:(payload.deletedWeights||[]).length,active:payload.activeStart?1:0};
+    if(!snapshot.payloadEncoding||!snapshot.originalBytes){Object.assign(snapshot,{fastingRecords:summary.fasts,deletedFasts:summary.deletedFasts,weightRecords:summary.weights,deletedWeights:summary.deletedWeights,activeFasts:summary.active});try{await idbPut('snapshotMeta',snapshot);}catch{}}
+    return summary;
+  }
+
+  function objectMapById(items){return new Map((Array.isArray(items)?items:[]).map(x=>[x.id,x]));}
+  function diffById(current,target){const a=objectMapById(current),b=objectMapById(target);let added=0,removed=0,changed=0;for(const [id,v] of b){if(!a.has(id))added++;else if(stableStringify(a.get(id))!==stableStringify(v))changed++;}for(const id of a.keys())if(!b.has(id))removed++;return {added,removed,changed};}
+  function snapshotRestoreDiff(payload){const fast=diffById(data.records,payload.records),weights=diffById(data.weights,payload.weights),deletedFasts=diffById(data.deletedFasts,payload.deletedFasts),deletedWeights=diffById(data.deletedWeights,payload.deletedWeights);const ignored=new Set(['records','deletedFasts','weights','deletedWeights','revision','updatedAt']);const keys=new Set([...Object.keys(data),...Object.keys(payload)]);let settingsChanged=0;for(const k of keys)if(!ignored.has(k)&&stableStringify(data[k])!==stableStringify(payload[k]))settingsChanged++;return {fast,weights,deletedFasts,deletedWeights,settingsChanged};}
+
+  async function openSnapshotPreview(snapshotId) {
+    const snapshot=loadSnapshots().find(s=>s.id===snapshotId); if(!snapshot){alert(t('backup.snapshotUnavailable'));return;}
+    const summary=await snapshotPayloadSummary(snapshot); if(!summary){alert(t('backup.snapshotUnavailable'));return;}
+    const payload=await loadSnapshotPayload(snapshot.id);if(!payload){alert(t('backup.snapshotUnavailable'));return;}const diff=snapshotRestoreDiff(payload);
+    pendingSnapshotRestoreId=snapshotId;
+    el('snapshotPreviewDate').textContent=t('backup.previewDate',{date:localDateTimeLabel(snapshot.createdAt),version:snapshot.sourceAppVersion||'—'});
+    el('snapshotPreviewReason').textContent=t('backup.previewReason',{reason:snapshotReasonLabel(snapshot.reason)});
+    el('snapshotPreviewLabel').textContent=snapshot.label?t('backup.previewLabel',{label:snapshot.label}):t('backup.previewNoLabel');
+    el('snapshotPreviewCounts').textContent=t('backup.previewCounts',{fasts:summary.fasts,deletedFasts:summary.deletedFasts,weights:summary.weights,deletedWeights:summary.deletedWeights,active:summary.active});
+    el('snapshotPreviewSize').textContent=t('backup.previewSize',{size:humanBytes(snapshot.storedBytes||0)});
+    el('snapshotPreviewComparison').textContent=t('backup.previewComparison',{fastAdd:diff.fast.added,fastRemove:diff.fast.removed,fastChange:diff.fast.changed,weightAdd:diff.weights.added,weightRemove:diff.weights.removed,weightChange:diff.weights.changed,deletedFastChange:diff.deletedFasts.added+diff.deletedFasts.removed+diff.deletedFasts.changed,deletedWeightChange:diff.deletedWeights.added+diff.deletedWeights.removed+diff.deletedWeights.changed,settings:diff.settingsChanged});
+    showModal('snapshotPreviewModal','snapshotPreviewCancelBtn');
+  }
+
+  function renderSnapshotModalSummary() {
+    const box=el('snapshotModalSummary'); if(!box)return; box.replaceChildren(); const st=snapshotCoverageStats();
+    const rows=st.count?[
+      t('backup.modalNewest',{date:localDateTimeLabel(st.newest)}),t('backup.modalOldest',{date:localDateTimeLabel(st.oldest)}),
+      t('backup.modalCoverage',{recent:st.recent,daily:st.daily,weekly:st.weekly,monthly:st.monthly}),t('backup.modalStorage',{size:humanBytes(st.storedBytes)})
+    ]:[t('backup.snapshotEmpty')];
+    for(const text of rows){const d=document.createElement('div');d.className='small';d.textContent=text;box.append(d);}
   }
 
   function openSnapshotModal() {
     const box = el('snapshotList');
     const snapshots = loadSnapshots();
-    box.innerHTML = '';
+    box.innerHTML = ''; renderSnapshotModalSummary();
     if (!snapshots.length) {
       box.innerHTML = `<div class="historyEmpty">${t('backup.snapshotEmpty')}</div>`;
     } else {
       snapshots.forEach(snapshot => {
-        const row = document.createElement('div');
-        row.className = 'snapshotItem';
+        const row = document.createElement('div'); row.className = 'snapshotItem';
         const info = document.createElement('div');
         const when = validDate(snapshot.createdAt);
-        const title = document.createElement('strong');
-        title.textContent = when ? localDateTimeLabel(when) : t('backup.snapshotTitle');
-        const detail = document.createElement('div');
-        detail.className = 'small';
-        const tierKeys = snapshotTierKeys(snapshot, snapshots);
-        const tierText = tierKeys.map(key => t(key)).join(' / ');
+        const title = document.createElement('strong'); title.textContent = when ? localDateTimeLabel(when) : t('backup.snapshotTitle');
+        if(snapshot.label){const label=document.createElement('div');label.className='snapshotLabel';label.textContent=snapshot.label;info.append(label);}
+        const detail = document.createElement('div'); detail.className = 'small';
+        const tierKeys = snapshotTierKeys(snapshot, snapshots), tierText = tierKeys.map(key => t(key)).join(' / ');
         detail.textContent = t('backup.snapshotFrom', {version:snapshot.sourceAppVersion || '—', reason:snapshotReasonLabel(snapshot.reason)}) + (tierText ? ` • ${t('backup.tiers', {tiers:tierText})}` : '');
-        info.append(title, detail);
-        const btn = document.createElement('button');
-        btn.className = 'secondary';
-        btn.textContent = t('common.restore');
-        btn.addEventListener('click', () => restoreSnapshot(snapshot.id));
-        row.append(info, btn);
-        box.appendChild(row);
+        const counts=document.createElement('div');counts.className='small';counts.textContent=t('backup.snapshotCountsShort',{fasts:snapshot.fastingRecords||0,weights:snapshot.weightRecords||0,size:humanBytes(snapshot.storedBytes||0)});
+        info.append(title, detail, counts);
+        const btn = document.createElement('button'); btn.className = 'secondary'; btn.textContent = t('backup.previewAction'); btn.addEventListener('click', () => openSnapshotPreview(snapshot.id));
+        row.append(info, btn); box.appendChild(row);
       });
     }
     showModal('snapshotModal', 'snapshotCloseBtn');
@@ -5818,15 +6324,17 @@ layout: null
 
   async function installUpdate() {
     if (updateInProgress) return;
-    if (!await createInternalSnapshotAsync(`before updating from v${APP_VERSION} to v${latestVersion}`)) {
-      alert(t('backup.snapshotFailed')); return;
-    }
+    if (!(await allowStorageIntensiveOperation())) return;
+    const preUpdateSnapshot = await createInternalSnapshotAsync(`before updating from v${APP_VERSION} to v${latestVersion}`);
+    if (!preUpdateSnapshot) { alert(t('backup.snapshotFailed')); return; }
+    beginPendingMigration(APP_VERSION, latestVersion, preUpdateSnapshot.id);
     updateInProgress = true; setUpdateUI('updating');
     try {
       if (navigator.onLine === false) throw new Error('offline');
       await requestShellRefresh(latestVersion);
       window.location.reload();
     } catch {
+      failPendingMigration(latestVersion, 'update-stage-failed');
       updateInProgress = false; setUpdateUI('offline', t('update.failedInstall'));
     }
   }
@@ -6058,7 +6566,7 @@ layout: null
     document.querySelectorAll('.tab').forEach(tab => {
       const active = tab.dataset.screen === target;
       tab.classList.toggle('active', active);
-      if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current');
+      tab.setAttribute('aria-selected',String(active)); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current');
     });
     document.querySelectorAll('.screen').forEach(node => node.classList.toggle('active', node.id === target));
     if (updateHash) {
@@ -6075,7 +6583,15 @@ layout: null
     });
   }
 
+  function installArrowKeyNavigation(container, selector, activate) {
+    const node=typeof container==='string'?document.querySelector(container):container;if(!node)return;
+    node.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key))return;const items=[...node.querySelectorAll(selector)].filter(x=>!x.disabled&&!x.hidden);if(!items.length)return;let i=Math.max(0,items.indexOf(document.activeElement));if(e.key==='Home')i=0;else if(e.key==='End')i=items.length-1;else if(e.key==='ArrowRight'||e.key==='ArrowDown')i=(i+1)%items.length;else i=(i-1+items.length)%items.length;e.preventDefault();items[i].focus();if(activate)activate(items[i]);});
+  }
+
   document.querySelectorAll('.tab').forEach(tab => bindResponsiveAction(tab, () => activateScreen(tab.dataset.screen)));
+  installArrowKeyNavigation(document.querySelector('.tabs'),'.tab',item=>activateScreen(item.dataset.screen));
+  installArrowKeyNavigation(el('weightPeriodSwitcher'),'[data-weight-period]',item=>setWeightPeriodMode(item.dataset.weightPeriod));
+  installArrowKeyNavigation(el('statsVizSwitcher'),'[data-viz]',item=>{if(item.dataset.viz)setStatsVizMode(item.dataset.viz);});
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
@@ -6105,10 +6621,30 @@ layout: null
   document.querySelectorAll('.backdatePreset').forEach(btn => btn.addEventListener('click', () => setBackdatePreset(btn.dataset.hours)));
 
   el('addEntryBtn').addEventListener('click', () => openEntryModal());
+  for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax','historyFilterTarget','historyFilterEdited','historyIncludeDeleted'])el(id)?.addEventListener('change',()=>{historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;selectedFastIds.clear();selectedDeletedFastIds.clear();renderHistory();});
+  el('historyClearFiltersBtn')?.addEventListener('click',clearHistoryFilters);
+  el('historyBulkModeBtn')?.addEventListener('click',()=>{historyBulkMode=!historyBulkMode;if(!historyBulkMode){selectedFastIds.clear();selectedDeletedFastIds.clear();}renderHistory();});
+  el('historySelectVisibleBtn')?.addEventListener('click',()=>{sortedRecordsDesc().filter(r=>fastPassesHistoryFilter(r)).slice(0,historyVisibleCount).forEach(r=>selectedFastIds.add(r.id));renderHistory();});
+  el('historyBulkExportBtn')?.addEventListener('click',()=>exportFastRecordsCsv(data.records.filter(r=>selectedFastIds.has(r.id))));
+  el('historyBulkDeleteBtn')?.addEventListener('click',()=>bulkDeleteFasts());
+  el('deletedFastSelectVisibleBtn')?.addEventListener('click',()=>{data.deletedFasts.filter(r=>fastPassesHistoryFilter(r)).slice(0,deletedHistoryVisibleCount).forEach(r=>selectedDeletedFastIds.add(r.id));renderHistory();});
+  el('deletedFastBulkExportBtn')?.addEventListener('click',()=>exportFastRecordsCsv(data.deletedFasts.filter(r=>selectedDeletedFastIds.has(r.id)),'fasting-deleted-selected'));
+  el('deletedFastBulkRestoreBtn')?.addEventListener('click',()=>bulkRestoreDeletedFasts());
+  el('deletedFastBulkPurgeBtn')?.addEventListener('click',()=>bulkPurgeDeletedFasts());
   el('entryCancelBtn').addEventListener('click', closeEntryModal);
   el('entrySaveBtn').addEventListener('click', saveManualEntry);
   el('entryModal').addEventListener('click', e => { if (e.target === el('entryModal')) closeEntryModal(); });
   bindResponsiveAction(el('addWeightBtn'), () => openWeightModal());
+  for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightVisibleCount=HISTORY_PAGE_SIZE;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
+  el('weightClearFiltersBtn')?.addEventListener('click',clearWeightFilters);
+  el('weightBulkModeBtn')?.addEventListener('click',()=>{weightBulkMode=!weightBulkMode;if(!weightBulkMode){selectedWeightIds.clear();selectedDeletedWeightIds.clear();}renderWeight();});
+  el('weightSelectVisibleBtn')?.addEventListener('click',()=>{sortedWeightsAsc().slice().reverse().filter(w=>weightPassesFilter(w)).slice(0,weightVisibleCount).forEach(w=>selectedWeightIds.add(w.id));renderWeight();});
+  el('weightBulkExportBtn')?.addEventListener('click',()=>exportWeightRecordsCsv(data.weights.filter(w=>selectedWeightIds.has(w.id))));
+  el('weightBulkDeleteBtn')?.addEventListener('click',()=>bulkDeleteWeights());
+  el('deletedWeightSelectVisibleBtn')?.addEventListener('click',()=>{data.deletedWeights.filter(w=>weightPassesFilter(w)).slice(0,HISTORY_PAGE_SIZE).forEach(w=>selectedDeletedWeightIds.add(w.id));renderWeight();});
+  el('deletedWeightBulkExportBtn')?.addEventListener('click',()=>exportWeightRecordsCsv(data.deletedWeights.filter(w=>selectedDeletedWeightIds.has(w.id)),'weight-deleted-selected'));
+  el('deletedWeightBulkRestoreBtn')?.addEventListener('click',()=>bulkRestoreDeletedWeights());
+  el('deletedWeightBulkPurgeBtn')?.addEventListener('click',()=>bulkPurgeDeletedWeights());
   el('weightCancelBtn').addEventListener('click', closeWeightModal);
   bindResponsiveAction(el('weightSaveBtn'), saveWeightEntry);
   el('weightModal').addEventListener('click', e => { if (e.target === el('weightModal')) closeWeightModal(); });
@@ -6126,6 +6662,10 @@ layout: null
       else if (modal.id === 'weightModal') closeWeightModal();
       else if (modal.id === 'updateModal') closeUpdateModal();
       else if (modal.id === 'snapshotModal') closeSnapshotModal();
+      else if (modal.id === 'snapshotPreviewModal') { pendingSnapshotRestoreId=null; hideModal('snapshotPreviewModal'); }
+      else if (modal.id === 'manualSnapshotModal') hideModal('manualSnapshotModal');
+      else if (modal.id === 'integrityModal') hideModal('integrityModal');
+      else if (modal.id === 'editAuditModal') hideModal('editAuditModal');
       else if (modal.id === 'importPreviewModal') el('importPreviewCancelBtn').click();
       else if (modal.id === 'stopFastModal') closeStopFastModal();
       else if (modal.id === 'setupModal') dismissSetupGuide();
@@ -6159,6 +6699,7 @@ layout: null
   el('recoveryResetBtn').addEventListener('click', resetFromRecovery);
 
   el('exportBtn').addEventListener('click', exportBackup);
+  el('exportEverythingBtn').addEventListener('click', exportEverything);
   el('backupReminderBtn').addEventListener('click', exportBackup);
   el('settingsBackupNowBtn').addEventListener('click', exportBackup);
 
@@ -6184,10 +6725,12 @@ layout: null
     if(!result.activeStart&&imported.activeStart){result.activeStart=imported.activeStart;result.activeGoalHours=imported.activeGoalHours;result.activeTimeZone=imported.activeTimeZone;result.activeCreatedAt=imported.activeCreatedAt;result.activeModifiedAt=imported.activeModifiedAt;}
     return {data:validateCompatibleData(result).data, duplicates:live.duplicates+del.duplicates+weights.duplicates+delWeights.duplicates};
   }
-  function showImportPreview(raw, imported){
+  function showImportPreview(raw, imported, verification={verified:false,legacy:false}){
     return new Promise(resolve=>{
-      const range=backupDateRange(imported); el('importPreviewMeta').textContent=t('import.previewMeta',{version:raw.appVersion,date:localDateTimeLabel(raw.exportedAt)});
-      el('importPreviewCounts').textContent=t('import.previewCounts',{fasts:imported.records.length,deletedFasts:imported.deletedFasts.length,weights:imported.weights.length,deletedWeights:imported.deletedWeights.length});
+      const range=backupDateRange(imported);
+      const verifiedText = verification.verified ? t('import.checksumVerified',{algorithm:verification.algorithm}) : t('import.legacyUnverified');
+      el('importPreviewMeta').textContent=t('import.previewMetaVerified',{version:raw.appVersion,date:localDateTimeLabel(raw.exportedAt),status:verifiedText});
+      el('importPreviewCounts').textContent=t('import.previewCountsExtended',{fasts:imported.records.length,deletedFasts:imported.deletedFasts.length,weights:imported.weights.length,deletedWeights:imported.deletedWeights.length,snapshots:Number(raw?.manifest?.recoverySnapshotsOnDevice)||0});
       el('importPreviewRange').textContent=range?t('import.previewRange',{from:localDateLabel(range[0]),to:localDateLabel(range[1])}):t('import.previewEmpty'); el('importPreviewError').hidden=true;
       const finish=v=>{hideModal('importPreviewModal');resolve(v);};
       const c=el('importPreviewCancelBtn'),r=el('importPreviewReplaceBtn'),m=el('importPreviewMergeBtn');
@@ -6200,16 +6743,18 @@ layout: null
     const f = e.target.files?.[0];
     if (!f) return;
     try {
+      if (!(await allowStorageIntensiveOperation())) { e.target.value=''; return; }
       if (f.size > MAX_IMPORT_BYTES) throw new Error('backup file too large');
       const raw = JSON.parse(await f.text());
-      if (!raw || typeof raw !== 'object' || raw.format !== BACKUP_FORMAT || raw.backupVersion !== BACKUP_VERSION || !raw.data) {
+      if (!raw || typeof raw !== 'object' || raw.format !== BACKUP_FORMAT || !Number.isInteger(Number(raw.backupVersion)) || Number(raw.backupVersion) < BACKUP_MIN_VERSION || Number(raw.backupVersion) > BACKUP_VERSION || !raw.data) {
         throw new Error('invalid backup format');
       }
       if (typeof raw.appVersion !== 'string' || !/^\d+\.\d+\.\d+$/.test(raw.appVersion) || !validDate(raw.exportedAt)) {
         throw new Error('invalid backup metadata');
       }
+      const verification = await verifyBackupEnvelope(raw);
       const imported = validateCompatibleData(raw.data).data;
-      const choice = await showImportPreview(raw, imported);
+      const choice = await showImportPreview(raw, imported, verification);
       if (choice === 'cancel') { e.target.value=''; return; }
       let resolved = imported;
       if (choice === 'merge') {
@@ -6219,8 +6764,7 @@ layout: null
       if (!recoveryMode) {
         if (!await createInternalSnapshotAsync('before importing an external backup')) { alert(t('backup.snapshotFailed')); e.target.value = ''; return; }
       }
-      if (!persistResolvedData(resolved)) { e.target.value = ''; return; }
-      await flushPrimaryPersistence();
+      if (!await persistResolvedDataAtomic(resolved)) { e.target.value = ''; return; }
       renderAll();
       if (!el('setupModal')?.hidden) renderSetupGuide();
       alert(t('import.done'));
@@ -6238,10 +6782,11 @@ layout: null
       data.revision = 1; data.updatedAt = new Date().toISOString();
       await persistPrimaryNow(data);
       snapshotCache = [];
-      await Promise.all([idbClear('snapshotMeta'), idbClear('snapshotPayload'), idbClear('records'), idbClear('deletedFasts'), idbClear('weights'), idbClear('deletedWeights')]);
+      await idbClearStoresAtomic(['snapshotMeta','snapshotPayload','records','deletedFasts','weights','deletedWeights']);
       try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); localStorage.removeItem(NOTIFICATION_STATE_KEY); } catch {}
       notificationRuntimeState = {};
-      backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null, snapshotProtectionStatus: 'ok', snapshotProtectionAt: null, snapshotStoredCount: 0, snapshotDesiredCount: 0 };
+      backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null, lastExternalBackupRevision:0, lastExternalBackupDataUpdatedAt:null, snapshotProtectionStatus: 'ok', snapshotProtectionAt: null, snapshotStoredCount: 0, snapshotDesiredCount: 0 };
+      try{localStorage.removeItem(PERF_META_KEY);}catch{}
       snapshotProtectionState = { status: 'ok', kept: 0, desired: 0 };
       automaticSnapshotFailureAlerted = false;
       saveBackupMeta();
@@ -6283,9 +6828,26 @@ layout: null
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
-  el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();});
-  el('statsChartDataBtn').addEventListener('click',()=>{const box=el('statsChartData'),btn=el('statsChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderStatsChartData();});
+  el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
+  el('weightChart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
+  el('statsChartDataBtn').addEventListener('click',()=>{const box=el('statsChartData'),btn=el('statsChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderStatsChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
+  el('chart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('diagnosticExportBtn').addEventListener('click',exportDiagnostics);
+  el('integrityCheckBtn').addEventListener('click',runDataIntegrityCheck);
+  el('integrityCloseBtn').addEventListener('click',()=>hideModal('integrityModal'));
+  el('createSnapshotBtn').addEventListener('click',openManualSnapshotModal);
+  el('snapshotCreateNowBtn').addEventListener('click',openManualSnapshotModal);
+  el('manualSnapshotCancelBtn').addEventListener('click',()=>hideModal('manualSnapshotModal'));
+  el('manualSnapshotSaveBtn').addEventListener('click',saveManualSnapshotFromModal);
+  el('manualSnapshotModal').addEventListener('click',e=>{if(e.target===el('manualSnapshotModal'))hideModal('manualSnapshotModal');});
+  el('repairCacheBtn').addEventListener('click',repairAppCache);
+  el('performanceTestBtn').addEventListener('click',runLocalBenchmark);
+  el('snapshotPreviewCancelBtn').addEventListener('click',()=>{pendingSnapshotRestoreId=null;hideModal('snapshotPreviewModal');});
+  el('snapshotPreviewRestoreBtn').addEventListener('click',()=>{if(pendingSnapshotRestoreId)performSnapshotRestore(pendingSnapshotRestoreId);});
+  el('editAuditCloseBtn').addEventListener('click',()=>hideModal('editAuditModal'));
+  el('exportFastCsvBtn').addEventListener('click',exportFastingCsv);
+  el('exportWeightCsvBtn').addEventListener('click',exportWeightCsv);
+  el('undoToastBtn').addEventListener('click',()=>{const action=undoToastAction;clearUndoToast();try{action?.();}catch{}});
   el('weightChartScroller').addEventListener('scroll', handleWeightChartScroll, {passive:true});
   window.addEventListener('resize', () => { markViewsDirty('stats','weight'); if (el('stats').classList.contains('active')) renderScreen('stats'); if (el('weight').classList.contains('active')) renderScreen('weight'); });
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
@@ -6307,7 +6869,7 @@ layout: null
       renderBackupStatus(); renderSnapshotStatus(); renderGamificationSummary(); if (el('stats').classList.contains('active') || el('settings').classList.contains('active')) renderGamificationDetail();
     }
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderScreen(activeScreenId()); checkFastNotifications(); checkMaintenanceNotifications(); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderNotificationSettings(); renderScreen(activeScreenId()); if(activeScreenId()==='settings')renderStorageHealth(); checkFastNotifications(); checkMaintenanceNotifications(); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('pagehide', () => { flushPrimaryPersistence(); });
 
   el('installStorageDismiss').addEventListener('click', () => { try { localStorage.setItem(INSTALL_NOTICE_KEY, '1'); } catch {} renderInstallStorageNotice(); });
