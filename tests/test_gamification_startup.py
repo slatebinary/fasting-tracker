@@ -14,9 +14,9 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.0',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.1',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(), wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.0'", timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.1'", timeout=20000)
     page.wait_for_function("document.querySelector('#gSummaryXP')?.textContent.includes('XP') && document.querySelector('#gSummaryXP')?.textContent !== '—'", timeout=20000)
     if errors:
         print('FAIL: startup browser errors: '+' | '.join(errors[:3])); sys.exit(1)

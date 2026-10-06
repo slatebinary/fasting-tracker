@@ -26,3 +26,8 @@ Run on at least one iPhone/iPad Home Screen installation and one desktop/mobile 
 - Verify no keyboard trap exists in dialogs.
 
 Record device/iOS/browser versions and any failure before publishing the release.
+
+6. Extreme text-size stress test
+- Repeat Settings, History, Statistics, update dialogs and recovery dialogs at approximately 200% and 300% text/zoom equivalents.
+- Confirm controls wrap vertically rather than becoming horizontally clipped.
+- Confirm the chart-range selector, Edit-history Restore button, drill-down modal and deployment history remain usable.

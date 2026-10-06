@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.11.0" />
+  <meta name="ft-app-version" content="1.11.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -308,6 +308,16 @@ layout: null
     .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; }
     .chartDataList { margin-top:10px; border-top:1px solid var(--line); padding-top:8px; }
     .chartDataList ul { margin:6px 0 0; padding-left:20px; }
+    .statsRangeBar { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin:-4px 0 14px; }
+    .statsRangeBar label { display:grid; gap:5px; min-width:160px; }
+    .statsRangeBar select { min-height:44px; max-width:100%; }
+    .statsRangeSummary { flex:1 1 200px; padding-bottom:9px; }
+    .monthlyComparison { margin-top:8px; }
+    .drilldownList { max-height:min(55vh,460px); overflow:auto; margin-top:10px; }
+    .drilldownList .row { align-items:flex-start; }
+    .modalCard, .card, .row, button, select, input { overflow-wrap:anywhere; }
+    .srOnly { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
+    @media (max-width:520px) { .statsRangeBar { align-items:stretch; } .statsRangeBar label, .statsRangeSummary { flex:1 1 100%; } }
     .weightChartTrack { position:relative; min-width:100%; height:240px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
     .weightPeriodSwitcher { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:4px 2px 8px; margin:2px -2px 10px; touch-action:pan-x; }
@@ -352,7 +362,7 @@ layout: null
     .backdateConflictList { display: grid; gap: 5px; margin: 8px 0; }
     .backdateConflictActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .backdateConflictActions button { min-width: 0; white-space: normal; overflow-wrap: normal; word-break: normal; }
-    .modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+    .modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; position:sticky; bottom:-1px; z-index:2; background:var(--card); padding:10px 0 max(2px, env(safe-area-inset-bottom)); }
     .modalActions .primary { width: auto; font-size: inherit; }
     .shareOptions { display:grid; gap:8px; margin:14px 0; }
     .shareOption { display:flex; align-items:flex-start; gap:10px; padding:10px 11px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
@@ -675,7 +685,20 @@ layout: null
         <button type="button" data-viz="distribution" role="tab" aria-selected="false" data-i18n="stats.vizDistribution">Durations</button>
         <button type="button" data-viz="success" role="tab" aria-selected="false" data-i18n="stats.vizSuccess">Target success</button>
         <button type="button" data-viz="startpattern" role="tab" aria-selected="false" data-i18n="stats.vizStartPattern">Start times</button>
+        <button type="button" data-viz="cumulative" role="tab" aria-selected="false" data-i18n="stats.vizCumulative">Cumulative</button>
       </div>
+      <div class="statsRangeBar" id="statsRangeBar" hidden>
+        <label><span class="small" data-i18n="stats.rangeLabel">Chart range</span><select id="statsRangeSelect">
+          <option value="7d" data-i18n="stats.range7d">7 days</option>
+          <option value="30d" data-i18n="stats.range30d">30 days</option>
+          <option value="90d" data-i18n="stats.range90d">90 days</option>
+          <option value="6m" data-i18n="stats.range6m">6 months</option>
+          <option value="1y" data-i18n="stats.range1y">1 year</option>
+          <option value="all" data-i18n="stats.rangeAll">All</option>
+        </select></label>
+        <div class="small statsRangeSummary" id="statsRangeSummary"></div>
+      </div>
+      <div id="statsSelectionLive" class="srOnly" role="status" aria-live="polite" aria-atomic="true"></div>
       <div class="statsVizView" id="statsTimelineView">
         <div class="timelineShell">
           <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
@@ -702,7 +725,8 @@ layout: null
         <canvas id="fastWeeksChart" width="660" height="260" role="img" tabindex="0" aria-label="Weekly fasting hours for the last 8 weeks" data-i18n-aria="a11y.fastWeeksChart"></canvas>
       </div>
       <div class="statsVizView" id="statsMonthsView" hidden>
-        <canvas id="fastMonthsChart" width="660" height="260" role="img" tabindex="0" aria-label="Monthly fasting hours for the last 12 months" data-i18n-aria="a11y.fastMonthsChart"></canvas>
+        <canvas id="fastMonthsChart" width="660" height="260" role="img" tabindex="0" aria-label="Monthly fasting hours" data-i18n-aria="a11y.fastMonthsChart"></canvas>
+        <div class="small monthlyComparison" id="fastMonthsComparison"></div>
       </div>
       <div class="statsVizView" id="statsDistributionView" hidden>
         <canvas id="fastDistributionChart" width="660" height="260" role="img" tabindex="0" aria-label="Distribution of completed fasting durations" data-i18n-aria="a11y.fastDistributionChart"></canvas>
@@ -713,13 +737,17 @@ layout: null
       <div class="statsVizView" id="statsStartPatternView" hidden>
         <canvas id="fastStartPatternChart" width="660" height="260" role="img" tabindex="0" aria-label="Fasting start-time pattern" data-i18n-aria="a11y.fastStartPatternChart"></canvas>
       </div>
+      <div class="statsVizView" id="statsCumulativeView" hidden>
+        <canvas id="fastCumulativeChart" width="660" height="260" role="img" tabindex="0" aria-label="Cumulative fasting hours" data-i18n-aria="a11y.fastCumulativeChart"></canvas>
+      </div>
       <div class="notice" id="chartDetailBox" style="margin-top:10px;padding:12px 14px">
         <strong id="chartDetailTitle" data-i18n="stats.chartDetailDefaultTitle">Chart details</strong>
         <div class="small" id="chartDetailText" data-i18n="stats.chartDetailDefaultText" style="margin-top:6px">Tap a date, segment, point or week for details.</div>
+        <button id="statsDrilldownBtn" class="secondary" type="button" hidden style="margin-top:8px" data-i18n="stats.viewRecords">View records</button>
       </div>
       <div class="small" id="statsVizHelp" data-i18n="stats.timelineHelp">Timeline shows each day's 24 hours vertically: colored sections are fasting and gaps are eating/non-fasting time.</div>
       <button id="statsChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
-      <div id="statsChartData" class="chartDataList small" hidden></div>
+      <div id="statsChartData" class="chartDataList small" tabindex="0" hidden></div>
     </div>
     <div class="card gamificationDetail" id="gamificationDetail" style="margin-top:14px">
       <div class="sectionHeader"><h2 data-i18n="game.progress">Progress &amp; achievements</h2><span class="levelPill" id="gDetailLevel">Level 1</span></div>
@@ -772,6 +800,8 @@ layout: null
       <div class="small" id="healthServiceWorker"></div>
       <div class="small" id="healthDeploymentStatus"></div>
       <div class="small" id="healthDeploymentVersions"></div>
+      <div class="small" id="healthLastKnownGood"></div>
+      <div class="dataLocationRow" id="deploymentHistoryBlock"><strong data-i18n="deployment.historyTitle">Recent update history</strong><div class="small" id="deploymentHistoryList"></div></div>
       <div class="small" id="healthDeletedStorage"></div>
       <div class="small" id="healthPerformance"></div>
       <div class="small storagePressure" id="storagePressureWarning" role="status" aria-live="polite"></div>
@@ -781,6 +811,7 @@ layout: null
         <button id="repairCacheBtn" class="secondary" type="button" data-i18n="cache.repair">Repair app cache</button>
         <button id="performanceTestBtn" class="secondary" type="button" data-i18n="performance.run">Run local benchmark</button>
         <button id="deviceChecksBtn" class="secondary" type="button" data-i18n="deviceChecks.run">Run device checks</button>
+        <button id="rebuildDerivedBtn" class="secondary" type="button" data-i18n="derived.rebuild">Recalculate statistics & charts</button>
         <button id="emptyDeletedBtn" class="dangerText" type="button" data-i18n="deleted.empty">Empty Recently Deleted</button>
       </div>
     </div>
@@ -1264,6 +1295,15 @@ layout: null
   </div>
 </div>
 
+<div class="modalBackdrop" id="statsDrilldownModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="statsDrilldownTitle">
+    <h2 id="statsDrilldownTitle" data-i18n="stats.drilldownTitle">Records in this chart value</h2>
+    <div class="small" id="statsDrilldownSummary"></div>
+    <div id="statsDrilldownList" class="drilldownList"></div>
+    <div class="modalActions"><button id="statsDrilldownCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+  </div>
+</div>
+
 <div class="modalBackdrop" id="longFastModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="longFastModalTitle">
     <h2 id="longFastModalTitle" data-i18n="safety.longFastTitle">Extended fasting target</h2>
@@ -1332,6 +1372,7 @@ layout: null
 <script src="i18n/es.js"></script>
 <script src="js/release-health.js"></script>
 <script src="js/fasting-visuals.js"></script>
+<script src="js/fasting-analytics.js"></script>
 <script src="js/platform-diagnostics.js"></script>
 <script>
 (async () => {
@@ -1356,14 +1397,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1;
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 23;
+  const I18N_SOURCE_REVISION = 24;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.11.0';
+  const APP_VERSION = '1.11.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1377,6 +1418,8 @@ layout: null
   const UNDO_WINDOW_MS = 7000;
   const PERF_META_KEY = 'fastingTracker.performance';
   const UPDATE_STATUS_META_KEY = 'fastingTracker.updateStatus';
+  const CHART_RANGE_KEY = 'fastingTracker.chartRanges';
+  const DEFAULT_CHART_RANGES=Object.freeze({trend:'30d',months:'1y',distribution:'all',success:'1y',startpattern:'all',cumulative:'90d'});
   const LONG_FAST_NOTICE_HOURS = 72;
   const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
   const MAX_IMPORT_FASTS = 100000;
@@ -1435,8 +1478,12 @@ layout: null
   let lastIntegrityCheck = null;
   let lastServiceWorkerHealth = null;
   let liveMetadataVersion = null, liveEntryVersion = null, deploymentConsistencyState = 'unknown', lastUpdateCheckAt = null;
-  let monthSummariesCache = null, durationDistributionCache = null, targetSuccessCache = null, startPatternCache = null;
+  let monthSummariesCache = null, durationDistributionCache = null, targetSuccessCache = null, startPatternCache = null, cumulativeDaysCache = null;
   let genericChartHitLayout = [];
+  let cumulativeInteractiveLayout = [];
+  let cumulativeSelectedDayKey = null;
+  let statsDrilldownRecordIds = [];
+  let chartRanges = loadChartRanges();
   let historyBulkMode = false, weightBulkMode = false;
   const selectedFastIds = new Set(), selectedDeletedFastIds = new Set(), selectedWeightIds = new Set(), selectedDeletedWeightIds = new Set();
   let undoToastTimer = 0, undoToastAction = null;
@@ -2524,6 +2571,17 @@ layout: null
 
   function writeAppMeta(meta) { try { localStorage.setItem(APP_META_KEY, JSON.stringify(meta || {})); } catch {} }
 
+  function appendDeploymentHistory(type, detail = {}) {
+    const meta=readAppMeta(), history=Array.isArray(meta.deploymentHistory)?meta.deploymentHistory:[],event={type:String(type||'event').slice(0,40),version:String(detail.version||APP_VERSION).slice(0,30),at:new Date().toISOString(),detail:String(detail.detail||'').slice(0,100)},last=history.at(-1),lastAt=validDate(last?.at)?.getTime()||0;
+    if(last&&last.type===event.type&&last.version===event.version&&last.detail===event.detail&&Date.now()-lastAt<5*60*1000)return;
+    history.push(event);meta.deploymentHistory=history.slice(-8); writeAppMeta(meta);
+  }
+  function markLastKnownGood(reason='startup') {
+    const meta=readAppMeta(); meta.lastKnownGood={version:APP_VERSION,at:new Date().toISOString(),revision:Number(data?.revision)||0,reason:String(reason||'startup').slice(0,40)}; writeAppMeta(meta);
+  }
+  function lastKnownGoodMeta(){return readAppMeta().lastKnownGood||null;}
+  function deploymentHistoryMeta(){const h=readAppMeta().deploymentHistory;return Array.isArray(h)?h.slice(-8):[];}
+
   function beginPendingMigration(fromVersion, toVersion, snapshotId) {
     const meta = readAppMeta();
     meta.pendingMigration = {from:String(fromVersion||'unknown'),to:String(toVersion||'unknown'),snapshotId:snapshotId||null,startedAt:new Date().toISOString()};
@@ -2534,6 +2592,7 @@ layout: null
     const meta = readAppMeta(), pending = meta.pendingMigration;
     if (pending && pending.to === APP_VERSION) {
       meta.lastMigration = {...pending,status:'success',completedAt:new Date().toISOString()};
+      const history=Array.isArray(meta.deploymentHistory)?meta.deploymentHistory:[]; history.push({type:'installed',version:APP_VERSION,at:new Date().toISOString(),detail:`${pending.from} → ${pending.to}`}); meta.deploymentHistory=history.slice(-8);
       delete meta.pendingMigration;
       writeAppMeta(meta);
     }
@@ -2931,6 +2990,7 @@ layout: null
     durationDistributionCache = null;
     targetSuccessCache = null;
     startPatternCache = null;
+    cumulativeDaysCache = null;
     calendarDaysCache.clear();
     weightAggregateCache.clear();
     weightChartScaleCache = null;
@@ -4129,16 +4189,27 @@ layout: null
     return reason === 'backdate-conflict' ? t('history.deletedReasonBackdate') : t('history.deletedReasonUser');
   }
 
+  function restoreFastEditVersion(recordId, historical) {
+    const index=data.records.findIndex(r=>r.id===recordId); if(index<0)return false;
+    const current=data.records[index], start=validDate(historical?.start), end=validDate(historical?.end); if(!start||!end||end<=start)return false;
+    if(intervalOverlaps(start,end,recordId)){alert(t('history.errOverlap'));return false;}
+    if(!confirm(t('history.restoreEditConfirm',{summary:fastEditSummary(historical)})))return false;
+    const now=new Date().toISOString(), next={...current,start:start.toISOString(),end:end.toISOString(),goalHours:sanitizeGoal(historical.goalHours,data.goalHours),timeZone:normalizeTimeZone(historical.timeZone),modifiedAt:now,editHistory:[...normalizeFastEditHistory(current.editHistory),fastEditAuditEntry(current,now)].slice(-MAX_FAST_EDIT_AUDIT)};
+    data.records[index]=next; if(!save()){data.records[index]=current;renderAll();return false;} hideModal('editAuditModal');renderAll();return true;
+  }
+
   function openFastEditHistory(record) {
     const list=el('editAuditList'); list.replaceChildren();
     el('editAuditCurrent').textContent=t('history.editHistoryCurrent',{summary:fastEditSummary(record)});
-    const history=normalizeFastEditHistory(record.editHistory);
+    const history=normalizeFastEditHistory(record.editHistory), canRestore=data.records.some(r=>r.id===record.id);
     if(!history.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=t('history.editHistoryEmpty');list.append(empty);}
     else history.slice().reverse().forEach((entry,index)=>{
       const row=document.createElement('div');row.className='auditEntry';
       const title=document.createElement('strong');title.textContent=t('history.editHistoryRevision',{n:history.length-index,date:localDateTimeLabel(entry.editedAt,entry.editedTimeZone)});
       const before=document.createElement('div');before.className='small';before.textContent=t('history.editHistoryPrevious',{summary:fastEditSummary(entry)});
-      row.append(title,before);list.append(row);
+      row.append(title,before);
+      if(canRestore){const restore=document.createElement('button');restore.type='button';restore.className='secondary';restore.style.marginTop='8px';restore.textContent=t('history.restoreEditVersion');restore.addEventListener('click',()=>restoreFastEditVersion(record.id,entry));row.append(restore);}
+      list.append(row);
     });
     showModal('editAuditModal','editAuditCloseBtn');
   }
@@ -4754,13 +4825,31 @@ layout: null
     scrollTimelineToLatest();
   }
 
+  const RANGE_MODES=new Set(['trend','months','distribution','success','startpattern','cumulative']);
+  function loadChartRanges(){try{const raw=JSON.parse(localStorage.getItem(CHART_RANGE_KEY)||'{}')||{};const out={};for(const [mode,def] of Object.entries(DEFAULT_CHART_RANGES))out[mode]=['7d','30d','90d','6m','1y','all'].includes(raw[mode])?raw[mode]:def;return out;}catch{return {...DEFAULT_CHART_RANGES};}}
+  function saveChartRanges(){try{localStorage.setItem(CHART_RANGE_KEY,JSON.stringify(chartRanges));}catch{}}
+  function chartRange(mode=statsVizMode){return chartRanges[mode]||DEFAULT_CHART_RANGES[mode]||'30d';}
+  function chartRangeRecords(mode=statsVizMode){return FTAnalytics.filterRecords(data.records,chartRange(mode));}
+  function chartRangeLabel(range){return t(`stats.range.${range}`);}
+  function updateStatsRangeControl(){const bar=el('statsRangeBar'),sel=el('statsRangeSelect'),summary=el('statsRangeSummary');const enabled=RANGE_MODES.has(statsVizMode);if(bar)bar.hidden=!enabled;if(!enabled)return;if(sel)sel.value=chartRange(statsVizMode);if(summary){const n=chartRangeRecords(statsVizMode).length;summary.textContent=t('stats.rangeSummary',{range:chartRangeLabel(chartRange(statsVizMode)),n});}}
+  function changeStatsRange(range){if(!RANGE_MODES.has(statsVizMode)||!['7d','30d','90d','6m','1y','all'].includes(range))return;chartRanges[statsVizMode]=range;saveChartRanges();trendChartDaysCache=null;monthSummariesCache=null;durationDistributionCache=null;targetSuccessCache=null;startPatternCache=null;cumulativeDaysCache=null;statsVizRendered.delete(statsVizMode);statsDetailOverride=null;genericChartSelectedKey=null;trendSelectedDayKey=null;cumulativeSelectedDayKey=null;statsDrilldownRecordIds=[];renderChartDetailForMode();updateStatsRangeControl();scheduleStatsVizRender(statsVizMode);}
+  function announceStatsSelection(detail){const live=el('statsSelectionLive');if(live&&detail)live.textContent=`${detail.title||''}. ${detail.text||''}`.trim();}
+  function setStatsDrilldown(records=[]){statsDrilldownRecordIds=[...new Set((records||[]).map(r=>r&&r.id).filter(Boolean))];const btn=el('statsDrilldownBtn');if(btn)btn.hidden=!statsDrilldownRecordIds.length;}
+  function recordsEndingInMonth(key,source=data.records){return source.filter(r=>dayKeyFast(r.end,r.timeZone).slice(0,7)===key);}
+  function recordsContributingMonth(key,source=data.records){return source.filter(r=>{try{for(const day of recordDayContribution(r).keys())if(String(day).slice(0,7)===key)return true;}catch{}return false;});}
+  function recordsForDurationBucket(key,source=data.records){return source.filter(r=>FTAnalytics.durationBucketKey(recordMs(r)/3600000)===key);}
+  function recordsForStartBucket(key,source=data.records){return source.filter(r=>FTAnalytics.startBucketKey(zonedParts(r.start,r.timeZone).hour)===String(key));}
+  function recordsOverlappingRange(startMs,endMs,source=data.records){return source.filter(r=>{const a=new Date(r.start).getTime(),b=new Date(r.end).getTime();return Number.isFinite(a)&&Number.isFinite(b)&&a<endMs&&b>startMs;});}
+  function recordsOverlappingDay(day){return day?recordsOverlappingRange(day.startMs,day.endMs):[];}
+  function openStatsDrilldown(){const records=data.records.filter(r=>statsDrilldownRecordIds.includes(r.id)).sort((a,b)=>String(b.end).localeCompare(String(a.end)));const box=el('statsDrilldownList');box.replaceChildren();el('statsDrilldownSummary').textContent=t('stats.drilldownCount',{n:records.length});if(!records.length){box.textContent=t('stats.drilldownEmpty');}else for(const r of records){const row=document.createElement('div');row.className='row';const left=document.createElement('div');const strong=document.createElement('strong');strong.textContent=localDateLabel(r.end,r.timeZone);const small=document.createElement('div');small.className='small';small.textContent=`${localDateTimeLabel(r.start,r.timeZone)} → ${localDateTimeLabel(r.end,r.timeZone)}`;left.append(strong,small);const right=document.createElement('div');right.className='duration';right.textContent=compactDuration(recordMs(r));row.append(left,right);box.append(row);}showModal('statsDrilldownModal','statsDrilldownCloseBtn');}
+
   function setStatsDetail(title, text) {
     statsDetailOverride = title || text ? { title: title || t('stats.chartDetailDefaultTitle'), text: text || '' } : null;
     renderChartDetailForMode();
   }
 
   function defaultStatsHelpKey() {
-    return statsVizMode === 'calendar' ? 'stats.calendarHelp' : statsVizMode === 'trend' ? 'stats.trendHelp' : statsVizMode === 'weeks' ? 'stats.weeksHelp' : statsVizMode === 'months' ? 'stats.monthsHelp' : statsVizMode === 'distribution' ? 'stats.distributionHelp' : statsVizMode === 'success' ? 'stats.successHelp' : statsVizMode === 'startpattern' ? 'stats.startPatternHelp' : 'stats.timelineHelp';
+    return statsVizMode === 'calendar' ? 'stats.calendarHelp' : statsVizMode === 'trend' ? 'stats.trendHelp' : statsVizMode === 'weeks' ? 'stats.weeksHelp' : statsVizMode === 'months' ? 'stats.monthsHelp' : statsVizMode === 'distribution' ? 'stats.distributionHelp' : statsVizMode === 'success' ? 'stats.successHelp' : statsVizMode === 'startpattern' ? 'stats.startPatternHelp' : statsVizMode === 'cumulative' ? 'stats.cumulativeHelp' : 'stats.timelineHelp';
   }
 
   function renderChartDetailForMode(days = null) {
@@ -4770,7 +4859,9 @@ layout: null
     if (!detail && statsVizMode === 'timeline' && days) detail = chartSelectionDetail(days);
     title.textContent = detail?.title || t('stats.chartDetailDefaultTitle');
     text.textContent = detail?.text || t('stats.chartDetailDefaultText');
+    if(detail){announceStatsSelection(detail);setStatsDrilldown(detail.records||[]);}else setStatsDrilldown([]);
     const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
+    updateStatsRangeControl();
   }
 
   function activateStatsVizControl(target) {
@@ -4797,7 +4888,7 @@ layout: null
   }
 
   function showStatsVizView(mode) {
-    const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView', months:'statsMonthsView', distribution:'statsDistributionView', success:'statsSuccessView', startpattern:'statsStartPatternView' };
+    const map = { timeline:'statsTimelineView', calendar:'statsCalendarView', trend:'statsTrendView', weeks:'statsWeeksView', months:'statsMonthsView', distribution:'statsDistributionView', success:'statsSuccessView', startpattern:'statsStartPatternView', cumulative:'statsCumulativeView' };
     for (const [key,id] of Object.entries(map)) el(id).hidden = key !== mode;
   }
 
@@ -4809,6 +4900,7 @@ layout: null
     else if (mode === 'distribution') drawFastDistributionChart();
     else if (mode === 'success') drawFastSuccessChart();
     else if (mode === 'startpattern') drawFastStartPatternChart();
+    else if (mode === 'cumulative') drawFastCumulativeChart();
     else drawChart();
     statsVizRendered.add(mode);
     if(el('statsChartData')&&!el('statsChartData').hidden)renderStatsChartData();
@@ -4835,7 +4927,7 @@ layout: null
   }
 
   function setStatsVizMode(mode) {
-    const allowed = ['timeline','calendar','trend','weeks','months','distribution','success','startpattern'];
+    const allowed = ['timeline','calendar','trend','weeks','months','distribution','success','startpattern','cumulative'];
     const nextMode = allowed.includes(mode) ? mode : 'timeline';
     if (statsVizMode === nextMode) return;
     statsVizMode = nextMode;
@@ -4852,6 +4944,7 @@ layout: null
     // already rendered for the current data revision, no chart work is needed
     // at all, making repeat switches effectively instantaneous.
     showStatsVizView(statsVizMode);
+    updateStatsRangeControl();
     renderChartDetailForMode();
     if (!statsVizRendered.has(statsVizMode) || data.activeStart) scheduleStatsVizRender(statsVizMode);
   }
@@ -4941,23 +5034,25 @@ layout: null
     return days;
   }
 
+  function buildTrendDays(){if(trendChartDaysCache)return trendChartDaysCache;const n=FTAnalytics.rangeDays(chartRange('trend'),data.records,Date.now(),r=>new Date(r.start).getTime());trendChartDaysCache=buildSummaryChartDays(n);const hours=trendChartDaysCache.map(d=>(d.totalFastMs||0)/3600000),a7=FTAnalytics.rollingAverage(trendChartDaysCache,d=>(d.totalFastMs||0)/3600000,7),a30=FTAnalytics.rollingAverage(trendChartDaysCache,d=>(d.totalFastMs||0)/3600000,30);trendChartDaysCache.forEach((d,i)=>{d.hours=hours[i];d.avg7=a7[i];d.avg30=a30[i];});return trendChartDaysCache;}
   function drawFastTrendChart() {
     const c=el('fastTrendChart'), ctx=c.getContext('2d'), ratio=window.devicePixelRatio||1;
     const cssW=c.clientWidth||660, cssH=260; c.width=Math.floor(cssW*ratio); c.height=Math.floor(cssH*ratio); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,cssW,cssH);
-    const days=trendChartDaysCache || (trendChartDaysCache=buildSummaryChartDays(30)), top=18,bottom=34,left=34,right=10,w=cssW-left-right,h=cssH-top-bottom;
-    const style=getComputedStyle(document.documentElement), line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();
-    ctx.strokeStyle=line; ctx.fillStyle=muted; ctx.font='10px -apple-system'; ctx.textAlign='right';
-    [0,6,12,18,24].forEach(hour=>{const y=top+h-(hour/24)*h;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillText(`${hour}${t('unit.h')}`,left-5,y+3);});
-    trendInteractiveLayout=[]; ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.beginPath();
-    days.forEach((day,i)=>{const x=left+(i/(Math.max(1,days.length-1)))*w,y=top+h-(Math.min(24,day.totalFastMs/3600000)/24)*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}); ctx.stroke();
-    days.forEach((day,i)=>{const x=left+(i/(Math.max(1,days.length-1)))*w,y=top+h-(Math.min(24,day.totalFastMs/3600000)/24)*h;const selected=trendSelectedDayKey===day.key;ctx.beginPath();ctx.arc(x,y,selected?6:3,0,Math.PI*2);ctx.fillStyle=selected?'#ffffff':accent;ctx.fill();if(selected){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();}trendInteractiveLayout.push({day,x,y,r:14}); if(i%5===0||i===days.length-1){ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='center';ctx.fillText(formatNumber(new Date(day.startMs).getDate()),x,cssH-10);}});
-    renderChartDetailForMode();
+    const days=buildTrendDays(), top=18,bottom=42,left=34,right=10,w=cssW-left-right,h=cssH-top-bottom;
+    const style=getComputedStyle(document.documentElement), line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),good=style.getPropertyValue('--good').trim(),muted=style.getPropertyValue('--muted').trim();
+    const peak=Math.max(24,...days.flatMap(d=>[d.hours||0,d.avg7||0,d.avg30||0]));ctx.strokeStyle=line;ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';
+    [0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillText(`${formatNumber(peak*fr,0,0)}${t('unit.h')}`,left-5,y+3);});
+    const xFor=i=>left+(i/(Math.max(1,days.length-1)))*w,yFor=value=>top+h-(Math.min(peak,Math.max(0,value))/peak)*h;
+    const lineSeries=(key,color,width=2,dash=[])=>{ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();days.forEach((day,i)=>{const x=xFor(i),y=yFor(day[key]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();ctx.restore();};
+    lineSeries('hours',accent,1.7);lineSeries('avg7',good,2,[5,3]);lineSeries('avg30',muted,2,[2,3]);
+    trendInteractiveLayout=[];const pointEvery=Math.max(1,Math.ceil(days.length/180));days.forEach((day,i)=>{const x=xFor(i),y=yFor(day.hours);const selected=trendSelectedDayKey===day.key;if(selected||i%pointEvery===0||i===days.length-1){ctx.beginPath();ctx.arc(x,y,selected?6:2.2,0,Math.PI*2);ctx.fillStyle=selected?'#ffffff':accent;ctx.fill();if(selected){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();}}trendInteractiveLayout.push({day,x,y,r:14});});
+    ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='left';ctx.fillText(t('stats.trendLegend'),left,cssH-10);renderChartDetailForMode();
   }
 
   function handleTrendPointer(event) {
     const c=el('fastTrendChart'), rect=c.getBoundingClientRect(), x=event.clientX-rect.left,y=event.clientY-rect.top;
     let best=null,bestD=Infinity; for(const hit of trendInteractiveLayout){const d=Math.hypot(x-hit.x,y-hit.y);if(d<bestD){bestD=d;best=hit;}}
-    if(!best||bestD>18)return; trendSelectedDayKey=best.day.key; statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailTotal',{duration:compactDuration(best.day.totalFastMs),count:formatNumber(best.day.fastCount)})}; drawFastTrendChart();
+    if(!best||bestD>18)return; trendSelectedDayKey=best.day.key; statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailTrend',{duration:compactDuration(best.day.totalFastMs),avg7:formatNumber(best.day.avg7||0,0,1),avg30:formatNumber(best.day.avg30||0,0,1)}),records:recordsOverlappingDay(best.day)}; drawFastTrendChart();
   }
 
   function startOfWeekMonday(date) { const d=new Date(date); d.setHours(12,0,0,0); const shift=(d.getDay()+6)%7; d.setDate(d.getDate()-shift); return d; }
@@ -4978,33 +5073,40 @@ layout: null
     const gap=8,bw=(w-gap*7)/8;weekInteractiveLayout=[];weeks.forEach((week,i)=>{const hours=week.totalFastMs/3600000,bh=(hours/maxH)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(weekSelectedKey===week.key){const sy=Math.max(top,y-3),sh=Math.min(h,bh+6);ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.strokeRect(x-3,sy,bw+6,sh);ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x-1,Math.max(top,y-1),bw+2,Math.min(h,bh+2));}ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(week.label,x+bw/2,cssH-10);weekInteractiveLayout.push({week,x,y:top,w:bw,h});});renderChartDetailForMode();
   }
 
-  function handleWeeksPointer(event) { const c=el('fastWeeksChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=weekInteractiveLayout.find(item=>x>=item.x&&x<=item.x+item.w&&y>=item.y&&y<=item.y+item.h);if(!hit)return;weekSelectedKey=hit.week.key;statsDetailOverride={dayKey:hit.week.key,title:t('stats.weekOf',{date:hit.week.label}),text:t('stats.detailWeek',{duration:compactDuration(hit.week.totalFastMs),days:formatNumber(hit.week.daysWithFast)})};drawFastWeeksChart(); }
+  function handleWeeksPointer(event) { const c=el('fastWeeksChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=weekInteractiveLayout.find(item=>x>=item.x&&x<=item.x+item.w&&y>=item.y&&y<=item.y+item.h);if(!hit)return;weekSelectedKey=hit.week.key;const tz=currentTimeZone(),start=zonedLocalToDate(`${hit.week.key}T00:00`,tz);let endMs=start?.getTime()||NaN;if(Number.isFinite(endMs))for(let i=0;i<7;i++)endMs=nextZonedDayBoundary(endMs,tz);statsDetailOverride={dayKey:hit.week.key,title:t('stats.weekOf',{date:hit.week.label}),text:t('stats.detailWeek',{duration:compactDuration(hit.week.totalFastMs),days:formatNumber(hit.week.daysWithFast)}),records:start&&Number.isFinite(endMs)?recordsOverlappingRange(start.getTime(),endMs):[]};drawFastWeeksChart(); }
 
 
-  function buildMonthSummaries(){
-    if(monthSummariesCache)return monthSummariesCache;
-    const buckets=FTVisuals.monthBuckets(data.records,{months:12,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),by=new Map(buckets.map(x=>[x.key,x]));
+  function buildMonthSummaries(mode='months'){
+    if(mode==='months'&&monthSummariesCache)return monthSummariesCache;if(mode==='success'&&targetSuccessCache)return targetSuccessCache;
+    const range=chartRange(mode),records=chartRangeRecords(mode),months=FTAnalytics.monthSpan(range,records,Date.now(),r=>new Date(r.end).getTime());
+    const buckets=FTVisuals.monthBuckets(records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),by=new Map(buckets.map(x=>[x.key,x]));
     for(const x of buckets){x.totalMs=0;x.hours=0;}
-    for(const [day,totalMs] of completedFastingByStoredCalendarDay()){const b=by.get(String(day).slice(0,7));if(b){b.totalMs+=Number(totalMs)||0;b.hours=b.totalMs/3600000;}}
-    monthSummariesCache=buckets;return monthSummariesCache;
+    const cutoff=FTAnalytics.cutoffMs(range,records,Date.now(),r=>new Date(r.end).getTime());
+    for(const [day,totalMs] of completedFastingByStoredCalendarDay()){const midday=Date.parse(`${day}T12:00:00Z`);if(range!=='all'&&Number.isFinite(midday)&&midday<cutoff-86400000)continue;const b=by.get(String(day).slice(0,7));if(b){b.totalMs+=Number(totalMs)||0;b.hours=b.totalMs/3600000;}}
+    if(mode==='months')monthSummariesCache=buckets;else targetSuccessCache=buckets;return buckets;
   }
-  function buildDurationDistribution(){if(!durationDistributionCache)durationDistributionCache=FTVisuals.durationDistribution(data.records,{recordMs});return durationDistributionCache;}
-  function buildTargetSuccessSummaries(){if(!targetSuccessCache)targetSuccessCache=buildMonthSummaries().map(x=>({...x}));return targetSuccessCache;}
-  function buildStartPattern(){if(!startPatternCache)startPatternCache=FTVisuals.startTimeBuckets(data.records,{partsForRecord:r=>zonedParts(r.start,r.timeZone)});return startPatternCache;}
+  function buildDurationDistribution(){if(!durationDistributionCache)durationDistributionCache=FTVisuals.durationDistribution(chartRangeRecords('distribution'),{recordMs});return durationDistributionCache;}
+  function buildTargetSuccessSummaries(){return buildMonthSummaries('success');}
+  function buildStartPattern(){if(!startPatternCache)startPatternCache=FTVisuals.startTimeBuckets(chartRangeRecords('startpattern'),{partsForRecord:r=>zonedParts(r.start,r.timeZone)});return startPatternCache;}
+  function buildCumulativeDays(){if(cumulativeDaysCache)return cumulativeDaysCache;const n=FTAnalytics.rangeDays(chartRange('cumulative'),data.records,Date.now(),r=>new Date(r.start).getTime()),days=buildSummaryChartDays(n),values=FTAnalytics.cumulative(days,d=>(d.totalFastMs||0)/3600000);days.forEach((d,i)=>d.cumulativeHours=values[i]);cumulativeDaysCache=days;return days;}
+  function fullMonthBuckets(months=14){const buckets=FTVisuals.monthBuckets(data.records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),by=new Map(buckets.map(x=>[x.key,x]));for(const x of buckets){x.totalMs=0;x.hours=0;}for(const [day,totalMs] of completedFastingByStoredCalendarDay()){const b=by.get(String(day).slice(0,7));if(b){b.totalMs+=Number(totalMs)||0;b.hours=b.totalMs/3600000;}}return buckets;}
+  function monthComparisonSummary(){const items=fullMonthBuckets(14),cur=items.at(-1),prev=items.at(-2),year=items.at(-13);if(!cur)return'';const mom=FTAnalytics.relativeChange(cur.hours,prev?.hours),yoy=FTAnalytics.relativeChange(cur.hours,year?.hours);const change=(now,old,pct)=>old?`${now>=old?'+':''}${formatNumber(now-old,0,1)} ${t('unit.h')}${pct==null?'':` (${pct>=0?'+':''}${formatNumber(pct,0,0)}%)`}`:t('stats.comparisonNoBaseline');return t('stats.monthComparison',{month:cur.label,mom:change(cur.hours,prev?.hours||0,mom),yoy:change(cur.hours,year?.hours||0,yoy)});}
 
   function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false}={}){
     const c=el(canvasId),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
     const top=18,bottom=44,left=44,right=10,w=cssW-left-right,h=cssH-top-bottom,peak=Math.max(percent?100:1,maxValue==null?FTVisuals.maxValue(items,valueKey,1):maxValue);
     const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
     [0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(peak*fr,0,percent?0:1)}${valueSuffix}`,left-5,y+3);});
-    const n=Math.max(1,items.length),gap=Math.max(4,Math.min(10,w/(n*5))),bw=Math.max(5,(w-gap*(n-1))/n);genericChartHitLayout=[];
-    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));}ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';const label=String(item.label||item.key||'');ctx.fillText(label.length>11?label.slice(0,10)+'…':label,x+bw/2,cssH-15);genericChartHitLayout.push({item,x,y:top,w:bw,h,canvasId,detailBuilder});});renderChartDetailForMode();
+    const n=Math.max(1,items.length),gap=n>80?0.25:Math.max(2,Math.min(10,w/(n*5))),bw=Math.max(.35,(w-gap*(n-1))/n),labelStep=Math.max(1,Math.ceil(n/12));genericChartHitLayout=[];
+    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.min(4,Math.max(1,bw));ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));}if(i%labelStep===0||i===n-1){ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';const label=String(item.label||item.key||'');ctx.fillText(label.length>11?label.slice(0,10)+'…':label,x+bw/2,cssH-15);}genericChartHitLayout.push({item,x,y:top,w:Math.max(bw,3),h,canvasId,detailBuilder});});renderChartDetailForMode();
   }
   function handleGenericChartPointer(event){const c=event.currentTarget,rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=genericChartHitLayout.find(h=>h.canvasId===c.id&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);if(!hit)return;genericChartSelectedKey=hit.item.key;statsDetailOverride=hit.detailBuilder?hit.detailBuilder(hit.item):null;renderStatsVisualizationMode(statsVizMode);renderStatsChartData();}
-  function drawFastMonthsChart(){const items=buildMonthSummaries();drawGenericBarChart('fastMonthsChart',items,'hours',{valueSuffix:t('unit.h'),selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailMonth',{duration:compactDuration(x.totalMs),count:formatNumber(x.count)})})});}
-  function drawFastDistributionChart(){const items=buildDurationDistribution();drawGenericBarChart('fastDistributionChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailDistribution',{count:formatNumber(x.count),hours:formatNumber(x.totalHours,0,1)})})});}
-  function drawFastSuccessChart(){const items=buildTargetSuccessSummaries();drawGenericBarChart('fastSuccessChart',items,'successRate',{maxValue:100,valueSuffix:'%',percent:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailSuccess',{rate:formatNumber(x.successRate,0,0),reached:formatNumber(x.reached),count:formatNumber(x.count)})})});}
-  function drawFastStartPatternChart(){const items=buildStartPattern();drawGenericBarChart('fastStartPatternChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailStartPattern',{count:formatNumber(x.count)})})});}
+  function drawFastMonthsChart(){const items=buildMonthSummaries('months'),source=chartRangeRecords('months');drawGenericBarChart('fastMonthsChart',items,'hours',{valueSuffix:t('unit.h'),selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailMonth',{duration:compactDuration(x.totalMs),count:formatNumber(x.count)}),records:recordsContributingMonth(x.key,source)})});const cmp=el('fastMonthsComparison');if(cmp)cmp.textContent=monthComparisonSummary();}
+  function drawFastDistributionChart(){const items=buildDurationDistribution(),source=chartRangeRecords('distribution');drawGenericBarChart('fastDistributionChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailDistribution',{count:formatNumber(x.count),hours:formatNumber(x.totalHours,0,1)}),records:recordsForDurationBucket(x.key,source)})});}
+  function drawFastSuccessChart(){const items=buildTargetSuccessSummaries(),source=chartRangeRecords('success');drawGenericBarChart('fastSuccessChart',items,'successRate',{maxValue:100,valueSuffix:'%',percent:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailSuccess',{rate:formatNumber(x.successRate,0,0),reached:formatNumber(x.reached),count:formatNumber(x.count)}),records:recordsEndingInMonth(x.key,source)})});}
+  function drawFastStartPatternChart(){const items=buildStartPattern(),source=chartRangeRecords('startpattern');drawGenericBarChart('fastStartPatternChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailStartPattern',{count:formatNumber(x.count)}),records:recordsForStartBucket(x.key,source)})});}
+  function drawFastCumulativeChart(){const c=el('fastCumulativeChart'),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);const days=buildCumulativeDays(),top=18,bottom=36,left=48,right=10,w=cssW-left-right,h=cssH-top-bottom,peak=Math.max(1,...days.map(d=>d.cumulativeHours||0)),style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;[0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(peak*fr,0,0)}${t('unit.h')}`,left-5,y+3);});const xFor=i=>left+(i/Math.max(1,days.length-1))*w,yFor=v=>top+h-(Math.max(0,v)/peak)*h;ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.beginPath();days.forEach((d,i)=>{const x=xFor(i),y=yFor(d.cumulativeHours);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();cumulativeInteractiveLayout=[];const every=Math.max(1,Math.ceil(days.length/180));days.forEach((day,i)=>{const x=xFor(i),y=yFor(day.cumulativeHours);if(cumulativeSelectedDayKey===day.key||i%every===0||i===days.length-1){ctx.beginPath();ctx.arc(x,y,cumulativeSelectedDayKey===day.key?6:2,0,Math.PI*2);ctx.fillStyle=cumulativeSelectedDayKey===day.key?'#ffffff':accent;ctx.fill();if(cumulativeSelectedDayKey===day.key){ctx.strokeStyle=accent;ctx.stroke();}}cumulativeInteractiveLayout.push({day,x,y});});renderChartDetailForMode();}
+  function handleCumulativePointer(event){const c=el('fastCumulativeChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;let best=null,dist=Infinity;for(const hit of cumulativeInteractiveLayout){const d=Math.hypot(x-hit.x,y-hit.y);if(d<dist){dist=d;best=hit;}}if(!best||dist>20)return;cumulativeSelectedDayKey=best.day.key;const days=buildCumulativeDays(),first=days[0];statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailCumulative',{hours:formatNumber(best.day.cumulativeHours||0,0,1),today:formatNumber((best.day.totalFastMs||0)/3600000,0,1)}),records:first?recordsOverlappingRange(first.startMs,best.day.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();}
 
   function toLocalInputValue(dateLike, timeZone = currentTimeZone()) {
     const d = new Date(dateLike); if (!Number.isFinite(d.getTime())) return '';
@@ -5615,12 +5717,13 @@ layout: null
   function renderStatsChartData(){
     const box=el('statsChartData'); if(!box||box.hidden)return; box.replaceChildren(); const ul=document.createElement('ul');
     if(statsVizMode==='timeline'){for(const d of [...timelineChartDays].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}`;ul.append(li);}}
-    else if(statsVizMode==='trend'){for(const d of [...(trendChartDaysCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber((d.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
+    else if(statsVizMode==='trend'){for(const d of [...buildTrendDays()].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.hours||0,0,1)} ${t('unit.h')} • 7d ${formatNumber(d.avg7||0,0,1)} • 30d ${formatNumber(d.avg30||0,0,1)}`;ul.append(li);}}
     else if(statsVizMode==='weeks'){for(const w of [...(weeklySummariesCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${w.label||w.key||''} — ${formatNumber((w.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
     else if(statsVizMode==='months'){for(const x of [...buildMonthSummaries()].reverse()){const li=document.createElement('li');li.textContent=`${x.label} — ${formatNumber(x.hours,0,1)} ${t('unit.h')} • ${x.count}`;ul.append(li);}}
     else if(statsVizMode==='success'){for(const x of [...buildTargetSuccessSummaries()].reverse()){const li=document.createElement('li');li.textContent=`${x.label} — ${formatNumber(x.successRate,0,0)}% • ${x.reached}/${x.count}`;ul.append(li);}}
     else if(statsVizMode==='distribution'){for(const x of buildDurationDistribution()){const li=document.createElement('li');li.textContent=`${x.label} — ${x.count}`;ul.append(li);}}
     else if(statsVizMode==='startpattern'){for(const x of buildStartPattern()){const li=document.createElement('li');li.textContent=`${x.label} — ${x.count}`;ul.append(li);}}
+    else if(statsVizMode==='cumulative'){for(const d of [...buildCumulativeDays()].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.cumulativeHours||0,0,1)} ${t('unit.h')}`;ul.append(li);}}
     else { const month=el('calendarMonthTitle')?.textContent||''; const li=document.createElement('li'); li.textContent=t('a11y.calendarDataHint',{month}); ul.append(li); }
     if(!ul.children.length){const li=document.createElement('li');li.textContent=t('a11y.noChartData');ul.append(li);} box.append(ul);
   }
@@ -5924,6 +6027,8 @@ layout: null
     if(backupFreshnessState().state!=='current'&&confirm(t('deleted.backupFirst'))){const ok=await exportBackup();if(!ok)return false;}
     const oldF=data.deletedFasts.slice(),oldW=data.deletedWeights.slice();data.deletedFasts=[];data.deletedWeights=[];if(!save({invalidateDerived:false,dirtyViews:['history','weight','settings']})){data.deletedFasts=oldF;data.deletedWeights=oldW;renderAll();return false;}renderAll();return true;
   }
+  async function rebuildDerivedData(){const btn=el('rebuildDerivedBtn');if(btn)btn.disabled=true;try{storedDayTotalsMap=buildStoredDayTotals(data.records);dayTotalsRecordMap=recordMap(data.records);await persistDailyTotals(data.revision);invalidateDerivedCaches();markViewsDirty();renderAll();const issues=await collectIntegrityIssues();lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};if(lastIntegrityCheck.ok){markLastKnownGood('rebuild-derived');alert(t('derived.rebuilt'));return true;}alert(t('derived.failed'));return false;}catch(err){noteDiagnosticError('derived.rebuild');alert(t('derived.failed'));return false;}finally{if(btn)btn.disabled=false;}}
+
   async function renderStorageHealth() {
     const rc=el('healthRecordCount'); if(!rc)return;
     rc.textContent=formatNumber(data.records.length+data.weights.length);
@@ -5933,7 +6038,8 @@ layout: null
     let persisted=null; try{if(navigator.storage?.persisted)persisted=await navigator.storage.persisted();}catch{}
     el('healthPersistence').textContent=t('storage.healthPersistence',{status:persisted===true?t('storage.healthProtected'):persisted===false?t('storage.healthNotProtected'):t('storage.healthUnavailable')});
     let usageText=t('storage.usageUnknown'),estimate=null;try{estimate=await navigator.storage?.estimate?.()||null;if(estimate&&Number.isFinite(estimate.usage)&&Number.isFinite(estimate.quota)){const mb=n=>formatNumber(n/1048576,0,1);usageText=t('storage.healthUsage',{used:mb(estimate.usage),quota:mb(estimate.quota)});}}catch{}
-    el('healthUsage').textContent=usageText;const pressure=storagePressureFromEstimate(estimate),pressureNode=el('storagePressureWarning');if(pressureNode){pressureNode.classList.toggle('warn',pressure.warning);pressureNode.textContent=!pressure.known?t('storage.pressureUnknown'):pressure.warning?t('storage.pressureWarning',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)}):t('storage.pressureOk',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)});}
+    el('healthUsage').textContent=usageText;
+    const good=lastKnownGoodMeta(),goodNode=el('healthLastKnownGood');if(goodNode)goodNode.textContent=good?t('deployment.lastKnownGood',{version:good.version,date:localDateTimeLabel(good.at)}):t('deployment.lastKnownGoodNone');const hist=deploymentHistoryMeta(),histNode=el('deploymentHistoryList');if(histNode){histNode.replaceChildren();if(!hist.length)histNode.textContent=t('deployment.historyNone');else{const ul=document.createElement('ul');ul.style.margin='6px 0 0';for(const item of hist.slice().reverse()){const li=document.createElement('li');li.textContent=t('deployment.historyItem',{type:t(`deployment.event.${item.type}`),version:item.version,date:localDateTimeLabel(item.at),detail:item.detail?` • ${item.detail}`:''});ul.append(li);}histNode.append(ul);}}const pressure=storagePressureFromEstimate(estimate),pressureNode=el('storagePressureWarning');if(pressureNode){pressureNode.classList.toggle('warn',pressure.warning);pressureNode.textContent=!pressure.known?t('storage.pressureUnknown'):pressure.warning?t('storage.pressureWarning',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)}):t('storage.pressureOk',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)});}
     el('healthLastSave').textContent=t('storage.healthLastSave',{date:lastSuccessfulIdbSaveAt?localDateTimeLabel(lastSuccessfulIdbSaveAt):t('common.never')});
     const prot=snapshotProtectionState.status==='ok'?t('storage.healthGood'):snapshotProtectionState.status==='reduced'?t('storage.healthReduced'):t('storage.healthNeedsAttention');
     el('healthProtection').textContent=t('storage.healthRecovery',{status:prot});
@@ -5951,6 +6057,28 @@ layout: null
     const keys=new Set([...a.keys(),...b.keys()]);
     for(const key of keys) if(Math.abs((a.get(key)||0)-(b.get(key)||0))>tolerance) return false;
     return true;
+  }
+
+  async function collectStartupIntegrityIssues() {
+    // Keep automatic startup validation deliberately lightweight. Full integrity
+    // verification can rebuild daily totals and decode every recovery snapshot,
+    // which is appropriate when the user requests it but would block the UI on
+    // decades of history. Startup only verifies the authoritative primary shape,
+    // basic record chronology/identity, and the persisted primary revision.
+    const issues=[];
+    if(!data || data.dataVersion!==DATA_VERSION || !Array.isArray(data.records) || !Array.isArray(data.weights) || !Array.isArray(data.deletedFasts) || !Array.isArray(data.deletedWeights)) {
+      addIntegrityIssue(issues,'primary-structure'); return issues;
+    }
+    const ids=new Set();
+    for(const r of data.records){
+      if(!r || typeof r.id!=='string' || !r.id || ids.has(r.id)){addIntegrityIssue(issues,'duplicate-fast-id');break;}
+      ids.add(r.id); const a=Date.parse(r.start),b=Date.parse(r.end); if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a){addIntegrityIssue(issues,'primary-structure');break;}
+    }
+    if(!issues.length){
+      try{const stored=await loadRecordBasedData();if(!stored)addIntegrityIssue(issues,'primary-store-missing');else if(Number(stored.revision)!==Number(data.revision))addIntegrityIssue(issues,'revision-mismatch');}
+      catch(err){addIntegrityIssue(issues,'primary-store-read',err?.message);}
+    }
+    return issues;
   }
 
   async function collectIntegrityIssues() {
@@ -5990,7 +6118,7 @@ layout: null
   async function runDataIntegrityCheck() {
     const btn=el('integrityCheckBtn'); if(btn)btn.disabled=true;
     const issues=await collectIntegrityIssues();
-    lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};
+    lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};if(lastIntegrityCheck.ok)markLastKnownGood('integrity-check');
     const summary=el('integritySummary'),list=el('integrityIssueList'); list.replaceChildren();
     summary.textContent=issues.length?t('integrity.issuesFound',{n:issues.length}):t('integrity.ok');
     if(!issues.length){const li=document.createElement('li');li.textContent=t('integrity.noProblems');list.append(li);}
@@ -6399,16 +6527,16 @@ layout: null
     try {
       const live = await fetchLiveReleaseStatus(controller.signal), remote=live.metadataVersion;
       latestVersion = remote;
-      if (!live.consistency.ok) { setUpdateUI('deploymentMismatch', t('update.deploymentMismatch',{metadata:live.metadataVersion||'—',entry:live.entryVersion||'—'})); noteDiagnosticError('update.deployment-mismatch'); }
-      else if (compareVersions(remote, APP_VERSION) > 0) setUpdateUI('available');
-      else setUpdateUI('current');
+      if (!live.consistency.ok) { setUpdateUI('deploymentMismatch', t('update.deploymentMismatch',{metadata:live.metadataVersion||'—',entry:live.entryVersion||'—'})); noteDiagnosticError('update.deployment-mismatch');appendDeploymentHistory('mismatch',{version:live.metadataVersion,detail:`entry ${live.entryVersion}`}); }
+      else if (compareVersions(remote, APP_VERSION) > 0) {setUpdateUI('available');appendDeploymentHistory('available',{version:remote});}
+      else {setUpdateUI('current');if(!quiet)appendDeploymentHistory('current',{version:remote});}
       renderDeploymentStatus();
     } catch (err) {
       noteDiagnosticError('update.'+FTPlatform.errorCategory(err));
       const msg = navigator.onLine === false
         ? t('update.offlineExplicit')
         : t('update.failed');
-      setUpdateUI('offline', msg);
+      setUpdateUI('offline', msg);if(!quiet)appendDeploymentHistory('failed',{version:APP_VERSION,detail:FTPlatform.errorCategory(err)});
     } finally {
       clearTimeout(timeout);
     }
@@ -6702,6 +6830,10 @@ layout: null
   installArrowKeyNavigation(document.querySelector('.tabs'),'.tab',item=>activateScreen(item.dataset.screen));
   installArrowKeyNavigation(el('weightPeriodSwitcher'),'[data-weight-period]',item=>setWeightPeriodMode(item.dataset.weightPeriod));
   installArrowKeyNavigation(el('statsVizSwitcher'),'[data-viz]',item=>{if(item.dataset.viz)setStatsVizMode(item.dataset.viz);});
+  el('statsRangeSelect')?.addEventListener('change',e=>changeStatsRange(e.target.value));
+  el('statsDrilldownBtn')?.addEventListener('click',openStatsDrilldown);
+  el('statsDrilldownCloseBtn')?.addEventListener('click',()=>hideModal('statsDrilldownModal'));
+  el('rebuildDerivedBtn')?.addEventListener('click',rebuildDerivedData);
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
@@ -6776,6 +6908,7 @@ layout: null
       else if (modal.id === 'manualSnapshotModal') hideModal('manualSnapshotModal');
       else if (modal.id === 'integrityModal') hideModal('integrityModal');
       else if (modal.id === 'editAuditModal') hideModal('editAuditModal');
+      else if (modal.id === 'statsDrilldownModal') hideModal('statsDrilldownModal');
       else if (modal.id === 'importPreviewModal') el('importPreviewCancelBtn').click();
       else if (modal.id === 'stopFastModal') closeStopFastModal();
       else if (modal.id === 'setupModal') dismissSetupGuide();
@@ -6938,6 +7071,7 @@ layout: null
   el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer);
   ['fastTrendChart','fastWeeksChart'].forEach(id=>el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}}));
   ['fastMonthsChart','fastDistributionChart','fastSuccessChart','fastStartPatternChart'].forEach(id=>{el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});});
+  el('fastCumulativeChart')?.addEventListener('pointerdown',handleCumulativePointer);el('fastCumulativeChart')?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
@@ -7033,6 +7167,7 @@ layout: null
   renderInstallStorageNotice();
   activateScreen(location.hash.slice(1), { updateHash: false });
   renderScreen(activeScreenId(), { force:true });
+  if(versionTransitionSnapshotOK&&!recoveryMode)setTimeout(async()=>{try{const issues=await collectStartupIntegrityIssues();if(!issues.length)markLastKnownGood('startup-integrity');}catch{}},900);
   if (activeScreenId() === 'settings') queueStorageProtectionRefresh();
   if (!versionTransitionSnapshotOK && !recoveryMode) setTimeout(() => alert(t('backup.snapshotFailed')), 0);
   setInterval(() => {

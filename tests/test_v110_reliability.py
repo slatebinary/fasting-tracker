@@ -4,7 +4,7 @@ import hashlib, json, tempfile
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
 
-VERSION='1.10.1'
+VERSION='1.11.1'
 
 def seed_data():
     return {
@@ -38,9 +38,9 @@ def main():
         browser=pw.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
         page=browser.new_page(accept_downloads=True)
         page.evaluate(STORAGE_SHIM)
-        page.evaluate("data=>{__seedFastingDbV2(data,[['2026-10-01',28800000]]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.10.1'}));}",data)
+        page.evaluate("data=>{__seedFastingDbV2(data,[['2026-10-01',28800000]]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.1'}));}",data)
         page.set_content(inlined_html(),wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.10.1'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.1'",timeout=20000)
 
         page.locator('.tab[data-screen="settings"]').click()
         page.wait_for_function("!document.querySelector('#settings').hidden && document.querySelector('#healthRecordCount')?.textContent!=='—'")
@@ -92,6 +92,6 @@ def main():
         csv=Path(csv_info.value.path()).read_text(encoding='utf-8-sig')
         assert csv.startswith('id,start,start_local,end,end_local,duration_hours,target_hours') and 'fast-1' in csv
         browser.close()
-    print('v1.10.1 reliability UI/backup/CSV checks passed')
+    print('v1.11.1 reliability UI/backup/CSV checks passed')
 
 if __name__=='__main__': main()
