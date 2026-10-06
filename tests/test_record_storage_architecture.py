@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: v1.11.6 migrates the v1.8.x primary blob to record-level IndexedDB and uses compressed snapshots."""
+"""Regression: v1.11.7 migrates the v1.8.x primary blob to record-level IndexedDB and uses compressed snapshots."""
 import sys, json
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
@@ -15,7 +15,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM)
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.19',seenAt:new Date().toISOString()})); }",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.6'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
     page.wait_for_timeout(300)
     state=page.evaluate("""() => new Promise((resolve,reject)=>{
       const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{

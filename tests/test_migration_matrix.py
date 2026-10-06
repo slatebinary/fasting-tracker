@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Regression matrix: older Fasting Tracker storage layouts migrate safely to v1.11.6."""
+"""Regression matrix: older Fasting Tracker storage layouts migrate safely to v1.11.7."""
 import json, sys
 from playwright.sync_api import sync_playwright
 from browser_perf_common import STORAGE_SHIM, inlined_html
 
-VERSION='1.11.6'
+VERSION='1.11.7'
 
 def old_data(include_modern=False):
     d={

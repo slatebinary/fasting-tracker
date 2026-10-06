@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.11.6" />
+  <meta name="ft-app-version" content="1.11.7" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -216,6 +216,8 @@ layout: null
     .historyEmpty { color: var(--muted); text-align: center; padding: 28px 10px; }
     .duration { font-weight: 700; font-variant-numeric: tabular-nums; }
     .goalBadge { display: inline-block; margin-top: 6px; font-size: 12px; color: var(--good); }
+    .excusedBadge { display:inline-block; margin-top:6px; font-size:12px; font-weight:700; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:3px 7px; }
+    .stopReasonHelp { margin-top:6px; }
     canvas { width: 100%; height: 220px; display: block; }
     nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--tab); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--line); z-index: 10; }
     .tabs { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
@@ -517,7 +519,7 @@ layout: null
       <div class="sectionHeader"><h2 data-i18n="game.consistency">Consistency</h2><span class="levelPill" id="gSummaryLevel">Level 1</span></div>
       <div class="xpHeader"><div class="xpValue" id="gSummaryXP">—</div><div class="small" id="gSummaryNext">—</div></div>
       <div class="xpTrack" id="xpProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Consistency level progress" data-i18n-aria="a11y.xpProgress"><div class="xpFill" id="gSummaryFill"></div></div>
-      <div class="small" data-i18n="game.summaryHelp">XP rewards completing your chosen target and logging weight consistently. Fasting beyond the target earns no extra XP.</div>
+      <div class="small" data-i18n="game.summaryHelp">XP rewards completing your chosen target and logging weight consistently. Excused unavoidable interruptions are neutral for the target streak but do not earn target XP. Fasting beyond the target earns no extra XP.</div>
     </div>
     <div class="card" id="ifBasicsCard">
       <h2 data-i18n="if.title">What is intermittent fasting?</h2>
@@ -580,7 +582,7 @@ layout: null
         <label><span data-i18n="history.filterTo">To date</span><input id="historyFilterTo" type="date"></label>
         <label><span data-i18n="history.filterMin">Minimum hours</span><input id="historyFilterMin" type="number" min="0" step="0.25" inputmode="decimal"></label>
         <label><span data-i18n="history.filterMax">Maximum hours</span><input id="historyFilterMax" type="number" min="0" step="0.25" inputmode="decimal"></label>
-        <label><span data-i18n="history.filterTarget">Target result</span><select id="historyFilterTarget"><option value="all" data-i18n="common.all">All</option><option value="reached" data-i18n="history.filterReached">Reached</option><option value="missed" data-i18n="history.filterMissed">Not reached</option></select></label>
+        <label><span data-i18n="history.filterTarget">Target result</span><select id="historyFilterTarget"><option value="all" data-i18n="common.all">All</option><option value="reached" data-i18n="history.filterReached">Reached</option><option value="missed" data-i18n="history.filterMissed">Not reached</option><option value="excused" data-i18n="history.filterExcused">Excused stop</option></select></label>
         <label><span data-i18n="history.filterEdited">Edit status</span><select id="historyFilterEdited"><option value="all" data-i18n="common.all">All</option><option value="edited" data-i18n="history.filterEditedOnly">Edited</option><option value="original" data-i18n="history.filterOriginalOnly">Not edited</option></select></label>
       </div>
       <label class="setupInlineToggle"><input id="historyIncludeDeleted" type="checkbox" checked><span data-i18n="history.filterDeleted">Include Recently Deleted</span></label>
@@ -779,7 +781,7 @@ layout: null
         <div class="metric"><div class="value" id="gWeekly">—</div><div class="label" data-i18n="game.weekly">Target success rate this week</div></div>
         <div class="metric"><div class="value" id="gWeightStreak">0</div><div class="label" data-i18n="game.weightStreak">Weekly weigh-in streak</div></div>
       </div>
-      <div class="small" style="margin-top:12px" data-i18n="game.rule">10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. No extra XP is awarded for fasting past the target.</div>
+      <div class="small" style="margin-top:12px" data-i18n="game.rule">10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. Excused unavoidable interruptions are neutral for the target streak and earn no target XP. No extra XP is awarded for fasting past the target.</div>
       <div class="badgeGrid" id="achievementBadges"></div>
     </div>
   </section>
@@ -992,7 +994,7 @@ layout: null
       <div class="small" data-i18n="help.autophagyText">The science card deliberately does not claim that autophagy starts at a fixed hour. Autophagy occurs continuously at a basal level, and current human studies do not support a universal fasting-duration threshold. The card separates well-established metabolic timing from more uncertain autophagy evidence and links to the studies used.</div>
 
       <div class="helpHeading" data-i18n="help.consistency">Consistency system</div>
-      <div class="small" data-i18n="help.consistencyText">Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.</div>
+      <div class="small" data-i18n="help.consistencyText">Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. An excused unavoidable interruption does not break the target streak and does not earn target XP. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.</div>
 
       <div class="helpHeading" data-i18n="public.healthTitle">Health &amp; safety</div>
       <div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
@@ -1199,6 +1201,18 @@ layout: null
       <label for="entryGoal" data-i18n="history.targetHours">Target hours</label>
       <input id="entryGoal" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
     </div>
+    <div class="formGroup" id="entryStopReasonGroup" hidden>
+      <label for="entryStopReason" data-i18n="fasting.earlyStopReasonEdit">Early-stop reason</label>
+      <select id="entryStopReason" style="width:100%;max-width:none">
+        <option value="" data-i18n="fasting.stopReasonUnspecified">Not classified</option>
+        <option value="personal" data-i18n="fasting.stopReasonPersonal">Personal choice</option>
+        <option value="business-social" data-i18n="fasting.stopReasonBusiness">Business / social obligation</option>
+        <option value="health-safety" data-i18n="fasting.stopReasonHealth">Health / safety reason</option>
+        <option value="travel-unexpected" data-i18n="fasting.stopReasonTravel">Travel / unexpected circumstances</option>
+        <option value="other-unavoidable" data-i18n="fasting.stopReasonOther">Other unavoidable reason</option>
+      </select>
+      <div class="small stopReasonHelp" data-i18n="fasting.stopReasonEditHelp">Only missed-target fasts can be classified. Unavoidable reasons are neutral for the consistency streak but do not count as target reached.</div>
+    </div>
     <div class="small" data-i18n="history.overlapHelp">Manual entries cannot overlap another saved fast or the current active fast.</div>
     <div class="small" id="entryAuditHelp" data-i18n="history.editAuditHelp" hidden>Corrections keep the same record ID. Previous values are retained in the edit audit history and included in JSON backups.</div>
     <div class="formError" id="entryError" hidden></div>
@@ -1365,6 +1379,17 @@ layout: null
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="stopFastModalTitle">
     <h2 id="stopFastModalTitle" data-i18n="fasting.stopModalTitle">Stop fasting?</h2>
     <div class="stopConfirmText" id="stopFastModalText"></div>
+    <div class="formGroup" id="stopReasonGroup" hidden>
+      <label for="stopReasonSelect" data-i18n="fasting.earlyStopReason">Why are you stopping before your target?</label>
+      <select id="stopReasonSelect" style="width:100%;max-width:none">
+        <option value="personal" data-i18n="fasting.stopReasonPersonal">Personal choice</option>
+        <option value="business-social" data-i18n="fasting.stopReasonBusiness">Business / social obligation</option>
+        <option value="health-safety" data-i18n="fasting.stopReasonHealth">Health / safety reason</option>
+        <option value="travel-unexpected" data-i18n="fasting.stopReasonTravel">Travel / unexpected circumstances</option>
+        <option value="other-unavoidable" data-i18n="fasting.stopReasonOther">Other unavoidable reason</option>
+      </select>
+      <div class="small stopReasonHelp" data-i18n="fasting.stopReasonHelp">Unavoidable interruptions stay factual in your statistics but are neutral for the consistency streak and receive no target-completion XP.</div>
+    </div>
     <div class="modalActions">
       <button id="keepFastingBtn" class="secondary" type="button" data-i18n="fasting.keepFasting">Keep fasting</button>
       <button id="stopAndSaveBtn" class="primary stop" type="button" data-i18n="fasting.stopAndSave">Stop &amp; save</button>
@@ -1431,7 +1456,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.11.6';
+  const APP_VERSION = '1.11.7';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1897,6 +1922,10 @@ layout: null
     return {...weight, deleted:true, deletedAt:deletedAt.toISOString(), deletedTimeZone:normalizeTimeZone(w.deletedTimeZone), deletionReason:reason};
   }
 
+  function normalizeStopReason(value) { return ['personal','business-social','health-safety','travel-unexpected','other-unavoidable'].includes(value) ? value : null; }
+  function isExcusedStop(record) { return !!record && !recordMetGoal(record) && ['business-social','health-safety','travel-unexpected','other-unavoidable'].includes(normalizeStopReason(record.stopReason)); }
+  function stopReasonLabel(reason) { const key=normalizeStopReason(reason); return key ? t(`fasting.stopReasonLabel.${key}`) : t('fasting.stopReasonUnspecified'); }
+
   function normalizeFastEditAuditEntry(entry) {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
     const editedAt = validDate(entry.editedAt), start = validDate(entry.start), end = validDate(entry.end);
@@ -1907,7 +1936,8 @@ layout: null
       start: start.toISOString(),
       end: end.toISOString(),
       goalHours: sanitizeGoal(entry.goalHours, 16),
-      timeZone: normalizeTimeZone(entry.timeZone)
+      timeZone: normalizeTimeZone(entry.timeZone),
+      stopReason: normalizeStopReason(entry.stopReason)
     };
   }
 
@@ -2678,7 +2708,8 @@ layout: null
       timeZone: normalizeTimeZone(r.timeZone),
       createdAt: normalizeAuditTimestamp(r.createdAt),
       modifiedAt: normalizeAuditTimestamp(r.modifiedAt),
-      editHistory: normalizeFastEditHistory(r.editHistory)
+      editHistory: normalizeFastEditHistory(r.editHistory),
+      stopReason: normalizeStopReason(r.stopReason)
     };
   }
 
@@ -2814,6 +2845,8 @@ layout: null
         }
         const editHistory = normalizeFastEditHistory(next.editHistory);
         if (!Array.isArray(next.editHistory) || JSON.stringify(next.editHistory) !== JSON.stringify(editHistory)) { next.editHistory = editHistory; changed = true; }
+        const stopReason = normalizeStopReason(next.stopReason);
+        if ((next.stopReason ?? null) !== stopReason) { next.stopReason = stopReason; changed = true; }
         // Canonicalize valid timestamps without guessing damaged core dates.
         if (start && next.start !== start.toISOString()) { next.start = start.toISOString(); changed = true; }
         if (end && next.end !== end.toISOString()) { next.end = end.toISOString(); changed = true; }
@@ -2846,6 +2879,8 @@ layout: null
         }
         const editHistory = normalizeFastEditHistory(next.editHistory);
         if (!Array.isArray(next.editHistory) || JSON.stringify(next.editHistory) !== JSON.stringify(editHistory)) { next.editHistory = editHistory; changed = true; }
+        const stopReason = normalizeStopReason(next.stopReason);
+        if ((next.stopReason ?? null) !== stopReason) { next.stopReason = stopReason; changed = true; }
         if (start && next.start !== start.toISOString()) { next.start = start.toISOString(); changed = true; }
         if (end && next.end !== end.toISOString()) { next.end = end.toISOString(); changed = true; }
         const deletedAt = validDate(next.deletedAt);
@@ -3883,6 +3918,10 @@ layout: null
     text.textContent = duration < 60000
       ? t('fasting.stopModalShort')
       : t('fasting.stopModalText', {duration: friendlyDuration(duration)});
+    const early = duration < goalMs(activeTargetHours());
+    const reasonGroup = el('stopReasonGroup');
+    if (reasonGroup) reasonGroup.hidden = !early;
+    if (early && el('stopReasonSelect')) el('stopReasonSelect').value = 'personal';
     showModal('stopFastModal', 'keepFastingBtn');
   }
 
@@ -3907,7 +3946,8 @@ layout: null
       goalHours: activeSnapshot.activeGoalHours,
       timeZone: activeSnapshot.activeTimeZone,
       createdAt: activeSnapshot.activeCreatedAt,
-      modifiedAt: activeSnapshot.activeModifiedAt
+      modifiedAt: activeSnapshot.activeModifiedAt,
+      stopReason: duration < goalMs(activeSnapshot.activeGoalHours) ? (normalizeStopReason(el('stopReasonSelect')?.value) || 'personal') : null
     };
     data.records.push(record);
     // The target used for the most recently completed fast becomes the default
@@ -4062,8 +4102,9 @@ layout: null
     const sorted = sortedRecordsDesc();
     let streak = 0;
     for (const r of sorted) {
-      if (!recordMetGoal(r)) break;
-      streak++;
+      if (recordMetGoal(r)) { streak++; continue; }
+      if (isExcusedStop(r)) continue;
+      break;
     }
     currentStreakCache = streak;
     return streak;
@@ -4103,7 +4144,7 @@ layout: null
     const key=dayKey(record.end,record.timeZone);
     if(spec.from&&key<spec.from)return false; if(spec.to&&key>spec.to)return false;
     const hours=recordMs(record)/3600000; if(spec.min!=null&&hours<spec.min)return false; if(spec.max!=null&&hours>spec.max)return false;
-    const met=recordMetGoal(record); if(spec.target==='reached'&&!met)return false; if(spec.target==='missed'&&met)return false;
+    const met=recordMetGoal(record); if(spec.target==='reached'&&!met)return false; if(spec.target==='missed'&&met)return false; if(spec.target==='excused'&&!isExcusedStop(record))return false;
     const edited=Array.isArray(record.editHistory)&&record.editHistory.length>0; if(spec.edited==='edited'&&!edited)return false; if(spec.edited==='original'&&edited)return false;
     return true;
   }
@@ -4135,8 +4176,8 @@ layout: null
   function clearWeightFilters(){for(const id of ['weightFilterFrom','weightFilterTo'])if(el(id))el(id).value='';if(el('weightIncludeDeleted'))el('weightIncludeDeleted').checked=true;weightVisibleCount=HISTORY_PAGE_SIZE;renderWeight();}
 
   function exportFastRecordsCsv(records, namePrefix='fasting-selected') {
-    const headers=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','time_zone','created_at','modified_at','edit_count','deleted_at'];
-    const rows=records.map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0,r.deletedAt||'']);
+    const headers=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','stop_reason','excused_stop','time_zone','created_at','modified_at','edit_count','deleted_at'];
+    const rows=records.map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',normalizeStopReason(r.stopReason)||'',isExcusedStop(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0,r.deletedAt||'']);
     return shareOrDownloadText(csvText(headers,rows),`${namePrefix}-${csvTimestamp()}.csv`);
   }
   function exportWeightRecordsCsv(records,namePrefix='weight-selected'){
@@ -4167,7 +4208,7 @@ layout: null
     if(targets.some(r=>data.records.some(x=>x.id===r.id))||!canRestoreFastBatch(targets)){alert(t('history.deletedRestoreOverlap'));return false;}
     const oldDeleted=data.deletedFasts.slice(),oldRecords=data.records.slice();
     const idsSet=new Set(targets.map(r=>r.id));data.deletedFasts=data.deletedFasts.filter(r=>!idsSet.has(r.id));
-    data.records.push(...targets.map(deleted=>({id:deleted.id,start:deleted.start,end:deleted.end,goalHours:deleted.goalHours,timeZone:deleted.timeZone,createdAt:normalizeAuditTimestamp(deleted.createdAt),modifiedAt:normalizeAuditTimestamp(deleted.modifiedAt),editHistory:normalizeFastEditHistory(deleted.editHistory)})));
+    data.records.push(...targets.map(deleted=>({id:deleted.id,start:deleted.start,end:deleted.end,goalHours:deleted.goalHours,timeZone:deleted.timeZone,createdAt:normalizeAuditTimestamp(deleted.createdAt),modifiedAt:normalizeAuditTimestamp(deleted.modifiedAt),editHistory:normalizeFastEditHistory(deleted.editHistory),stopReason:normalizeStopReason(deleted.stopReason)})));
     if(!save()){data.deletedFasts=oldDeleted;data.records=oldRecords;renderAll();return false;} selectedDeletedFastIds.clear();renderAll();return true;
   }
 
@@ -4187,6 +4228,7 @@ layout: null
       createdAt: normalizeAuditTimestamp(record.createdAt),
       modifiedAt: normalizeAuditTimestamp(record.modifiedAt),
       editHistory: normalizeFastEditHistory(record.editHistory),
+      stopReason: normalizeStopReason(record.stopReason),
       deleted: true,
       deletedAt: new Date().toISOString(),
       deletedTimeZone: currentTimeZone(),
@@ -4225,7 +4267,7 @@ layout: null
     if (data.records.some(r => r.id === deleted.id)) { alert(t('history.deletedRestoreIdConflict')); return false; }
     const start = validDate(deleted.start), end = validDate(deleted.end);
     if (!start || !end || intervalOverlaps(start, end)) { alert(t('history.deletedRestoreOverlap')); return false; }
-    const restored = {id:deleted.id,start:deleted.start,end:deleted.end,goalHours:deleted.goalHours,timeZone:deleted.timeZone,createdAt:normalizeAuditTimestamp(deleted.createdAt),modifiedAt:normalizeAuditTimestamp(deleted.modifiedAt),editHistory:normalizeFastEditHistory(deleted.editHistory)};
+    const restored = {id:deleted.id,start:deleted.start,end:deleted.end,goalHours:deleted.goalHours,timeZone:deleted.timeZone,createdAt:normalizeAuditTimestamp(deleted.createdAt),modifiedAt:normalizeAuditTimestamp(deleted.modifiedAt),editHistory:normalizeFastEditHistory(deleted.editHistory),stopReason:normalizeStopReason(deleted.stopReason)};
     data.deletedFasts.splice(index, 1); data.records.push(restored);
     if (!save()) {data.records=data.records.filter(r=>r.id!==restored.id);data.deletedFasts.splice(Math.min(index,data.deletedFasts.length),0,deleted);renderAll();return false;}
     renderAll(); return true;
@@ -4254,7 +4296,7 @@ layout: null
     const current=data.records[index], start=validDate(historical?.start), end=validDate(historical?.end); if(!start||!end||end<=start)return false;
     if(intervalOverlaps(start,end,recordId)){alert(t('history.errOverlap'));return false;}
     if(!confirm(t('history.restoreEditConfirm',{summary:fastEditSummary(historical)})))return false;
-    const now=new Date().toISOString(), next={...current,start:start.toISOString(),end:end.toISOString(),goalHours:sanitizeGoal(historical.goalHours,data.goalHours),timeZone:normalizeTimeZone(historical.timeZone),modifiedAt:now,editHistory:[...normalizeFastEditHistory(current.editHistory),fastEditAuditEntry(current,now)].slice(-MAX_FAST_EDIT_AUDIT)};
+    const now=new Date().toISOString(), next={...current,start:start.toISOString(),end:end.toISOString(),goalHours:sanitizeGoal(historical.goalHours,data.goalHours),timeZone:normalizeTimeZone(historical.timeZone),stopReason:normalizeStopReason(historical.stopReason),modifiedAt:now,editHistory:[...normalizeFastEditHistory(current.editHistory),fastEditAuditEntry(current,now)].slice(-MAX_FAST_EDIT_AUDIT)};
     data.records[index]=next; if(!save()){data.records[index]=current;renderAll();return false;} hideModal('editAuditModal');renderAll();return true;
   }
 
@@ -4295,7 +4337,7 @@ layout: null
       if(historyBulkMode)row.append(bulkCheckbox(r.id,selectedDeletedFastIds,t('bulk.selectFast',{date:localDateLabel(r.end,r.timeZone)})));
       const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(r.end,r.timeZone);left.append(strong);
       const times=document.createElement('div');times.className='small';times.textContent=`${localDateTimeLabel(r.start,r.timeZone)} → ${localDateTimeLabel(r.end,r.timeZone)}`;left.append(times);
-      const targetLine=document.createElement('div');targetLine.className='small';targetLine.textContent=t('history.target',{goal:formatGoal(r.goalHours??data.goalHours)});left.append(targetLine);appendEditedIndicator(left,r);
+      const targetLine=document.createElement('div');targetLine.className='small';targetLine.textContent=t('history.target',{goal:formatGoal(r.goalHours??data.goalHours)});left.append(targetLine);appendEditedIndicator(left,r);if(isExcusedStop(r)){const badge=document.createElement('div');badge.className='excusedBadge';badge.textContent=t('history.excusedStop',{reason:stopReasonLabel(r.stopReason)});left.append(badge);}
       const deletedLine=document.createElement('div');deletedLine.className='small';deletedLine.textContent=t('history.deletedAt',{date:localDateTimeLabel(r.deletedAt,r.deletedTimeZone),reason:deletionReasonLabel(r.deletionReason)});left.append(deletedLine);
       const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const dur=document.createElement('div');dur.className='duration';dur.textContent=friendlyDuration(recordMs(r));right.append(dur);
       if(!historyBulkMode){const actions=document.createElement('div');actions.className='historyActions';const restore=document.createElement('button');restore.className='secondary';restore.textContent=t('history.deletedRestore');restore.addEventListener('click',()=>restoreDeletedFast(r.id));const permanent=document.createElement('button');permanent.className='dangerText';permanent.textContent=t('history.deletedPermanent');permanent.addEventListener('click',()=>permanentlyDeleteFast(r.id));actions.append(restore,permanent);right.append(actions);}
@@ -4316,7 +4358,7 @@ layout: null
       if(historyBulkMode)row.append(bulkCheckbox(r.id,selectedFastIds,t('bulk.selectFast',{date:localDateLabel(r.end,r.timeZone)})));
       const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(r.end,r.timeZone);left.append(strong);
       const times=document.createElement('div');times.className='small';times.textContent=`${localDateTimeLabel(r.start,r.timeZone)} → ${localDateTimeLabel(r.end,r.timeZone)}`;left.append(times);
-      const targetLine=document.createElement('div');targetLine.className='small';targetLine.textContent=t('history.target',{goal:formatGoal(r.goalHours??data.goalHours)});left.append(targetLine);appendEditedIndicator(left,r);if(recordMetGoal(r)){const badge=document.createElement('div');badge.className='goalBadge';badge.textContent=t('history.targetReached');left.append(badge);}
+      const targetLine=document.createElement('div');targetLine.className='small';targetLine.textContent=t('history.target',{goal:formatGoal(r.goalHours??data.goalHours)});left.append(targetLine);appendEditedIndicator(left,r);if(recordMetGoal(r)){const badge=document.createElement('div');badge.className='goalBadge';badge.textContent=t('history.targetReached');left.append(badge);}else if(isExcusedStop(r)){const badge=document.createElement('div');badge.className='excusedBadge';badge.textContent=t('history.excusedStop',{reason:stopReasonLabel(r.stopReason)});left.append(badge);}
       const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const dur=document.createElement('div');dur.className='duration';dur.textContent=friendlyDuration(recordMs(r));right.append(dur);const exactHours=recordMs(r)/3600000;const exact=document.createElement('div');exact.className='small';exact.textContent=`${formatNumber(exactHours,0,2)}${t('unit.h')}`;right.append(exact);
       if(!historyBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');edit.addEventListener('click',()=>openEntryModal(r));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');del.addEventListener('click',()=>{if(confirm(t('history.deleteConfirm'))&&deleteFastToAudit(r, 'user'))showUndoToast(t('history.deletedUndo'),()=>restoreDeletedFast(r.id));});actions.append(edit,del);right.append(actions);}
       row.append(left,right);box.append(row);
@@ -4396,7 +4438,7 @@ layout: null
   }
 
   function hasComebackAchievement() {
-    const sorted = sortedRecordsAsc();
+    const sorted = sortedRecordsAsc().filter(r => !isExcusedStop(r));
     for (let i = 1; i < sorted.length; i++) {
       if (!recordMetGoal(sorted[i - 1]) && recordMetGoal(sorted[i])) return true;
     }
@@ -5311,15 +5353,26 @@ layout: null
       el('entryStart').value = toLocalInputValue(record.start, editingRecordTimeZone);
       el('entryEnd').value = toLocalInputValue(record.end, editingRecordTimeZone);
       el('entryGoal').value = formatNumber(record.goalHours ?? data.goalHours, 0, 3);
+      el('entryStopReason').value = normalizeStopReason(record.stopReason) || '';
     } else {
       const end = new Date();
       const start = new Date(end.getTime() - goalMs(data.goalHours));
       el('entryStart').value = toLocalInputValue(start);
       el('entryEnd').value = toLocalInputValue(end);
       el('entryGoal').value = formatNumber(data.goalHours, 0, 3);
+      el('entryStopReason').value = '';
     }
+    refreshEntryStopReasonVisibility();
     showEntryError('');
     showModal('entryModal', 'entryStart');
+  }
+
+  function refreshEntryStopReasonVisibility() {
+    const group=el('entryStopReasonGroup'); if(!group)return;
+    const tz=editingRecordTimeZone||currentTimeZone(), start=zonedLocalToDate(el('entryStart')?.value,tz), end=zonedLocalToDate(el('entryEnd')?.value,tz), target=parseLocalizedNumber(el('entryGoal')?.value);
+    const missed=!!(start&&end&&end>start&&Number.isFinite(target)&&target>0&&(end-start)<goalMs(target));
+    group.hidden=!missed;
+    if(!missed&&el('entryStopReason'))el('entryStopReason').value='';
   }
 
   function intervalOverlaps(start, end, excludeId = null) {
@@ -5340,14 +5393,15 @@ layout: null
     if (!a || !b) return false;
     return String(a.start) === String(b.start) && String(a.end) === String(b.end) &&
       sanitizeGoal(a.goalHours, data.goalHours) === sanitizeGoal(b.goalHours, data.goalHours) &&
-      normalizeTimeZone(a.timeZone) === normalizeTimeZone(b.timeZone);
+      normalizeTimeZone(a.timeZone) === normalizeTimeZone(b.timeZone) &&
+      normalizeStopReason(a.stopReason) === normalizeStopReason(b.stopReason);
   }
 
   function fastEditAuditEntry(record, editedAt = new Date().toISOString()) {
     return {
       editedAt, editedTimeZone: currentTimeZone(),
       start: record.start, end: record.end, goalHours: sanitizeGoal(record.goalHours, data.goalHours),
-      timeZone: normalizeTimeZone(record.timeZone)
+      timeZone: normalizeTimeZone(record.timeZone), stopReason: normalizeStopReason(record.stopReason)
     };
   }
 
@@ -5366,11 +5420,12 @@ layout: null
 
   function fastEditSummary(record) {
     const zone = normalizeTimeZone(record.timeZone);
-    return t('history.editSummary', {
+    const base=t('history.editSummary', {
       start: localDateTimeLabel(record.start, zone),
       end: localDateTimeLabel(record.end, zone),
       goal: formatGoal(record.goalHours)
     });
+    return normalizeStopReason(record.stopReason) ? `${base} • ${t('fasting.stopReasonSummary',{reason:stopReasonLabel(record.stopReason)})}` : base;
   }
 
   function saveManualEntry() {
@@ -5395,7 +5450,8 @@ layout: null
       timeZone: tz,
       createdAt: existingRecord ? normalizeAuditTimestamp(existingRecord.createdAt) : nowAudit,
       modifiedAt: existingRecord ? nowAudit : null,
-      editHistory: existingRecord ? normalizeFastEditHistory(existingRecord.editHistory) : []
+      editHistory: existingRecord ? normalizeFastEditHistory(existingRecord.editHistory) : [],
+      stopReason: (end - start) < goalMs(target) ? normalizeStopReason(el('entryStopReason')?.value) : null
     };
     if (existingRecord && fastingRecordCoreEqual(existingRecord, draft)) { closeEntryModal(); return; }
     if (existingRecord && substantialFastEdit(existingRecord, draft)) {
@@ -6152,8 +6208,8 @@ layout: null
   }
   function csvTimestamp(){const n=new Date();return `${dayKey(n)}-${pad(n.getHours())}${pad(n.getMinutes())}`;}
   async function exportFastingCsv(){
-    const headers=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','time_zone','created_at','modified_at','edit_count'];
-    const rows=sortedRecordsDesc().map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0]);
+    const headers=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','stop_reason','excused_stop','time_zone','created_at','modified_at','edit_count'];
+    const rows=sortedRecordsDesc().map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',normalizeStopReason(r.stopReason)||'',isExcusedStop(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0]);
     await shareOrDownloadText(csvText(headers,rows),`fasting-history-${csvTimestamp()}.csv`);
   }
   async function exportWeightCsv(){
@@ -6166,8 +6222,8 @@ layout: null
     const backup=await makeBackupPayload(),stamp=csvTimestamp();
     const jsonName=`fasting-backup-${stamp}.json`,fastName=`fasting-history-${stamp}.csv`,weightName=`weight-history-${stamp}.csv`;
     const json=JSON.stringify(backup,null,2);
-    const fastHeaders=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','time_zone','created_at','modified_at','edit_count'];
-    const fastRows=sortedRecordsDesc().map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0]);
+    const fastHeaders=['id','start','start_local','end','end_local','duration_hours','target_hours','target_reached','stop_reason','excused_stop','time_zone','created_at','modified_at','edit_count'];
+    const fastRows=sortedRecordsDesc().map(r=>[r.id,r.start,localDateTimeLabel(r.start,r.timeZone),r.end,localDateTimeLabel(r.end,r.timeZone),(recordMs(r)/3600000).toFixed(4),r.goalHours,recordMetGoal(r)?'true':'false',normalizeStopReason(r.stopReason)||'',isExcusedStop(r)?'true':'false',r.timeZone,r.createdAt||'',r.modifiedAt||'',Array.isArray(r.editHistory)?r.editHistory.length:0]);
     const weightHeaders=['id','when','when_local','weight_kg','time_zone','created_at','modified_at'];
     const weightRows=sortedWeightsAsc().slice().reverse().map(w=>[w.id,w.when,localDateTimeLabel(w.when,w.timeZone),w.kg,w.timeZone,w.createdAt||'',w.modifiedAt||'']);
     const files=[new File([json],jsonName,{type:'application/json'}),new File([csvText(fastHeaders,fastRows)],fastName,{type:'text/csv'}),new File([csvText(weightHeaders,weightRows)],weightName,{type:'text/csv'})];
@@ -6309,7 +6365,7 @@ layout: null
     const payload={
       format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, updateProtocolVersion:UPDATE_PROTOCOL_VERSION, exportedAt:new Date().toISOString(),
       environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth,deployment:{state:deploymentConsistencyState,metadataVersion:liveMetadataVersion,entryVersion:liveEntryVersion,lastCheckedAt:lastUpdateCheckAt}},
-      database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,storageGeneration:STORAGE_GENERATION,minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION,supportedBackupVersions:[BACKUP_MIN_VERSION,BACKUP_VERSION],lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
+      database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,storageGeneration:STORAGE_GENERATION,minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION,supportedBackupVersions:[BACKUP_MIN_VERSION,BACKUP_VERSION],lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,excusedStops:data.records.filter(isExcusedStop).length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
       migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,completedAt:migration.last.completedAt}:null,storage:readAppMeta().lastStorageMigration||null},
       integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code)}:null,
       recoveryMode:recoveryMode?String(recoveryMode.reason||recoveryMode):null,
@@ -6354,7 +6410,7 @@ layout: null
           lines.push(t('share.latestFastLine', {
             duration:compactDuration(duration),
             target:`${formatNumber(target,0,3)}${t('unit.h')}`,
-            result:t(recordMetGoal(latest) ? 'share.targetReached' : 'share.targetNotReached'),
+            result:t(recordMetGoal(latest) ? 'share.targetReached' : isExcusedStop(latest) ? 'share.targetNotReachedExcused' : 'share.targetNotReached'),
             date:localDateLabel(latest.end, latest.timeZone)
           }));
         }
@@ -7050,6 +7106,8 @@ layout: null
   el('deletedFastBulkPurgeBtn')?.addEventListener('click',()=>bulkPurgeDeletedFasts());
   el('entryCancelBtn').addEventListener('click', closeEntryModal);
   el('entrySaveBtn').addEventListener('click', saveManualEntry);
+  for (const id of ['entryStart','entryEnd','entryGoal']) el(id)?.addEventListener('input', refreshEntryStopReasonVisibility);
+  for (const id of ['entryStart','entryEnd','entryGoal']) el(id)?.addEventListener('change', refreshEntryStopReasonVisibility);
   el('entryModal').addEventListener('click', e => { if (e.target === el('entryModal')) closeEntryModal(); });
   bindResponsiveAction(el('addWeightBtn'), () => openWeightModal());
   for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightVisibleCount=HISTORY_PAGE_SIZE;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
@@ -7131,8 +7189,8 @@ layout: null
   }
   function mergeImportedData(imported){
     const result=JSON.parse(JSON.stringify(data));
-    const live=mergeByIdAndFingerprint(result.records,imported.records,r=>`${r.start}|${r.end}|${r.timeZone}|${r.goalHours}`,'fast');
-    const del=mergeByIdAndFingerprint(result.deletedFasts,imported.deletedFasts,r=>`${r.start}|${r.end}|${r.deletedAt}|${r.timeZone}`,'deleted fast');
+    const live=mergeByIdAndFingerprint(result.records,imported.records,r=>`${r.start}|${r.end}|${r.timeZone}|${r.goalHours}|${normalizeStopReason(r.stopReason)||''}`,'fast');
+    const del=mergeByIdAndFingerprint(result.deletedFasts,imported.deletedFasts,r=>`${r.start}|${r.end}|${r.deletedAt}|${r.timeZone}|${normalizeStopReason(r.stopReason)||''}`,'deleted fast');
     const weights=mergeByIdAndFingerprint(result.weights,imported.weights,w=>`${w.when}|${w.kg}|${w.timeZone}`,'weight');
     const delWeights=mergeByIdAndFingerprint(result.deletedWeights,imported.deletedWeights,w=>`${w.when}|${w.kg}|${w.deletedAt}|${w.timeZone}`,'deleted weight');
     result.records=live.out;result.deletedFasts=del.out;result.weights=weights.out;result.deletedWeights=delWeights.out;

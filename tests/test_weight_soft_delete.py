@@ -12,8 +12,8 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844}); errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc))); page.on('dialog',lambda d:d.accept())
-    page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.6'}));}",data)
-    page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.6'",timeout=20000)
+    page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.7'}));}",data)
+    page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.7'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click(); page.wait_for_function("document.querySelectorAll('#weightHistoryList .historyRow').length===3")
     page.locator('#weightHistoryList .historyRow').first.locator('.dangerText').click(); page.wait_for_function("!document.querySelector('#deletedWeightsCard').hidden")
     page.wait_for_timeout(200)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.11.6 regression: fasting-statistics axes stay readable on narrow phone widths."""
+"""v1.11.7 regression: fasting-statistics axes stay readable on narrow phone widths."""
 import json, subprocess
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -60,7 +60,7 @@ console.log('axis planner ok');
             assert not errors, (width, errors[:3])
             page.close()
         browser.close()
-    print('PASS: v1.11.6 adaptive fasting-statistics axis labels do not overlap on narrow phone widths')
+    print('PASS: v1.11.7 adaptive fasting-statistics axis labels do not overlap on narrow phone widths')
 
 
 if __name__ == '__main__':

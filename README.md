@@ -16,7 +16,7 @@ Fasting Tracker is designed to work locally on your device, including offline af
 - Compact grouped Fasting Patterns navigator (Overview, Timing, Goals and Long-term) with remembered per-category views
 - Weight tracking with kg/lb support and target weight
 - Weight trend chart and history
-- Optional consistency-focused gamification and achievements
+- Optional consistency-focused gamification and achievements, including neutral “excused stop” handling for unavoidable early interruptions
 - Evidence-aware intermittent-fasting basics, potential benefits, limitations and safety guidance, plus fasting/autophagy information with reputable references
 - English, Bulgarian, and Spanish interface
 - System, light, and dark appearance modes
@@ -292,3 +292,12 @@ The optional first-run setup now includes a dedicated Notifications step after t
 Because this installation is maintained for one known user who upgrades sequentially, compatibility is deliberately bounded instead of retaining every historical path indefinitely. The current storage layout is generation 3 (record-level IndexedDB). Direct startup migration supports generation 2 (legacy single-object IndexedDB) and generation 1 (legacy localStorage), then immediately rewrites them into generation 3 and removes the obsolete payload. External JSON backup import supports backup versions 1 and 2.
 
 Old internal localStorage recovery snapshots are no longer migrated. Internal snapshots are local rollback aids, not a long-term interchange format; external JSON backups remain the supported long-term recovery path. Current record-store installations created before v1.11.4 are stamped with the generation marker without rewriting fasting or weight history. The dataVersion and IndexedDB schema remain unchanged in v1.11.4.
+
+
+## v1.11.7 quality update
+
+- Adds optional early-stop reasons for missed-target fasts.
+- Business/social obligations, health/safety, travel/unexpected circumstances and other unavoidable reasons are treated as **excused** for consistency gamification: they do not break the target streak, but they also do not earn target-completion XP.
+- Actual durations and target-success statistics remain factual.
+- Stop reasons can be edited later, are retained in edit history and Recently Deleted, and are included in JSON/CSV exports.
+- History can filter excused stops separately.
