@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""v1.11.1 quality regression: filters/bulk UI, Undo, labeled recovery, backup freshness, diagnostics and keyboard accessibility."""
+"""v1.11.4 quality regression: filters/bulk UI, Undo, labeled recovery, backup freshness, diagnostics and keyboard accessibility."""
 import sys
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
 
-VERSION='1.11.1'
+VERSION='1.11.4'
 
 def seed_data():
     return {
@@ -37,11 +37,11 @@ def main():
         page.evaluate(STORAGE_SHIM)
         page.evaluate("""data=>{
           __seedFastingDbV2(data,[]);
-          localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.1',seenAt:new Date().toISOString()}));
+          localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4',seenAt:new Date().toISOString()}));
           localStorage.setItem('fastingTracker.backupMeta',JSON.stringify({firstSeenAt:'2026-10-01T00:00:00.000Z',firstDataAt:'2026-10-01T00:00:00.000Z',lastExternalBackupAt:'2026-10-05T10:00:00.000Z',lastExternalBackupRevision:10,lastExternalBackupDataUpdatedAt:'2026-10-05T10:00:00.000Z',snapshotProtectionStatus:'ok',snapshotProtectionAt:null,snapshotStoredCount:0,snapshotDesiredCount:0}));
         }""",data)
         page.set_content(inlined_html(),wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.1'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.4'",timeout=20000)
 
         # Main navigation is a real keyboard-navigable tablist.
         tabs=page.locator('.tabs')
@@ -113,6 +113,6 @@ def main():
         assert 'prefers-reduced-motion: reduce' in html and 'min-height:44px' in html
         assert not errors, errors[:5]
         browser.close()
-    print('PASS: v1.11.1 quality/history/recovery/diagnostic/accessibility checks')
+    print('PASS: v1.11.4 quality/history/recovery/diagnostic/accessibility checks')
 
 if __name__=='__main__': main()

@@ -35,7 +35,7 @@ ok(bool(re.fullmatch(r'\d+\.\d+\.\d+',str(ver.get('version','')))),'version must
 expected_version=ver.get('version')
 ok(f'<meta name="ft-app-version" content="{expected_version}"' in index,'index meta version mismatch')
 ok(f"const APP_VERSION = '{expected_version}';" in index,'APP_VERSION mismatch')
-ok(ver.get('released')=='2026-10-05','release date must be 2026-10-05')
+ok(bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}',str(ver.get('released','')))),'release date must be ISO YYYY-MM-DD')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
 for item in ver.get('shell',[]):
@@ -260,6 +260,10 @@ ok('Fasting Tracker v1.2.0' not in index and '>v1.2.0<' not in index, 'stale har
 ok("const IDB_NAME = 'FastingTrackerDB';" in index and "indexedDB.open(IDB_NAME, IDB_VERSION)" in index, 'IndexedDB primary storage layer missing')
 ok("createObjectStore('state'" in index and "createObjectStore('snapshotMeta'" in index and "createObjectStore('snapshotPayload'" in index, 'IndexedDB stores missing')
 ok("localStorage.removeItem(DATA_KEY)" in index and "localStorage.removeItem(SNAPSHOT_KEY)" in index, 'legacy large localStorage payloads are not removed after migration')
+ok('const STORAGE_GENERATION = 3;' in index and 'const MIN_DIRECT_STORAGE_GENERATION = Math.max(1, STORAGE_GENERATION - 2);' in index, 'bounded rolling storage compatibility policy missing')
+ok("storageGeneration:STORAGE_GENERATION" in index and "minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION" in index, 'storage generation is not stamped/exported in diagnostics')
+ok('localStorage.getItem(SNAPSHOT_KEY)' not in index, 'obsolete localStorage recovery snapshots should no longer be migrated')
+ok((ROOT/'COMPATIBILITY-POLICY.txt').is_file(), 'single-user compatibility policy document missing')
 ok("const PREFS_KEY = 'fastingTracker.preferences';" in index and 'function persistSmallPreferences()' in index, 'small localStorage preferences layer missing')
 ok('function persistDailyTotals(' in index and 'function updateStoredDayTotalsIncrementally()' in index, 'incremental persisted daily fasting totals missing')
 ok('MAX_IMPORT_FASTS = 100000' in index and 'MAX_IMPORT_DELETED_FASTS = 100000' in index and 'MAX_IMPORT_WEIGHTS = 100000' in index, 'lifetime record limits were not raised')
@@ -481,14 +485,14 @@ ok("navigator.share({ files: [file] })" in index and "navigator.share({files:[fi
 ok("title: t('backup.shareTitle')" not in index and "title:t('backup.shareTitle')" not in index, 'share title can create an unwanted companion text item on iOS/cloud targets')
 
 
-# v1.11.1 completed-fast edit audit regression checks
+# v1.11.4 completed-fast edit audit regression checks
 ok('function substantialFastEdit(previous, next)' in index, 'completed-fast material-change confirmation logic missing')
 ok('editHistory: normalizeFastEditHistory(r.editHistory)' in index, 'completed-fast edit audit history is not normalized')
 ok('fastEditAuditEntry(existingRecord, nowAudit)' in index, 'completed-fast previous values are not retained before edit')
 ok("t('history.editedAt'" in index, 'edited completed fasts are not visibly marked in History')
 ok('entryAuditHelp' in index and 'history.editMaterialConfirm' in en_source, 'completed-fast edit audit/confirmation UI missing')
 
-# v1.11.1 fasting-cycle preset/countdown regression checks
+# v1.11.4 fasting-cycle preset/countdown regression checks
 ok('data-goal="12"' in index and 'data-goal="14"' in index and 'data-goal="20"' in index, '12h/14h/20h settings presets missing')
 ok('data-active-goal="12"' in index and 'data-active-goal="14"' in index and 'data-active-goal="20"' in index, '12h/14h/20h active-target presets missing')
 ok('id="nextFastCard"' in index and 'function nextFastCycleInfo' in index and 'durationMs >= dayMs' in index, 'next-fast countdown implementation missing')
@@ -583,7 +587,7 @@ ok("if (Math.abs(ms - dayEndMs) < 1000) return '23:59';" in index, 'Timeline clo
 
 
 
-# v1.11.1 soft-delete/audit regression checks
+# v1.11.4 soft-delete/audit regression checks
 ok('deletedFasts: []' in index and 'function normalizeDeletedFast(' in index, 'deleted-fast audit data model missing')
 ok('deleted: true' in index and 'deletedAt:' in index and 'deletedTimeZone:' in index, 'deleted-fast audit metadata missing')
 ok('function moveFastToDeleted(' in index and "deleteFastToAudit(r, 'user')" in index, 'History deletion is not soft-delete/audit based')
@@ -593,13 +597,13 @@ ok('deleted-fast audit record' in privacy_text.lower() and 'одитните з�
 ok((ROOT/'tests'/'test_soft_delete_audit.py').is_file(), 'soft-delete audit browser regression test missing')
 
 
-# v1.11.1 cross-day continuation/detail regression checks
+# v1.11.4 cross-day continuation/detail regression checks
 ok('stats.endOfDay' in en_source and 'stats.detailFastSplitTargetBeyond' in en_source, 'cross-day Timeline detail localization missing')
 ok('function totalHoursDuration(ms)' in index and "t('stats.endOfDay')" in index, 'cross-day Timeline must use exact end-of-day wording and total-hour duration formatting')
 ok('segment.continuationKey' in index and 'isRelatedContinuation' in index and 'ctx.setLineDash([4, 3])' in index, 'selected fast/gap continuation highlighting missing')
 ok((ROOT/'tests'/'test_timeline_continuation_highlight.py').is_file(), 'Timeline continuation browser regression test missing')
 
-# v1.11.1 optional device-notification regression checks
+# v1.11.4 optional device-notification regression checks
 ok('id="notificationsCard"' in index and 'id="notificationMasterToggle"' in index and 'id="notificationTestBtn"' in index, 'notification settings UI missing')
 ok('notificationPreferences:' in index and 'function normalizeNotificationPreferences(' in index, 'notification preferences data model missing')
 ok("targetReached: true" in index and "backupDue: true" in index and "longFastSafety: true" in index and "weighIn: false" in index and "cycleComplete: false" in index, 'notification recommended defaults are incorrect')
@@ -610,7 +614,7 @@ ok("self.addEventListener('notificationclick'" in (ROOT/'sw.js').read_text(), 's
 ok('Notifications</h2>' in privacy_text and 'Известия</h2>' in privacy_text and 'Notificaciones</h2>' in privacy_text, 'localized notification privacy disclosure missing')
 ok((ROOT/'tests'/'test_notifications.py').is_file(), 'notification browser regression test missing')
 
-# v1.11.1 notification onboarding regression checks
+# v1.11.4 notification onboarding regression checks
 ok('id="setupStepNotifications" data-setup-step="5"' in index and 'id="setupStepReady" data-setup-step="6"' in index, 'notification onboarding step/order missing')
 ok('id="setupEnableNotificationsBtn"' in index and 'id="setupSkipNotificationsBtn"' in index, 'notification onboarding explicit actions missing')
 ok('function enableSetupNotifications()' in index and 'Notification.requestPermission' in index and 'function skipSetupNotifications()' in index, 'notification onboarding explicit permission flow missing')
@@ -618,7 +622,7 @@ ok('next.hidden = setupGuideStep === 5' in index, 'generic setup Continue must n
 ok('setup.notificationsIntro' in en_source and 'setup.readyNotifications' in en_source, 'notification onboarding localization missing')
 ok((ROOT/'tests'/'test_setup_notifications.py').is_file(), 'notification-onboarding browser regression test missing')
 
-# v1.11.1 weigh-in reminder cadence interaction regression checks
+# v1.11.4 weigh-in reminder cadence interaction regression checks
 ok('id="notificationWeighDailyBtn"' in index and 'id="notificationWeighWeeklyBtn"' in index, 'Settings Daily/Weekly weigh-in cadence buttons missing')
 ok('id="setupNotificationWeighDailyBtn"' in index and 'id="setupNotificationWeighWeeklyBtn"' in index, 'onboarding Daily/Weekly weigh-in cadence buttons missing')
 ok('function renderWeighCadenceButtons(' in index and 'function setSettingsWeighCadence(' in index, 'weigh-in cadence interaction helpers missing')

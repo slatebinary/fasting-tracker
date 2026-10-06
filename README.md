@@ -230,6 +230,22 @@ The weigh-in reminder interval is now selected with explicit **Daily** and **Wee
 The optional first-run setup now includes a dedicated Notifications step after the basic preferences and before the Ready summary. Recommended alerts (target reached, backup reminder and prolonged-fast safety) remain preselected; weigh-in and 24-hour-cycle remainder alerts remain off by default. The app does not request browser/device notification permission merely by showing the step. Permission is requested only after the user explicitly presses **Enable notifications**. **Not now** continues setup without changing the existing notification preferences. Unsupported and blocked notification environments are explained without blocking onboarding, and the final Ready summary shows notification status.
 
 
+## v1.11.3 weight-entry refresh fix
+
+- Fixed a stale weight cache that could make a newly added or edited weight appear not to save until the app was reloaded.
+- Add/Edit weight now invalidates weight-derived caches immediately, refreshing Latest weight, history, period statistics, chart data and dependent gamification views in the same session.
+- Added a dedicated iPhone-size regression that enters a weight for today, verifies immediate display, edits it, and verifies the corrected value without reloading.
+- **No data-schema change.** Existing fasting/weight records and v1.11.x backups remain compatible.
+
+## v1.11.2 chart readability & quality fixes
+
+- Fasting Statistics bar-chart x-axis labels are now overlap-aware: the renderer measures real label widths and reduces or shortens ticks when necessary instead of drawing text on top of adjacent labels.
+- Start-time pattern keeps all eight 3-hour buckets but uses compact clock ticks such as `00:00`, `03:00`, … on narrow screens; the full interval remains available in chart details and **Show chart data**.
+- Weeks and long localized month labels use the same adaptive tick planner, improving narrow-screen rendering.
+- Count-based charts use integer y-axis labels rather than fractional counts.
+- Resize/orientation redraws are throttled to one animation frame to reduce chart jank.
+- Added narrow-iPhone chart-axis regression coverage. No data-schema change.
+
 ## v1.11.1 stabilization & analytical controls
 
 - Completed-fast Edit history can restore an earlier version while preserving the current state as a new audit entry.
@@ -258,3 +274,9 @@ The optional first-run setup now includes a dedicated Notifications step after t
 - Main-page support logic is beginning to move into versioned helper modules under `js/` to reduce the maintenance risk of one monolithic script.
 - Added four fasting graphic views: 12-month totals, duration distribution, monthly target-success rate and start-time pattern. All expose text equivalents through Show chart data.
 - `ACCESSIBILITY-CHECKLIST.txt` adds a real-device VoiceOver/Dynamic Type/orientation release pass.
+
+## v1.11.4 single-user compatibility policy
+
+Because this installation is maintained for one known user who upgrades sequentially, compatibility is deliberately bounded instead of retaining every historical path indefinitely. The current storage layout is generation 3 (record-level IndexedDB). Direct startup migration supports generation 2 (legacy single-object IndexedDB) and generation 1 (legacy localStorage), then immediately rewrites them into generation 3 and removes the obsolete payload. External JSON backup import supports backup versions 1 and 2.
+
+Old internal localStorage recovery snapshots are no longer migrated. Internal snapshots are local rollback aids, not a long-term interchange format; external JSON backups remain the supported long-term recovery path. Current record-store installations created before v1.11.4 are stamped with the generation marker without rewriting fasting or weight history. The dataVersion and IndexedDB schema remain unchanged in v1.11.4.

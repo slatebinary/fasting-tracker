@@ -1,4 +1,4 @@
-FASTING TRACKER v1.11.1 — REAL iPHONE HOME SCREEN VERIFICATION
+FASTING TRACKER v1.11.4 — REAL iPHONE HOME SCREEN VERIFICATION
 
 Run this checklist on an actual iPhone after deploying the release. Browser automation cannot fully reproduce iOS PWA lifecycle behavior.
 
@@ -36,3 +36,8 @@ Run this checklist on an actual iPhone after deploying the release. Browser auto
 - With VoiceOver, select chart points/bars and confirm the selected value is announced.
 
 Record iPhone model, iOS version, installed app version, and any failure before publishing the release as stable.
+
+8. Weight entry refresh
+- Open Weight, add a measurement using the current date/time, and save it.
+- Confirm Latest weight, the history list, period statistics and the chart update immediately without closing/reopening the app.
+- Edit that newest weight, save it, and confirm the corrected value replaces the old value immediately.

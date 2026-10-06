@@ -15,7 +15,7 @@ local['weights'][0]['id']='local-weight'; local['weights'][0]['when']='2026-01-0
 remote=build_data(1)
 remote['records'][0]['id']='remote-fast'; remote['records'][0]['start']='2026-02-01T18:00:00.000Z'; remote['records'][0]['end']='2026-02-02T10:00:00.000Z'
 remote['weights'][0]['id']='remote-weight'; remote['weights'][0]['when']='2026-02-01T08:00:00.000Z'
-backup={'format':'fasting-tracker-backup','backupVersion':1,'appVersion':'1.11.1','exportedAt':'2026-10-04T06:00:00.000Z','data':remote}
+backup={'format':'fasting-tracker-backup','backupVersion':1,'appVersion':'1.11.4','exportedAt':'2026-10-04T06:00:00.000Z','data':remote}
 
 with tempfile.TemporaryDirectory() as td:
     pth=Path(td)/'backup.json'; pth.write_text(json.dumps(backup),encoding='utf-8')
@@ -24,12 +24,12 @@ with tempfile.TemporaryDirectory() as td:
         page=browser.new_page(viewport={'width':390,'height':844}); errors=[]; alerts=[]
         page.on('pageerror',lambda exc:errors.append(str(exc)))
         page.on('dialog',lambda d:(alerts.append(d.message),d.accept()))
-        page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.1'}));}",local)
-        page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.1'",timeout=20000)
+        page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4'}));}",local)
+        page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.4'",timeout=20000)
         page.locator('#importFile').set_input_files(str(pth))
         page.wait_for_function("!document.querySelector('#importPreviewModal').hidden")
         counts=page.locator('#importPreviewCounts').inner_text(); meta=page.locator('#importPreviewMeta').inner_text(); rng=page.locator('#importPreviewRange').inner_text()
-        if '1' not in counts or '1.11.1' not in meta or not rng.strip():
+        if '1' not in counts or '1.11.4' not in meta or not rng.strip():
             print('FAIL: import preview missing metadata/counts/range',meta,counts,rng);sys.exit(1)
         page.locator('#importPreviewMergeBtn').click()
         page.wait_for_timeout(600)

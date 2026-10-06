@@ -30,3 +30,11 @@ v1.11.x stability policy
 - Do not change DATA_VERSION or IndexedDB schema during the 1.11.x stabilization line unless required to fix a concrete correctness/data-loss issue.
 - Run REAL-IPHONE-CHECKLIST.txt before designating a 1.11.x build as stable for iPhone Home Screen use.
 - Last-known-good status is recorded only after local integrity verification passes.
+
+Single-user rolling compatibility policy
+- Storage generation 3 is the current record-store layout.
+- Direct startup migration supports the current generation plus the previous two generations only (currently generations 1-3).
+- External JSON import supports the current backup format plus one older backup generation (currently v1-v2).
+- Obsolete internal recovery-snapshot formats are not long-term compatibility targets; external JSON is the durable recovery format.
+- After a successful legacy migration, delete the obsolete primary/localStorage payload so the legacy path is not exercised again.
+- When STORAGE_GENERATION advances, reassess and prune code/tests that fall below MIN_DIRECT_STORAGE_GENERATION.

@@ -35,9 +35,9 @@ with sync_playwright() as p:
         'activeCreatedAt':start.isoformat().replace('+00:00','Z'),
         'activeModifiedAt':None,
     })
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.1',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.4',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.1'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.4'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click()
     page.wait_for_function("document.querySelector('#notificationsCard') && !document.querySelector('#notificationsCard').hidden",timeout=5000)
 
@@ -105,9 +105,9 @@ with sync_playwright() as p:
       Object.defineProperty(navigator,'serviceWorker',{value:sw,configurable:true});
     }""")
     denied_data=build_data(1)
-    denied.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.1'})); }", denied_data)
+    denied.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.4'})); }", denied_data)
     denied.set_content(inlined_html(),wait_until='domcontentloaded')
-    denied.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.1'",timeout=20000)
+    denied.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.4'",timeout=20000)
     denied.locator('.tab[data-screen="settings"]').click()
     denied.wait_for_function("!document.querySelector('#notificationBlockedHelp')?.hidden",timeout=5000)
     help_text=denied.locator('#notificationBlockedHelp').inner_text()

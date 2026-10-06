@@ -7,7 +7,7 @@ def main():
   empty={'dataVersion':1,'revision':0,'updatedAt':None,'goalHours':16,'activeStart':None,'activeGoalHours':None,'activeTimeZone':None,'activeCreatedAt':None,'activeModifiedAt':None,'records':[],'deletedFasts':[],'weights':[],'deletedWeights':[],'weightUnit':'kg','targetWeightKg':None,'gamificationEnabled':True,'language':'en','appearance':'system','iconChoice':'plate'}
   with sync_playwright() as p:
     b=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage']);page=b.new_page(viewport={'width':390,'height':844});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-    page.evaluate(STORAGE_SHIM);page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.1'}));}",empty);page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.1'")
+    page.evaluate(STORAGE_SHIM);page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4'}));}",empty);page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.4'")
     page.locator('.tab[data-screen="settings"]').click();page.wait_for_timeout(80)
     for zoom in (2,3):
       page.evaluate("z=>document.body.style.zoom=String(z)",zoom);page.wait_for_timeout(50)

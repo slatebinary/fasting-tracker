@@ -1,0 +1,25 @@
+FASTING TRACKER — SINGLE-USER COMPATIBILITY POLICY
+
+Purpose
+This app is maintained for one known user who upgrades sequentially. The goal is to keep reliable recovery while preventing historical compatibility code from growing forever.
+
+Storage
+- Current storage generation: 3 (record-level IndexedDB).
+- Minimum direct storage generation: current minus 2 (currently generation 1).
+- Generation 2: legacy single-object IndexedDB primary payload.
+- Generation 1: legacy localStorage primary payload.
+- Supported legacy primary data is validated once, rewritten into the current record stores, and the obsolete payload is deleted.
+- Current record stores created before the generation marker existed are stamped in place without rewriting fasting or weight history.
+
+Backups
+- Current external JSON backup version: 2.
+- Minimum supported external JSON backup version: 1.
+- External JSON remains the long-term recovery format.
+
+Internal snapshots
+- Internal snapshots are local rollback points, not interchange backups.
+- Current IndexedDB snapshots remain supported.
+- Obsolete localStorage snapshot collections are discarded during cleanup rather than migrated.
+
+Future pruning
+When storage generation increases, direct compatibility should remain limited to the current generation plus two previous generations. Code and regression fixtures below that boundary may then be removed after the user's current device and external backup have been verified on a supported generation.

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Regression matrix: older Fasting Tracker storage layouts migrate safely to v1.11.1."""
+"""Regression matrix: older Fasting Tracker storage layouts migrate safely to v1.11.4."""
 import json, sys
 from playwright.sync_api import sync_playwright
 from browser_perf_common import STORAGE_SHIM, inlined_html
 
-VERSION='1.11.1'
+VERSION='1.11.4'
 
 def old_data(include_modern=False):
     d={
@@ -28,7 +28,7 @@ def inspect(page):
         for(const n of ['records','deletedFasts','weights','deletedWeights','snapshotMeta','snapshotPayload']){
           const r=tx.objectStore(n).getAll(); r.onerror=()=>reject(r.error); r.onsuccess=()=>{out[n]=r.result;done();};
         }
-        const s=tx.objectStore('state').get('settings'); s.onerror=()=>reject(s.error); s.onsuccess=()=>{out.settings=s.result?.data||null;done();};
+        const s=tx.objectStore('state').get('settings'); s.onerror=()=>reject(s.error); s.onsuccess=()=>{out.settings=s.result?.data||null;out.storageGeneration=s.result?.storageGeneration??null;done();};
       };
     })""")
 
@@ -52,6 +52,9 @@ def run_case(browser, kind, last_version):
     assert len(state['records'])==1 and state['records'][0]['id']=='old-fast', (kind,state['records'])
     assert len(state['weights'])==1 and state['weights'][0]['id']=='old-weight', (kind,state['weights'])
     assert state['settings']['dataVersion']==1 and 'deletedFasts' not in state['settings'], 'record arrays must live outside settings'
+    assert state['storageGeneration']==3, f'{kind}: storage generation marker missing: {state["storageGeneration"]}'
+    assert page.evaluate("localStorage.getItem('fastingTracker.data')") is None, f'{kind}: legacy primary localStorage payload not retired'
+    assert page.evaluate("localStorage.getItem('fastingTracker.snapshots')") is None, f'{kind}: obsolete localStorage snapshots not retired'
     # Every cross-version launch with meaningful data must leave at least one rollback snapshot.
     assert state['snapshotMeta'] and state['snapshotPayload'], f'{kind}: transition snapshot missing'
     assert {x['id'] for x in state['snapshotMeta']} == {x['id'] for x in state['snapshotPayload']}, f'{kind}: orphaned snapshot'

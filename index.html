@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.11.1" />
+  <meta name="ft-app-version" content="1.11.4" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1384,6 +1384,10 @@ layout: null
   const PREFS_KEY = 'fastingTracker.preferences';
   const IDB_NAME = 'FastingTrackerDB';
   const IDB_VERSION = 2;
+  // Storage compatibility is intentionally bounded for this single-user app.
+  // Generation 3 = current record stores; 2 = legacy single-object IndexedDB; 1 = legacy localStorage.
+  const STORAGE_GENERATION = 3;
+  const MIN_DIRECT_STORAGE_GENERATION = Math.max(1, STORAGE_GENERATION - 2);
   const BACKUP_META_KEY = 'fastingTracker.backupMeta';
   const APP_META_KEY = 'fastingTracker.appMeta';
   const INSTALL_NOTICE_KEY = 'fastingTracker.installStorageNoticeDismissed';
@@ -1395,7 +1399,7 @@ layout: null
   const DATA_VERSION = 1;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 2;
-  const BACKUP_MIN_VERSION = 1;
+  const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
   const I18N_SOURCE_REVISION = 24;
   const LANGUAGE_META = Object.freeze({
@@ -1404,7 +1408,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.11.1';
+  const APP_VERSION = '1.11.4';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1453,6 +1457,8 @@ layout: null
     desired: Math.max(0, Number(backupMeta.snapshotDesiredCount) || 0)
   };
   let automaticSnapshotFailureAlerted = false;
+  let loadedStorageGeneration = STORAGE_GENERATION;
+  let recordStoreGenerationMarkerMissing = false;
   let deferredSnapshotTicket = 0;
   let snapshotCache = [];
   let storedDayTotalsMap = new Map();
@@ -1982,10 +1988,41 @@ layout: null
   async function loadRecordBasedData() {
     const settingsRow = await idbGet('state', 'settings');
     if (!settingsRow?.data) return null;
+    // Rows written before v1.11.4 have no explicit generation marker but already
+    // use the current record-store layout, so treat the missing marker as current.
+    const marker = settingsRow.storageGeneration;
+    const generation = marker == null ? STORAGE_GENERATION : Number(marker);
+    if (!Number.isInteger(generation) || generation < MIN_DIRECT_STORAGE_GENERATION || generation > STORAGE_GENERATION) throw new Error('unsupported storage generation');
+    loadedStorageGeneration = generation;
+    recordStoreGenerationMarkerMissing = marker == null;
     const [records, deletedFasts, weights, deletedWeights] = await Promise.all([
       idbGetAll('records'), idbGetAll('deletedFasts'), idbGetAll('weights'), idbGetAll('deletedWeights')
     ]);
     return {...cloneDefault(), ...settingsRow.data, records, deletedFasts, weights, deletedWeights};
+  }
+
+  async function loadCompatibleStorageSource() {
+    const recordBased = await loadRecordBasedData();
+    if (recordBased) return {data:recordBased, source:'record-stores', generation:loadedStorageGeneration, current:true};
+    if (MIN_DIRECT_STORAGE_GENERATION <= 2) {
+      const primary = await idbGet('state', 'primary');
+      if (primary?.data) return {data:validateCompatibleData(primary.data).data, source:'indexeddb-primary', generation:2, current:false};
+    }
+    if (MIN_DIRECT_STORAGE_GENERATION <= 1) {
+      const legacyRaw = getStoredDataRaw();
+      if (legacyRaw) return {data:validateCompatibleData(JSON.parse(legacyRaw)).data, source:'localstorage', generation:1, current:false};
+    }
+    return {data:null, source:'empty', generation:STORAGE_GENERATION, current:true};
+  }
+
+  function recordStorageMigration(source) {
+    if (!source || source.current || source.generation >= STORAGE_GENERATION) return;
+    const meta = readAppMeta();
+    meta.lastStorageMigration = {
+      fromGeneration:source.generation, toGeneration:STORAGE_GENERATION, source:source.source,
+      completedAt:new Date().toISOString()
+    };
+    writeAppMeta(meta);
   }
 
   function noteDiagnosticError(code) {
@@ -2010,7 +2047,7 @@ layout: null
         ['weights', targetWeightMap, persistedWeightMap],
         ['deletedWeights', targetDeletedWeightMap, persistedDeletedWeightMap]
       ];
-      state.put({key:'settings', data:dataSettingsOnly(snapshotData)});
+      state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(snapshotData)});
       state.put({key:'dailyTotals', revision:snapshotData.revision, entries:[...storedDayTotalsMap.entries()]});
       for (const [storeName, next, previous] of collections) {
         const store = tx.objectStore(storeName);
@@ -2205,23 +2242,14 @@ layout: null
 
   async function initializePersistentStorage() {
     try {
-      const recordBased = await loadRecordBasedData();
-      const dbPrimary = recordBased ? null : await idbGet('state', 'primary');
-      let loaded = recordBased || dbPrimary?.data || null;
-      let migratedLegacy = false;
-      let migratedPrimaryObject = !!dbPrimary?.data && !recordBased;
+      const storageSource = await loadCompatibleStorageSource();
+      const recordBased = storageSource.current && storageSource.source === 'record-stores' ? storageSource.data : null;
+      let loaded = storageSource.data;
       let canonicalizedStored = false;
-      if (!loaded) {
-        const legacyRaw = getStoredDataRaw();
-        if (legacyRaw) {
-          loaded = validateCompatibleData(JSON.parse(legacyRaw)).data;
-          migratedLegacy = true;
-        }
-      }
       if (loaded) {
-        // Data already written by this app is canonical; avoid O(n) re-validation
-        // on every launch. Full validation remains mandatory for legacy/import data.
-        if (!migratedLegacy && loaded.dataVersion === DATA_VERSION && Array.isArray(loaded.records) && Array.isArray(loaded.deletedFasts) && Array.isArray(loaded.weights) && Array.isArray(loaded.deletedWeights) && loaded.records.length <= MAX_IMPORT_FASTS && loaded.deletedFasts.length <= MAX_IMPORT_DELETED_FASTS && loaded.weights.length <= MAX_IMPORT_WEIGHTS) data = loaded;
+        // Current record stores are already canonical. Older supported generations
+        // are validated exactly once and then rewritten into generation 3.
+        if (storageSource.current && loaded.dataVersion === DATA_VERSION && Array.isArray(loaded.records) && Array.isArray(loaded.deletedFasts) && Array.isArray(loaded.weights) && Array.isArray(loaded.deletedWeights) && loaded.records.length <= MAX_IMPORT_FASTS && loaded.deletedFasts.length <= MAX_IMPORT_DELETED_FASTS && loaded.weights.length <= MAX_IMPORT_WEIGHTS) data = loaded;
         else {
           const prepared = validateCompatibleData(loaded);
           data = prepared.data;
@@ -2229,23 +2257,11 @@ layout: null
         }
       } else data = cloneDefault();
 
-      snapshotCache = (await idbGetAll('snapshotMeta')).map(normalizeSnapshot).filter(Boolean);
-      if (!snapshotCache.length) {
-        // One-time migration of old localStorage snapshots.
-        try {
-          const legacySnapshots = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '[]');
-          if (Array.isArray(legacySnapshots)) {
-            for (const legacy of legacySnapshots.slice(0, SNAPSHOT_SCAN_LIMIT)) {
-              const meta = normalizeSnapshot(legacy);
-              if (!meta || !legacy?.data) continue;
-              const payload = validateCompatibleData(legacy.data).data;
-              snapshotCache.push(meta);
-              await persistSnapshotRecord(meta, payload);
-            }
-          }
-        } catch {}
-      }
-      snapshotCache = pruneSnapshots(snapshotCache);
+      // Internal recovery snapshots are intentionally not a long-term interchange
+      // format. Only current IndexedDB snapshots are retained; obsolete localStorage
+      // snapshots are discarded during cleanup. External JSON backups are the
+      // supported long-term recovery path.
+      snapshotCache = pruneSnapshots((await idbGetAll('snapshotMeta')).map(normalizeSnapshot).filter(Boolean));
 
       const daily = await idbGet('state', 'dailyTotals');
       if (daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)) storedDayTotalsMap = new Map(daily.entries);
@@ -2262,10 +2278,17 @@ layout: null
       lastSuccessfulIdbSaveAt = persistenceMeta?.lastSuccessfulSaveAt || null;
       persistSmallPreferences();
 
-      if (migratedLegacy || canonicalizedStored || migratedPrimaryObject) {
+      if (!storageSource.current || canonicalizedStored) {
         await persistPrimaryNow(data, {force:true});
         try { await idbDelete('state', 'primary'); } catch {}
+        recordStorageMigration(storageSource);
+      } else if (recordStoreGenerationMarkerMissing) {
+        // Stamp pre-v1.11.4 record-store installs without rewriting history.
+        await idbPut('state', {key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(data)});
+        recordStoreGenerationMarkerMissing = false;
       }
+      // Remove obsolete large legacy payloads once current storage is available.
+      // Legacy internal snapshots are intentionally not migrated.
       try { localStorage.removeItem(DATA_KEY); localStorage.removeItem(SNAPSHOT_KEY); } catch {}
 
       let appMeta = {};
@@ -5070,7 +5093,7 @@ layout: null
     const weeks=buildWeeklySummaries(),top=18,bottom=34,left=38,right=8,w=cssW-left-right,h=cssH-top-bottom,maxH=Math.max(24,...weeks.map(x=>x.totalFastMs/3600000));
     const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
     [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(maxH*frac,0,0)}${t('unit.h')}`,left-5,y+3);});
-    const gap=8,bw=(w-gap*7)/8;weekInteractiveLayout=[];weeks.forEach((week,i)=>{const hours=week.totalFastMs/3600000,bh=(hours/maxH)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(weekSelectedKey===week.key){const sy=Math.max(top,y-3),sh=Math.min(h,bh+6);ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.strokeRect(x-3,sy,bw+6,sh);ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x-1,Math.max(top,y-1),bw+2,Math.min(h,bh+2));}ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(week.label,x+bw/2,cssH-10);weekInteractiveLayout.push({week,x,y:top,w:bw,h});});renderChartDetailForMode();
+    const gap=8,bw=(w-gap*7)/8,weekCenters=weeks.map((_,i)=>i*(bw+gap)+bw/2);ctx.font='9px -apple-system';const weekAxis=FTVisuals.axisLabelPlan(weeks,{positions:weekCenters,measureText:text=>ctx.measureText(String(text)).width,maxLabels:8,minGap:6}),weekAxisByIndex=new Map(weekAxis.map(x=>[x.index,x.text]));weekInteractiveLayout=[];weeks.forEach((week,i)=>{const hours=week.totalFastMs/3600000,bh=(hours/maxH)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(weekSelectedKey===week.key){const sy=Math.max(top,y-3),sh=Math.min(h,bh+6);ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.strokeRect(x-3,sy,bw+6,sh);ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x-1,Math.max(top,y-1),bw+2,Math.min(h,bh+2));}if(weekAxisByIndex.has(i)){ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(weekAxisByIndex.get(i),x+bw/2,cssH-10);}weekInteractiveLayout.push({week,x,y:top,w:bw,h});});renderChartDetailForMode();
   }
 
   function handleWeeksPointer(event) { const c=el('fastWeeksChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=weekInteractiveLayout.find(item=>x>=item.x&&x<=item.x+item.w&&y>=item.y&&y<=item.y+item.h);if(!hit)return;weekSelectedKey=hit.week.key;const tz=currentTimeZone(),start=zonedLocalToDate(`${hit.week.key}T00:00`,tz);let endMs=start?.getTime()||NaN;if(Number.isFinite(endMs))for(let i=0;i<7;i++)endMs=nextZonedDayBoundary(endMs,tz);statsDetailOverride={dayKey:hit.week.key,title:t('stats.weekOf',{date:hit.week.label}),text:t('stats.detailWeek',{duration:compactDuration(hit.week.totalFastMs),days:formatNumber(hit.week.daysWithFast)}),records:start&&Number.isFinite(endMs)?recordsOverlappingRange(start.getTime(),endMs):[]};drawFastWeeksChart(); }
@@ -5092,19 +5115,20 @@ layout: null
   function fullMonthBuckets(months=14){const buckets=FTVisuals.monthBuckets(data.records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),by=new Map(buckets.map(x=>[x.key,x]));for(const x of buckets){x.totalMs=0;x.hours=0;}for(const [day,totalMs] of completedFastingByStoredCalendarDay()){const b=by.get(String(day).slice(0,7));if(b){b.totalMs+=Number(totalMs)||0;b.hours=b.totalMs/3600000;}}return buckets;}
   function monthComparisonSummary(){const items=fullMonthBuckets(14),cur=items.at(-1),prev=items.at(-2),year=items.at(-13);if(!cur)return'';const mom=FTAnalytics.relativeChange(cur.hours,prev?.hours),yoy=FTAnalytics.relativeChange(cur.hours,year?.hours);const change=(now,old,pct)=>old?`${now>=old?'+':''}${formatNumber(now-old,0,1)} ${t('unit.h')}${pct==null?'':` (${pct>=0?'+':''}${formatNumber(pct,0,0)}%)`}`:t('stats.comparisonNoBaseline');return t('stats.monthComparison',{month:cur.label,mom:change(cur.hours,prev?.hours||0,mom),yoy:change(cur.hours,year?.hours||0,yoy)});}
 
-  function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false}={}){
+  function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false,integerScale=false}={}){
     const c=el(canvasId),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
-    const top=18,bottom=44,left=44,right=10,w=cssW-left-right,h=cssH-top-bottom,peak=Math.max(percent?100:1,maxValue==null?FTVisuals.maxValue(items,valueKey,1):maxValue);
+    const top=18,bottom=44,left=44,right=10,w=cssW-left-right,h=cssH-top-bottom,rawPeak=Math.max(percent?100:1,maxValue==null?FTVisuals.maxValue(items,valueKey,1):maxValue),peak=integerScale?Math.max(2,Math.ceil(rawPeak)):rawPeak;
     const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
-    [0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(peak*fr,0,percent?0:1)}${valueSuffix}`,left-5,y+3);});
-    const n=Math.max(1,items.length),gap=n>80?0.25:Math.max(2,Math.min(10,w/(n*5))),bw=Math.max(.35,(w-gap*(n-1))/n),labelStep=Math.max(1,Math.ceil(n/12));genericChartHitLayout=[];
-    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.min(4,Math.max(1,bw));ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));}if(i%labelStep===0||i===n-1){ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';const label=String(item.label||item.key||'');ctx.fillText(label.length>11?label.slice(0,10)+'…':label,x+bw/2,cssH-15);}genericChartHitLayout.push({item,x,y:top,w:Math.max(bw,3),h,canvasId,detailBuilder});});renderChartDetailForMode();
+    [0,.5,1].forEach(fr=>{const y=top+h-h*fr,tickValue=integerScale?Math.round(peak*fr):peak*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(tickValue,0,percent||integerScale?0:1)}${valueSuffix}`,left-5,y+3);});
+    const n=Math.max(1,items.length),gap=n>80?0.25:Math.max(2,Math.min(10,w/(n*5))),bw=Math.max(.35,(w-gap*(n-1))/n),centers=items.map((_,i)=>i*(bw+gap)+bw/2);genericChartHitLayout=[];
+    ctx.font='9px -apple-system';const axisLabels=FTVisuals.axisLabelPlan(items,{positions:centers,measureText:text=>ctx.measureText(String(text)).width,maxLabels:12,minGap:7}),axisByIndex=new Map(axisLabels.map(x=>[x.index,x.text]));
+    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.min(4,Math.max(1,bw));ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));}if(axisByIndex.has(i)){ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(axisByIndex.get(i),x+bw/2,cssH-15);}genericChartHitLayout.push({item,x,y:top,w:Math.max(bw,3),h,canvasId,detailBuilder});});renderChartDetailForMode();
   }
   function handleGenericChartPointer(event){const c=event.currentTarget,rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=genericChartHitLayout.find(h=>h.canvasId===c.id&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);if(!hit)return;genericChartSelectedKey=hit.item.key;statsDetailOverride=hit.detailBuilder?hit.detailBuilder(hit.item):null;renderStatsVisualizationMode(statsVizMode);renderStatsChartData();}
   function drawFastMonthsChart(){const items=buildMonthSummaries('months'),source=chartRangeRecords('months');drawGenericBarChart('fastMonthsChart',items,'hours',{valueSuffix:t('unit.h'),selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailMonth',{duration:compactDuration(x.totalMs),count:formatNumber(x.count)}),records:recordsContributingMonth(x.key,source)})});const cmp=el('fastMonthsComparison');if(cmp)cmp.textContent=monthComparisonSummary();}
-  function drawFastDistributionChart(){const items=buildDurationDistribution(),source=chartRangeRecords('distribution');drawGenericBarChart('fastDistributionChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailDistribution',{count:formatNumber(x.count),hours:formatNumber(x.totalHours,0,1)}),records:recordsForDurationBucket(x.key,source)})});}
+  function drawFastDistributionChart(){const items=buildDurationDistribution(),source=chartRangeRecords('distribution');drawGenericBarChart('fastDistributionChart',items,'count',{integerScale:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailDistribution',{count:formatNumber(x.count),hours:formatNumber(x.totalHours,0,1)}),records:recordsForDurationBucket(x.key,source)})});}
   function drawFastSuccessChart(){const items=buildTargetSuccessSummaries(),source=chartRangeRecords('success');drawGenericBarChart('fastSuccessChart',items,'successRate',{maxValue:100,valueSuffix:'%',percent:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailSuccess',{rate:formatNumber(x.successRate,0,0),reached:formatNumber(x.reached),count:formatNumber(x.count)}),records:recordsEndingInMonth(x.key,source)})});}
-  function drawFastStartPatternChart(){const items=buildStartPattern(),source=chartRangeRecords('startpattern');drawGenericBarChart('fastStartPatternChart',items,'count',{selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailStartPattern',{count:formatNumber(x.count)}),records:recordsForStartBucket(x.key,source)})});}
+  function drawFastStartPatternChart(){const items=buildStartPattern(),source=chartRangeRecords('startpattern');drawGenericBarChart('fastStartPatternChart',items,'count',{integerScale:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailStartPattern',{count:formatNumber(x.count)}),records:recordsForStartBucket(x.key,source)})});}
   function drawFastCumulativeChart(){const c=el('fastCumulativeChart'),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);const days=buildCumulativeDays(),top=18,bottom=36,left=48,right=10,w=cssW-left-right,h=cssH-top-bottom,peak=Math.max(1,...days.map(d=>d.cumulativeHours||0)),style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;[0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(peak*fr,0,0)}${t('unit.h')}`,left-5,y+3);});const xFor=i=>left+(i/Math.max(1,days.length-1))*w,yFor=v=>top+h-(Math.max(0,v)/peak)*h;ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.beginPath();days.forEach((d,i)=>{const x=xFor(i),y=yFor(d.cumulativeHours);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();cumulativeInteractiveLayout=[];const every=Math.max(1,Math.ceil(days.length/180));days.forEach((day,i)=>{const x=xFor(i),y=yFor(day.cumulativeHours);if(cumulativeSelectedDayKey===day.key||i%every===0||i===days.length-1){ctx.beginPath();ctx.arc(x,y,cumulativeSelectedDayKey===day.key?6:2,0,Math.PI*2);ctx.fillStyle=cumulativeSelectedDayKey===day.key?'#ffffff':accent;ctx.fill();if(cumulativeSelectedDayKey===day.key){ctx.strokeStyle=accent;ctx.stroke();}}cumulativeInteractiveLayout.push({day,x,y});});renderChartDetailForMode();}
   function handleCumulativePointer(event){const c=el('fastCumulativeChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;let best=null,dist=Infinity;for(const hit of cumulativeInteractiveLayout){const d=Math.hypot(x-hit.x,y-hit.y);if(d<dist){dist=d;best=hit;}}if(!best||dist>20)return;cumulativeSelectedDayKey=best.day.key;const days=buildCumulativeDays(),first=days[0];statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailCumulative',{hours:formatNumber(best.day.cumulativeHours||0,0,1),today:formatNumber((best.day.totalFastMs||0)/3600000,0,1)}),records:first?recordsOverlappingRange(first.startMs,best.day.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();}
 
@@ -5325,7 +5349,7 @@ layout: null
     };
     if (editingWeightId) data.weights = data.weights.map(w => w.id === editingWeightId ? entry : w);
     else data.weights.push(entry);
-    if (!save({ invalidateDerived: false, dirtyViews:['weight','stats','settings'] })) { renderAll(); return; }
+    if (!save({ invalidateDerived: true, dirtyViews:['weight','stats','settings','fasting'] })) { renderAll(); return; }
     closeWeightModal();
     scheduleWeightUiRefresh();
   }
@@ -5896,7 +5920,7 @@ layout: null
 
   function backupManifest(sourceData = data) {
     return {
-      dataVersion: sourceData.dataVersion, databaseSchemaVersion: IDB_VERSION,
+      dataVersion: sourceData.dataVersion, databaseSchemaVersion: IDB_VERSION, storageGeneration: STORAGE_GENERATION,
       activeFasts: sourceData.activeStart ? 1 : 0,
       fastingRecords: Array.isArray(sourceData.records) ? sourceData.records.length : 0,
       deletedFasts: Array.isArray(sourceData.deletedFasts) ? sourceData.deletedFasts.length : 0,
@@ -6134,8 +6158,8 @@ layout: null
     const payload={
       format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, updateProtocolVersion:UPDATE_PROTOCOL_VERSION, exportedAt:new Date().toISOString(),
       environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth,deployment:{state:deploymentConsistencyState,metadataVersion:liveMetadataVersion,entryVersion:liveEntryVersion,lastCheckedAt:lastUpdateCheckAt}},
-      database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
-      migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,completedAt:migration.last.completedAt}:null},
+      database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,storageGeneration:STORAGE_GENERATION,minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION,supportedBackupVersions:[BACKUP_MIN_VERSION,BACKUP_VERSION],lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
+      migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,completedAt:migration.last.completedAt}:null,storage:readAppMeta().lastStorageMigration||null},
       integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code)}:null,
       recoveryMode:recoveryMode?String(recoveryMode.reason||recoveryMode):null,
       performance:loadPerformanceMeta(),
@@ -7099,7 +7123,7 @@ layout: null
   el('exportWeightCsvBtn').addEventListener('click',exportWeightCsv);
   el('undoToastBtn').addEventListener('click',()=>{const action=undoToastAction;clearUndoToast();try{action?.();}catch{}});
   el('weightChartScroller').addEventListener('scroll', handleWeightChartScroll, {passive:true});
-  window.addEventListener('resize', () => { markViewsDirty('stats','weight'); if (el('stats').classList.contains('active')) renderScreen('stats'); if (el('weight').classList.contains('active')) renderScreen('weight'); });
+  let resizeRenderFrame=0;window.addEventListener('resize',()=>{if(resizeRenderFrame)return;resizeRenderFrame=requestAnimationFrame(()=>{resizeRenderFrame=0;markViewsDirty('stats','weight');if(el('stats').classList.contains('active'))renderScreen('stats');if(el('weight').classList.contains('active'))renderScreen('weight');});});
   window.addEventListener('online', () => { if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('offline', () => setUpdateUI('offline', t('update.offlineExplicit')));
   if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', event => {

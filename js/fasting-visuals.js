@@ -23,10 +23,24 @@
     return defs;
   }
   function startTimeBuckets(records,{partsForRecord}={}){
-    const buckets=Array.from({length:8},(_,i)=>({key:String(i),startHour:i*3,endHour:i*3+3,label:`${String(i*3).padStart(2,'0')}:00–${String((i*3+3)%24).padStart(2,'0')}:00`,count:0}));
+    const buckets=Array.from({length:8},(_,i)=>({key:String(i),startHour:i*3,endHour:i*3+3,label:`${String(i*3).padStart(2,'0')}:00–${String((i*3+3)%24).padStart(2,'0')}:00`,shortLabel:`${String(i*3).padStart(2,'0')}:00`,count:0}));
     for(const r of safeRecords(records)){const p=partsForRecord(r);const h=Number(p&&p.hour);if(Number.isFinite(h)&&h>=0&&h<24)buckets[Math.floor(h/3)].count++;}
     return buckets;
   }
+  function axisLabelPlan(items,{positions=null,measureText=null,maxLabels=12,minGap=6}={}){
+    const list=safeRecords(items),n=list.length;if(!n)return[];
+    const pos=Array.isArray(positions)&&positions.length===n?positions:list.map((_,i)=>i);
+    const measure=typeof measureText==='function'?measureText:(text=>String(text).length*6);
+    const full=item=>String(item?.axisLabel??item?.label??item?.key??'');
+    const short=item=>String(item?.shortLabel??full(item));
+    const overlaps=labels=>{let right=-Infinity;for(const label of labels){const width=Math.max(0,Number(measure(label.text))||0),left=label.x-width/2;if(left<right+minGap)return true;right=label.x+width/2;}return false;};
+    const initialStep=Math.max(1,Math.ceil(n/Math.max(1,maxLabels)));
+    for(let step=initialStep;step<=n;step++){
+      const base=[];for(let i=0;i<n;i+=step)base.push(i);const withLast=base[base.length-1]===n-1?base:[...base,n-1];
+      for(const indexes of [withLast,base])for(const useShort of [false,true]){const labels=indexes.map(index=>({index,x:pos[index],text:useShort?short(list[index]):full(list[index])}));if(!overlaps(labels))return labels;}
+    }
+    const last=n-1;return n===1?[{index:0,x:pos[0],text:short(list[0])}]:[{index:0,x:pos[0],text:short(list[0])},{index:last,x:pos[last],text:short(list[last])}];
+  }
   function maxValue(items,key,floor=1){return Math.max(floor,...safeRecords(items).map(x=>Number(x&&x[key])||0));}
-  global.FTVisuals=Object.freeze({monthBuckets,durationDistribution,startTimeBuckets,maxValue});
+  global.FTVisuals=Object.freeze({monthBuckets,durationDistribution,startTimeBuckets,axisLabelPlan,maxValue});
 })(window);
