@@ -229,6 +229,20 @@ The weigh-in reminder interval is now selected with explicit **Daily** and **Wee
 
 The optional first-run setup now includes a dedicated Notifications step after the basic preferences and before the Ready summary. Recommended alerts (target reached, backup reminder and prolonged-fast safety) remain preselected; weigh-in and 24-hour-cycle remainder alerts remain off by default. The app does not request browser/device notification permission merely by showing the step. Permission is requested only after the user explicitly presses **Enable notifications**. **Not now** continues setup without changing the existing notification preferences. Unsupported and blocked notification environments are explained without blocking onboarding, and the final Ready summary shows notification status.
 
+
+## v1.11.1 stabilization & analytical controls
+
+- Completed-fast Edit history can restore an earlier version while preserving the current state as a new audit entry.
+- Trend, Months, Durations, Target success, Start times and Cumulative views have independent remembered ranges: 7 days, 30 days, 90 days, 6 months, 1 year or all history.
+- Trend includes 7-day and 30-day rolling averages. Monthly totals include month-over-month and year-over-year comparisons.
+- Added a cumulative-fasting-hours view and chart drill-down to the exact fasting records behind a selected chart value.
+- Settings can rebuild derived daily totals/statistics/charts from the authoritative fasting records without changing those records.
+- The app records the last-known-good release only after local integrity checks pass and keeps a short local update/deployment history for troubleshooting.
+- Chart selections are announced through an ARIA live region. Large-text and real-iPhone release checklists are included.
+- Fasting range/statistical calculations were extracted to `js/fasting-analytics.js`, continuing the gradual modularization of the main page.
+- **No data-schema change:** the 1.11.x line remains on the existing data/IndexedDB schema. Storage-schema changes are frozen unless a concrete bug or requirement makes one necessary.
+- `REAL-IPHONE-CHECKLIST.txt` documents the required real-device verification for offline launch, update, notifications, restore, cache repair, iOS suspension and accessibility.
+
 ## v1.11.0 reliability & fasting visualizations
 
 - GitHub Pages deployment can now be gated by `.github/workflows/pages.yml`: the release metadata/hashes and release regression gate must pass before the Pages artifact is deployed.
@@ -244,4 +258,3 @@ The optional first-run setup now includes a dedicated Notifications step after t
 - Main-page support logic is beginning to move into versioned helper modules under `js/` to reduce the maintenance risk of one monolithic script.
 - Added four fasting graphic views: 12-month totals, duration distribution, monthly target-success rate and start-time pattern. All expose text equivalents through Show chart data.
 - `ACCESSIBILITY-CHECKLIST.txt` adds a real-device VoiceOver/Dynamic Type/orientation release pass.
-

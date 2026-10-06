@@ -1,0 +1,38 @@
+FASTING TRACKER v1.11.1 — REAL iPHONE HOME SCREEN VERIFICATION
+
+Run this checklist on an actual iPhone after deploying the release. Browser automation cannot fully reproduce iOS PWA lifecycle behavior.
+
+1. Offline launch
+- Open Fasting Tracker once online, close it, enable Airplane Mode, reopen from the Home Screen.
+- Confirm the current data and main screens load without a network connection.
+
+2. Update path
+- With an older installed release, publish a newer validated release.
+- Reopen the Home Screen app and use Settings -> Updates -> Check.
+- Confirm the update is offered only when live version.json and the live entry version agree.
+- Complete the update and confirm Settings records the installed transition and last-known-good state.
+
+3. Notification recovery
+- Deny notifications, confirm Settings reports the blocked state, then re-enable them in iOS Settings -> Notifications -> Fasting Tracker.
+- Return to the app and confirm the state refreshes without reinstalling when iOS exposes the app there.
+
+4. External JSON restore
+- Export a JSON backup, verify it is saved in Files/iCloud Drive, then import it into a clean test installation.
+- Confirm fasting history, weight history, settings, edit audit, deleted records and statistics are restored.
+
+5. Cache repair
+- Run Settings -> Repair app cache while the live server still hosts the same release.
+- Confirm current data remains intact.
+- Repeat after a newer release is published and confirm the app tells you to update instead of silently mixing releases.
+
+6. iOS lifecycle
+- Start a fast, swipe the app away, wait, reopen, and confirm elapsed time is correct.
+- Let iOS suspend the app for several hours and reopen it.
+- Rotate portrait/landscape while Statistics and a modal are open.
+
+7. Large text / accessibility
+- Test the largest practical Dynamic Type/Text Size and Display Zoom settings.
+- Confirm no essential control is clipped and modals remain scrollable.
+- With VoiceOver, select chart points/bars and confirm the selected value is announced.
+
+Record iPhone model, iOS version, installed app version, and any failure before publishing the release as stable.

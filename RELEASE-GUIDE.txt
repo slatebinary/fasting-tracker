@@ -25,3 +25,8 @@ Data-safety rules
 - Before removing/reinstalling a Home Screen PWA (including icon changes), export an external JSON backup first.
 - Do not describe persistent browser storage as surviving uninstall; it only reduces ordinary eviction risk.
 - CSV files are data exports, not the canonical restore format. The JSON backup or Export Everything bundle contains the restorable backup.
+
+v1.11.x stability policy
+- Do not change DATA_VERSION or IndexedDB schema during the 1.11.x stabilization line unless required to fix a concrete correctness/data-loss issue.
+- Run REAL-IPHONE-CHECKLIST.txt before designating a 1.11.x build as stable for iPhone Home Screen use.
+- Last-known-good status is recorded only after local integrity verification passes.
