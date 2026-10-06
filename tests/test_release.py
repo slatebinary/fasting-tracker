@@ -371,7 +371,7 @@ ok('class="fastRing" id="fastProgressTrack"' in index and "--fast-progress-angle
 ok("fastProgressTrack.style.setProperty('--fast-progress-angle'" in index, 'progress ring is not driven by live fasting progress')
 for ident in ['statsTimelineView','statsCalendarView','statsTrendView','statsWeeksView','fastCalendar','fastTrendChart','fastWeeksChart']:
     ok(f'id="{ident}"' in index, f'missing statistics visualization element {ident}')
-ok('data-viz="timeline"' in index and 'data-viz="calendar"' in index and 'data-viz="trend"' in index and 'data-viz="weeks"' in index, 'statistics visualization switcher incomplete')
+ok('id="statsVizGroupSwitcher"' in index and 'id="statsVizSelect"' in index and all(f'value="{mode}"' in index for mode in ('timeline','calendar','trend','weeks','months','distribution','success','startpattern','cumulative')), 'statistics visualization navigator incomplete')
 ok('function renderFastCalendar()' in index and 'function drawFastTrendChart()' in index and 'function drawFastWeeksChart()' in index, 'statistics visualization renderers missing')
 ok("el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer)" in index and "el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer)" in index, 'trend/week chart interactions missing')
 ok("el('calendarPrevBtn').addEventListener('click'" in index and "el('calendarNextBtn').addEventListener('click'" in index, 'calendar month navigation missing')
@@ -427,14 +427,14 @@ if errors:
 
 
 # v1.7.3 Timeline geometry, selection, and touch-response regression checks
-ok('grid-template-columns:repeat(2,minmax(0,1fr))' in index, 'visualization tabs are not enlarged to two rows')
-ok('min-height:58px' in index, 'visualization tabs do not have enlarged mobile touch targets')
+ok('.vizGroupSwitcher { display:grid; grid-template-columns:repeat(4,minmax(0,1fr))' in index and '@media (max-width:430px) { .vizGroupSwitcher { grid-template-columns:repeat(2,minmax(0,1fr)); }' in index, 'grouped statistics navigator is not compact/responsive')
+ok('.vizGroupSwitcher button { min-height:44px' in index, 'statistics group controls do not keep compact touch targets')
 ok('.timelineScroller #chart { min-width:700px; width:100%; height:310px; touch-action:pan-x; }' in index, 'timeline CSS height must match its 310px chart geometry')
 ok('const cssW = c.clientWidth || 700, cssH = c.clientHeight || 310;' in index, 'timeline must use measured CSS height for proportional drawing/hit-testing')
 ok('padding:13px 4px 33px' in index, 'dual time axes are not aligned with the timeline plot area')
 ok("el('chart').addEventListener('pointerdown', beginTimelinePointer);" in index, 'timeline lacks Pointer Events input')
 ok("el('chart').addEventListener('pointerup', finishTimelinePointer);" in index, 'timeline lacks prompt pointer-up selection')
-ok("el('statsVizSwitcher').addEventListener('pointerdown', handleStatsVizPointerDown);" in index, 'visualization tabs lack delegated Pointer Events activation')
+ok("el('statsVizGroupSwitcher').addEventListener('pointerdown', handleStatsVizGroupPointerDown);" in index and "el('statsVizSelect').addEventListener('change'" in index, 'statistics navigator input handlers missing')
 ok('requestAnimationFrame(() => {' in index and 'statsVizRenderTimer = setTimeout(() => {' in index, 'visualization tab rendering is not deferred until after an immediate paint')
 ok('ctx.strokeStyle = textColor; ctx.lineWidth = 4' in index, 'selected timeline segment lacks strong high-contrast border')
 ok('timelineAxisLeft' in index and 'timelineAxisRight' in index, 'timeline must show time axes on both sides')
@@ -446,7 +446,7 @@ if errors:
     sys.exit(1)
 
 # v1.7.4 statistics visualization responsiveness + selection contrast regression checks
-ok("statsVizSwitcher').addEventListener('pointerdown', handleStatsVizPointerDown)" in index and "addEventListener('touchstart'" not in index, 'stats switcher must use unified immediate Pointer Events')
+ok("statsVizGroupSwitcher').addEventListener('pointerdown', handleStatsVizGroupPointerDown)" in index and "addEventListener('touchstart'" not in index, 'stats group switcher must use unified immediate Pointer Events')
 ok('setTimeout(() => {' in index and 'renderStatsVisualizationMode(requestedMode)' in index, 'stats view render must be deferred until after the selection can paint')
 ok('const statsVizRendered = new Set();' in index, 'statistics visualization render cache missing')
 ok('.calendarDay.selected { outline:3px solid #fff' in index, 'calendar selection needs high-contrast white border')
@@ -485,14 +485,14 @@ ok("navigator.share({ files: [file] })" in index and "navigator.share({files:[fi
 ok("title: t('backup.shareTitle')" not in index and "title:t('backup.shareTitle')" not in index, 'share title can create an unwanted companion text item on iOS/cloud targets')
 
 
-# v1.11.4 completed-fast edit audit regression checks
+# v1.11.6 completed-fast edit audit regression checks
 ok('function substantialFastEdit(previous, next)' in index, 'completed-fast material-change confirmation logic missing')
 ok('editHistory: normalizeFastEditHistory(r.editHistory)' in index, 'completed-fast edit audit history is not normalized')
 ok('fastEditAuditEntry(existingRecord, nowAudit)' in index, 'completed-fast previous values are not retained before edit')
 ok("t('history.editedAt'" in index, 'edited completed fasts are not visibly marked in History')
 ok('entryAuditHelp' in index and 'history.editMaterialConfirm' in en_source, 'completed-fast edit audit/confirmation UI missing')
 
-# v1.11.4 fasting-cycle preset/countdown regression checks
+# v1.11.6 fasting-cycle preset/countdown regression checks
 ok('data-goal="12"' in index and 'data-goal="14"' in index and 'data-goal="20"' in index, '12h/14h/20h settings presets missing')
 ok('data-active-goal="12"' in index and 'data-active-goal="14"' in index and 'data-active-goal="20"' in index, '12h/14h/20h active-target presets missing')
 ok('id="nextFastCard"' in index and 'function nextFastCycleInfo' in index and 'durationMs >= dayMs' in index, 'next-fast countdown implementation missing')
@@ -515,7 +515,7 @@ ok("function requestActiveGoalChange(value)" in index and "function applyActiveG
 # v1.7.10 active-target edit and newest-first timeline regression checks
 ok("let timelineScrollToLatestPending = true;" in index, 'timeline latest-position state missing')
 ok("scroller.scrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);" in index, 'timeline does not align to newest/right edge')
-ok("if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;" in index, 'timeline mode does not request newest position on activation')
+ok("if(statsVizMode==='timeline')timelineScrollToLatestPending=true;" in index or "if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;" in index, 'timeline mode does not request newest position on activation')
 ok("if (target === 'stats' && statsVizMode === 'timeline') scrollTimelineToLatest();" in index, 'Stats activation does not restore newest timeline position')
 
 
@@ -556,7 +556,7 @@ ok("weightPeriodMode==='daily'?buckets:buckets.filter" in index and 'weightChart
 # v1.8.0+ performance/architecture regression checks
 ok('function renderScreen(' in index and 'const viewDirty = {' in index, 'screen-level lazy rendering missing')
 ok("document.querySelectorAll('.tab').forEach(tab => bindResponsiveAction" in index, 'bottom navigation is not on unified Pointer Events action path')
-ok("statsVizSwitcher').addEventListener('touchstart'" not in index, 'duplicate touchstart statistics path remains')
+ok("statsVizGroupSwitcher').addEventListener('touchstart'" not in index, 'duplicate touchstart statistics path remains')
 ok("addEventListener('touchstart'" not in index, 'legacy touchstart handlers remain; Pointer Events should be the single path')
 ok('statsSummaryCache' in index and 'weeklySummariesCache' in index and 'calendarDaysCache' in index, 'derived statistics caching missing')
 ok('function queueStorageProtectionRefresh()' in index and 'requestIdleCallback' in index, 'deferred storage-protection work missing')
@@ -587,7 +587,7 @@ ok("if (Math.abs(ms - dayEndMs) < 1000) return '23:59';" in index, 'Timeline clo
 
 
 
-# v1.11.4 soft-delete/audit regression checks
+# v1.11.6 soft-delete/audit regression checks
 ok('deletedFasts: []' in index and 'function normalizeDeletedFast(' in index, 'deleted-fast audit data model missing')
 ok('deleted: true' in index and 'deletedAt:' in index and 'deletedTimeZone:' in index, 'deleted-fast audit metadata missing')
 ok('function moveFastToDeleted(' in index and "deleteFastToAudit(r, 'user')" in index, 'History deletion is not soft-delete/audit based')
@@ -597,13 +597,13 @@ ok('deleted-fast audit record' in privacy_text.lower() and 'одитните з�
 ok((ROOT/'tests'/'test_soft_delete_audit.py').is_file(), 'soft-delete audit browser regression test missing')
 
 
-# v1.11.4 cross-day continuation/detail regression checks
+# v1.11.6 cross-day continuation/detail regression checks
 ok('stats.endOfDay' in en_source and 'stats.detailFastSplitTargetBeyond' in en_source, 'cross-day Timeline detail localization missing')
 ok('function totalHoursDuration(ms)' in index and "t('stats.endOfDay')" in index, 'cross-day Timeline must use exact end-of-day wording and total-hour duration formatting')
 ok('segment.continuationKey' in index and 'isRelatedContinuation' in index and 'ctx.setLineDash([4, 3])' in index, 'selected fast/gap continuation highlighting missing')
 ok((ROOT/'tests'/'test_timeline_continuation_highlight.py').is_file(), 'Timeline continuation browser regression test missing')
 
-# v1.11.4 optional device-notification regression checks
+# v1.11.6 optional device-notification regression checks
 ok('id="notificationsCard"' in index and 'id="notificationMasterToggle"' in index and 'id="notificationTestBtn"' in index, 'notification settings UI missing')
 ok('notificationPreferences:' in index and 'function normalizeNotificationPreferences(' in index, 'notification preferences data model missing')
 ok("targetReached: true" in index and "backupDue: true" in index and "longFastSafety: true" in index and "weighIn: false" in index and "cycleComplete: false" in index, 'notification recommended defaults are incorrect')
@@ -614,7 +614,7 @@ ok("self.addEventListener('notificationclick'" in (ROOT/'sw.js').read_text(), 's
 ok('Notifications</h2>' in privacy_text and 'Известия</h2>' in privacy_text and 'Notificaciones</h2>' in privacy_text, 'localized notification privacy disclosure missing')
 ok((ROOT/'tests'/'test_notifications.py').is_file(), 'notification browser regression test missing')
 
-# v1.11.4 notification onboarding regression checks
+# v1.11.6 notification onboarding regression checks
 ok('id="setupStepNotifications" data-setup-step="5"' in index and 'id="setupStepReady" data-setup-step="6"' in index, 'notification onboarding step/order missing')
 ok('id="setupEnableNotificationsBtn"' in index and 'id="setupSkipNotificationsBtn"' in index, 'notification onboarding explicit actions missing')
 ok('function enableSetupNotifications()' in index and 'Notification.requestPermission' in index and 'function skipSetupNotifications()' in index, 'notification onboarding explicit permission flow missing')
@@ -622,7 +622,7 @@ ok('next.hidden = setupGuideStep === 5' in index, 'generic setup Continue must n
 ok('setup.notificationsIntro' in en_source and 'setup.readyNotifications' in en_source, 'notification onboarding localization missing')
 ok((ROOT/'tests'/'test_setup_notifications.py').is_file(), 'notification-onboarding browser regression test missing')
 
-# v1.11.4 weigh-in reminder cadence interaction regression checks
+# v1.11.6 weigh-in reminder cadence interaction regression checks
 ok('id="notificationWeighDailyBtn"' in index and 'id="notificationWeighWeeklyBtn"' in index, 'Settings Daily/Weekly weigh-in cadence buttons missing')
 ok('id="setupNotificationWeighDailyBtn"' in index and 'id="setupNotificationWeighWeeklyBtn"' in index, 'onboarding Daily/Weekly weigh-in cadence buttons missing')
 ok('function renderWeighCadenceButtons(' in index and 'function setSettingsWeighCadence(' in index, 'weigh-in cadence interaction helpers missing')

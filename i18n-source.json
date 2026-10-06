@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 24,
-  "appVersion": "1.11.4",
+  "sourceRevision": 25,
+  "appVersion": "1.11.6",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -211,6 +211,13 @@
     "stats.patterns": "Fasting patterns",
     "stats.interactive": "Interactive",
     "stats.visualizationAria": "Statistics visualization",
+    "stats.groupAria": "Fasting pattern category",
+    "stats.groupOverview": "Overview",
+    "stats.groupTiming": "Timing",
+    "stats.groupGoals": "Goals",
+    "stats.groupLongTerm": "Long-term",
+    "stats.viewLabel": "View",
+    "stats.viewAria": "Fasting pattern view",
     "stats.vizTimeline": "Timeline",
     "stats.vizCalendar": "Calendar",
     "stats.vizTrend": "Trend",

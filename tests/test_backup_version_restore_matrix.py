@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Every supported external backup schema remains restorable in v1.11.4."""
+"""Every supported external backup schema remains restorable in v1.11.6."""
 import json, tempfile, sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM, build_data
 
-VERSION='1.11.4'
+VERSION='1.11.6'
 
 def stable(v):
     return json.dumps(v,sort_keys=True,separators=(',',':'),ensure_ascii=False)
@@ -27,7 +27,7 @@ def manifest(d):
     }
 
 def make_backup(schema,d):
-    base={'format':'fasting-tracker-backup','backupVersion':schema,'appVersion':'1.11.4','exportedAt':'2026-10-05T12:00:00.000Z','data':d}
+    base={'format':'fasting-tracker-backup','backupVersion':schema,'appVersion':'1.11.6','exportedAt':'2026-10-05T12:00:00.000Z','data':d}
     if schema==2:
         base['manifest']=manifest(d)
         base['integrity']={'scope':'data','algorithm':'FNV-1a-64','digest':fnv1a64(stable(d))}
@@ -54,9 +54,9 @@ def main():
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('dialog',lambda d:d.accept())
             page.evaluate(STORAGE_SHIM)
-            page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4'}));}",current)
+            page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.6'}));}",current)
             page.set_content(inlined_html(),wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.4'",timeout=20000)
+            page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.6'",timeout=20000)
             page.locator('#importFile').set_input_files(str(f))
             page.wait_for_function("!document.querySelector('#importPreviewModal').hidden",timeout=10000)
             meta=page.locator('#importPreviewMeta').inner_text().lower()

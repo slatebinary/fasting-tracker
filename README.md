@@ -13,6 +13,7 @@ Fasting Tracker is designed to work locally on your device, including offline af
 - Unlimited custom fasting targets, including multi-day fasts
 - Fasting history with manual add/edit/delete support
 - Daily fasting visualization and statistics
+- Compact grouped Fasting Patterns navigator (Overview, Timing, Goals and Long-term) with remembered per-category views
 - Weight tracking with kg/lb support and target weight
 - Weight trend chart and history
 - Optional consistency-focused gamification and achievements
@@ -274,6 +275,17 @@ The optional first-run setup now includes a dedicated Notifications step after t
 - Main-page support logic is beginning to move into versioned helper modules under `js/` to reduce the maintenance risk of one monolithic script.
 - Added four fasting graphic views: 12-month totals, duration distribution, monthly target-success rate and start-time pattern. All expose text equivalents through Show chart data.
 - `ACCESSIBILITY-CHECKLIST.txt` adds a real-device VoiceOver/Dynamic Type/orientation release pass.
+
+
+## v1.11.5 chart interaction and repository quality
+
+- Cumulative and Trend now show adaptive horizontal date ticks that reduce automatically before labels overlap.
+- Tapping a Cumulative/Trend point shows an edge-aware in-chart callout; selected points also get a crosshair and remain visible even when ordinary markers are thinned.
+- Dense Cumulative data keeps every underlying day selectable while drawing only a readable subset of markers. Horizontal drag scrubbing selects the nearest actual day.
+- Fasting bar charts show a compact selected-value callout, and Weight now uses density-aware markers plus adaptive x-axis labels.
+- Trend is keyboard-focusable again.
+- Release packages include `.gitignore` and exclude `__pycache__`, `.pyc`, `.pyo` and obsolete root JavaScript leftovers.
+- No fasting/weight data-schema change.
 
 ## v1.11.4 single-user compatibility policy
 

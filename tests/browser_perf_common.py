@@ -150,3 +150,12 @@ def measure_pointer_paint(page, selector):
       }));
       requestAnimationFrame(() => resolve(performance.now() - start));
     })""")
+
+
+def measure_select_paint(page, selector, value):
+    return page.locator(selector).evaluate("""(el, value) => new Promise(resolve => {
+      const start = performance.now();
+      el.value = value;
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+      requestAnimationFrame(() => resolve(performance.now() - start));
+    })""", value)

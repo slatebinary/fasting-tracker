@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.11.4 regression: fasting-statistics axes stay readable on narrow phone widths."""
+"""v1.11.6 regression: fasting-statistics axes stay readable on narrow phone widths."""
 import json, subprocess
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -42,7 +42,7 @@ console.log('axis planner ok');
               window.__axisTexts=[];
               const orig=CanvasRenderingContext2D.prototype.fillText;
               CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){
-                if(this.canvas && this.canvas.id==='fastStartPatternChart' && y>230){
+                if(this.canvas && this.canvas.id==='fastStartPatternChart' && y>190){
                   window.__axisTexts.push({text:String(text),x:Number(x),y:Number(y),width:this.measureText(String(text)).width});
                 }
                 return orig.call(this,text,x,y,...rest);
@@ -50,7 +50,7 @@ console.log('axis planner ok');
             }''')
             page.locator('.tab[data-screen="stats"]').click()
             page.wait_for_timeout(80)
-            page.locator('#statsVizSwitcher [data-viz="startpattern"]').click()
+            page.locator('#statsVizSelect').select_option('startpattern')
             page.wait_for_timeout(150)
             labels = page.evaluate("window.__axisTexts.slice(-12)")
             assert len(labels) >= 4, (width, labels)
@@ -60,7 +60,7 @@ console.log('axis planner ok');
             assert not errors, (width, errors[:3])
             page.close()
         browser.close()
-    print('PASS: v1.11.4 adaptive fasting-statistics axis labels do not overlap on narrow phone widths')
+    print('PASS: v1.11.6 adaptive fasting-statistics axis labels do not overlap on narrow phone widths')
 
 
 if __name__ == '__main__':

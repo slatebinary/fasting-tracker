@@ -16,8 +16,8 @@ for i,r in enumerate(data['records']):
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844});errors=[];page.on('pageerror',lambda exc:errors.append(str(exc)))
-    page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4'}));}",data)
-    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.4'",timeout=20000)
+    page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.6'}));}",data)
+    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.6'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click();page.locator('#weightChartDataBtn').click();page.wait_for_function("!document.querySelector('#weightChartData').hidden && document.querySelectorAll('#weightChartData li').length>0")
     if page.locator('#weightChartDataBtn').get_attribute('aria-expanded')!='true': print('FAIL: weight data disclosure aria state wrong');sys.exit(1)
     weight_rows=page.locator('#weightChartData li').all_inner_texts()

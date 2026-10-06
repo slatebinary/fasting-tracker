@@ -2,11 +2,11 @@
 """70-year daily-history browser responsiveness regression.
 
 25,567 completed fasts + 25,567 weight records approximates 70 years of daily use.
-This models an established v1.11.4 IndexedDB database with its persisted daily
+This models an established v1.11.6 IndexedDB database with its persisted daily
 aggregate already present, which is the normal state after years of incremental use.
 """
 import sys, time
-from browser_perf_common import inlined_html, STORAGE_SHIM, measure_click, measure_pointer_paint
+from browser_perf_common import inlined_html, STORAGE_SHIM, measure_click, measure_pointer_paint, measure_select_paint
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -32,11 +32,11 @@ with sync_playwright() as p:
       }
       const data={dataVersion:1,revision:1,updatedAt:'2026-01-01T00:00:00.000Z',goalHours:16,activeStart:null,activeGoalHours:null,activeTimeZone:null,activeCreatedAt:null,activeModifiedAt:null,records,deletedFasts:[],weights,deletedWeights:[],weightUnit:'kg',targetWeightKg:75,gamificationEnabled:true,language:'en',appearance:'system',iconChoice:'plate'};
       window.__seedFastingDbV2(data,[...daily.entries()]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4',seenAt:new Date().toISOString()}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.6',seenAt:new Date().toISOString()}));
     }""", COUNT)
     seed_ms=(time.perf_counter()-seed_start)*1000
     start=time.perf_counter(); page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.4'",timeout=30000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.6'",timeout=30000)
     boot=(time.perf_counter()-start)*1000
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     if page.locator('#recoveryBanner').is_visible(): print('FAIL: 70-year valid dataset entered Recovery mode'); sys.exit(1)
@@ -53,7 +53,7 @@ with sync_playwright() as p:
     timings['history']=measure_click(page,'.tab[data-screen="history"]',"document.querySelector('#history.screen.active') !== null && document.querySelectorAll('#historyList .historyRow').length > 0",20000)
     timings['stats']=measure_click(page,'.tab[data-screen="stats"]',f"document.querySelector('#stats.screen.active') !== null && document.querySelector('#mTotal').textContent.replace(/\\D/g,'') === '{COUNT}'",20000)
     for mode in ('calendar','trend','weeks','months','distribution','success','startpattern','cumulative','timeline'):
-        timings[f'viz-{mode}']=measure_pointer_paint(page,f'#statsVizSwitcher [data-viz="{mode}"]'); page.wait_for_timeout(150)
+        timings[f'viz-{mode}']=measure_select_paint(page,'#statsVizSelect',mode); page.wait_for_timeout(150)
     timings['settings-paint']=page.evaluate("""() => new Promise(resolve => { const el=document.querySelector('.tab[data-screen="settings"]'); const t=performance.now(); el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:88,pointerType:'touch',button:0,clientX:5,clientY:5})); el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:88,pointerType:'touch',button:0,clientX:5,clientY:5})); requestAnimationFrame(()=>resolve(performance.now()-t)); })""")
     browser.close()
 print('70-year performance (ms): '+', '.join(f'{k}={v:.1f}' for k,v in timings.items()))

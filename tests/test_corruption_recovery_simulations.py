@@ -20,9 +20,9 @@ with sync_playwright() as p:
     dialogs=[]
     page.on('dialog',lambda d:(dialogs.append(d.message),d.accept()))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("d=>{__seedFastingDbV2(d,[['2026-10-01',57600000]]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4'}));}",DATA)
+    page.evaluate("d=>{__seedFastingDbV2(d,[['2026-10-01',57600000]]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.6'}));}",DATA)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.4'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.6'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click(); page.wait_for_timeout(300)
 
     # Create a valid snapshot then remove only its payload to simulate partial/corrupt local recovery storage.

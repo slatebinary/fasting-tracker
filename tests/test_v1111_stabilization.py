@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""v1.11.4 stabilization regression: edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state."""
+"""v1.11.6 stabilization regression: edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state."""
 import sys
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
-VERSION='1.11.4'
+VERSION='1.11.6'
 
 def seed():
     rows=[]
@@ -34,9 +34,9 @@ def main():
         browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
         page=browser.new_page(viewport={'width':390,'height':844}); errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.evaluate(STORAGE_SHIM)
-        page.evaluate("x=>{__seedFastingDbV2(x.data,x.daily);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.4'}));}",{'data':data,'daily':daily})
+        page.evaluate("x=>{__seedFastingDbV2(x.data,x.daily);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.6'}));}",{'data':data,'daily':daily})
         page.set_content(inlined_html(),wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.4'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.6'",timeout=20000)
         # Edit-history rollback keeps same record and changes duration back from 18h to 16h.
         page.locator('.tab[data-screen="history"]').click();page.wait_for_timeout(120)
         page.locator('#historyList .textButton').last.click();page.wait_for_timeout(50)
@@ -46,19 +46,19 @@ def main():
         assert '16h' in page.locator('#historyList').inner_text()
         # Statistics ranges are remembered per chart and Trend exposes rolling averages.
         page.locator('.tab[data-screen="stats"]').click();page.wait_for_timeout(120)
-        page.locator('#statsVizSwitcher [data-viz="trend"]').click();page.wait_for_timeout(120)
+        page.locator('#statsVizSelect').select_option('trend');page.wait_for_timeout(120)
         page.select_option('#statsRangeSelect','7d');page.wait_for_timeout(150)
         saved=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.chartRanges')).trend")
         assert saved=='7d',saved
         if page.locator('#statsChartData').is_hidden(): page.locator('#statsChartDataBtn').click()
         page.wait_for_timeout(50);txt=page.locator('#statsChartData').inner_text();assert '7d' in txt and '30d' in txt,txt
         # Cumulative view and accessible equivalent.
-        page.locator('#statsVizSwitcher [data-viz="cumulative"]').click();page.wait_for_timeout(150)
+        page.locator('#statsVizSelect').select_option('cumulative');page.wait_for_timeout(150)
         assert page.locator('#fastCumulativeChart').is_visible()
         if page.locator('#statsChartData').is_hidden(): page.locator('#statsChartDataBtn').click()
         assert page.locator('#statsChartData li').count()>0
         # Monthly selection exposes contributing records drill-down.
-        page.locator('#statsVizSwitcher [data-viz="months"]').click();page.wait_for_timeout(150)
+        page.locator('#statsVizSelect').select_option('months');page.wait_for_timeout(150)
         canvas=page.locator('#fastMonthsChart');box=canvas.bounding_box();
         page.mouse.click(box['x']+box['width']*0.94,box['y']+box['height']*0.45);page.wait_for_timeout(100)
         assert not page.locator('#statsDrilldownBtn').is_hidden()
@@ -76,6 +76,6 @@ def main():
         assert good and good['version']==VERSION,good
         assert not errors,errors[:5]
         browser.close()
-    print('PASS: v1.11.4 edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state')
+    print('PASS: v1.11.6 edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state')
 
 if __name__=='__main__':main()

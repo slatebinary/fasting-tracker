@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.11.4" />
+  <meta name="ft-app-version" content="1.11.6" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -142,12 +142,17 @@ layout: null
     .fastRingInner { width:calc(100% - 18px); height:calc(100% - 18px); border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
     .fastRing .friendlyTimer { font-size:clamp(31px,9vw,48px); margin:0 0 3px; }
     .fastRing .exactTimer { margin:0; font-size:16px; }
-    .vizSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:7px; border-radius:16px; background:var(--line); margin:6px 0 16px; touch-action:manipulation; }
-    .vizSwitcher button { min-height:58px; padding:14px 12px; border-radius:12px; background:transparent; color:var(--text); font-size:16px; line-height:1.15; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; position:relative; z-index:1; }
+    .vizGroupSwitcher { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:6px; border-radius:14px; background:var(--line); margin:6px 0 9px; touch-action:manipulation; }
+    .vizGroupSwitcher button { min-height:44px; padding:9px 7px; border-radius:10px; background:transparent; color:var(--text); font-size:14px; line-height:1.12; min-width:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; position:relative; z-index:1; }
+    .vizGroupSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
+    .vizGroupSwitcher button.pressed { transform:scale(.985); background:color-mix(in srgb,var(--card) 86%,var(--accent) 14%); }
+    .vizViewChooser { display:flex; align-items:center; gap:10px; margin:0 0 14px; padding:9px 11px; border:1px solid var(--line); border-radius:13px; background:var(--card); }
+    .vizViewChooser label { display:flex; align-items:center; gap:9px; width:100%; margin:0; }
+    .vizViewChooser .vizViewLabel { color:var(--muted); font-size:13px; font-weight:700; white-space:nowrap; }
+    .vizViewChooser select { flex:1; min-width:0; margin:0; padding:10px 34px 10px 12px; font-weight:700; }
     .screen:not(.active) { content-visibility:hidden; contain-intrinsic-size:1px 900px; }
-    #chart, #fastTrendChart, #fastWeeksChart, #fastMonthsChart, #fastDistributionChart, #fastSuccessChart, #fastStartPatternChart, #weightChart { contain:layout paint; }
-    .vizSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
-    .vizSwitcher button.pressed { transform:scale(.985); background:color-mix(in srgb,var(--card) 86%,var(--accent) 14%); }
+    #chart, #fastTrendChart, #fastWeeksChart, #fastMonthsChart, #fastDistributionChart, #fastSuccessChart, #fastStartPatternChart, #fastCumulativeChart, #weightChart { contain:layout paint; }
+    #fastTrendChart, #fastCumulativeChart { touch-action:pan-y; }
     .statsVizView[hidden] { display:none !important; }
     .statsVizView canvas { width:100%; display:block; }
     #statsTimelineView { padding-bottom:4px; }
@@ -181,7 +186,7 @@ layout: null
     .legendSwatch.l2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
     .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
     .legendSwatch.l4 { background:color-mix(in srgb, var(--accent) 58%, var(--card)); }
-    @media (max-width:380px) { .vizSwitcher button { font-size:15px; min-height:56px; padding:13px 9px; } .timelineShell { grid-template-columns:40px minmax(0,1fr) 40px; } .calendarDay { min-height:48px; } }
+    @media (max-width:430px) { .vizGroupSwitcher { grid-template-columns:repeat(2,minmax(0,1fr)); } .vizGroupSwitcher button { min-height:42px; font-size:14px; padding:8px 6px; } .timelineShell { grid-template-columns:40px minmax(0,1fr) 40px; } .calendarDay { min-height:48px; } }
     button { font: inherit; border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 650; cursor: pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
     button.fastActionPressed { transform:scale(.985); filter:brightness(.96); }
     a, .tab { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
@@ -676,16 +681,34 @@ layout: null
     </div>
     <div class="card" style="margin-top:14px">
       <div class="sectionHeader"><h2 data-i18n="stats.patterns">Fasting patterns</h2></div>
-      <div class="vizSwitcher" id="statsVizSwitcher" role="tablist" aria-label="Statistics visualization" data-i18n-aria="stats.visualizationAria">
-        <button type="button" class="active" data-viz="timeline" role="tab" aria-selected="true" data-i18n="stats.vizTimeline">Timeline</button>
-        <button type="button" data-viz="calendar" role="tab" aria-selected="false" data-i18n="stats.vizCalendar">Calendar</button>
-        <button type="button" data-viz="trend" role="tab" aria-selected="false" data-i18n="stats.vizTrend">Trend</button>
-        <button type="button" data-viz="weeks" role="tab" aria-selected="false" data-i18n="stats.vizWeeks">Weeks</button>
-        <button type="button" data-viz="months" role="tab" aria-selected="false" data-i18n="stats.vizMonths">Months</button>
-        <button type="button" data-viz="distribution" role="tab" aria-selected="false" data-i18n="stats.vizDistribution">Durations</button>
-        <button type="button" data-viz="success" role="tab" aria-selected="false" data-i18n="stats.vizSuccess">Target success</button>
-        <button type="button" data-viz="startpattern" role="tab" aria-selected="false" data-i18n="stats.vizStartPattern">Start times</button>
-        <button type="button" data-viz="cumulative" role="tab" aria-selected="false" data-i18n="stats.vizCumulative">Cumulative</button>
+      <div class="vizGroupSwitcher" id="statsVizGroupSwitcher" role="tablist" aria-label="Fasting pattern category" data-i18n-aria="stats.groupAria">
+        <button type="button" class="active" data-viz-group="overview" role="tab" aria-selected="true" data-i18n="stats.groupOverview">Overview</button>
+        <button type="button" data-viz-group="timing" role="tab" aria-selected="false" data-i18n="stats.groupTiming">Timing</button>
+        <button type="button" data-viz-group="goals" role="tab" aria-selected="false" data-i18n="stats.groupGoals">Goals</button>
+        <button type="button" data-viz-group="longterm" role="tab" aria-selected="false" data-i18n="stats.groupLongTerm">Long-term</button>
+      </div>
+      <div class="vizViewChooser">
+        <label for="statsVizSelect"><span class="vizViewLabel" data-i18n="stats.viewLabel">View</span>
+          <select id="statsVizSelect" aria-label="Fasting pattern view" data-i18n-aria="stats.viewAria">
+            <optgroup label="Overview" data-i18n-label="stats.groupOverview">
+              <option value="timeline" data-i18n="stats.vizTimeline">Timeline</option>
+              <option value="calendar" data-i18n="stats.vizCalendar">Calendar</option>
+              <option value="trend" data-i18n="stats.vizTrend">Trend</option>
+              <option value="weeks" data-i18n="stats.vizWeeks">Weeks</option>
+            </optgroup>
+            <optgroup label="Timing" data-i18n-label="stats.groupTiming">
+              <option value="startpattern" data-i18n="stats.vizStartPattern">Start times</option>
+              <option value="distribution" data-i18n="stats.vizDistribution">Durations</option>
+            </optgroup>
+            <optgroup label="Goals" data-i18n-label="stats.groupGoals">
+              <option value="success" data-i18n="stats.vizSuccess">Target success</option>
+              <option value="months" data-i18n="stats.vizMonths">Months</option>
+            </optgroup>
+            <optgroup label="Long-term" data-i18n-label="stats.groupLongTerm">
+              <option value="cumulative" data-i18n="stats.vizCumulative">Cumulative</option>
+            </optgroup>
+          </select>
+        </label>
       </div>
       <div class="statsRangeBar" id="statsRangeBar" hidden>
         <label><span class="small" data-i18n="stats.rangeLabel">Chart range</span><select id="statsRangeSelect">
@@ -719,7 +742,7 @@ layout: null
         <div class="vizLegend"><span data-i18n="stats.less">Less</span><span class="legendSwatch"></span><span class="legendSwatch l1"></span><span class="legendSwatch l2"></span><span class="legendSwatch l3"></span><span class="legendSwatch l4"></span><span data-i18n="stats.more">More</span></div>
       </div>
       <div class="statsVizView" id="statsTrendView" hidden>
-        <canvas id="fastTrendChart" width="660" height="260" role="img" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
+        <canvas id="fastTrendChart" width="660" height="260" role="img" tabindex="0" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
       </div>
       <div class="statsVizView" id="statsWeeksView" hidden>
         <canvas id="fastWeeksChart" width="660" height="260" role="img" tabindex="0" aria-label="Weekly fasting hours for the last 8 weeks" data-i18n-aria="a11y.fastWeeksChart"></canvas>
@@ -1401,14 +1424,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 24;
+  const I18N_SOURCE_REVISION = 25;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.11.4';
+  const APP_VERSION = '1.11.6';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1423,6 +1446,13 @@ layout: null
   const PERF_META_KEY = 'fastingTracker.performance';
   const UPDATE_STATUS_META_KEY = 'fastingTracker.updateStatus';
   const CHART_RANGE_KEY = 'fastingTracker.chartRanges';
+  const STATS_VIZ_PREF_KEY = 'fastingTracker.statsVizSelection';
+  const STATS_VIZ_GROUPS = Object.freeze({
+    overview: Object.freeze(['timeline','calendar','trend','weeks']),
+    timing: Object.freeze(['startpattern','distribution']),
+    goals: Object.freeze(['success','months']),
+    longterm: Object.freeze(['cumulative'])
+  });
   const DEFAULT_CHART_RANGES=Object.freeze({trend:'30d',months:'1y',distribution:'all',success:'1y',startpattern:'all',cumulative:'90d'});
   const LONG_FAST_NOTICE_HOURS = 72;
   const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
@@ -1488,6 +1518,8 @@ layout: null
   let genericChartHitLayout = [];
   let cumulativeInteractiveLayout = [];
   let cumulativeSelectedDayKey = null;
+  let cumulativePlotBounds = null;
+  let cumulativePointerState = null;
   let statsDrilldownRecordIds = [];
   let chartRanges = loadChartRanges();
   let historyBulkMode = false, weightBulkMode = false;
@@ -1544,10 +1576,13 @@ layout: null
   let timelineChartGeometry = null;
   let timelineChartDays = [];
   let chartSelectedTarget = null;
-  let statsVizMode = 'timeline';
+  let statsVizPrefs = loadStatsVizPrefs();
+  let statsVizGroup = statsVizPrefs.activeGroup;
+  let statsVizMode = statsVizPrefs.lastByGroup[statsVizGroup] || STATS_VIZ_GROUPS[statsVizGroup][0];
   let statsCalendarMonthOffset = 0;
   let statsDetailOverride = null;
   let trendInteractiveLayout = [];
+  let trendPlotBounds = null;
   let weekInteractiveLayout = [];
   let genericChartSelectedKey = null;
   let trendSelectedDayKey = null;
@@ -1650,6 +1685,8 @@ layout: null
     document.querySelectorAll('[data-i18n-html]').forEach(node => { node.innerHTML = t(node.dataset.i18nHtml); });
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(node => { node.setAttribute('placeholder', t(node.dataset.i18nPlaceholder)); });
+    document.querySelectorAll('[data-i18n-label]').forEach(node => { node.label = t(node.dataset.i18nLabel); });
+    syncStatsVizNavigator();
     renderLanguageOptions();
     applyIconChoice();
     const appleTitle = document.getElementById('appleAppTitle');
@@ -4887,27 +4924,71 @@ layout: null
     updateStatsRangeControl();
   }
 
-  function activateStatsVizControl(target) {
-    const button = target?.closest?.('#statsVizSwitcher [data-viz]');
-    if (!button) return false;
+  function statsVizGroupForMode(mode) {
+    for (const [group,modes] of Object.entries(STATS_VIZ_GROUPS)) if (modes.includes(mode)) return group;
+    return 'overview';
+  }
+
+  function defaultStatsVizPrefs() {
+    return { activeGroup:'overview', lastByGroup:{ overview:'timeline', timing:'startpattern', goals:'success', longterm:'cumulative' } };
+  }
+
+  function loadStatsVizPrefs() {
+    const fallback=defaultStatsVizPrefs();
+    try {
+      const parsed=JSON.parse(localStorage.getItem(STATS_VIZ_PREF_KEY)||'null');
+      if(!parsed||typeof parsed!=='object')return fallback;
+      const activeGroup=Object.hasOwn(STATS_VIZ_GROUPS,parsed.activeGroup)?parsed.activeGroup:'overview';
+      const lastByGroup={...fallback.lastByGroup};
+      for(const [group,modes] of Object.entries(STATS_VIZ_GROUPS)){const candidate=parsed.lastByGroup?.[group];if(modes.includes(candidate))lastByGroup[group]=candidate;}
+      return {activeGroup,lastByGroup};
+    } catch { return fallback; }
+  }
+
+  function saveStatsVizPrefs() {
+    try { localStorage.setItem(STATS_VIZ_PREF_KEY,JSON.stringify(statsVizPrefs)); } catch {}
+  }
+
+  function syncStatsVizNavigator() {
+    const group=statsVizGroupForMode(statsVizMode);
+    statsVizGroup=group;
+    document.querySelectorAll('#statsVizGroupSwitcher [data-viz-group]').forEach(btn=>{
+      const active=btn.dataset.vizGroup===group;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-selected',String(active));
+      btn.tabIndex=active?0:-1;
+    });
+    const select=el('statsVizSelect');
+    if(select&&select.value!==statsVizMode)select.value=statsVizMode;
+  }
+
+  function setStatsVizGroup(group) {
+    if(!Object.hasOwn(STATS_VIZ_GROUPS,group))return;
+    statsVizGroup=group;
+    statsVizPrefs.activeGroup=group;
+    const preferred=STATS_VIZ_GROUPS[group].includes(statsVizPrefs.lastByGroup?.[group])?statsVizPrefs.lastByGroup[group]:STATS_VIZ_GROUPS[group][0];
+    saveStatsVizPrefs();
+    setStatsVizMode(preferred);
+  }
+
+  function activateStatsVizGroupControl(target) {
+    const button=target?.closest?.('#statsVizGroupSwitcher [data-viz-group]');
+    if(!button)return false;
     button.classList.add('pressed');
-    setTimeout(() => button.classList.remove('pressed'), 100);
-    setStatsVizMode(button.dataset.viz);
+    setTimeout(()=>button.classList.remove('pressed'),100);
+    setStatsVizGroup(button.dataset.vizGroup);
     return true;
   }
 
-  function handleStatsVizPointerDown(event) {
-    if (!activateStatsVizControl(event.target)) return;
-    statsVizPointerStamp = performance.now();
-    // Pointer Events are the single touch/mouse path. Preventing the later
-    // compatibility click avoids duplicate work on iOS standalone PWAs.
-    if (event.cancelable) event.preventDefault();
+  function handleStatsVizGroupPointerDown(event) {
+    if(!activateStatsVizGroupControl(event.target))return;
+    statsVizPointerStamp=performance.now();
+    if(event.cancelable)event.preventDefault();
   }
 
-  function handleStatsVizClick(event) {
-    // Keep keyboard activation (detail === 0) and old-browser fallback only.
-    if (event.detail !== 0 && performance.now() - statsVizPointerStamp < 700) return;
-    activateStatsVizControl(event.target);
+  function handleStatsVizGroupClick(event) {
+    if(event.detail!==0&&performance.now()-statsVizPointerStamp<700)return;
+    activateStatsVizGroupControl(event.target);
   }
 
   function showStatsVizView(mode) {
@@ -4950,18 +5031,20 @@ layout: null
   }
 
   function setStatsVizMode(mode) {
-    const allowed = ['timeline','calendar','trend','weeks','months','distribution','success','startpattern','cumulative'];
-    const nextMode = allowed.includes(mode) ? mode : 'timeline';
-    if (statsVizMode === nextMode) return;
-    statsVizMode = nextMode;
-    statsDetailOverride = null;
-    genericChartSelectedKey = null;
-    if (statsVizMode === 'timeline') timelineScrollToLatestPending = true;
-    document.querySelectorAll('#statsVizSwitcher [data-viz]').forEach(btn => {
-      const active = btn.dataset.viz === statsVizMode;
-      btn.classList.toggle('active', active);
-      btn.setAttribute('aria-selected', String(active));
-    });
+    const allowed=Object.values(STATS_VIZ_GROUPS).flat();
+    const nextMode=allowed.includes(mode)?mode:'timeline';
+    const nextGroup=statsVizGroupForMode(nextMode);
+    const changed=statsVizMode!==nextMode;
+    statsVizMode=nextMode;
+    statsVizGroup=nextGroup;
+    statsVizPrefs.activeGroup=nextGroup;
+    statsVizPrefs.lastByGroup[nextGroup]=nextMode;
+    saveStatsVizPrefs();
+    syncStatsVizNavigator();
+    if(!changed)return;
+    statsDetailOverride=null;
+    genericChartSelectedKey=null;
+    if(statsVizMode==='timeline')timelineScrollToLatestPending=true;
 
     // Switch the panel and explanatory copy immediately. If this mode was
     // already rendered for the current data revision, no chart work is needed
@@ -4969,10 +5052,11 @@ layout: null
     showStatsVizView(statsVizMode);
     updateStatsRangeControl();
     renderChartDetailForMode();
-    if (!statsVizRendered.has(statsVizMode) || data.activeStart) scheduleStatsVizRender(statsVizMode);
+    if(!statsVizRendered.has(statsVizMode)||data.activeStart)scheduleStatsVizRender(statsVizMode);
   }
 
   function renderStatsVisualizations() {
+    syncStatsVizNavigator();
     // Data changes invalidate the render cache. Render only the visible mode;
     // other modes are rendered lazily after their tab has already painted.
     renderStatsVisualizationMode(statsVizMode);
@@ -5057,26 +5141,73 @@ layout: null
     return days;
   }
 
+  function chartAxisDayText(day, range='30d') {
+    if (!day) return '';
+    try {
+      const anchor = new Date((Number(day.startMs)||Date.now()) + 12*3600000);
+      const tz = normalizeTimeZone(day.timeZone || currentTimeZone());
+      const opts = range === 'all' ? {year:'numeric',timeZone:tz} : (range === '1y' || range === '6m') ? {month:'short',year:'2-digit',timeZone:tz} : {day:'numeric',month:'short',timeZone:tz};
+      return anchor.toLocaleDateString(currentLocale(), opts);
+    } catch { return day.label || day.key || ''; }
+  }
+  function markerStepForPlot(count, width, range='30d') {
+    count = Math.max(0, Number(count)||0); width = Math.max(1, Number(width)||1);
+    if (count <= 31) return 1;
+    const minSpacing = range === 'all' ? 28 : range === '1y' ? 22 : range === '6m' ? 18 : 15;
+    return Math.max(1, Math.ceil(count / Math.max(2, Math.floor(width/minSpacing))));
+  }
+  function canvasEllipsis(ctx, text, maxWidth) {
+    text=String(text??''); if(ctx.measureText(text).width<=maxWidth)return text;
+    const ell='…';let lo=0,hi=text.length;
+    while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(ctx.measureText(text.slice(0,mid)+ell).width<=maxWidth)lo=mid;else hi=mid-1;}
+    return text.slice(0,Math.max(0,lo))+ell;
+  }
+  function drawChartCallout(ctx,{x,y,primary,secondary,canvasW,canvasH,accent,card,textColor,muted}) {
+    const pad=9,labelH=39,maxW=Math.max(72,canvasW-8);
+    ctx.save();ctx.font='600 12px -apple-system';const p=String(primary??''),pW=ctx.measureText(p).width;
+    ctx.font='10px -apple-system';const q=String(secondary??''),qW=ctx.measureText(q).width;
+    const labelW=Math.min(maxW,Math.max(78,Math.ceil(Math.max(pW,qW))+pad*2));
+    const bx=Math.max(4,Math.min(canvasW-labelW-4,x-labelW/2));
+    let by=y-labelH-12;if(by<4)by=Math.min(canvasH-labelH-4,y+12);by=Math.max(4,Math.min(canvasH-labelH-4,by));
+    ctx.fillStyle=card;ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.beginPath();if(typeof ctx.roundRect==='function')ctx.roundRect(bx,by,labelW,labelH,7);else ctx.rect(bx,by,labelW,labelH);ctx.fill();ctx.stroke();
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=textColor;ctx.font='600 12px -apple-system';ctx.fillText(canvasEllipsis(ctx,p,labelW-pad*2),bx+labelW/2,by+13);
+    ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.fillText(canvasEllipsis(ctx,q,labelW-pad*2),bx+labelW/2,by+28);ctx.restore();
+  }
+  function drawSelectionCrosshair(ctx,x,top,bottom,muted) { ctx.save();ctx.strokeStyle=muted;ctx.globalAlpha=.55;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();ctx.restore(); }
+  function drawAdaptiveDayAxis(ctx,days,xFor,{canvasW,bottomY,plotTop,plotBottom,left,right,range}) {
+    if(!days.length)return;
+    const items=days.map(day=>({label:chartAxisDayText(day,range),shortLabel:chartAxisDayText(day,range)}));
+    const positions=days.map((_,i)=>xFor(i));ctx.font='9px -apple-system';
+    const maxLabels=Math.max(2,Math.floor(Math.max(1,canvasW-left-right)/64));
+    const plan=FTVisuals.axisLabelPlan(items,{positions,measureText:text=>ctx.measureText(String(text)).width,maxLabels,minGap:8});
+    const line=getComputedStyle(document.documentElement).getPropertyValue('--line').trim(),muted=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+    for(const tick of plan){const text=String(tick.text),tw=ctx.measureText(text).width,x=Math.max(left+tw/2,Math.min(canvasW-right-tw/2,tick.x));ctx.save();ctx.strokeStyle=line;ctx.globalAlpha=.45;ctx.beginPath();ctx.moveTo(tick.x,plotTop);ctx.lineTo(tick.x,plotBottom);ctx.stroke();ctx.restore();ctx.fillStyle=muted;ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillText(text,x,bottomY);}
+  }
+
   function buildTrendDays(){if(trendChartDaysCache)return trendChartDaysCache;const n=FTAnalytics.rangeDays(chartRange('trend'),data.records,Date.now(),r=>new Date(r.start).getTime());trendChartDaysCache=buildSummaryChartDays(n);const hours=trendChartDaysCache.map(d=>(d.totalFastMs||0)/3600000),a7=FTAnalytics.rollingAverage(trendChartDaysCache,d=>(d.totalFastMs||0)/3600000,7),a30=FTAnalytics.rollingAverage(trendChartDaysCache,d=>(d.totalFastMs||0)/3600000,30);trendChartDaysCache.forEach((d,i)=>{d.hours=hours[i];d.avg7=a7[i];d.avg30=a30[i];});return trendChartDaysCache;}
   function drawFastTrendChart() {
     const c=el('fastTrendChart'), ctx=c.getContext('2d'), ratio=window.devicePixelRatio||1;
-    const cssW=c.clientWidth||660, cssH=260; c.width=Math.floor(cssW*ratio); c.height=Math.floor(cssH*ratio); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,cssW,cssH);
-    const days=buildTrendDays(), top=18,bottom=42,left=34,right=10,w=cssW-left-right,h=cssH-top-bottom;
-    const style=getComputedStyle(document.documentElement), line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),good=style.getPropertyValue('--good').trim(),muted=style.getPropertyValue('--muted').trim();
+    const cssW=c.clientWidth||660, cssH=c.clientHeight||220; c.width=Math.floor(cssW*ratio); c.height=Math.floor(cssH*ratio); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,cssW,cssH);
+    const days=buildTrendDays(), top=18,bottom=58,left=34,right=14,w=cssW-left-right,h=cssH-top-bottom;
+    const style=getComputedStyle(document.documentElement), line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),good=style.getPropertyValue('--good').trim(),muted=style.getPropertyValue('--muted').trim(),card=style.getPropertyValue('--card').trim(),textColor=style.getPropertyValue('--text').trim();
     const peak=Math.max(24,...days.flatMap(d=>[d.hours||0,d.avg7||0,d.avg30||0]));ctx.strokeStyle=line;ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';
     [0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillText(`${formatNumber(peak*fr,0,0)}${t('unit.h')}`,left-5,y+3);});
     const xFor=i=>left+(i/(Math.max(1,days.length-1)))*w,yFor=value=>top+h-(Math.min(peak,Math.max(0,value))/peak)*h;
+    trendPlotBounds={left,right:cssW-right,top,bottom:top+h};
+    drawAdaptiveDayAxis(ctx,days,xFor,{canvasW:cssW,bottomY:cssH-27,plotTop:top,plotBottom:top+h,left,right,range:chartRange('trend')});
     const lineSeries=(key,color,width=2,dash=[])=>{ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();days.forEach((day,i)=>{const x=xFor(i),y=yFor(day[key]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();ctx.restore();};
     lineSeries('hours',accent,1.7);lineSeries('avg7',good,2,[5,3]);lineSeries('avg30',muted,2,[2,3]);
-    trendInteractiveLayout=[];const pointEvery=Math.max(1,Math.ceil(days.length/180));days.forEach((day,i)=>{const x=xFor(i),y=yFor(day.hours);const selected=trendSelectedDayKey===day.key;if(selected||i%pointEvery===0||i===days.length-1){ctx.beginPath();ctx.arc(x,y,selected?6:2.2,0,Math.PI*2);ctx.fillStyle=selected?'#ffffff':accent;ctx.fill();if(selected){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();}}trendInteractiveLayout.push({day,x,y,r:14});});
-    ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='left';ctx.fillText(t('stats.trendLegend'),left,cssH-10);renderChartDetailForMode();
+    trendInteractiveLayout=[];const pointEvery=markerStepForPlot(days.length,w,chartRange('trend'));days.forEach((day,i)=>{const x=xFor(i),y=yFor(day.hours),selected=trendSelectedDayKey===day.key;if(selected||i%pointEvery===0||i===days.length-1){ctx.beginPath();ctx.arc(x,y,selected?6:2.3,0,Math.PI*2);ctx.fillStyle=selected?'#ffffff':accent;ctx.fill();if(selected){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();}}trendInteractiveLayout.push({day,x,y});});
+    const selected=trendInteractiveLayout.find(hit=>hit.day.key===trendSelectedDayKey);if(selected){drawSelectionCrosshair(ctx,selected.x,top,top+h,muted);drawChartCallout(ctx,{x:selected.x,y:selected.y,primary:`${formatNumber(selected.day.hours||0,0,1)} ${t('unit.h')}`,secondary:selected.day.label||selected.day.key,canvasW:cssW,canvasH:cssH,accent,card,textColor,muted});}
+    ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='left';ctx.fillText(t('stats.trendLegend'),left,cssH-8);renderChartDetailForMode();
   }
 
-  function handleTrendPointer(event) {
-    const c=el('fastTrendChart'), rect=c.getBoundingClientRect(), x=event.clientX-rect.left,y=event.clientY-rect.top;
-    let best=null,bestD=Infinity; for(const hit of trendInteractiveLayout){const d=Math.hypot(x-hit.x,y-hit.y);if(d<bestD){bestD=d;best=hit;}}
-    if(!best||bestD>18)return; trendSelectedDayKey=best.day.key; statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailTrend',{duration:compactDuration(best.day.totalFastMs),avg7:formatNumber(best.day.avg7||0,0,1),avg30:formatNumber(best.day.avg30||0,0,1)}),records:recordsOverlappingDay(best.day)}; drawFastTrendChart();
+  function selectTrendPoint(clientX,clientY) {
+    const c=el('fastTrendChart'),rect=c.getBoundingClientRect(),x=clientX-rect.left,y=clientY-rect.top;if(!trendInteractiveLayout.length||!trendPlotBounds||x<trendPlotBounds.left-12||x>trendPlotBounds.right+12||y<trendPlotBounds.top-24||y>trendPlotBounds.bottom+24)return false;
+    let best=null,bestD=Infinity;for(const hit of trendInteractiveLayout){const d=Math.abs(x-hit.x);if(d<bestD){bestD=d;best=hit;}}if(!best)return false;
+    trendSelectedDayKey=best.day.key;statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailTrend',{duration:compactDuration(best.day.totalFastMs),avg7:formatNumber(best.day.avg7||0,0,1),avg30:formatNumber(best.day.avg30||0,0,1)}),records:recordsOverlappingDay(best.day)};drawFastTrendChart();return true;
   }
+  function handleTrendPointer(event) { selectTrendPoint(event.clientX,event.clientY); }
 
   function startOfWeekMonday(date) { const d=new Date(date); d.setHours(12,0,0,0); const shift=(d.getDay()+6)%7; d.setDate(d.getDate()-shift); return d; }
 
@@ -5089,7 +5220,7 @@ layout: null
   }
 
   function drawFastWeeksChart() {
-    const c=el('fastWeeksChart'),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
+    const c=el('fastWeeksChart'),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=c.clientHeight||220;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
     const weeks=buildWeeklySummaries(),top=18,bottom=34,left=38,right=8,w=cssW-left-right,h=cssH-top-bottom,maxH=Math.max(24,...weeks.map(x=>x.totalFastMs/3600000));
     const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
     [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(maxH*frac,0,0)}${t('unit.h')}`,left-5,y+3);});
@@ -5116,21 +5247,41 @@ layout: null
   function monthComparisonSummary(){const items=fullMonthBuckets(14),cur=items.at(-1),prev=items.at(-2),year=items.at(-13);if(!cur)return'';const mom=FTAnalytics.relativeChange(cur.hours,prev?.hours),yoy=FTAnalytics.relativeChange(cur.hours,year?.hours);const change=(now,old,pct)=>old?`${now>=old?'+':''}${formatNumber(now-old,0,1)} ${t('unit.h')}${pct==null?'':` (${pct>=0?'+':''}${formatNumber(pct,0,0)}%)`}`:t('stats.comparisonNoBaseline');return t('stats.monthComparison',{month:cur.label,mom:change(cur.hours,prev?.hours||0,mom),yoy:change(cur.hours,year?.hours||0,yoy)});}
 
   function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false,integerScale=false}={}){
-    const c=el(canvasId),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
+    const c=el(canvasId),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=c.clientHeight||220;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
     const top=18,bottom=44,left=44,right=10,w=cssW-left-right,h=cssH-top-bottom,rawPeak=Math.max(percent?100:1,maxValue==null?FTVisuals.maxValue(items,valueKey,1):maxValue),peak=integerScale?Math.max(2,Math.ceil(rawPeak)):rawPeak;
-    const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
+    const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim(),card=style.getPropertyValue('--card').trim(),textColor=style.getPropertyValue('--text').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
     [0,.5,1].forEach(fr=>{const y=top+h-h*fr,tickValue=integerScale?Math.round(peak*fr):peak*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(tickValue,0,percent||integerScale?0:1)}${valueSuffix}`,left-5,y+3);});
-    const n=Math.max(1,items.length),gap=n>80?0.25:Math.max(2,Math.min(10,w/(n*5))),bw=Math.max(.35,(w-gap*(n-1))/n),centers=items.map((_,i)=>i*(bw+gap)+bw/2);genericChartHitLayout=[];
+    const n=Math.max(1,items.length),gap=n>80?0.25:Math.max(2,Math.min(10,w/(n*5))),bw=Math.max(.35,(w-gap*(n-1))/n),centers=items.map((_,i)=>left+i*(bw+gap)+bw/2);genericChartHitLayout=[];
     ctx.font='9px -apple-system';const axisLabels=FTVisuals.axisLabelPlan(items,{positions:centers,measureText:text=>ctx.measureText(String(text)).width,maxLabels:12,minGap:7}),axisByIndex=new Map(axisLabels.map(x=>[x.index,x.text]));
-    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.min(4,Math.max(1,bw));ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));}if(axisByIndex.has(i)){ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(axisByIndex.get(i),x+bw/2,cssH-15);}genericChartHitLayout.push({item,x,y:top,w:Math.max(bw,3),h,canvasId,detailBuilder});});renderChartDetailForMode();
+    let selectedGeometry=null;
+    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.min(4,Math.max(1,bw));ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));selectedGeometry={item,value,x:x+bw/2,y};}if(axisByIndex.has(i)){const text=axisByIndex.get(i),tw=ctx.measureText(String(text)).width,tx=Math.max(left+tw/2,Math.min(cssW-right-tw/2,x+bw/2));ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(text,tx,cssH-15);}genericChartHitLayout.push({item,x,y:top,w:Math.max(bw,3),h,canvasId,detailBuilder});});
+    if(selectedGeometry){const valueText=`${formatNumber(selectedGeometry.value,0,percent||integerScale?0:1)}${valueSuffix}`;drawChartCallout(ctx,{x:selectedGeometry.x,y:selectedGeometry.y,primary:valueText,secondary:selectedGeometry.item.label||selectedGeometry.item.key,canvasW:cssW,canvasH:cssH,accent,card,textColor,muted});}
+    renderChartDetailForMode();
   }
   function handleGenericChartPointer(event){const c=event.currentTarget,rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=genericChartHitLayout.find(h=>h.canvasId===c.id&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);if(!hit)return;genericChartSelectedKey=hit.item.key;statsDetailOverride=hit.detailBuilder?hit.detailBuilder(hit.item):null;renderStatsVisualizationMode(statsVizMode);renderStatsChartData();}
   function drawFastMonthsChart(){const items=buildMonthSummaries('months'),source=chartRangeRecords('months');drawGenericBarChart('fastMonthsChart',items,'hours',{valueSuffix:t('unit.h'),selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailMonth',{duration:compactDuration(x.totalMs),count:formatNumber(x.count)}),records:recordsContributingMonth(x.key,source)})});const cmp=el('fastMonthsComparison');if(cmp)cmp.textContent=monthComparisonSummary();}
   function drawFastDistributionChart(){const items=buildDurationDistribution(),source=chartRangeRecords('distribution');drawGenericBarChart('fastDistributionChart',items,'count',{integerScale:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailDistribution',{count:formatNumber(x.count),hours:formatNumber(x.totalHours,0,1)}),records:recordsForDurationBucket(x.key,source)})});}
   function drawFastSuccessChart(){const items=buildTargetSuccessSummaries(),source=chartRangeRecords('success');drawGenericBarChart('fastSuccessChart',items,'successRate',{maxValue:100,valueSuffix:'%',percent:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailSuccess',{rate:formatNumber(x.successRate,0,0),reached:formatNumber(x.reached),count:formatNumber(x.count)}),records:recordsEndingInMonth(x.key,source)})});}
   function drawFastStartPatternChart(){const items=buildStartPattern(),source=chartRangeRecords('startpattern');drawGenericBarChart('fastStartPatternChart',items,'count',{integerScale:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailStartPattern',{count:formatNumber(x.count)}),records:recordsForStartBucket(x.key,source)})});}
-  function drawFastCumulativeChart(){const c=el('fastCumulativeChart'),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=260;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);const days=buildCumulativeDays(),top=18,bottom=36,left=48,right=10,w=cssW-left-right,h=cssH-top-bottom,peak=Math.max(1,...days.map(d=>d.cumulativeHours||0)),style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim();ctx.strokeStyle=line;[0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(peak*fr,0,0)}${t('unit.h')}`,left-5,y+3);});const xFor=i=>left+(i/Math.max(1,days.length-1))*w,yFor=v=>top+h-(Math.max(0,v)/peak)*h;ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.beginPath();days.forEach((d,i)=>{const x=xFor(i),y=yFor(d.cumulativeHours);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();cumulativeInteractiveLayout=[];const every=Math.max(1,Math.ceil(days.length/180));days.forEach((day,i)=>{const x=xFor(i),y=yFor(day.cumulativeHours);if(cumulativeSelectedDayKey===day.key||i%every===0||i===days.length-1){ctx.beginPath();ctx.arc(x,y,cumulativeSelectedDayKey===day.key?6:2,0,Math.PI*2);ctx.fillStyle=cumulativeSelectedDayKey===day.key?'#ffffff':accent;ctx.fill();if(cumulativeSelectedDayKey===day.key){ctx.strokeStyle=accent;ctx.stroke();}}cumulativeInteractiveLayout.push({day,x,y});});renderChartDetailForMode();}
-  function handleCumulativePointer(event){const c=el('fastCumulativeChart'),rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;let best=null,dist=Infinity;for(const hit of cumulativeInteractiveLayout){const d=Math.hypot(x-hit.x,y-hit.y);if(d<dist){dist=d;best=hit;}}if(!best||dist>20)return;cumulativeSelectedDayKey=best.day.key;const days=buildCumulativeDays(),first=days[0];statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailCumulative',{hours:formatNumber(best.day.cumulativeHours||0,0,1),today:formatNumber((best.day.totalFastMs||0)/3600000,0,1)}),records:first?recordsOverlappingRange(first.startMs,best.day.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();}
+  function drawFastCumulativeChart(){
+    const c=el('fastCumulativeChart'),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=c.clientHeight||220;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
+    const days=buildCumulativeDays(),top=18,bottom=48,left=48,right=16,w=cssW-left-right,h=cssH-top-bottom,peak=Math.max(1,...days.map(d=>d.cumulativeHours||0)),style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim(),card=style.getPropertyValue('--card').trim(),textColor=style.getPropertyValue('--text').trim();
+    ctx.strokeStyle=line;ctx.lineWidth=1;[0,.5,1].forEach(fr=>{const y=top+h-h*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(peak*fr,0,0)}${t('unit.h')}`,left-5,y+3);});
+    const xFor=i=>left+(i/Math.max(1,days.length-1))*w,yFor=v=>top+h-(Math.max(0,v)/peak)*h;cumulativePlotBounds={left,right:cssW-right,top,bottom:top+h};
+    drawAdaptiveDayAxis(ctx,days,xFor,{canvasW:cssW,bottomY:cssH-12,plotTop:top,plotBottom:top+h,left,right,range:chartRange('cumulative')});
+    ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();days.forEach((d,i)=>{const x=xFor(i),y=yFor(d.cumulativeHours);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
+    cumulativeInteractiveLayout=[];const every=markerStepForPlot(days.length,w,chartRange('cumulative'));days.forEach((day,i)=>{const x=xFor(i),y=yFor(day.cumulativeHours),selected=cumulativeSelectedDayKey===day.key;if(selected||i%every===0||i===days.length-1){ctx.beginPath();ctx.arc(x,y,selected?6:2.3,0,Math.PI*2);ctx.fillStyle=selected?'#ffffff':accent;ctx.fill();if(selected){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();}}cumulativeInteractiveLayout.push({day,x,y,index:i});});
+    const selected=cumulativeInteractiveLayout.find(hit=>hit.day.key===cumulativeSelectedDayKey);if(selected){drawSelectionCrosshair(ctx,selected.x,top,top+h,muted);drawChartCallout(ctx,{x:selected.x,y:selected.y,primary:`${formatNumber(selected.day.cumulativeHours||0,0,1)} ${t('unit.h')}`,secondary:selected.day.label||selected.day.key,canvasW:cssW,canvasH:cssH,accent,card,textColor,muted});}
+    renderChartDetailForMode();
+  }
+  function selectCumulativePoint(clientX,clientY){
+    const c=el('fastCumulativeChart'),rect=c.getBoundingClientRect(),x=clientX-rect.left,y=clientY-rect.top;if(!cumulativeInteractiveLayout.length||!cumulativePlotBounds||x<cumulativePlotBounds.left-12||x>cumulativePlotBounds.right+12||y<cumulativePlotBounds.top-24||y>cumulativePlotBounds.bottom+24)return false;
+    let best=null,dist=Infinity;for(const hit of cumulativeInteractiveLayout){const d=Math.abs(x-hit.x);if(d<dist){dist=d;best=hit;}}if(!best)return false;cumulativeSelectedDayKey=best.day.key;const days=buildCumulativeDays(),first=days[0];statsDetailOverride={dayKey:best.day.key,title:best.day.label,text:t('stats.detailCumulative',{hours:formatNumber(best.day.cumulativeHours||0,0,1),today:formatNumber((best.day.totalFastMs||0)/3600000,0,1)}),records:first?recordsOverlappingRange(first.startMs,best.day.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();return true;
+  }
+  function beginCumulativePointer(event){if(event.button!=null&&event.button!==0)return;cumulativePointerState={id:event.pointerId,startX:event.clientX,startY:event.clientY};selectCumulativePoint(event.clientX,event.clientY);try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}
+  function moveCumulativePointer(event){const st=cumulativePointerState;if(!st||st.id!==event.pointerId)return;const dx=Math.abs(event.clientX-st.startX),dy=Math.abs(event.clientY-st.startY);if(dx>=dy&&dx>3)selectCumulativePoint(event.clientX,event.clientY);}
+  function finishCumulativePointer(event){const st=cumulativePointerState;if(!st||st.id!==event.pointerId)return;selectCumulativePoint(event.clientX,event.clientY);cumulativePointerState=null;try{event.currentTarget.releasePointerCapture(event.pointerId);}catch{}}
+  function cancelCumulativePointer(){cumulativePointerState=null;}
 
   function toLocalInputValue(dateLike, timeZone = currentTimeZone()) {
     const d = new Date(dateLike); if (!Number.isFinite(d.getTime())) return '';
@@ -5676,19 +5827,21 @@ layout: null
     }
     ctx.stroke();
 
+    const weightMarkerEvery=Math.max(1,Math.ceil(16/Math.max(1,pointSpacing)));
     ctx.fillStyle=accent;
     for(let i=firstVisible;i<=lastVisible;i++){
       const bucket=buckets[i]; if(!bucket.count) continue;
       const value=kgToDisplay(bucket.averageKg,unit),x=xFor(i),y=yFor(value);
       if(x < -28 || x > viewportW+28) continue;
       weightChartHitPoints.push({id:bucket.key,bucket,x,y,value});
-      ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+      const selected=bucket.key===weightChartSelectedId;if(selected||i%weightMarkerEvery===0||i===lastVisible||i===buckets.length-1){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}
     }
 
     const selectedIndex=buckets.findIndex(b=>b.key===weightChartSelectedId&&b.count>0);
     if(selectedIndex>=0){
       const bucket=buckets[selectedIndex],x=xFor(selectedIndex),value=kgToDisplay(bucket.averageKg,unit),y=yFor(value);
       if(x>=-18&&x<=viewportW+18){
+        drawSelectionCrosshair(ctx,x,top,top+h,muted);
         ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,6.5,0,Math.PI*2);ctx.fill();ctx.stroke();
         const valueLabel=formatWeight(bucket.averageKg,unit),periodLabel=weightPointCalloutPeriod(bucket);
         ctx.font='600 12px -apple-system';const valueW=ctx.measureText(valueLabel).width;
@@ -5706,12 +5859,10 @@ layout: null
       }
     } else if(detail){detail.hidden=true;detail.textContent='';}
 
-    const labelStep=Math.max(1,Math.ceil(62/Math.max(1,pointSpacing)));
     ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='center';ctx.textBaseline='alphabetic';
-    for(let i=firstVisible;i<=lastVisible;i++){
-      if(i%labelStep!==0 && i!==buckets.length-1) continue;
-      const x=xFor(i);if(x<18||x>viewportW-18)continue;ctx.fillText(weightBucketShortLabel(buckets[i]),x,cssH-10);
-    }
+    const visibleAxisItems=[],visibleAxisPositions=[];for(let i=firstVisible;i<=lastVisible;i++){const x=xFor(i);if(x<8||x>viewportW-8)continue;const label=weightBucketShortLabel(buckets[i]);visibleAxisItems.push({label,shortLabel:label,index:i});visibleAxisPositions.push(x);}
+    const axisPlan=FTVisuals.axisLabelPlan(visibleAxisItems,{positions:visibleAxisPositions,measureText:text=>ctx.measureText(String(text)).width,maxLabels:Math.max(2,Math.floor(viewportW/62)),minGap:7});
+    for(const tick of axisPlan){const text=String(tick.text),tw=ctx.measureText(text).width,x=Math.max(4+tw/2,Math.min(viewportW-4-tw/2,tick.x));ctx.fillText(text,x,cssH-10);}
     ctx.textAlign='start';
   }
 
@@ -6853,7 +7004,7 @@ layout: null
   document.querySelectorAll('.tab').forEach(tab => bindResponsiveAction(tab, () => activateScreen(tab.dataset.screen)));
   installArrowKeyNavigation(document.querySelector('.tabs'),'.tab',item=>activateScreen(item.dataset.screen));
   installArrowKeyNavigation(el('weightPeriodSwitcher'),'[data-weight-period]',item=>setWeightPeriodMode(item.dataset.weightPeriod));
-  installArrowKeyNavigation(el('statsVizSwitcher'),'[data-viz]',item=>{if(item.dataset.viz)setStatsVizMode(item.dataset.viz);});
+  installArrowKeyNavigation(el('statsVizGroupSwitcher'),'[data-viz-group]',item=>{if(item.dataset.vizGroup)setStatsVizGroup(item.dataset.vizGroup);});
   el('statsRangeSelect')?.addEventListener('change',e=>changeStatsRange(e.target.value));
   el('statsDrilldownBtn')?.addEventListener('click',openStatsDrilldown);
   el('statsDrilldownCloseBtn')?.addEventListener('click',()=>hideModal('statsDrilldownModal'));
@@ -7087,15 +7238,16 @@ layout: null
   el('chart').addEventListener('pointermove', moveTimelinePointer);
   el('chart').addEventListener('pointerup', finishTimelinePointer);
   el('chart').addEventListener('pointercancel', cancelTimelinePointer);
-  el('statsVizSwitcher').addEventListener('pointerdown', handleStatsVizPointerDown);
-  el('statsVizSwitcher').addEventListener('click', handleStatsVizClick);
+  el('statsVizGroupSwitcher').addEventListener('pointerdown', handleStatsVizGroupPointerDown);
+  el('statsVizGroupSwitcher').addEventListener('click', handleStatsVizGroupClick);
+  el('statsVizSelect').addEventListener('change', event => setStatsVizMode(event.target.value));
   el('calendarPrevBtn').addEventListener('click', () => { statsCalendarMonthOffset -= 1; statsDetailOverride = null; renderFastCalendar(); });
   el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
   el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);
   el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer);
   ['fastTrendChart','fastWeeksChart'].forEach(id=>el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}}));
   ['fastMonthsChart','fastDistributionChart','fastSuccessChart','fastStartPatternChart'].forEach(id=>{el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});});
-  el('fastCumulativeChart')?.addEventListener('pointerdown',handleCumulativePointer);el('fastCumulativeChart')?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
+  el('fastCumulativeChart')?.addEventListener('pointerdown',beginCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointermove',moveCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointerup',finishCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointercancel',cancelCumulativePointer);el('fastCumulativeChart')?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
