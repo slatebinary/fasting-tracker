@@ -38,9 +38,9 @@ with sync_playwright() as p:
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.on('dialog',lambda d:(dialogs.append(d.message),d.accept()))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.7'})); }", data)
+    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.0'})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
     page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
     if page.locator('#gSummaryXP').inner_text().strip() != '36 XP':
         print('FAIL: unexpected seed XP'); sys.exit(1)
@@ -90,7 +90,7 @@ with sync_playwright() as p:
       Object.defineProperty(navigator,'canShare',{value:()=>true,configurable:true});
       Object.defineProperty(navigator,'share',{value:async payload=>{ window.__backupText=await payload.files[0].text(); },configurable:true});
     }""")
-    page.locator('.tab[data-screen="settings"]').click(); page.locator('#exportBtn').click()
+    page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupData > summary').click(); page.locator('#exportBtn').click()
     page.wait_for_function("typeof window.__backupText === 'string'",timeout=5000)
     exported=json.loads(page.evaluate('window.__backupText'))
     exp=max(exported['data']['records'],key=lambda r:r['end'])

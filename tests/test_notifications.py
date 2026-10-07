@@ -35,10 +35,10 @@ with sync_playwright() as p:
         'activeCreatedAt':start.isoformat().replace('+00:00','Z'),
         'activeModifiedAt':None,
     })
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.7',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.0',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
-    page.locator('.tab[data-screen="settings"]').click()
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
+    page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupNotifications > summary').click()
     page.wait_for_function("document.querySelector('#notificationsCard') && !document.querySelector('#notificationsCard').hidden",timeout=5000)
 
     defaults={
@@ -92,7 +92,7 @@ with sync_playwright() as p:
     page.locator('#notificationTestBtn').click()
     page.wait_for_function(f"window.__ftNotifications.length === {before+1}",timeout=5000)
     test=page.evaluate("window.__ftNotifications[window.__ftNotifications.length-1]")
-    if 'enabled' not in test['options']['body'].lower():
+    if 'working' not in test['options']['body'].lower():
         print('FAIL: test notification content unexpected:',test); sys.exit(1)
 
 
@@ -105,10 +105,10 @@ with sync_playwright() as p:
       Object.defineProperty(navigator,'serviceWorker',{value:sw,configurable:true});
     }""")
     denied_data=build_data(1)
-    denied.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.7'})); }", denied_data)
+    denied.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.0'})); }", denied_data)
     denied.set_content(inlined_html(),wait_until='domcontentloaded')
-    denied.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
-    denied.locator('.tab[data-screen="settings"]').click()
+    denied.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
+    denied.locator('.tab[data-screen="settings"]').click(); denied.locator('#settingsGroupNotifications > summary').click()
     denied.wait_for_function("!document.querySelector('#notificationBlockedHelp')?.hidden",timeout=5000)
     help_text=denied.locator('#notificationBlockedHelp').inner_text()
     if 'Settings' not in help_text or 'Notifications' not in help_text or 'JSON backup' not in help_text:

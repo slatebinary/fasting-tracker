@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.11.7" />
+  <meta name="ft-app-version" content="1.12.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -457,7 +457,47 @@ layout: null
       .tab { font-size: 10px; padding-left: 1px; padding-right: 1px; }
     }
     @media (min-width: 560px) { .grid { grid-template-columns: repeat(3, 1fr); } .badgeGrid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
-  </style>
+  
+    .settingsSearchWrap { display:flex; gap:8px; align-items:center; margin:12px 0 4px; }
+    .settingsSearchWrap input[type="search"] { flex:1 1 auto; min-width:0; width:100%; border:1px solid var(--border); border-radius:12px; padding:12px 14px; background:var(--card); color:var(--text); font:inherit; }
+    .settingsSearchWrap input[type="search"]:focus-visible { outline:3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset:2px; }
+    .settingsSearchStatus { min-height:1.25em; margin:0 2px 8px; color:var(--muted); }
+    .settingsSearchClear { flex:0 0 auto; }
+    .settingsGroup { margin:10px 0; border:1px solid var(--border); border-radius:16px; background:var(--card); overflow:hidden; box-shadow:var(--shadow); }
+    .settingsGroup > summary { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:58px; padding:13px 15px; user-select:none; }
+    .settingsGroup > summary::-webkit-details-marker, .settingsSubgroup > summary::-webkit-details-marker { display:none; }
+    .settingsGroup > summary:focus-visible, .settingsSubgroup > summary:focus-visible { outline:3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset:-3px; }
+    .settingsGroupTitle { min-width:0; display:flex; flex-direction:column; gap:2px; }
+    .settingsGroupTitle > strong { font-size:1.02rem; }
+    .settingsGroupTitle > .small { color:var(--muted); line-height:1.3; }
+    .settingsGroupChevron { flex:0 0 auto; font-size:1.45rem; transform:rotate(0deg); transition:transform .16s ease; color:var(--muted); }
+    .settingsGroup[open] > summary .settingsGroupChevron { transform:rotate(90deg); }
+    .settingsGroupBody { padding:0 10px 10px; }
+    .settingsGroupBody > .card { margin-top:0; box-shadow:none; border-color:color-mix(in srgb, var(--border) 80%, transparent); }
+    .settingsSubgroup { margin:10px 0; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 92%, var(--bg)); overflow:hidden; }
+    .settingsSubgroup > summary { list-style:none; cursor:pointer; padding:12px 14px; font-weight:700; }
+    .settingsSubgroup[open] > summary { border-bottom:1px solid var(--border); }
+    .settingsSubgroup > .card, .settingsSubgroup > .row { margin:0; border:0; border-radius:0; box-shadow:none; }
+    .settingsCompactCard { box-shadow:none; }
+    #settings .healthNotice { margin-top:0; }
+    #settings .settingsGroup[hidden] { display:none; }
+    @media (max-width: 520px) {
+      .settingsGroup > summary { min-height:54px; padding:12px; }
+      .settingsGroupBody { padding:0 7px 8px; }
+      .settingsSearchWrap { align-items:stretch; }
+      .settingsSearchClear { padding-inline:10px; }
+    }
+    .notificationDetailStack { display:grid; gap:10px; margin-bottom:12px; }
+    .notificationDetailCard { border-left:4px solid var(--accent); padding:13px 14px; }
+    .notificationDetailHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .notificationDetailHeader > div { min-width:0; }
+    .notificationDetailTitle { font-weight:800; line-height:1.25; overflow-wrap:anywhere; }
+    .notificationDetailTime { color:var(--muted); margin-top:2px; }
+    .notificationDetailBody { margin-top:8px; line-height:1.45; overflow-wrap:anywhere; }
+    .notificationDetailDismiss { flex:0 0 auto; white-space:nowrap; }
+    @media (max-width: 420px) { .notificationDetailHeader { gap:8px; } .notificationDetailDismiss { padding-inline:10px; } }
+    @media (prefers-reduced-motion: reduce) { .settingsGroupChevron { transition:none; } }
+</style>
 </head>
 <body>
 <main>
@@ -472,6 +512,7 @@ layout: null
       <button id="recoveryResetBtn" class="dangerText" data-i18n="recovery.startFresh">Start fresh</button>
     </div>
   </div>
+  <div id="notificationDetailStack" class="notificationDetailStack" aria-label="Notification details" data-i18n-aria="notifications.detailsHeading" hidden></div>
   <section id="fasting" class="screen active">
     <div class="sectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
     <div class="notice installStorageNotice" id="installStorageNotice" role="status" hidden>
@@ -788,235 +829,265 @@ layout: null
 
   <section id="settings" class="screen">
     <h1 data-i18n="nav.settings">Settings</h1>
-    <div class="notice" data-i18n="settings.storageNotice">Your fasting and weight records are stored locally on this device. The app automatically keeps rolling internal JSON recovery snapshots and reminds you every 7 days to make an external backup.</div>
-    <div class="notice healthNotice">
-      <strong data-i18n="public.healthTitle">Health &amp; safety</strong>
-      <div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
-      <div class="publicLinks"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
+    <div class="settingsSearchWrap">
+      <input id="settingsSearchInput" type="search" autocomplete="off" spellcheck="false" placeholder="Search settings" data-i18n-placeholder="settings.searchPlaceholder" aria-label="Search settings" data-i18n-aria="settings.searchAria">
+      <button id="settingsSearchClearBtn" class="secondary settingsSearchClear" type="button" data-i18n="settings.searchClear" hidden>Clear</button>
     </div>
-    <div class="card" id="storageProtectionCard">
-      <h2 data-i18n="storage.title">Storage protection</h2>
-      <div class="row">
-        <div><strong id="storageProtectionStatus" data-i18n="storage.checking">Checking storage protection…</strong><div class="small" id="storageProtectionHelp" data-i18n="storage.help">Persistent storage can reduce the chance that the browser removes local app data under storage pressure. External backups are still recommended.</div></div>
-        <button id="storageProtectBtn" class="secondary" data-i18n="storage.request" hidden>Request protection</button>
-      </div>
-      <div class="small" id="storageUsageLabel" data-i18n="storage.usageUnknown">Storage usage information is unavailable.</div>
-      <div class="row" style="margin-top:12px">
-        <div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup, basic preferences and notifications.</div></div>
-        <button id="setupGuideBtn" class="secondary" data-i18n="setup.open">Setup guide</button>
-      </div>
-    </div>
-    <div class="card" id="storageHealthCard">
-      <div class="sectionHeader"><h2 data-i18n="storage.healthTitle">Data &amp; storage health</h2><button id="diagnosticExportBtn" class="secondary" type="button" data-i18n="diagnostics.export">Export diagnostics</button></div>
-      <div class="grid" style="margin-top:10px">
-        <div class="metric"><div class="value" id="healthRecordCount">—</div><div class="label" data-i18n="storage.healthRecords">Active records</div></div>
-        <div class="metric"><div class="value" id="healthDeletedCount">—</div><div class="label" data-i18n="storage.healthDeleted">Deleted audit records</div></div>
-        <div class="metric"><div class="value" id="healthSnapshotCount">—</div><div class="label" data-i18n="storage.healthSnapshots">Recovery snapshots</div></div>
-        <div class="metric"><div class="value" id="healthBackupAge">—</div><div class="label" data-i18n="storage.healthBackup">External backup</div></div>
-      </div>
-      <div class="small" id="healthPersistence" style="margin-top:10px"></div>
-      <div class="small" id="healthUsage"></div>
-      <div class="small" id="healthLastSave"></div>
-      <div class="small" id="healthProtection"></div>
-      <div class="small" id="healthSnapshotDetail"></div>
-      <div class="small" id="healthMigrationStatus"></div>
-      <div class="small" id="healthIntegrityStatus" aria-live="polite"></div>
-      <div class="small" id="healthInstallState"></div>
-      <div class="small" id="healthServiceWorker"></div>
-      <div class="small" id="healthDeploymentStatus"></div>
-      <div class="small" id="healthDeploymentVersions"></div>
-      <div class="small" id="healthLastKnownGood"></div>
-      <div class="dataLocationRow" id="deploymentHistoryBlock"><strong data-i18n="deployment.historyTitle">Recent update history</strong><div class="small" id="deploymentHistoryList"></div></div>
-      <div class="small" id="healthDeletedStorage"></div>
-      <div class="small" id="healthPerformance"></div>
-      <div class="small storagePressure" id="storagePressureWarning" role="status" aria-live="polite"></div>
-      <div class="diagnosticActions">
-        <button id="integrityCheckBtn" class="secondary" type="button" data-i18n="integrity.check">Check data integrity</button>
-        <button id="createSnapshotBtn" class="secondary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button>
-        <button id="repairCacheBtn" class="secondary" type="button" data-i18n="cache.repair">Repair app cache</button>
-        <button id="performanceTestBtn" class="secondary" type="button" data-i18n="performance.run">Run local benchmark</button>
-        <button id="deviceChecksBtn" class="secondary" type="button" data-i18n="deviceChecks.run">Run device checks</button>
-        <button id="rebuildDerivedBtn" class="secondary" type="button" data-i18n="derived.rebuild">Recalculate statistics & charts</button>
-        <button id="emptyDeletedBtn" class="dangerText" type="button" data-i18n="deleted.empty">Empty Recently Deleted</button>
-      </div>
-    </div>
-    <div class="card" id="dataLocationsCard">
-      <h2 data-i18n="storage.locationsTitle">Where your data lives</h2>
-      <div class="dataLocationRow"><strong data-i18n="storage.currentDataTitle">Current data</strong><div class="small" data-i18n="storage.currentDataText">Your working fasting, weight, settings and audit records are stored locally in IndexedDB on this installation.</div></div>
-      <div class="dataLocationRow"><strong data-i18n="storage.snapshotsTitle">Recovery snapshots</strong><div class="small" data-i18n="storage.snapshotsText">Automatic rollback points are also stored locally inside this installation. They are not cloud backups and can disappear if the app/site data is removed.</div></div>
-      <div class="dataLocationRow"><strong data-i18n="storage.externalTitle">External JSON backup</strong><div class="small" data-i18n="storage.externalText">An exported JSON file is an independent copy you save outside the app. It is the safest recovery option after reinstalling or losing local storage.</div></div>
-    </div>
+    <div class="small settingsSearchStatus" id="settingsSearchStatus" role="status" aria-live="polite"></div>
+    <details class="settingsGroup" id="settingsGroupGeneral" data-settings-group="settingsGroupGeneral" open>
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.general">General</strong><span class="small" data-i18n="settings.group.generalHelp">Language, appearance, fasting target and achievements</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card"><div class="row" style="margin-top:12px">
+<div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup, basic preferences and notifications.</div></div>
+<button class="secondary" data-i18n="setup.open" id="setupGuideBtn">Setup guide</button>
+</div>
+<div class="row">
+<div><strong data-i18n="settings.language">Interface language</strong><div class="small" data-i18n="settings.languageHelp">Use the device language automatically, or choose a language for this app.</div></div>
+<select aria-label="Interface language" data-i18n-aria="settings.language" id="languageSelect">
+<option value="system"></option>
+</select>
+</div>
+<div class="row">
+<div><strong data-i18n="settings.appearance">Appearance</strong><div class="small" data-i18n="settings.appearanceHelp">Follow the device appearance automatically, or choose light or dark mode for this app.</div></div>
+<select aria-label="Appearance" data-i18n-aria="settings.appearance" id="appearanceSelect">
+<option data-i18n="settings.appearanceSystem" value="system">System</option>
+<option data-i18n="settings.appearanceLight" value="light">Light</option>
+<option data-i18n="settings.appearanceDark" value="dark">Dark</option>
+</select>
+</div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
+<div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
+<div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
+<button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
+<button aria-checked="false" class="iconChoice" data-icon-choice="moon" role="radio" type="button"><img alt="" src="icons/moon/icon-192.png"/><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
+<button aria-checked="false" class="iconChoice" data-icon-choice="hourglass" role="radio" type="button"><img alt="" src="icons/hourglass/icon-192.png"/><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
+<button aria-checked="false" class="iconChoice" data-icon-choice="timer" role="radio" type="button"><img alt="" src="icons/timer/icon-192.png"/><span data-i18n="icon.timer">F timer</span></button>
+</div>
+<div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
+<div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
+<div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button class="secondary" data-i18n="settings.appIconPrepare" id="prepareIconChangeBtn" type="button">Back up &amp; prepare icon change</button><div class="reinstallLinkTools" hidden="" id="reinstallLinkTools"><label class="small" data-i18n="iconChange.linkLabel" for="reinstallLinkInput">Reinstall link</label><div class="reinstallLinkRow"><input aria-label="Reinstall link" autocomplete="off" data-i18n-aria="iconChange.linkLabel" id="reinstallLinkInput" readonly="" type="text"/><button class="secondary" data-i18n="iconChange.copyLink" id="copyReinstallLinkBtn" type="button">Copy reinstall link</button></div><div aria-live="polite" class="small" id="reinstallLinkStatus"></div></div></div>
+</div></details>
+
+<div class="row">
+<div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.</div></div>
+<div class="goalInputWrap"><input aria-label="Target fasting duration" autocomplete="off" class="numericInput" data-i18n-aria="settings.goal" id="goalHours" inputmode="decimal" type="text" value="16"/> <span id="goalUnit">h</span></div>
+</div>
+<div aria-label="Quick fasting targets" class="presetWrap" data-i18n-aria="settings.goal">
+<button class="chip" data-goal="12">12h</button>
+<button class="chip" data-goal="14">14h</button>
+<button class="chip" data-goal="16">16h</button>
+<button class="chip" data-goal="18">18h</button>
+<button class="chip" data-goal="20">20h</button>
+<button class="chip" data-goal="22">22h</button>
+<button class="chip" data-goal="23">23h</button>
+<button class="chip" data-goal="24">24h</button>
+<button class="chip" data-goal="36">36h</button>
+<button class="chip" data-goal="48">48h</button>
+<button class="chip" data-goal="72">72h</button>
+<button class="chip" data-goal="96">96h</button>
+<button class="chip" data-goal="120">120h</button>
+</div>
+<div class="small cycleHelp" id="goalCycleHelp"></div>
+<div class="row" style="margin-top:10px">
+<div><strong data-i18n="game.consistencyAchievements" id="gameToggleLabel">Consistency &amp; achievements</strong><div class="small" data-i18n="game.settingsHelp" id="gameToggleHelp">Optional gamification. Rewards meeting your own target and regular weight logging—not longer fasting.</div></div>
+<label class="toggleWrap"><input aria-describedby="gameToggleHelp" aria-labelledby="gameToggleLabel" checked="" id="gamificationToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+</div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupNotifications" data-settings-group="settingsGroupNotifications">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.notifications">Reminders &amp; notifications</strong><span class="small" data-i18n="settings.group.notificationsHelp">Fasting, backup and weigh-in reminders</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card" id="notificationsCard">
+<div class="sectionHeader"><h2 data-i18n="notifications.title">Notifications</h2><span class="levelPill" id="notificationPermissionBadge">Not enabled</span></div>
+<div class="small" data-i18n="notifications.intro">Optional device notifications. Fasting Tracker never asks for notification permission until you turn them on.</div>
+<div class="row">
+<div><strong data-i18n="notifications.master" id="notificationMasterLabel">Device notifications</strong><div class="small" data-i18n="notifications.masterHelp" id="notificationMasterHelp">Master switch for the notification types selected below.</div></div>
+<label class="toggleWrap"><input aria-describedby="notificationMasterHelp" aria-labelledby="notificationMasterLabel" id="notificationMasterToggle" type="checkbox"/><span aria-hidden="true" data-i18n="notifications.enable">Enable</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.targetReached" id="notificationTargetLabel">Target reached</strong><div class="small" data-i18n="notifications.targetReachedHelp">Notify once when the active fast reaches its selected target. It does not encourage continuing longer.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationTargetLabel" id="notificationTargetToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.backupDue" id="notificationBackupLabel">Backup reminder</strong><div class="small" data-i18n="notifications.backupDueHelp">Notify once when the 7-day external JSON backup reminder becomes due.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationBackupLabel" id="notificationBackupToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.longFastSafety" id="notificationSafetyLabel">Prolonged-fast safety reminder</strong><div class="small" data-i18n="notifications.longFastSafetyHelp">Notify once when an active fast reaches 24 hours, using neutral safety wording.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationSafetyLabel" id="notificationSafetyToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.weighIn" id="notificationWeighLabel">Weigh-in reminder</strong><div class="small" data-i18n="notifications.weighInHelp">Optional reminder after the selected interval has passed since the latest weight entry.</div></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><input id="notificationWeighCadence" type="hidden" value="weekly"/><div aria-label="Weigh-in reminder cadence" class="notificationCadenceToggle" data-i18n-aria="notifications.weighCadence" id="notificationWeighCadenceButtons" role="group"><button aria-pressed="false" data-i18n="notifications.daily" data-notification-cadence="daily" id="notificationWeighDailyBtn" type="button">Daily</button><button aria-pressed="true" class="active" data-i18n="notifications.weekly" data-notification-cadence="weekly" id="notificationWeighWeeklyBtn" type="button">Weekly</button></div><label class="toggleWrap"><input aria-labelledby="notificationWeighLabel" id="notificationWeighToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.cycleComplete" id="notificationCycleLabel">24-hour-cycle remainder completed</strong><div class="small" data-i18n="notifications.cycleCompleteHelp">Optional neutral timing notice when the mathematical remainder after a sub-24-hour fast reaches zero.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationCycleLabel" id="notificationCycleToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.statusTitle">Device permission</strong><div aria-live="polite" class="small" id="notificationStatusText"></div></div>
+<button class="secondary" data-i18n="notifications.test" id="notificationTestBtn" type="button">Send test</button>
+</div>
+<div class="small" data-i18n="notifications.blockedHelp" hidden="" id="notificationBlockedHelp" style="margin-top:6px">On iPhone/iPad, check Settings → Notifications → Fasting Tracker. Home Screen web apps are managed there. If Fasting Tracker is absent there too, export a JSON backup before removing and reinstalling the Home Screen web app, then enable notifications when prompted.</div>
+<div class="small" data-i18n="notifications.deliveryLimit">Privacy-first limitation: this app has no push server. Notifications are checked while the app is running and when it is reopened; a fully closed or suspended PWA may not deliver them at the exact due time.</div>
+<div class="small" data-i18n="notifications.lockScreenPrivacy" style="margin-top:6px">Depending on your device settings, notification text may appear on the lock screen. Use the device's notification settings if you prefer to hide previews.</div>
+<div class="small" data-i18n="notifications.detailPolicy" style="margin-top:6px">Device notifications are intentionally brief. Full details stay inside Fasting Tracker until you dismiss them.</div>
+</div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupData" data-settings-group="settingsGroupData">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.data">Data &amp; backup</strong><span class="small" data-i18n="settings.group.dataHelp">Backups, recovery, import/export and storage protection</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="notice" data-i18n="settings.storageNotice">Your fasting and weight records are stored locally on this device. The app automatically keeps rolling internal JSON recovery snapshots and reminds you every 7 days to make an external backup.</div>
     <div class="card">
-      <div class="row">
-        <div><strong data-i18n="settings.language">Interface language</strong><div class="small" data-i18n="settings.languageHelp">Use the device language automatically, or choose a language for this app.</div></div>
-        <select id="languageSelect" aria-label="Interface language" data-i18n-aria="settings.language">
-          <option value="system"></option>
-        </select>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="settings.appearance">Appearance</strong><div class="small" data-i18n="settings.appearanceHelp">Follow the device appearance automatically, or choose light or dark mode for this app.</div></div>
-        <select id="appearanceSelect" aria-label="Appearance" data-i18n-aria="settings.appearance">
-          <option value="system" data-i18n="settings.appearanceSystem">System</option>
-          <option value="light" data-i18n="settings.appearanceLight">Light</option>
-          <option value="dark" data-i18n="settings.appearanceDark">Dark</option>
-        </select>
-      </div>
-      <div class="row" style="display:block">
-        <div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
-        <div class="iconChoiceGrid" id="iconChoiceGrid" role="radiogroup" aria-label="App icon" data-i18n-aria="settings.appIcon">
-          <button type="button" class="iconChoice" data-icon-choice="plate" role="radio" aria-checked="false"><img src="icons/plate/icon-192.png" alt=""><span data-i18n="icon.plate">Plate & clock</span></button>
-          <button type="button" class="iconChoice" data-icon-choice="moon" role="radio" aria-checked="false"><img src="icons/moon/icon-192.png" alt=""><span data-i18n="icon.moon">Moon & utensils</span></button>
-          <button type="button" class="iconChoice" data-icon-choice="hourglass" role="radio" aria-checked="false"><img src="icons/hourglass/icon-192.png" alt=""><span data-i18n="icon.hourglass">Hourglass & leaf</span></button>
-          <button type="button" class="iconChoice" data-icon-choice="timer" role="radio" aria-checked="false"><img src="icons/timer/icon-192.png" alt=""><span data-i18n="icon.timer">F timer</span></button>
-        </div>
-        <div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
-        <div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
-        <div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button type="button" id="prepareIconChangeBtn" class="secondary" data-i18n="settings.appIconPrepare">Back up & prepare icon change</button><div id="reinstallLinkTools" class="reinstallLinkTools" hidden><label class="small" for="reinstallLinkInput" data-i18n="iconChange.linkLabel">Reinstall link</label><div class="reinstallLinkRow"><input id="reinstallLinkInput" type="text" readonly autocomplete="off" aria-label="Reinstall link" data-i18n-aria="iconChange.linkLabel"><button type="button" id="copyReinstallLinkBtn" class="secondary" data-i18n="iconChange.copyLink">Copy reinstall link</button></div><div id="reinstallLinkStatus" class="small" aria-live="polite"></div></div></div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.</div></div>
-        <div class="goalInputWrap"><input id="goalHours" class="numericInput" type="text" inputmode="decimal" autocomplete="off" value="16" aria-label="Target fasting duration" data-i18n-aria="settings.goal"> <span id="goalUnit">h</span></div>
-      </div>
-      <div class="presetWrap" aria-label="Quick fasting targets" data-i18n-aria="settings.goal">
-        <button class="chip" data-goal="12">12h</button>
-        <button class="chip" data-goal="14">14h</button>
-        <button class="chip" data-goal="16">16h</button>
-        <button class="chip" data-goal="18">18h</button>
-        <button class="chip" data-goal="20">20h</button>
-        <button class="chip" data-goal="22">22h</button>
-        <button class="chip" data-goal="23">23h</button>
-        <button class="chip" data-goal="24">24h</button>
-        <button class="chip" data-goal="36">36h</button>
-        <button class="chip" data-goal="48">48h</button>
-        <button class="chip" data-goal="72">72h</button>
-        <button class="chip" data-goal="96">96h</button>
-        <button class="chip" data-goal="120">120h</button>
-      </div>
-      <div class="small cycleHelp" id="goalCycleHelp"></div>
-      <div class="row" style="margin-top:10px">
-        <div><strong id="gameToggleLabel" data-i18n="game.consistencyAchievements">Consistency &amp; achievements</strong><div class="small" id="gameToggleHelp" data-i18n="game.settingsHelp">Optional gamification. Rewards meeting your own target and regular weight logging—not longer fasting.</div></div>
-        <label class="toggleWrap"><input id="gamificationToggle" type="checkbox" checked aria-labelledby="gameToggleLabel" aria-describedby="gameToggleHelp"><span aria-hidden="true" data-i18n="common.on">On</span></label>
-      </div>
-    </div>
-    <div class="card" id="notificationsCard">
-      <div class="sectionHeader"><h2 data-i18n="notifications.title">Notifications</h2><span class="levelPill" id="notificationPermissionBadge">Not enabled</span></div>
-      <div class="small" data-i18n="notifications.intro">Optional device notifications. Fasting Tracker never asks for notification permission until you turn them on.</div>
-      <div class="row">
-        <div><strong id="notificationMasterLabel" data-i18n="notifications.master">Device notifications</strong><div class="small" id="notificationMasterHelp" data-i18n="notifications.masterHelp">Master switch for the notification types selected below.</div></div>
-        <label class="toggleWrap"><input id="notificationMasterToggle" type="checkbox" aria-labelledby="notificationMasterLabel" aria-describedby="notificationMasterHelp"><span aria-hidden="true" data-i18n="notifications.enable">Enable</span></label>
-      </div>
-      <div class="row">
-        <div><strong id="notificationTargetLabel" data-i18n="notifications.targetReached">Target reached</strong><div class="small" data-i18n="notifications.targetReachedHelp">Notify once when the active fast reaches its selected target. It does not encourage continuing longer.</div></div>
-        <label class="toggleWrap"><input id="notificationTargetToggle" type="checkbox" aria-labelledby="notificationTargetLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
-      </div>
-      <div class="row">
-        <div><strong id="notificationBackupLabel" data-i18n="notifications.backupDue">Backup reminder</strong><div class="small" data-i18n="notifications.backupDueHelp">Notify once when the 7-day external JSON backup reminder becomes due.</div></div>
-        <label class="toggleWrap"><input id="notificationBackupToggle" type="checkbox" aria-labelledby="notificationBackupLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
-      </div>
-      <div class="row">
-        <div><strong id="notificationSafetyLabel" data-i18n="notifications.longFastSafety">Prolonged-fast safety reminder</strong><div class="small" data-i18n="notifications.longFastSafetyHelp">Notify once when an active fast reaches 24 hours, using neutral safety wording.</div></div>
-        <label class="toggleWrap"><input id="notificationSafetyToggle" type="checkbox" aria-labelledby="notificationSafetyLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
-      </div>
-      <div class="row">
-        <div><strong id="notificationWeighLabel" data-i18n="notifications.weighIn">Weigh-in reminder</strong><div class="small" data-i18n="notifications.weighInHelp">Optional reminder after the selected interval has passed since the latest weight entry.</div></div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><input id="notificationWeighCadence" type="hidden" value="weekly"><div class="notificationCadenceToggle" id="notificationWeighCadenceButtons" role="group" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><button id="notificationWeighDailyBtn" type="button" data-notification-cadence="daily" aria-pressed="false" data-i18n="notifications.daily">Daily</button><button id="notificationWeighWeeklyBtn" type="button" data-notification-cadence="weekly" aria-pressed="true" class="active" data-i18n="notifications.weekly">Weekly</button></div><label class="toggleWrap"><input id="notificationWeighToggle" type="checkbox" aria-labelledby="notificationWeighLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
-      </div>
-      <div class="row">
-        <div><strong id="notificationCycleLabel" data-i18n="notifications.cycleComplete">24-hour-cycle remainder completed</strong><div class="small" data-i18n="notifications.cycleCompleteHelp">Optional neutral timing notice when the mathematical remainder after a sub-24-hour fast reaches zero.</div></div>
-        <label class="toggleWrap"><input id="notificationCycleToggle" type="checkbox" aria-labelledby="notificationCycleLabel"><span aria-hidden="true" data-i18n="common.on">On</span></label>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="notifications.statusTitle">Device permission</strong><div class="small" id="notificationStatusText" aria-live="polite"></div></div>
-        <button type="button" id="notificationTestBtn" class="secondary" data-i18n="notifications.test">Send test</button>
-      </div>
-      <div class="small" id="notificationBlockedHelp" style="margin-top:6px" data-i18n="notifications.blockedHelp" hidden>On iPhone/iPad, check Settings → Notifications → Fasting Tracker. Home Screen web apps are managed there. If Fasting Tracker is absent there too, export a JSON backup before removing and reinstalling the Home Screen web app, then enable notifications when prompted.</div>
-      <div class="small" data-i18n="notifications.deliveryLimit">Privacy-first limitation: this app has no push server. Notifications are checked while the app is running and when it is reopened; a fully closed or suspended PWA may not deliver them at the exact due time.</div>
-      <div class="small" style="margin-top:6px" data-i18n="notifications.lockScreenPrivacy">Depending on your device settings, notification text may appear on the lock screen. Use the device's notification settings if you prefer to hide previews.</div>
-    </div>
-    <div class="card">
-      <div class="row" style="margin-top:10px">
-        <div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div><div class="small" id="backupContentSummary"></div><div class="small backupState" id="backupFreshnessLabel"></div></div>
-        <div class="csvActions"><button id="exportBtn" class="secondary" data-i18n="common.export">Export</button><button id="exportEverythingBtn" class="secondary" type="button" data-i18n="backup.exportEverything">Export everything</button></div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.last">Last external backup</strong><div class="small" data-i18n="backup.lastHelp">A reminder appears after 7 days without one.</div></div>
-        <div class="duration" id="lastBackupLabel" data-i18n="common.never">Never</div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.nextReminder">Next external backup reminder</strong><div class="small" id="nextBackupLabel">Starts after your first fasting or weight record.</div></div>
-        <button id="settingsBackupNowBtn" class="secondary" data-i18n="backup.now">Back up now</button>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.snapshots">Automatic internal JSON snapshots</strong><div class="small" id="snapshotStatus">Keeps recent, daily, weekly and monthly recovery points automatically.</div><div class="small" id="snapshotTransparency"></div></div>
-        <button id="restoreSnapshotBtn" class="secondary" data-i18n="backup.browse">Browse</button>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="backup.importTitle">Import backup</strong><div class="small" data-i18n="backup.importHelp">Restore from an exported JSON file</div></div>
-        <button id="importBtn" class="secondary" data-i18n="common.import">Import</button>
-        <input id="importFile" type="file" accept="application/json,.json" hidden>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="csv.title">CSV data export</strong><div class="small" data-i18n="csv.help">Human-readable exports for spreadsheets. CSV is not a restorable backup; keep JSON backups too.</div></div>
-        <div class="csvActions"><button id="exportFastCsvBtn" class="secondary" type="button" data-i18n="csv.fasts">Fasting CSV</button><button id="exportWeightCsvBtn" class="secondary" type="button" data-i18n="csv.weights">Weight CSV</button></div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting history, deleted-fast audit history, weight history and deleted-weight audit history on this device</div></div>
-        <button id="resetBtn" class="dangerText" data-i18n="common.delete">Delete</button>
-      </div>
-    </div>
+<div class="row" style="margin-top:10px">
+<div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div><div class="small" id="backupContentSummary"></div><div class="small backupState" id="backupFreshnessLabel"></div></div>
+<div class="csvActions"><button class="secondary" data-i18n="common.export" id="exportBtn">Export</button><button class="secondary" data-i18n="backup.exportEverything" id="exportEverythingBtn" type="button">Export everything</button></div>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.last">Last external backup</strong><div class="small" data-i18n="backup.lastHelp">A reminder appears after 7 days without one.</div></div>
+<div class="duration" data-i18n="common.never" id="lastBackupLabel">Never</div>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.nextReminder">Next external backup reminder</strong><div class="small" id="nextBackupLabel">Starts after your first fasting or weight record.</div></div>
+<button class="secondary" data-i18n="backup.now" id="settingsBackupNowBtn">Back up now</button>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.snapshots">Automatic internal JSON snapshots</strong><div class="small" id="snapshotStatus">Keeps recent, daily, weekly and monthly recovery points automatically.</div><div class="small" id="snapshotTransparency"></div></div>
+<button class="secondary" data-i18n="backup.browse" id="restoreSnapshotBtn">Browse</button>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.importTitle">Import backup</strong><div class="small" data-i18n="backup.importHelp">Restore from an exported JSON file</div></div>
+<button class="secondary" data-i18n="common.import" id="importBtn">Import</button>
+<input accept="application/json,.json" hidden="" id="importFile" type="file"/>
+</div>
+<div class="row">
+<div><strong data-i18n="csv.title">CSV data export</strong><div class="small" data-i18n="csv.help">Human-readable exports for spreadsheets. CSV is not a restorable backup; keep JSON backups too.</div></div>
+<div class="csvActions"><button class="secondary" data-i18n="csv.fasts" id="exportFastCsvBtn" type="button">Fasting CSV</button><button class="secondary" data-i18n="csv.weights" id="exportWeightCsvBtn" type="button">Weight CSV</button></div>
+</div>
+<div class="row">
+<div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting history, deleted-fast audit history, weight history and deleted-weight audit history on this device</div></div>
+<button class="dangerText" data-i18n="common.delete" id="resetBtn">Delete</button>
+</div>
+</div>
+    <details class="settingsSubgroup" id="settingsStorageDetails">
+      <summary data-i18n="settings.storageDetails">Storage protection & data locations</summary>
+      <div class="card" id="storageProtectionCard">
+<h2 data-i18n="storage.title">Storage protection</h2>
+<div class="row">
+<div><strong data-i18n="storage.checking" id="storageProtectionStatus">Checking storage protection…</strong><div class="small" data-i18n="storage.help" id="storageProtectionHelp">Persistent storage can reduce the chance that the browser removes local app data under storage pressure. External backups are still recommended.</div></div>
+<button class="secondary" data-i18n="storage.request" hidden="" id="storageProtectBtn">Request protection</button>
+</div>
+<div class="small" data-i18n="storage.usageUnknown" id="storageUsageLabel">Storage usage information is unavailable.</div>
 
-    <div class="card" id="aboutHelp">
-      <h2 data-i18n="help.title">About &amp; Help</h2>
-      <div class="helpHeading" data-i18n="help.installIOS">Install on iPhone / iPad</div>
-      <ol class="helpSteps small">
-        <li data-i18n="help.installIOS1">Open the app's web address in Safari.</li>
-        <li data-i18n-html="help.installIOS2">Tap Share, then <strong>Add to Home Screen</strong>.</li>
-        <li data-i18n-html="help.installIOS3">Keep <strong>Open as Web App</strong> enabled if iOS shows that option, then tap Add.</li>
-      </ol>
-      <div class="helpHeading" data-i18n="help.installAndroid">Install on Android</div>
-      <ol class="helpSteps small">
-        <li data-i18n="help.installAndroid1">Open the app's web address in Chrome or another browser that supports PWA installation.</li>
-        <li data-i18n-html="help.installAndroid2">Open the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
-        <li data-i18n="help.installAndroid3">Confirm the installation. Fasting Tracker will appear on the Home screen/app launcher and can work offline after its files are cached.</li>
-      </ol>
+</div>
+      <div class="card" id="dataLocationsCard">
+<h2 data-i18n="storage.locationsTitle">Where your data lives</h2>
+<div class="dataLocationRow"><strong data-i18n="storage.currentDataTitle">Current data</strong><div class="small" data-i18n="storage.currentDataText">Your working fasting, weight, settings and audit records are stored locally in IndexedDB on this installation.</div></div>
+<div class="dataLocationRow"><strong data-i18n="storage.snapshotsTitle">Recovery snapshots</strong><div class="small" data-i18n="storage.snapshotsText">Automatic rollback points are also stored locally inside this installation. They are not cloud backups and can disappear if the app/site data is removed.</div></div>
+<div class="dataLocationRow"><strong data-i18n="storage.externalTitle">External JSON backup</strong><div class="small" data-i18n="storage.externalText">An exported JSON file is an independent copy you save outside the app. It is the safest recovery option after reinstalling or losing local storage.</div></div>
+</div>
+    </details></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.updates">Updates</strong><span class="small" data-i18n="settings.group.updatesHelp">Installed version and update checks</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card settingsCompactCard" id="settingsUpdatesCard"><div class="row" style="margin-top:10px">
+<div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
+<div class="duration" id="appVersionLabel">—</div>
+</div><div class="row">
+<div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
+<button class="secondary" data-i18n="update.check" id="updateBtn">Check</button>
+</div></div>
+    <details class="settingsSubgroup" id="settingsUpdateAdvanced">
+      <summary data-i18n="settings.updateAdvanced">Advanced update details</summary>
+      <div class="card settingsCompactCard"><div class="small" id="healthInstallState"></div><div class="small" id="healthServiceWorker"></div><div class="small" id="healthDeploymentStatus"></div><div class="small" id="healthDeploymentVersions"></div><div class="small" id="healthLastKnownGood"></div><div class="dataLocationRow" id="deploymentHistoryBlock"><strong data-i18n="deployment.historyTitle">Recent update history</strong><div class="small" id="deploymentHistoryList"></div></div></div>
+    </details></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupAccessibility" data-settings-group="settingsGroupAccessibility">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.accessibility">Accessibility</strong><span class="small" data-i18n="settings.group.accessibilityHelp">VoiceOver, large text, reduced motion and focus support</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card settingsCompactCard" id="accessibilitySettingsCard">
+      <div class="dataLocationRow"><strong data-i18n="settings.accessibilityVoiceOverTitle">VoiceOver & screen readers</strong><div class="small" data-i18n="settings.accessibilityVoiceOverText">Fasting Tracker keeps accessible labels, focus order and spoken announcements for changing status and chart selections. No switch is required.</div></div>
+      <div class="dataLocationRow"><strong data-i18n="settings.accessibilityTextTitle">Large text & reduced motion</strong><div class="small" data-i18n="settings.accessibilityTextText">The interface adapts to larger text and follows reduced-motion preferences where motion is used.</div></div>
+      <div class="dataLocationRow"><strong data-i18n="settings.accessibilityFocusTitle">Focus & chart access</strong><div class="small" data-i18n="settings.accessibilityFocusText">Interactive charts, dialogs and changing status messages include keyboard/focus and screen-reader support.</div></div>
+    </div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupAdvanced" data-settings-group="settingsGroupAdvanced">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.advanced">Advanced &amp; diagnostics</strong><span class="small" data-i18n="settings.group.advancedHelp">Integrity, storage health, benchmarks and repair tools</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card" id="storageHealthCard">
+<div class="sectionHeader"><h2 data-i18n="storage.healthTitle">Data &amp; storage health</h2><button class="secondary" data-i18n="diagnostics.export" id="diagnosticExportBtn" type="button">Export diagnostics</button></div>
+<div class="grid" style="margin-top:10px">
+<div class="metric"><div class="value" id="healthRecordCount">—</div><div class="label" data-i18n="storage.healthRecords">Active records</div></div>
+<div class="metric"><div class="value" id="healthDeletedCount">—</div><div class="label" data-i18n="storage.healthDeleted">Deleted audit records</div></div>
+<div class="metric"><div class="value" id="healthSnapshotCount">—</div><div class="label" data-i18n="storage.healthSnapshots">Recovery snapshots</div></div>
+<div class="metric"><div class="value" id="healthBackupAge">—</div><div class="label" data-i18n="storage.healthBackup">External backup</div></div>
+</div>
+<div class="small" id="healthPersistence" style="margin-top:10px"></div>
+<div class="small" id="healthUsage"></div>
+<div class="small" id="healthLastSave"></div>
+<div class="small" id="healthProtection"></div>
+<div class="small" id="healthSnapshotDetail"></div>
+<div class="small" id="healthMigrationStatus"></div>
+<div aria-live="polite" class="small" id="healthIntegrityStatus"></div>
 
-      <div class="helpHeading" data-i18n="help.backup">Backup &amp; restore</div>
-      <div class="small" data-i18n-html="help.backupText">The app reminds you every 7 days to use <strong>Export</strong> and save the JSON backup in Files, iCloud Drive, Google Drive, or another secure location. Before an app update, <strong>Backup &amp; Update</strong> creates an external backup first. Internal recovery snapshots are stored inside the installed web app and are lost if that installation is removed. The JSON file itself is the complete external backup; no companion text file is required. Before reinstalling to change the Home Screen icon, export an external backup; after reinstalling, use <strong>Import</strong> to restore it.</div>
-      <div class="small" style="margin-top:8px" data-i18n="backup.unencrypted">Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.</div>
 
-      <div class="helpHeading" data-i18n="help.privacy">Privacy &amp; storage</div>
-      <div class="small" data-i18n="help.privacyText">Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each friend who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.</div>
 
-      <div class="helpHeading" data-i18n="help.timeZoneTitle">Historical time zones</div>
-      <div class="small" data-i18n="help.timeZoneText">Fasts and weight entries remember the time zone in which they were created, so historical clock times and calendar-day charts do not shift if you later travel to another time zone.</div>
 
-      <div class="helpHeading" data-i18n="help.autophagy">Autophagy indicator</div>
-      <div class="small" data-i18n="help.autophagyText">The science card deliberately does not claim that autophagy starts at a fixed hour. Autophagy occurs continuously at a basal level, and current human studies do not support a universal fasting-duration threshold. The card separates well-established metabolic timing from more uncertain autophagy evidence and links to the studies used.</div>
 
-      <div class="helpHeading" data-i18n="help.consistency">Consistency system</div>
-      <div class="small" data-i18n="help.consistencyText">Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. An excused unavoidable interruption does not break the target streak and does not earn target XP. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.</div>
 
-      <div class="helpHeading" data-i18n="public.healthTitle">Health &amp; safety</div>
-      <div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
+<div class="small" id="healthDeletedStorage"></div>
+<div aria-atomic="true" aria-live="polite" class="small" id="healthPerformance" role="status"></div>
+<div aria-live="polite" class="small storagePressure" id="storagePressureWarning" role="status"></div>
+<div class="diagnosticActions">
+<button class="secondary" data-i18n="integrity.check" id="integrityCheckBtn" type="button">Check data integrity</button>
+<button class="secondary" data-i18n="backup.createSnapshot" id="createSnapshotBtn" type="button">Create recovery snapshot now</button>
+<button class="secondary" data-i18n="cache.repair" id="repairCacheBtn" type="button">Repair app cache</button>
+<button class="secondary" data-i18n="performance.run" id="performanceTestBtn" type="button">Run local benchmark</button>
+<button class="secondary" data-i18n="deviceChecks.run" id="deviceChecksBtn" type="button">Run device checks</button>
+<button class="secondary" data-i18n="derived.rebuild" id="rebuildDerivedBtn" type="button">Recalculate statistics &amp; charts</button>
+<button class="dangerText" data-i18n="deleted.empty" id="emptyDeletedBtn" type="button">Empty Recently Deleted</button>
+</div>
+</div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupHelp" data-settings-group="settingsGroupHelp">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.help">About &amp; help</strong><span class="small" data-i18n="settings.group.helpHelp">Installation, privacy, safety and support information</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="notice healthNotice">
+<strong data-i18n="public.healthTitle">Health &amp; safety</strong>
+<div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
+<div class="publicLinks"><a class="publicLink" data-i18n="public.healthLink" href="about.html?return=fasting#health" rel="noopener">Read health &amp; safety information</a></div>
+</div><div class="card" id="aboutHelp">
+<h2 data-i18n="help.title">About &amp; Help</h2>
+<div class="helpHeading" data-i18n="help.installIOS">Install on iPhone / iPad</div>
+<ol class="helpSteps small">
+<li data-i18n="help.installIOS1">Open the app's web address in Safari.</li>
+<li data-i18n-html="help.installIOS2">Tap Share, then <strong>Add to Home Screen</strong>.</li>
+<li data-i18n-html="help.installIOS3">Keep <strong>Open as Web App</strong> enabled if iOS shows that option, then tap Add.</li>
+</ol>
+<div class="helpHeading" data-i18n="help.installAndroid">Install on Android</div>
+<ol class="helpSteps small">
+<li data-i18n="help.installAndroid1">Open the app's web address in Chrome or another browser that supports PWA installation.</li>
+<li data-i18n-html="help.installAndroid2">Open the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+<li data-i18n="help.installAndroid3">Confirm the installation. Fasting Tracker will appear on the Home screen/app launcher and can work offline after its files are cached.</li>
+</ol>
+<div class="helpHeading" data-i18n="help.backup">Backup &amp; restore</div>
+<div class="small" data-i18n-html="help.backupText">The app reminds you every 7 days to use <strong>Export</strong> and save the JSON backup in Files, iCloud Drive, Google Drive, or another secure location. Before an app update, <strong>Backup &amp; Update</strong> creates an external backup first. Internal recovery snapshots are stored inside the installed web app and are lost if that installation is removed. The JSON file itself is the complete external backup; no companion text file is required. Before reinstalling to change the Home Screen icon, export an external backup; after reinstalling, use <strong>Import</strong> to restore it.</div>
+<div class="small" data-i18n="backup.unencrypted" style="margin-top:8px">Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.</div>
+<div class="helpHeading" data-i18n="help.privacy">Privacy &amp; storage</div>
+<div class="small" data-i18n="help.privacyText">Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each friend who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.</div>
+<div class="helpHeading" data-i18n="help.timeZoneTitle">Historical time zones</div>
+<div class="small" data-i18n="help.timeZoneText">Fasts and weight entries remember the time zone in which they were created, so historical clock times and calendar-day charts do not shift if you later travel to another time zone.</div>
+<div class="helpHeading" data-i18n="help.autophagy">Autophagy indicator</div>
+<div class="small" data-i18n="help.autophagyText">The science card deliberately does not claim that autophagy starts at a fixed hour. Autophagy occurs continuously at a basal level, and current human studies do not support a universal fasting-duration threshold. The card separates well-established metabolic timing from more uncertain autophagy evidence and links to the studies used.</div>
+<div class="helpHeading" data-i18n="help.consistency">Consistency system</div>
+<div class="small" data-i18n="help.consistencyText">Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. An excused unavoidable interruption does not break the target streak and does not earn target XP. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.</div>
+<div class="helpHeading" data-i18n="public.healthTitle">Health &amp; safety</div>
+<div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
+<div class="helpHeading" data-i18n="public.infoTitle">Public information</div>
+<div class="small" data-i18n="public.infoText">Read the full privacy information, health disclaimer and scientific-source notes.</div>
+<div class="publicLinks">
+<a class="publicLink" data-i18n="public.privacy" href="privacy.html?return=settings" rel="noopener">Privacy</a>
+<a class="publicLink" data-i18n="public.about" href="about.html?return=settings" rel="noopener">About &amp; sources</a>
+<a class="publicLink" data-i18n="public.support" href="{{ site.github.repository_url }}/issues" rel="noopener noreferrer" target="_blank">Support / report an issue</a>
+</div>
+<div class="small" data-i18n="public.supportWarning" style="margin-top:8px">GitHub Issues are public. Do not include fasting history, weight data, medical information or other personal data in a report.</div>
 
-      <div class="helpHeading" data-i18n="public.infoTitle">Public information</div>
-      <div class="small" data-i18n="public.infoText">Read the full privacy information, health disclaimer and scientific-source notes.</div>
-      <div class="publicLinks">
-        <a class="publicLink" href="privacy.html?return=settings" rel="noopener" data-i18n="public.privacy">Privacy</a>
-        <a class="publicLink" href="about.html?return=settings" rel="noopener" data-i18n="public.about">About &amp; sources</a>
-        <a class="publicLink" href="{{ site.github.repository_url }}/issues" target="_blank" rel="noopener noreferrer" data-i18n="public.support">Support / report an issue</a>
-      </div>
-      <div class="small" style="margin-top:8px" data-i18n="public.supportWarning">GitHub Issues are public. Do not include fasting history, weight data, medical information or other personal data in a report.</div>
 
-      <div class="row" style="margin-top:10px">
-        <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
-        <div class="duration" id="appVersionLabel">—</div>
-      </div>
-      <div class="row">
-        <div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
-        <button id="updateBtn" class="secondary" data-i18n="update.check">Check</button>
-      </div>
-    </div>
+</div></div>
+    </details>
     <div class="version" id="appFooterVersion">Fasting Tracker</div>
   </section>
 </main>
@@ -1444,19 +1515,21 @@ layout: null
   const LONG_FAST_NOTICE_KEY = 'fastingTracker.longFastNoticeSeen';
   const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';
   const NOTIFICATION_STATE_KEY = 'fastingTracker.notificationState';
+  const NOTIFICATION_DETAIL_LIMIT = 5;
+  const NOTIFICATION_DETAIL_TTL_MS = 14 * 24 * 60 * 60 * 1000;
   const DATA_VERSION = 1;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 25;
+  const I18N_SOURCE_REVISION = 28;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.11.7';
+  const APP_VERSION = '1.12.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1472,6 +1545,7 @@ layout: null
   const UPDATE_STATUS_META_KEY = 'fastingTracker.updateStatus';
   const CHART_RANGE_KEY = 'fastingTracker.chartRanges';
   const STATS_VIZ_PREF_KEY = 'fastingTracker.statsVizSelection';
+  const SETTINGS_GROUPS_KEY = 'fastingTracker.settingsGroups';
   const STATS_VIZ_GROUPS = Object.freeze({
     overview: Object.freeze(['timeline','calendar','trend','weeks']),
     timing: Object.freeze(['startpattern','distribution']),
@@ -2745,6 +2819,76 @@ layout: null
     try { localStorage.setItem(NOTIFICATION_STATE_KEY, JSON.stringify(notificationRuntimeState)); } catch {}
   }
 
+  function normalizeNotificationDetailItems(raw) {
+    const now = Date.now();
+    const items = Array.isArray(raw) ? raw : [];
+    const seen = new Set(), out = [];
+    for (const item of items) {
+      if (!item || typeof item !== 'object') continue;
+      const id = String(item.id || '').slice(0, 240);
+      const kind = String(item.kind || '').slice(0, 40);
+      const screen = APP_SCREENS.includes(item.screen) ? item.screen : 'fasting';
+      const created = validDate(item.createdAt);
+      if (!id || !kind || !created || now - created.getTime() > NOTIFICATION_DETAIL_TTL_MS || seen.has(id)) continue;
+      const params = item.params && typeof item.params === 'object' && !Array.isArray(item.params) ? item.params : {};
+      seen.add(id); out.push({id, kind, screen, createdAt:created.toISOString(), params});
+      if (out.length >= NOTIFICATION_DETAIL_LIMIT) break;
+    }
+    return out;
+  }
+
+  function notificationDetailCopy(kind, params = {}) {
+    if (kind === 'target') return {title:t('notifications.targetTitle'), body:t('notifications.targetDetails',{target:formatGoal(sanitizeGoal(params.targetHours, activeTargetHours()))})};
+    if (kind === 'backup') return {title:t('notifications.backupTitle'), body:t('notifications.backupDetails')};
+    if (kind === 'safety') return {title:t('notifications.safetyTitle'), body:t('notifications.safetyDetails')};
+    if (kind === 'weigh-in') {
+      const cadenceKey = params.cadence === 'daily' ? 'notifications.daily' : 'notifications.weekly';
+      return {title:t('notifications.weighTitle'), body:t('notifications.weighDetails',{cadence:t(cadenceKey).toLowerCase()})};
+    }
+    if (kind === 'cycle') return {title:t('notifications.cycleTitle'), body:t('notifications.cycleDetails')};
+    if (kind === 'test') return {title:t('notifications.testTitle'), body:t('notifications.testDetails')};
+    return {title:t('notifications.detailsHeading'), body:t('notifications.detailsFallback')};
+  }
+
+  function notificationDetailItems() {
+    const clean = normalizeNotificationDetailItems(notificationRuntimeState.details);
+    if (JSON.stringify(clean) !== JSON.stringify(notificationRuntimeState.details || [])) {
+      notificationRuntimeState.details = clean; saveNotificationRuntimeState();
+    }
+    return clean;
+  }
+
+  function recordNotificationDetail(kind, {screen='fasting', tag=null, params={}} = {}) {
+    const id = String(tag || `fasting-tracker-${kind}-${Date.now()}`);
+    const current = notificationDetailItems().filter(item => item.id !== id);
+    notificationRuntimeState.details = [{id, kind, screen:APP_SCREENS.includes(screen)?screen:'fasting', createdAt:new Date().toISOString(), params}, ...current].slice(0, NOTIFICATION_DETAIL_LIMIT);
+    saveNotificationRuntimeState();
+    renderNotificationDetails();
+  }
+
+  function dismissNotificationDetail(id) {
+    notificationRuntimeState.details = notificationDetailItems().filter(item => item.id !== id);
+    saveNotificationRuntimeState(); renderNotificationDetails();
+  }
+
+  function renderNotificationDetails() {
+    const stack = el('notificationDetailStack'); if (!stack) return;
+    const items = notificationDetailItems(); stack.replaceChildren(); stack.hidden = items.length === 0;
+    for (const item of items) {
+      const copy = notificationDetailCopy(item.kind, item.params);
+      const card = document.createElement('div'); card.className='card notificationDetailCard'; card.setAttribute('role','status'); card.dataset.notificationDetailId=item.id;
+      const header=document.createElement('div'); header.className='notificationDetailHeader';
+      const heading=document.createElement('div');
+      const title=document.createElement('div'); title.className='notificationDetailTitle'; title.textContent=copy.title;
+      const time=document.createElement('div'); time.className='small notificationDetailTime'; time.textContent=t('notifications.detailsReceived',{date:localDateTimeLabel(item.createdAt)});
+      heading.append(title,time);
+      const dismiss=document.createElement('button'); dismiss.type='button'; dismiss.className='secondary notificationDetailDismiss'; dismiss.textContent=t('common.dismiss'); dismiss.setAttribute('aria-label',t('notifications.detailsDismissAria',{title:copy.title})); dismiss.addEventListener('click',()=>dismissNotificationDetail(item.id));
+      header.append(heading,dismiss);
+      const body=document.createElement('div'); body.className='notificationDetailBody'; body.textContent=copy.body;
+      card.append(header,body); stack.append(card);
+    }
+  }
+
   function normalizeData(parsed) {
     parsed = migrateData(parsed);
     if (parsed.dataVersion !== DATA_VERSION) throw new Error('unsupported data format');
@@ -3439,23 +3583,27 @@ layout: null
     return prefs.enabled === true && prefs[key] === true && notificationPermissionState() === 'granted';
   }
 
-  async function sendDeviceNotification(kind, title, body, {screen='fasting', tag=null} = {}) {
+  async function sendDeviceNotification(kind, title, body, {screen='fasting', tag=null, detailParams={}} = {}) {
     if (notificationPermissionState() !== 'granted') return false;
+    const detailId = String(tag || `fasting-tracker-${kind}`);
     const options = {
       body,
-      tag: tag || `fasting-tracker-${kind}`,
+      tag: detailId,
       renotify: false,
       icon: 'icons/icon-192.png',
       badge: 'icons/favicon-32.png',
-      data: { screen }
+      data: { screen, kind, detailId }
     };
+    let sent = false;
     try {
       if (navigator.serviceWorker?.ready) {
         const registration = await navigator.serviceWorker.ready;
-        if (registration?.showNotification) { await registration.showNotification(title, options); return true; }
+        if (registration?.showNotification) { await registration.showNotification(title, options); sent = true; }
       }
     } catch {}
-    try { new Notification(title, options); return true; } catch { return false; }
+    if (!sent) { try { new Notification(title, options); sent = true; } catch {} }
+    if (sent) recordNotificationDetail(kind, {screen, tag:detailId, params:detailParams});
+    return sent;
   }
 
   async function maybeNotifyTargetReached(nowMs = Date.now()) {
@@ -3466,7 +3614,7 @@ layout: null
     if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
     const token = `${data.activeStart}|${target}`;
     if (notificationRuntimeState.targetReachedToken === token) return false;
-    const sent = await sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBody', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`});
+    const sent = await sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}});
     if (sent) { notificationRuntimeState.targetReachedToken = token; saveNotificationRuntimeState(); }
     return sent;
   }
@@ -3477,7 +3625,7 @@ layout: null
     if (!Number.isFinite(startMs) || nowMs < startMs + 24 * 3600000) return false;
     const token = String(data.activeStart);
     if (notificationRuntimeState.longFastSafetyToken === token) return false;
-    const sent = await sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBody'), {screen:'fasting',tag:`fasting-safety-${token}`});
+    const sent = await sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBodyShort'), {screen:'fasting',tag:`fasting-safety-${token}`});
     if (sent) { notificationRuntimeState.longFastSafetyToken = token; saveNotificationRuntimeState(); }
     return sent;
   }
@@ -3494,7 +3642,7 @@ layout: null
     if (!enabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
     if (cycleEnd < enabledAt.getTime()) return false;
     if (notificationRuntimeState.cycleCompleteToken === record.id) return false;
-    const sent = await sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBody'), {screen:'fasting',tag:`fasting-cycle-${record.id}`});
+    const sent = await sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBodyShort'), {screen:'fasting',tag:`fasting-cycle-${record.id}`});
     if (sent) { notificationRuntimeState.cycleCompleteToken = record.id; saveNotificationRuntimeState(); }
     return sent;
   }
@@ -3511,7 +3659,7 @@ layout: null
     if (!notificationEnabledFor('backupDue')) return false;
     const token = backupDueToken();
     if (!token || notificationRuntimeState.backupDueToken === token) return false;
-    const sent = await sendDeviceNotification('backup', t('notifications.backupTitle'), t('notifications.backupBody'), {screen:'settings',tag:`fasting-backup-${token}`});
+    const sent = await sendDeviceNotification('backup', t('notifications.backupTitle'), t('notifications.backupBodyShort'), {screen:'settings',tag:`fasting-backup-${token}`});
     if (sent) { notificationRuntimeState.backupDueToken = token; saveNotificationRuntimeState(); }
     return sent;
   }
@@ -3541,7 +3689,7 @@ layout: null
     const token = `${prefs.weighInCadence}:${tokenBase}`;
     if (notificationRuntimeState.weighInToken === token) return false;
     const cadence = t(prefs.weighInCadence === 'daily' ? 'notifications.daily' : 'notifications.weekly').toLowerCase();
-    const sent = await sendDeviceNotification('weigh-in', t('notifications.weighTitle'), t('notifications.weighBody', {cadence}), {screen:'weight',tag:`fasting-weigh-${token}`});
+    const sent = await sendDeviceNotification('weigh-in', t('notifications.weighTitle'), t('notifications.weighBodyShort', {cadence}), {screen:'weight',tag:`fasting-weigh-${token}`,detailParams:{cadence:prefs.weighInCadence}});
     if (sent) { notificationRuntimeState.weighInToken = token; saveNotificationRuntimeState(); }
     return sent;
   }
@@ -3639,7 +3787,7 @@ layout: null
 
   async function sendTestNotification() {
     if (!notificationPrefs().enabled || notificationPermissionState() !== 'granted') { renderNotificationSettings(); return; }
-    await sendDeviceNotification('test', t('notifications.testTitle'), t('notifications.testBody'), {screen:'settings',tag:'fasting-tracker-test'});
+    await sendDeviceNotification('test', t('notifications.testTitle'), t('notifications.testBodyShort'), {screen:'settings',tag:'fasting-tracker-test'});
   }
 
   const SCIENCE_STAGES = [
@@ -6236,7 +6384,31 @@ layout: null
   function installStateCode(){if(isStandaloneApp())return isIOSDevice()?'installed-ios':isAndroidDevice()?'installed-android':'installed-desktop';return isIOSDevice()?'browser-ios':isAndroidDevice()?'browser-android':'browser-desktop';}
   function loadPerformanceMeta(){try{return JSON.parse(localStorage.getItem(PERF_META_KEY)||'null');}catch{return null;}}
   function savePerformanceMeta(value){try{localStorage.setItem(PERF_META_KEY,JSON.stringify(value));}catch{}}
-  async function runLocalBenchmark(){const btn=el('performanceTestBtn');if(btn)btn.disabled=true;await new Promise(r=>setTimeout(r,0));const p=globalThis.performance?.now?()=>performance.now():()=>Date.now();const t0=p();const rec=[...data.records].sort((a,b)=>String(a.end).localeCompare(String(b.end)));const t1=p();buildStoredDayTotals(rec);const t2=p();JSON.stringify({records:data.records,weights:data.weights,deletedFasts:data.deletedFasts,deletedWeights:data.deletedWeights});const t3=p();const result={at:new Date().toISOString(),records:data.records.length,weights:data.weights.length,sortMs:+(t1-t0).toFixed(2),totalsMs:+(t2-t1).toFixed(2),serializeMs:+(t3-t2).toFixed(2),totalMs:+(t3-t0).toFixed(2)};savePerformanceMeta(result);if(btn)btn.disabled=false;renderStorageHealth();return result;}
+  function renderBenchmarkResult(result){
+    const node=el('healthPerformance');if(!node||!result)return;
+    node.textContent=t('performance.result',{date:localDateTimeLabel(result.at),total:formatNumber(result.totalMs,0,2),sort:formatNumber(result.sortMs,0,2),totals:formatNumber(result.totalsMs,0,2),serialize:formatNumber(result.serializeMs,0,2),records:result.records,weights:result.weights});
+  }
+  async function runLocalBenchmark(){
+    const btn=el('performanceTestBtn'),status=el('healthPerformance');
+    if(btn){btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent=t('performance.running');}
+    if(status)status.textContent=t('performance.runningStatus');
+    await new Promise(r=>setTimeout(r,0));
+    try{
+      const p=globalThis.performance?.now?()=>performance.now():()=>Date.now();
+      const t0=p();const rec=[...data.records].sort((a,b)=>String(a.end).localeCompare(String(b.end)));const t1=p();
+      buildStoredDayTotals(rec);const t2=p();
+      JSON.stringify({records:data.records,weights:data.weights,deletedFasts:data.deletedFasts,deletedWeights:data.deletedWeights});const t3=p();
+      const result={at:new Date().toISOString(),records:data.records.length,weights:data.weights.length,sortMs:+(t1-t0).toFixed(2),totalsMs:+(t2-t1).toFixed(2),serializeMs:+(t3-t2).toFixed(2),totalMs:+(t3-t0).toFixed(2)};
+      savePerformanceMeta(result);renderBenchmarkResult(result);
+      // Refresh slower storage/service-worker diagnostics only after the benchmark result is visible.
+      setTimeout(()=>{renderStorageHealth().catch(()=>{});},0);
+      return result;
+    }catch(err){
+      noteDiagnosticError('performance.benchmark');if(status)status.textContent=t('performance.failed');return null;
+    }finally{
+      if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=t('performance.run');}
+    }
+  }
   async function queryServiceWorkerHealth(){if(!('serviceWorker'in navigator))return {supported:false};try{const reg=await navigator.serviceWorker.getRegistration();const worker=navigator.serviceWorker.controller||reg?.active;if(!worker)return {supported:true,registered:!!reg,controlled:false};return await new Promise(resolve=>{const ch=new MessageChannel(),timer=setTimeout(()=>resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,timeout:true}),4000);ch.port1.onmessage=e=>{clearTimeout(timer);resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,...(e.data||{})});};worker.postMessage({type:'CHECK_HEALTH',protocolVersion:UPDATE_PROTOCOL_VERSION},[ch.port2]);});}catch(err){return {supported:true,error:String(err?.message||err)};}}
   async function repairAppCache(){if(!confirm(t('cache.repairConfirm')))return false;const btn=el('repairCacheBtn');if(btn)btn.disabled=true;try{const info=await fetchLiveReleaseStatus();if(info&&!info.consistency.ok){alert(t('update.deploymentIncomplete'));return false;}if(info?.metadataVersion&&compareVersions(info.metadataVersion,APP_VERSION)>0){latestVersion=info.metadataVersion;alert(t('cache.updateInstead',{version:info.metadataVersion}));setUpdateUI('available');return false;}await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();renderStorageHealth();alert(t('cache.repaired'));return true;}catch(err){noteDiagnosticError('cache.repair');alert(t('cache.repairFailed'));return false;}finally{if(btn)btn.disabled=false;}}
 
@@ -6278,7 +6450,7 @@ layout: null
     el('healthSnapshotDetail').textContent=ss.count?t('storage.healthSnapshotDetail',{newest:localDateTimeLabel(ss.newest),oldest:localDateTimeLabel(ss.oldest),size:humanBytes(ss.storedBytes),recent:ss.recent,daily:ss.daily,weekly:ss.weekly,monthly:ss.monthly}):t('storage.healthSnapshotNone');
     const migration=migrationStatusMeta();
     el('healthMigrationStatus').textContent=migration.pending?t('storage.healthMigrationPending',{from:migration.pending.from,to:migration.pending.to}):migration.last?.status==='success'?t('storage.healthMigrationSuccess',{from:migration.last.from,to:migration.last.to,date:localDateTimeLabel(migration.last.completedAt)}):migration.last?.status==='failed'?t('storage.healthMigrationFailed',{from:migration.last.from,to:migration.last.to,date:localDateTimeLabel(migration.last.completedAt)}):t('storage.healthMigrationNone');
-    const install=installStateCode();el('healthInstallState').textContent=t(`installState.${install}`);lastServiceWorkerHealth=await queryServiceWorkerHealth();const sw=lastServiceWorkerHealth;el('healthServiceWorker').textContent=!sw?.supported?t('cache.unsupported'):sw.error||sw.timeout?t('cache.unavailable'):sw.cacheComplete===false?t('cache.incomplete',{n:sw.missingAssets||0}):sw.activeVersion?t('cache.healthy',{version:sw.activeVersion}):t('cache.notControlled');renderDeploymentStatus();el('healthDeletedStorage').textContent=t('deleted.storage',{n:data.deletedFasts.length+data.deletedWeights.length,size:humanBytes(deletedAuditApproxBytes())});const perf=loadPerformanceMeta();el('healthPerformance').textContent=perf?t('performance.last',{date:localDateTimeLabel(perf.at),ms:formatNumber(perf.totalMs,0,2),records:perf.records,weights:perf.weights}):t('performance.none');
+    const install=installStateCode();el('healthInstallState').textContent=t(`installState.${install}`);lastServiceWorkerHealth=await queryServiceWorkerHealth();const sw=lastServiceWorkerHealth;el('healthServiceWorker').textContent=!sw?.supported?t('cache.unsupported'):sw.error||sw.timeout?t('cache.unavailable'):sw.cacheComplete===false?t('cache.incomplete',{n:sw.missingAssets||0}):sw.activeVersion?t('cache.healthy',{version:sw.activeVersion}):t('cache.notControlled');renderDeploymentStatus();el('healthDeletedStorage').textContent=t('deleted.storage',{n:data.deletedFasts.length+data.deletedWeights.length,size:humanBytes(deletedAuditApproxBytes())});const perf=loadPerformanceMeta();if(perf)renderBenchmarkResult(perf);else el('healthPerformance').textContent=t('performance.none');
     el('healthIntegrityStatus').textContent=lastIntegrityCheck?(lastIntegrityCheck.ok?t('integrity.lastOk',{date:localDateTimeLabel(lastIntegrityCheck.at)}):t('integrity.lastIssues',{n:lastIntegrityCheck.issues.length,date:localDateTimeLabel(lastIntegrityCheck.at)})):t('integrity.notChecked');
   }
 
@@ -6872,6 +7044,55 @@ layout: null
     }
   }
 
+  let settingsSearchActive = false;
+  let settingsGroupToggleSuppressed = false;
+
+  function settingsGroups() { return [...document.querySelectorAll('#settings .settingsGroup[data-settings-group]')]; }
+  function loadSettingsGroupState() {
+    try { const x=JSON.parse(localStorage.getItem(SETTINGS_GROUPS_KEY)||'{}'); return x && typeof x==='object' ? x : {}; } catch { return {}; }
+  }
+  function saveSettingsGroupState() {
+    if (settingsSearchActive || settingsGroupToggleSuppressed) return;
+    const state={}; settingsGroups().forEach(group=>{state[group.id]=!!group.open;});
+    try { localStorage.setItem(SETTINGS_GROUPS_KEY,JSON.stringify(state)); } catch {}
+  }
+  function restoreSettingsGroupState() {
+    const state=loadSettingsGroupState();
+    settingsGroupToggleSuppressed=true;
+    settingsGroups().forEach(group=>{group.hidden=false;group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:group.id==='settingsGroupGeneral';});
+    settingsGroupToggleSuppressed=false;
+  }
+  function normalizeSettingsSearch(value) { return String(value||'').trim().toLocaleLowerCase(uiLanguage()); }
+  function applySettingsSearch() {
+    const input=el('settingsSearchInput'), clear=el('settingsSearchClearBtn'), status=el('settingsSearchStatus');
+    if (!input || !status) return;
+    const query=normalizeSettingsSearch(input.value); settingsSearchActive=!!query;
+    if (clear) clear.hidden=!query;
+    if (!query) { restoreSettingsGroupState(); status.textContent=''; return; }
+    settingsGroupToggleSuppressed=true;
+    let matches=0;
+    settingsGroups().forEach(group=>{
+      const hay=normalizeSettingsSearch(group.textContent);
+      const matched=hay.includes(query);
+      group.hidden=!matched; group.open=matched; if(matched)matches++;
+    });
+    settingsGroupToggleSuppressed=false;
+    status.textContent=matches?t('settings.searchResults',{n:matches}):t('settings.searchNoResults');
+    if (el('settingsGroupAdvanced')?.open || el('settingsUpdateAdvanced')?.open) renderStorageHealth();
+    if (el('settingsGroupData')?.open) queueStorageProtectionRefresh();
+  }
+  function initSettingsDisclosure() {
+    restoreSettingsGroupState();
+    settingsGroups().forEach(group=>group.addEventListener('toggle',()=>{
+      saveSettingsGroupState();
+      if (group.id==='settingsGroupAdvanced' && group.open) renderStorageHealth();
+      if (group.id==='settingsGroupData' && group.open) queueStorageProtectionRefresh();
+    }));
+    el('settingsUpdateAdvanced')?.addEventListener('toggle',()=>{if(el('settingsUpdateAdvanced').open)renderStorageHealth();});
+    el('settingsSearchInput')?.addEventListener('input',applySettingsSearch);
+    el('settingsSearchClearBtn')?.addEventListener('click',()=>{const input=el('settingsSearchInput');if(input){input.value='';input.focus();}applySettingsSearch();});
+  }
+
   function activeScreenId() {
     return document.querySelector('.screen.active')?.id || 'fasting';
   }
@@ -6902,11 +7123,11 @@ layout: null
       renderBackupStatus();
       renderSnapshotStatus();
       renderInstallStorageNotice();
-      queueStorageProtectionRefresh();
+      if (el('settingsGroupData')?.open) queueStorageProtectionRefresh();
       renderGamificationDetail();
       renderGamificationSummary();
       renderNotificationSettings();
-      renderStorageHealth();
+      if (el('settingsGroupAdvanced')?.open || el('settingsUpdateAdvanced')?.open) renderStorageHealth();
     }
     viewDirty[screen] = false;
   }
@@ -6920,6 +7141,7 @@ layout: null
     markViewsDirty();
     renderBackupStatus();
     renderInstallStorageNotice();
+    renderNotificationDetails();
     renderScreen(activeScreenId(), { force:true });
   }
 
@@ -7275,6 +7497,8 @@ layout: null
   el('snapshotCloseBtn').addEventListener('click', closeSnapshotModal);
   el('snapshotModal').addEventListener('click', e => { if (e.target === el('snapshotModal')) closeSnapshotModal(); });
 
+  initSettingsDisclosure();
+
   el('updateBtn').addEventListener('click', () => updateAvailable ? openUpdateModal() : checkForUpdates());
   el('updateBannerBtn').addEventListener('click', openUpdateModal);
   el('updateCancelBtn').addEventListener('click', closeUpdateModal);
@@ -7352,8 +7576,12 @@ layout: null
       reloadBackupMetaFromStorage();
       renderBackupStatus(); renderSnapshotStatus(); renderGamificationSummary(); if (el('stats').classList.contains('active') || el('settings').classList.contains('active')) renderGamificationDetail();
     }
+    if (event.key === NOTIFICATION_STATE_KEY) {
+      notificationRuntimeState = loadNotificationRuntimeState();
+      renderNotificationDetails();
+    }
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderNotificationSettings(); renderScreen(activeScreenId()); if(activeScreenId()==='settings')renderStorageHealth(); checkFastNotifications(); checkMaintenanceNotifications(); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderNotificationSettings(); renderNotificationDetails(); renderScreen(activeScreenId()); if(activeScreenId()==='settings')renderStorageHealth(); checkFastNotifications(); checkMaintenanceNotifications(); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
   window.addEventListener('pagehide', () => { flushPrimaryPersistence(); });
 
   el('installStorageDismiss').addEventListener('click', () => { try { localStorage.setItem(INSTALL_NOTICE_KEY, '1'); } catch {} renderInstallStorageNotice(); });

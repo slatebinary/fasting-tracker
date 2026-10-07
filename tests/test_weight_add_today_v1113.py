@@ -14,9 +14,9 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.7',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.0',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_function("document.querySelector('#weight')?.classList.contains('active')",timeout=5000)
     page.wait_for_function("document.querySelector('#weightPeriodRange')?.dataset.count !== undefined",timeout=5000)

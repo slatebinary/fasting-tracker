@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""v1.11.7 date/time edge matrix through real backup import and integrity verification."""
+"""v1.12.0 date/time edge matrix through real backup import and integrity verification."""
 import json,tempfile,sys
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
-VERSION='1.11.7'
+VERSION='1.12.0'
 RECORDS=[
  {'id':'leap','start':'2024-02-28T20:00:00.000Z','end':'2024-02-29T12:00:00.000Z','goalHours':16,'timeZone':'Europe/Sofia','createdAt':'2024-02-29T12:00:00.000Z','modifiedAt':None,'editHistory':[]},
  {'id':'midnight','start':'2026-03-15T20:30:00.000Z','end':'2026-03-16T12:30:00.000Z','goalHours':16,'timeZone':'Europe/Sofia','createdAt':'2026-03-16T12:30:00.000Z','modifiedAt':None,'editHistory':[]},
@@ -21,9 +21,9 @@ def main():
     with sync_playwright() as p:
         browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
         page=browser.new_page(viewport={'width':390,'height':844});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-        page.evaluate(STORAGE_SHIM);page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.7'}));}",empty)
-        page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.7'",timeout=20000)
-        page.locator('.tab[data-screen="settings"]').click();page.wait_for_timeout(80)
+        page.evaluate(STORAGE_SHIM);page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.0'}));}",empty)
+        page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.0'",timeout=20000)
+        page.locator('.tab[data-screen="settings"]').click();page.locator('#settingsGroupData > summary').click();page.locator('#settingsGroupAdvanced > summary').click();page.wait_for_timeout(80)
         page.on('dialog',lambda d:d.accept())
         page.locator('#importFile').set_input_files(path);page.wait_for_timeout(120)
         assert page.locator('#importPreviewModal').is_visible();page.locator('#importPreviewReplaceBtn').click();page.wait_for_timeout(250)

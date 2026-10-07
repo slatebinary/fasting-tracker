@@ -35,9 +35,9 @@ with sync_playwright() as p:
         dialogs.append(d.message); d.accept()
     page.on('dialog',handle_dialog)
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.7',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.0',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
 
     page.locator('.tab[data-screen="history"]').click()
     page.wait_for_function("document.querySelectorAll('#historyList .historyRow').length === 3",timeout=5000)
@@ -66,7 +66,7 @@ with sync_playwright() as p:
       Object.defineProperty(navigator,'canShare',{value:()=>true,configurable:true});
       Object.defineProperty(navigator,'share',{value:async payload=>{ window.__backupText=await payload.files[0].text(); },configurable:true});
     }""")
-    page.locator('.tab[data-screen="settings"]').click()
+    page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupData > summary').click()
     page.locator('#exportBtn').click()
     page.wait_for_function("typeof window.__backupText === 'string'",timeout=5000)
     exported=json.loads(page.evaluate("window.__backupText"))

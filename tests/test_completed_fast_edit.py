@@ -42,9 +42,9 @@ with sync_playwright() as p:
         d.accept()
     page.on('dialog',on_dialog)
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.11.7'})); }", data)
+    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.0'})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
 
     # Small correction: move the whole interval by five minutes. Duration/goal outcome stay unchanged,
     # so this should save without a confirmation dialog.
@@ -101,7 +101,7 @@ with sync_playwright() as p:
       Object.defineProperty(navigator,'canShare',{value:()=>true,configurable:true});
       Object.defineProperty(navigator,'share',{value:async payload=>{ window.__backupText=await payload.files[0].text(); },configurable:true});
     }""")
-    page.locator('.tab[data-screen="settings"]').click(); page.locator('#exportBtn').click()
+    page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupData > summary').click(); page.locator('#exportBtn').click()
     page.wait_for_function("typeof window.__backupText === 'string'",timeout=5000)
     exported=json.loads(page.evaluate('window.__backupText'))
     exp=exported['data']['records'][0]

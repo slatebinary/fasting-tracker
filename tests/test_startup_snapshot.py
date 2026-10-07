@@ -20,7 +20,7 @@ with sync_playwright() as p:
       localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.7.11',seenAt:'2026-09-30T10:00:00.000Z'}));
     }""", [payload])
     page.set_content(inlined_html(), wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.11.7'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
     page.wait_for_timeout(300)
     if errors:
         print('FAIL: startup browser errors: '+' | '.join(errors[:3])); sys.exit(1)
@@ -30,7 +30,7 @@ with sync_playwright() as p:
     if page.locator('#recoveryBanner').is_visible():
         print('FAIL: valid migrated data entered Recovery mode'); sys.exit(1)
     # The migrated data should remain available and snapshot UI should no longer show a failure state.
-    page.locator('.tab[data-screen="settings"]').click()
+    page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupData > summary').click()
     page.wait_for_timeout(100)
     status=page.locator('#snapshotStatus').inner_text()
     if 'could not' in status.lower() or 'failed' in status.lower():

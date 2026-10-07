@@ -122,6 +122,25 @@ The interface currently supports English, Bulgarian and Spanish. Language, regio
 
 
 
+
+
+## v1.12.0 — concise device notifications + in-app details
+
+- Keeps lock-screen/banner notification text deliberately short so the essential message survives iOS truncation.
+- Stores the full explanation locally and shows it inside Fasting Tracker in a dismissible notification-details card.
+- Keeps up to five recent undismissed notification details for 14 days and deduplicates them using the same notification tag.
+- Renders stored details in the currently selected app language and preserves VoiceOver/accessibility announcements.
+- Adds notification-length/detail regression coverage and keeps the local-only/no-push-server delivery model unchanged.
+
+## v1.11.9 — Settings progressive disclosure
+
+- Reorganizes Settings into General, Reminders & notifications, Data & backup, Updates, Accessibility, Advanced & diagnostics, and About & help.
+- Keeps only General expanded by default; technical information remains available but collapsed.
+- Adds Settings search that opens only matching sections.
+- Moves deployment/service-worker detail behind Advanced update details.
+- Keeps VoiceOver/screen-reader support explicit without adding unnecessary toggles.
+- Defers heavier storage-health rendering until its advanced section is opened.
+
 ## v1.10.1 quality, recovery & history tools
 
 - Adds backup-freshness status so Settings distinguishes a current external backup from data changed since the last backup.

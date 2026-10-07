@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""v1.11.7 stabilization regression: edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state."""
+"""v1.12.0 stabilization regression: edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state."""
 import sys
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
-VERSION='1.11.7'
+VERSION='1.12.0'
 
 def seed():
     rows=[]
@@ -34,9 +34,9 @@ def main():
         browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
         page=browser.new_page(viewport={'width':390,'height':844}); errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.evaluate(STORAGE_SHIM)
-        page.evaluate("x=>{__seedFastingDbV2(x.data,x.daily);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.11.7'}));}",{'data':data,'daily':daily})
+        page.evaluate("x=>{__seedFastingDbV2(x.data,x.daily);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.0'}));}",{'data':data,'daily':daily})
         page.set_content(inlined_html(),wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.11.7'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.0'",timeout=20000)
         # Edit-history rollback keeps same record and changes duration back from 18h to 16h.
         page.locator('.tab[data-screen="history"]').click();page.wait_for_timeout(120)
         page.locator('#historyList .textButton').last.click();page.wait_for_timeout(50)
@@ -66,7 +66,7 @@ def main():
         assert page.locator('#statsDrilldownModal').is_visible() and page.locator('#statsDrilldownList .row').count()>=1
         page.locator('#statsDrilldownCloseBtn').click()
         # Rebuild derived data leaves primary records present and completes cleanly.
-        page.locator('.tab[data-screen="settings"]').click();page.wait_for_timeout(100)
+        page.locator('.tab[data-screen="settings"]').click();page.locator('#settingsGroupAdvanced > summary').click();page.wait_for_timeout(100)
         page.once('dialog',lambda d:d.accept())
         page.locator('#rebuildDerivedBtn').click();page.wait_for_timeout(250)
         assert page.locator('#healthRecordCount').inner_text().strip()!='0'
@@ -76,6 +76,6 @@ def main():
         assert good and good['version']==VERSION,good
         assert not errors,errors[:5]
         browser.close()
-    print('PASS: v1.11.7 edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state')
+    print('PASS: v1.12.0 edit rollback, chart ranges/rolling/cumulative, drill-down, rebuild and last-known-good state')
 
 if __name__=='__main__':main()
