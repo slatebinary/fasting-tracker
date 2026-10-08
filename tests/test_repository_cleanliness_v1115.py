@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.12.1: release tree contains no generated/cache or obsolete root leftovers."""
+"""v1.12.2: release tree contains no generated/cache or obsolete root leftovers."""
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 assert (ROOT/'.gitignore').is_file(), '.gitignore missing from release'
@@ -12,4 +12,4 @@ for p in ROOT.rglob('*'):
     if '__pycache__' in p.parts or p.suffix in ('.pyc','.pyo') or rel in ('all.js','main.js'):
         bad.append(rel)
 assert not bad, bad
-print('PASS: v1.12.1 release tree is clean and generated/obsolete files are excluded')
+print('PASS: v1.12.2 release tree is clean and generated/obsolete files are excluded')

@@ -24,12 +24,12 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM)
     page.evaluate("""data => {
       __seedFastingDb(data, []);
-      localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.1',seenAt:new Date().toISOString()}));
+      localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()}));
       Object.defineProperty(navigator,'share',{configurable:true,value:async payload=>{window.__sharePayload=payload;}});
       Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.__copiedShare=text;}}});
     }""", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.1'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
 
     page.locator('#shareProgressBtn').click()
     page.locator('#shareModal').wait_for(state='visible',timeout=5000)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.12.1: compact grouped Fasting Patterns navigator regression."""
+"""v1.12.2: compact grouped Fasting Patterns navigator regression."""
 import sys
 from browser_perf_common import STORAGE_SHIM, inlined_html, build_data
 try:
@@ -7,14 +7,14 @@ try:
 except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
 
-VERSION='1.12.1'
+VERSION='1.12.2'
 data=build_data(120)
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844})
     errors=[]; page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.1'}));}",data)
+    page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="stats"]').click();page.wait_for_timeout(200)
@@ -62,4 +62,4 @@ with sync_playwright() as p:
         print('FAIL: keyboard category navigation did not restore Timing/Durations');sys.exit(1)
 
     browser.close()
-print('PASS: v1.12.1 compact grouped Fasting Patterns navigator, synchronization and per-category memory')
+print('PASS: v1.12.2 compact grouped Fasting Patterns navigator, synchronization and per-category memory')

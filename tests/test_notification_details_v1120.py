@@ -37,9 +37,9 @@ with sync_playwright() as p:
     data=build_data(0)
     now=datetime.now(timezone.utc); start=now-timedelta(hours=25)
     data.update({'goalHours':18,'activeStart':start.isoformat().replace('+00:00','Z'),'activeGoalHours':18,'activeTimeZone':'UTC','activeCreatedAt':start.isoformat().replace('+00:00','Z'),'activeModifiedAt':None,'notificationPreferences':{'enabled':True,'targetReached':True,'backupDue':False,'longFastSafety':True,'weighIn':False,'weighInCadence':'weekly','cycleComplete':False}})
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.1'})); }",data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2'})); }",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.1'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
     page.wait_for_function("window.__ftNotifications.length >= 2",timeout=7000)
     notifications=page.evaluate("window.__ftNotifications")
     bodies=[n['options']['body'] for n in notifications]

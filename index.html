@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.1" />
+  <meta name="ft-app-version" content="1.12.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1529,7 +1529,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.1';
+  const APP_VERSION = '1.12.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5237,7 +5237,12 @@ layout: null
     statsVizPrefs.lastByGroup[nextGroup]=nextMode;
     saveStatsVizPrefs();
     syncStatsVizNavigator();
-    if(!changed)return;
+    showStatsVizView(statsVizMode);
+    updateStatsRangeControl();
+    if(!changed){
+      if(el('stats').classList.contains('active')) verifyStatsVisualizationAfterLayout();
+      return;
+    }
     statsDetailOverride=null;
     genericChartSelectedKey=null;
     if(statsVizMode==='timeline')timelineScrollToLatestPending=true;
@@ -5253,9 +5258,27 @@ layout: null
 
   function renderStatsVisualizations() {
     syncStatsVizNavigator();
+    // Always re-apply the remembered panel before drawing. A persisted non-default
+    // view can otherwise remain hidden while its chart is rendered off-screen.
+    showStatsVizView(statsVizMode);
+    updateStatsRangeControl();
     // Data changes invalidate the render cache. Render only the visible mode;
     // other modes are rendered lazily after their tab has already painted.
     renderStatsVisualizationMode(statsVizMode);
+  }
+
+  function verifyStatsVisualizationAfterLayout() {
+    // iOS can expose the Statistics screen before its final layout width is ready.
+    // Verify the active panel on the next paint and redraw only that visualization.
+    requestAnimationFrame(() => {
+      if (!el('stats').classList.contains('active')) return;
+      showStatsVizView(statsVizMode);
+      syncStatsVizNavigator();
+      updateStatsRangeControl();
+      renderStatsVisualizationMode(statsVizMode);
+      renderChartDetailForMode();
+      if (statsVizMode === 'timeline') scrollTimelineToLatest();
+    });
   }
 
   function monthAnchor(offset = 0) {
@@ -7291,6 +7314,7 @@ layout: null
     requestAnimationFrame(() => {
       renderScreen(target);
       if (target === 'stats' && statsVizMode === 'timeline') scrollTimelineToLatest();
+      if (target === 'stats') verifyStatsVisualizationAfterLayout();
     });
   }
 

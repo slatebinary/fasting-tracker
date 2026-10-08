@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""v1.12.1: bounded single-user compatibility window and legacy cleanup."""
+"""v1.12.2: bounded single-user compatibility window and legacy cleanup."""
 import json, sys
 from playwright.sync_api import sync_playwright
 from browser_perf_common import STORAGE_SHIM, inlined_html
 
-VERSION='1.12.1'
+VERSION='1.12.2'
 DATA={
   'dataVersion':1,'revision':4,'updatedAt':'2026-10-05T12:00:00.000Z','goalHours':16,
   'activeStart':None,'activeGoalHours':None,'activeTimeZone':None,'activeCreatedAt':None,'activeModifiedAt':None,
@@ -55,4 +55,4 @@ with sync_playwright() as p:
     assert [r['id'] for r in st['records']]==['legacy-fast'] and [w['id'] for w in st['weights']]==['legacy-weight']
     page.close();browser.close()
 
-print('PASS: v1.12.1 compatibility window migrates supported primary layouts once, stamps current stores, and retires obsolete snapshots')
+print('PASS: v1.12.2 compatibility window migrates supported primary layouts once, stamps current stores, and retires obsolete snapshots')

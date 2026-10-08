@@ -6,6 +6,13 @@ Fasting Tracker is designed to work locally on your device, including offline af
 
 - **Selectable app icons** — choose from Plate & clock, Moon & utensils, Hourglass & leaf, or F timer before installation on iPhone/iPad or Android. Android manifests include dedicated maskable icon variants for launcher compatibility.
 
+## v1.12.2 — reliable Statistics rendering
+
+- Statistics always re-applies the remembered visualization panel before drawing it.
+- Entering Statistics performs a post-layout verification/redraw of only the active chart, preventing intermittent blank charts on iPhone/PWA tab entry.
+- Re-selecting the current visualization can recover its panel without requiring a different tab or chart first.
+- No fasting, weight, backup or IndexedDB schema change.
+
 ## v1.12.1 — reliable stop confirmation
 
 - Keep fasting and Stop & save now use completed click activation inside the modal instead of the pointer-up fast-action shortcut.
