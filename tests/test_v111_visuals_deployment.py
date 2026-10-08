@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""v1.12.0 regression: added fasting visualizations, device checks, and deployment-consistency helper."""
+"""v1.12.1 regression: added fasting visualizations, device checks, and deployment-consistency helper."""
 import sys, subprocess, tempfile, textwrap
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='1.12.0'
+VERSION='1.12.1'
 
 def data():
     rec=[]
@@ -26,7 +26,7 @@ def data():
 def main():
     # Helper module correctly detects a mixed deployment.
     js=(ROOT/'js/release-health.js').read_text(encoding='utf-8')
-    check="global.window=global;\n"+js+"\nconst x=FTReleaseHealth.consistency('1.12.0','1.10.1'); if(x.ok||x.reason!=='version-mismatch') process.exit(2); console.log('ok');\n"
+    check="global.window=global;\n"+js+"\nconst x=FTReleaseHealth.consistency('1.12.1','1.10.1'); if(x.ok||x.reason!=='version-mismatch') process.exit(2); console.log('ok');\n"
     cp=subprocess.run(['node','-e',check],capture_output=True,text=True)
     assert cp.returncode==0, cp.stderr
 
@@ -35,9 +35,9 @@ def main():
         page=browser.new_page(viewport={'width':390,'height':844})
         errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.evaluate(STORAGE_SHIM)
-        page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.0'}));}",data())
+        page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.1'}));}",data())
         page.set_content(inlined_html(),wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.0'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.1'",timeout=20000)
         page.locator('.tab[data-screen="stats"]').click();page.wait_for_timeout(100)
         for mode,canvas in [('months','fastMonthsChart'),('distribution','fastDistributionChart'),('success','fastSuccessChart'),('startpattern','fastStartPatternChart')]:
             page.locator('#statsVizSelect').select_option(mode);page.wait_for_timeout(120)
@@ -55,6 +55,6 @@ def main():
         page.locator('#deviceCheckCloseBtn').click()
         assert not errors, errors[:5]
         browser.close()
-    print('PASS: v1.12.0 fasting visuals, deployment helper and device checks')
+    print('PASS: v1.12.1 fasting visuals, deployment helper and device checks')
 
 if __name__=='__main__': main()

@@ -23,11 +23,11 @@ with sync_playwright() as p:
       const registration={showNotification:async()=>{}};
       Object.defineProperty(navigator,'serviceWorker',{value:{ready:Promise.resolve(registration),register:async()=>({}),addEventListener:()=>{},controller:null},configurable:true});
       __seedFastingDb(data, []);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.0',seenAt:new Date().toISOString()}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.1',seenAt:new Date().toISOString()}));
       localStorage.setItem('fastingTracker.setupGuide',JSON.stringify({version:1,started:true,dismissed:false,completed:false,currentStep:5,awaitStandalone:false}));
     }""", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.1'",timeout=20000)
     page.wait_for_function("!document.querySelector('#setupStepNotifications').hidden",timeout=5000)
     if not page.locator('#setupNextBtn').is_hidden():
         print('FAIL: ordinary Continue button should be hidden on notification-choice step'); sys.exit(1)

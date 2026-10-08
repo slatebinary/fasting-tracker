@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""v1.12.0: local benchmark gives immediate feedback, detailed results, and visible failure state."""
+"""v1.12.1: local benchmark gives immediate feedback, detailed results, and visible failure state."""
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
 
-VERSION='1.12.0'
+VERSION='1.12.1'
 
 def seed_data():
     return {
@@ -26,9 +26,9 @@ def main():
         page=browser.new_page(viewport={'width':390,'height':844})
         errors=[]; page.on('pageerror',lambda e: errors.append(str(e)))
         page.evaluate(STORAGE_SHIM)
-        page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.0'}));}",seed_data())
+        page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.1'}));}",seed_data())
         page.set_content(inlined_html(),wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.0'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.1'",timeout=20000)
         page.locator('.tab[data-screen="settings"]').click()
         page.locator('#settingsGroupAdvanced > summary').click()
         page.wait_for_timeout(100)
@@ -63,6 +63,6 @@ def main():
         assert "btn.removeAttribute('aria-busy')" in html
         assert not errors, errors[:5]
         browser.close()
-    print('PASS: v1.12.0 benchmark gives immediate progress, detailed completion timings, and visible failure feedback')
+    print('PASS: v1.12.1 benchmark gives immediate progress, detailed completion timings, and visible failure feedback')
 
 if __name__=='__main__': main()

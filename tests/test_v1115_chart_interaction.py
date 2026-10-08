@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.12.0: dense fasting charts keep readable axes and selectable nearest-point callouts."""
+"""v1.12.1: dense fasting charts keep readable axes and selectable nearest-point callouts."""
 import json
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -80,6 +80,6 @@ def main():
         assert page.locator('#weightChart').is_visible()
         assert not errors, errors[:5]
         browser.close()
-    print('PASS: v1.12.0 adaptive cumulative/trend axes, dense marker thinning, edge-aware callouts and focusability')
+    print('PASS: v1.12.1 adaptive cumulative/trend axes, dense marker thinning, edge-aware callouts and focusability')
 
 if __name__=='__main__': main()

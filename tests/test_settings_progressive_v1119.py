@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""v1.12.0: Settings uses progressive disclosure and searchable sections."""
+"""v1.12.1: Settings uses progressive disclosure and searchable sections."""
 from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM
 
-VERSION='1.12.0'
+VERSION='1.12.1'
 
 def seed_data():
     return {'dataVersion':1,'revision':1,'updatedAt':'2026-10-06T18:00:00.000Z','goalHours':16,
@@ -18,9 +18,9 @@ def main():
     page=browser.new_page(viewport={'width':390,'height':844})
     errors=[]; page.on('pageerror',lambda e: errors.append(str(e)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.0'}));}",seed_data())
+    page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.1'}));}",seed_data())
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.0'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.1'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click()
     page.wait_for_timeout(100)
     groups=page.locator('#settings .settingsGroup')
@@ -57,6 +57,6 @@ def main():
     assert 'VoiceOver' in page.locator('#accessibilitySettingsCard').inner_text()
     assert not errors, errors[:5]
     browser.close()
-  print('PASS: v1.12.0 Settings is compact, searchable, progressively disclosed, and keeps accessibility/update diagnostics available')
+  print('PASS: v1.12.1 Settings is compact, searchable, progressively disclosed, and keeps accessibility/update diagnostics available')
 
 if __name__=='__main__': main()

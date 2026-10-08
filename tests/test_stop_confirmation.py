@@ -25,9 +25,9 @@ with sync_playwright() as p:
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.on('dialog',lambda d:(dialogs.append(d.message),d.dismiss()))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.0',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.1',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.0'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.1'",timeout=20000)
     page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
 
     # Stop opens one app modal; dismissing it must keep the fast running.
@@ -43,6 +43,7 @@ with sync_playwright() as p:
     page.wait_for_function("document.querySelector('#fasting')?.classList.contains('active')",timeout=5000)
     if 'Stop' not in page.locator('#toggleFast').inner_text():
         print('FAIL: Keep fasting ended the active fast'); sys.exit(1)
+    page.wait_for_timeout(400)
 
     # One explicit Stop & save action ends it and reveals Undo.
     page.locator('#toggleFast').click()

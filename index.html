@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.0" />
+  <meta name="ft-app-version" content="1.12.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1529,7 +1529,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.0';
+  const APP_VERSION = '1.12.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1658,6 +1658,7 @@ layout: null
   let deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
   let weightVisibleCount = HISTORY_PAGE_SIZE;
   let fastActionLocked = false;
+  let suppressFastToggleUntil = 0;
   let pendingStopUndo = null;
   let stopUndoTimer = 0;
   let stopUndoCountdownTimer = 0;
@@ -4038,6 +4039,10 @@ layout: null
   }
 
   function closeStopFastModal() {
+    // Do not expose the underlying Start/Stop control to the tail end of the
+    // same touch sequence that dismissed this modal. Mobile Safari can
+    // otherwise retarget a synthetic click after the overlay disappears.
+    suppressFastToggleUntil = performance.now() + 350;
     hideModal('stopFastModal');
   }
 
@@ -4160,6 +4165,7 @@ layout: null
   }
 
   bindResponsiveAction(toggleFast, () => {
+    if (performance.now() < suppressFastToggleUntil) return;
     if (fastActionLocked || recoveryMode) return;
     fastActionLocked = true;
     toggleFast.disabled = true;
@@ -5644,6 +5650,20 @@ layout: null
       if (event.detail !== 0 && performance.now() - pointerHandledAt < 700) { event.preventDefault(); return; }
       flash();
       handler(event);
+    });
+  }
+
+  function bindReliableModalAction(node, handler) {
+    if (!node || typeof handler !== 'function') return;
+    let locked = false;
+    node.addEventListener('click', event => {
+      if (locked) return;
+      locked = true;
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+      node.classList.add('fastActionPressed');
+      setTimeout(() => node.classList.remove('fastActionPressed'), 90);
+      try { handler(event); } finally { setTimeout(() => { locked = false; }, 250); }
     });
   }
 
@@ -7290,8 +7310,11 @@ layout: null
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
-  bindResponsiveAction(el('keepFastingBtn'), keepFastingAndReturnHome);
-  bindResponsiveAction(el('stopAndSaveBtn'), confirmStopFast);
+  // Modal actions use the browser's completed click activation rather than
+  // the pointer-up shortcut used for ordinary controls. This avoids lost taps
+  // from small finger drift and prevents touch-through when the modal closes.
+  bindReliableModalAction(el('keepFastingBtn'), keepFastingAndReturnHome);
+  bindReliableModalAction(el('stopAndSaveBtn'), confirmStopFast);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
   bindResponsiveAction(editActiveTargetBtn, openActiveTargetModal);
   el('activeTargetCancelBtn').addEventListener('click', closeActiveTargetModal);

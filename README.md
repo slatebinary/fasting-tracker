@@ -6,6 +6,13 @@ Fasting Tracker is designed to work locally on your device, including offline af
 
 - **Selectable app icons** — choose from Plate & clock, Moon & utensils, Hourglass & leaf, or F timer before installation on iPhone/iPad or Android. Android manifests include dedicated maskable icon variants for launcher compatibility.
 
+## v1.12.1 — reliable stop confirmation
+
+- Keep fasting and Stop & save now use completed click activation inside the modal instead of the pointer-up fast-action shortcut.
+- Small finger movement on iPhone no longer causes Keep fasting to be ignored.
+- Closing the stop modal temporarily suppresses the underlying Start/Stop control so the same touch sequence cannot immediately reopen the dialog (or start a new fast after saving).
+- Added regression coverage for repeated Keep fasting use and touch-through protection.
+
 ## Features
 
 - Start and stop fasting with a live timer
