@@ -70,8 +70,23 @@ layout: null
   const back=document.getElementById('backAppLink');
   if(back){
     back.href=previousDocument||exactReturn||fallbackReturn();
-    back.addEventListener('click',()=>{
+    back.addEventListener('click',(event)=>{
+      // Prefer returning to the already initialized app in this browsing context.
+      // A fresh navigation on iOS standalone PWAs can suspend initialization and
+      // briefly expose the empty timer before storage has finished loading.
       if(previousDocument)return;
+      let fromApp=false;
+      try {
+        const ref=document.referrer ? new URL(document.referrer) : null;
+        fromApp=!!ref && ref.origin===appRoot.origin &&
+          (ref.pathname===appRoot.pathname || ref.pathname===appIndex.pathname);
+      } catch {}
+      if(fromApp && history.length>1){
+        event.preventDefault();
+        try{sessionStorage.removeItem(DOC_RETURN_KEY)}catch{}
+        history.back();
+        return;
+      }
       try{sessionStorage.removeItem(DOC_RETURN_KEY)}catch{}
     },{once:true});
   }
