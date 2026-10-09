@@ -1,0 +1,39 @@
+name: v1.12.3 regression checks
+on:
+  push:
+    branches:
+      - fix/data-protection-readable-backups
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check application JavaScript and document navigation
+        run: node tests/v1123-regression.cjs
+      - name: Verify release archive
+        run: |
+          python3 - <<'PY'
+          import os, zipfile
+          ignore={'.git','.github','node_modules'}
+          with zipfile.ZipFile('/tmp/fasting-tracker-v1.12.3.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for root,dirs,files in os.walk('.'):
+                  dirs[:]=[d for d in dirs if d not in ignore]
+                  for name in files:
+                      p=os.path.join(root,name)
+                      z.write(p,p.removeprefix('./'))
+          with zipfile.ZipFile('/tmp/fasting-tracker-v1.12.3.zip') as z:
+              bad=z.testzip()
+              assert bad is None, bad
+              assert {'index.html','version.json','about.html','privacy.html','branding.html','license.html'} <= set(z.namelist())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fasting-tracker-v1.12.3-regression
+          path: /tmp/fasting-tracker-v1.12.3.zip
+          retention-days: 14
