@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.12.2",
-  "released": "2026-10-08",
-  "notes": "Statistics rendering reliability: the remembered chart panel is always made visible before drawing, and Statistics performs a post-layout active-chart verification/redraw on entry so charts no longer appear blank until another tab is visited.",
+  "version": "1.12.3",
+  "released": "2026-10-09",
+  "notes": "Proposed release: safeguard against unexpected empty-history saves; readable JSON backup view; clearer Export everything explanation; terminology correction. Pending device regression testing.",
   "entry": "./index.html",
   "shell": [
     "./",
