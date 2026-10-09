@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.12.3",
   "released": "2026-10-09",
-  "notes": "Proposed release: safeguard against unexpected empty-history saves; readable JSON backup view; clearer Export everything explanation; terminology correction. Pending device regression testing.",
+  "notes": "Data-loss protection for fasting and weight history; readable JSON backup view; clearer Export everything description; terminology corrections; improved return from About, Privacy, Branding and License documents.",
   "entry": "./index.html",
   "shell": [
     "./",
