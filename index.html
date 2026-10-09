@@ -2177,13 +2177,18 @@ layout: null
   window.addEventListener('unhandledrejection',event=>{try{noteDiagnosticError('promise.'+FTPlatform.errorCategory(event.reason));}catch{}});
 
   async function persistRecordStores(snapshotData = data, {force = false} = {}) {
-    // Fail closed if an ordinary save would unexpectedly erase both established histories.
-    // Explicit imports and resets use force:true and are handled separately.
-    if (!force && (persistedRecordMap.size + persistedWeightMap.size >= 2) &&
-        snapshotData.records.length === 0 && snapshotData.weights.length === 0 &&
-        (persistedRecordMap.size > 0 || persistedWeightMap.size > 0)) {
+    // Ordinary writes may not silently erase an established collection.
+    // Intentional deletions append an audit record; explicit validated imports
+    // and resets use force:true. Check each collection independently so loss of
+    // only fasting OR weight history is also detected.
+    if (!force && (
+      (persistedRecordMap.size > 0 && snapshotData.records.length === 0 &&
+       snapshotData.deletedFasts.length <= persistedDeletedFastMap.size) ||
+      (persistedWeightMap.size > 0 && snapshotData.weights.length === 0 &&
+       snapshotData.deletedWeights.length <= persistedDeletedWeightMap.size)
+    )) {
       noteDiagnosticError('history-loss-prevented');
-      throw new Error('History-loss safeguard: refusing unexpected empty data write');
+      throw new Error('History-loss safeguard: refusing unaudited history deletion');
     }
     const db = await openAppDb();
     const stores = ['state','records','deletedFasts','weights','deletedWeights'];
