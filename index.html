@@ -7648,6 +7648,21 @@ layout: null
     }
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderNotificationSettings(); renderNotificationDetails(); renderScreen(activeScreenId()); if(activeScreenId()==='settings')renderStorageHealth(); checkFastNotifications(); checkMaintenanceNotifications(); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
+  // Safari may restore the installed PWA from the back-forward cache after a
+  // documentation page. Restore its already loaded UI instead of writing an
+  // uninitialized in-memory default over the user's IndexedDB history.
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted || !uiReady) return;
+    try {
+      const target = location.hash.slice(1);
+      activateScreen(APP_SCREENS.includes(target) ? target : 'fasting', {updateHash:false});
+      markViewsDirty();
+      renderScreen(activeScreenId(), {force:true});
+      updateTimer();
+      reloadBackupMetaFromStorage();
+      renderBackupStatus();
+    } catch (err) { noteDiagnosticError('document-return-resume'); console.error(err); }
+  });
   window.addEventListener('pagehide', () => { flushPrimaryPersistence(); });
 
   el('installStorageDismiss').addEventListener('click', () => { try { localStorage.setItem(INSTALL_NOTICE_KEY, '1'); } catch {} renderInstallStorageNotice(); });
