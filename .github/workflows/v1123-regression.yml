@@ -25,6 +25,20 @@ jobs:
         run: python3 tools/build_release.py --check
       - name: Run release integrity and data safeguards regression
         run: python3 tests/test_release.py
+      - name: Validate GitHub Pages artifact preparation without deployment
+        run: |
+          python3 tools/prepare_pages.py
+          test -f _site/index.html
+          test -f _site/version.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('_site')
+          version=json.loads((root/'version.json').read_text())
+          assert version['version']=='1.12.3'
+          assert all((root/name).exists() for name in ('index.html','about.html','privacy.html','branding.html','license.html'))
+          print('PASS: GitHub Pages build artifact and required documents')
+          PY
       - name: Install browser test dependencies
         run: |
           python3 -m pip install playwright
