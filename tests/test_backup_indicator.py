@@ -12,11 +12,11 @@ def boot(page, backup_meta=None):
     page.evaluate(STORAGE_SHIM)
     page.evaluate("""arg => {
       __seedFastingDbV2(arg.data,[]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.5'}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.6'}));
       if (arg.meta) localStorage.setItem('fastingTracker.backupMeta', JSON.stringify(arg.meta));
     }""", {'data':DATA, 'meta':backup_meta})
     page.set_content(HTML, wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.5'", timeout=30000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.6'", timeout=30000)
     page.wait_for_function("document.querySelector('#fastingBackupStatusBtn')?.dataset.state!=='empty'", timeout=30000)
 
 def status(page, expected):
@@ -25,6 +25,17 @@ def status(page, expected):
     assert button.is_visible(), f'Backup indicator hidden in {expected}'
     assert button.get_attribute('aria-label') and button.get_attribute('title'), 'Missing accessibility description'
     assert button.bounding_box()['height'] >= 43, 'Tap target too short'
+    coords=page.evaluate('''()=>{
+      const head=document.querySelector('#fasting .fastingSectionHeader').getBoundingClientRect();
+      const h1=document.querySelector('#fasting .fastingSectionHeader h1').getBoundingClientRect();
+      const share=document.querySelector('#shareProgressBtn').getBoundingClientRect();
+      const backup=document.querySelector('#fastingBackupRow').getBoundingClientRect();
+      return {headingTop:h1.top,shareTop:share.top,headingRight:h1.right,
+              shareLeft:share.left,headerBottom:head.bottom,backupTop:backup.top};
+    }''')
+    assert abs(coords['headingTop']-coords['shareTop'])<12, f'Header not on one line: {coords}'
+    assert coords['headingRight']<=coords['shareLeft']+2, f'Share not at right: {coords}'
+    assert coords['backupTop']>=coords['headerBottom'], f'Backup not below header: {coords}'
 
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
@@ -43,6 +54,10 @@ with sync_playwright() as p:
     status(page,'never')  # cancelled download must not claim backup
     page.locator('#fastingBackupStatusBtn').click()
     status(page,'current')
+    # Green confirmation is temporary; the underlying Settings status persists.
+    page.wait_for_timeout(7300)
+    assert page.locator('#fastingBackupRow').is_hidden(), 'Green badge must disappear'
+    assert page.locator('#shareProgressBtn').is_visible(), 'Share action must remain available'
     meta=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.backupMeta'))")
     assert meta.get('lastExternalBackupDataSignature','').startswith('v1:'),meta
     # Changing an appearance preference may update general revision, but it
@@ -51,7 +66,8 @@ with sync_playwright() as p:
     page.select_option('#languageSelect', 'bg')
     page.select_option('#languageSelect', 'en')
     page.locator('[data-screen="fasting"]').click()
-    status(page,'current')
+    page.wait_for_function("document.querySelector('#fastingBackupStatusBtn')?.dataset.state==='current'")
+    assert page.locator('#fastingBackupRow').is_hidden(), 'No permanent green badge'
     # Start a fast: the recorded export is now missing the active fast.
     page.locator('#toggleFast').click()
     status(page,'stale')
@@ -102,11 +118,11 @@ with sync_playwright() as p:
     page2.evaluate(STORAGE_SHIM)
     page2.evaluate("""arg=>{
       __seedFastingDbV2(arg.data,[]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.5'}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.6'}));
       localStorage.setItem('fastingTracker.backupMeta',JSON.stringify(arg.meta));
     }""", {'data':snapshot,'meta':old})
     page2.set_content(HTML,wait_until='domcontentloaded')
-    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.5'",timeout=30000)
+    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.6'",timeout=30000)
     status(page2,'aged')
     assert not errors2, errors2[:5]
     browser.close()

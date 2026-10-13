@@ -24,8 +24,8 @@ assert.match(index,/snapshotData\.deletedFasts\.length <= persistedDeletedFastMa
 assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeightMap\.size/);
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
-assert.match(index,/const APP_VERSION\s*=\s*['"]1\.12\.5['"]/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.5');
+assert.match(index,/const APP_VERSION\s*=\s*['"]1\.12\.6['"]/);
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.6');
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);
@@ -60,7 +60,7 @@ for (const [key,file] of [['public.license','license.html'],['public.branding','
   }
 }
 
-// v1.12.5 irreversible deletion guard: two prompts and typed acknowledgment.
+// v1.12.6 irreversible deletion guard: two prompts and typed acknowledgment.
 assert.match(index, /confirm\(t\('history\.deletedPermanentConfirm'\)\) \|\| !confirm\(t\('history\.deletedPermanentFinalConfirm'\)\)/);
 assert.match(index, /confirm\(t\('weight\.deletePermanentFinalConfirm'\)\)/);
 assert.match(index, /confirm\(t\('bulk\.purgeFinalConfirm'/);
@@ -75,7 +75,7 @@ for(const lang of ['en','bg','es']) {
     assert.ok(dict[key] && dict[key] !== key, lang+': missing '+key);
   }
 }
-console.log('PASS: v1.12.5 two-stage deletion and backup acknowledgment source checks');
+console.log('PASS: v1.12.6 two-stage deletion and backup acknowledgment source checks');
 
 // Accessible manual-backup status is tied to the JSON export and data-only fingerprint.
 assert.match(index,/id="fastingBackupStatusBtn"[^>]*data-state="empty"/);
@@ -94,3 +94,12 @@ for (const lang of ['en','bg','es']) {
   assert.ok(dict['backupChip.action']);
 }
 console.log('PASS: manual backup color-coded status, export action and translated accessible states');
+
+// v1.12.6: the section header is a dedicated row; backup attention appears below.
+assert.match(index, /<div class="sectionHeader fastingSectionHeader"><h1[^>]*>Fasting<\/h1><button id="shareProgressBtn"/);
+assert.match(index, /<div id="fastingBackupRow" class="fastingBackupRow" hidden>/);
+assert.match(index, /const visible = state === 'stale' \|\| state === 'never' \|\| state === 'aged'/);
+assert.match(index, /Date\.now\(\) < backupSuccessVisibleUntil/);
+assert.match(index, /row\.hidden = !visible/);
+assert.match(index, /banner\.hidden = !snapshotAttention/);
+console.log('PASS: v1.12.6 consistent fasting header and attention-only backup action');
