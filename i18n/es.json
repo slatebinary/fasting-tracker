@@ -961,5 +961,6 @@
   "notifications.detailsReceived": "Recibido {date}",
   "notifications.detailsDismissAria": "Cerrar detalles de la notificación: {title}",
   "notifications.detailsFallback": "Abre la pantalla correspondiente de Fasting Tracker para obtener más información.",
-  "notifications.detailPolicy": "Las notificaciones del dispositivo son breves a propósito. Los detalles completos permanecen en Fasting Tracker hasta que los cierres."
+  "notifications.detailPolicy": "Las notificaciones del dispositivo son breves a propósito. Los detalles completos permanecen en Fasting Tracker hasta que los cierres.",
+  "backup.exportExplanation": "Exportar guarda una copia de seguridad JSON que se puede restaurar. Exportar todo incluye la misma copia y tablas CSV de ayunos y peso para consultarlas más fácilmente en Excel. Las instantáneas internas de recuperación permanecen en este dispositivo."
 }

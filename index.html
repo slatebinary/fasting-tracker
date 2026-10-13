@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.2" />
+  <meta name="ft-app-version" content="1.12.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -937,7 +937,7 @@ layout: null
     <div class="card">
 <div class="row" style="margin-top:10px">
 <div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div><div class="small" id="backupContentSummary"></div><div class="small backupState" id="backupFreshnessLabel"></div></div>
-<div class="csvActions"><button class="secondary" data-i18n="common.export" id="exportBtn">Export</button><button class="secondary" data-i18n="backup.exportEverything" id="exportEverythingBtn" type="button">Export everything</button></div>
+<div class="csvActions"><button class="secondary" data-i18n="common.export" id="exportBtn">Export</button><button class="secondary" data-i18n="backup.exportEverything" id="exportEverythingBtn" type="button">Export everything</button></div><div class="small" id="backupExportExplanation" data-i18n="backup.exportExplanation" style="margin-top:8px">Export saves a restorable JSON backup. Export everything includes the same backup plus fasting and weight CSV tables for easier reading in Excel. Internal recovery snapshots remain on this device.</div>
 </div>
 <div class="row">
 <div><strong data-i18n="backup.last">Last external backup</strong><div class="small" data-i18n="backup.lastHelp">A reminder appears after 7 days without one.</div></div>
@@ -1067,7 +1067,7 @@ layout: null
 <div class="small" data-i18n-html="help.backupText">The app reminds you every 7 days to use <strong>Export</strong> and save the JSON backup in Files, iCloud Drive, Google Drive, or another secure location. Before an app update, <strong>Backup &amp; Update</strong> creates an external backup first. Internal recovery snapshots are stored inside the installed web app and are lost if that installation is removed. The JSON file itself is the complete external backup; no companion text file is required. Before reinstalling to change the Home Screen icon, export an external backup; after reinstalling, use <strong>Import</strong> to restore it.</div>
 <div class="small" data-i18n="backup.unencrypted" style="margin-top:8px">Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.</div>
 <div class="helpHeading" data-i18n="help.privacy">Privacy &amp; storage</div>
-<div class="small" data-i18n="help.privacyText">Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each friend who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.</div>
+<div class="small" data-i18n="help.privacyText">Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each user who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.</div>
 <div class="helpHeading" data-i18n="help.timeZoneTitle">Historical time zones</div>
 <div class="small" data-i18n="help.timeZoneText">Fasts and weight entries remember the time zone in which they were created, so historical clock times and calendar-day charts do not shift if you later travel to another time zone.</div>
 <div class="helpHeading" data-i18n="help.autophagy">Autophagy indicator</div>
@@ -1529,7 +1529,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.2';
+  const APP_VERSION = '1.12.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2177,6 +2177,19 @@ layout: null
   window.addEventListener('unhandledrejection',event=>{try{noteDiagnosticError('promise.'+FTPlatform.errorCategory(event.reason));}catch{}});
 
   async function persistRecordStores(snapshotData = data, {force = false} = {}) {
+    // Ordinary writes may not silently erase an established collection.
+    // Intentional deletions append an audit record; explicit validated imports
+    // and resets use force:true. Check each collection independently so loss of
+    // only fasting OR weight history is also detected.
+    if (!force && (
+      (persistedRecordMap.size > 0 && snapshotData.records.length === 0 &&
+       snapshotData.deletedFasts.length <= persistedDeletedFastMap.size) ||
+      (persistedWeightMap.size > 0 && snapshotData.weights.length === 0 &&
+       snapshotData.deletedWeights.length <= persistedDeletedWeightMap.size)
+    )) {
+      noteDiagnosticError('history-loss-prevented');
+      throw new Error('History-loss safeguard: refusing unaudited history deletion');
+    }
     const db = await openAppDb();
     const stores = ['state','records','deletedFasts','weights','deletedWeights'];
     return new Promise((resolve, reject) => {
@@ -6330,6 +6343,16 @@ layout: null
     };
   }
 
+  function readableBackupView(source) {
+    return {
+      note: 'For reading only. Restore from the data field using Fasting Tracker Import.',
+      summary: {completedFasts:source.records.length, weightMeasurements:source.weights.length, deletedFasts:source.deletedFasts.length, deletedWeights:source.deletedWeights.length, activeFast:!!source.activeStart},
+      activeFast:source.activeStart ? {startedLocal:localDateTimeLabel(source.activeStart,source.activeTimeZone), targetHours:source.activeGoalHours} : null,
+      completedFasts:source.records.map(r=>({startedLocal:localDateTimeLabel(r.start,r.timeZone),endedLocal:localDateTimeLabel(r.end,r.timeZone),durationHours:Number((recordMs(r)/3600000).toFixed(2)),targetHours:r.goalHours})),
+      weights:source.weights.map(w=>({dateLocal:localDateTimeLabel(w.when,w.timeZone),kilograms:w.kg}))
+    };
+  }
+
   async function makeBackupPayload() {
     const backupData = JSON.parse(JSON.stringify(data));
     const canonical = stableStringify(backupData);
@@ -6338,6 +6361,7 @@ layout: null
       format: BACKUP_FORMAT, backupVersion: BACKUP_VERSION, appVersion: APP_VERSION, exportedAt: new Date().toISOString(),
       manifest: backupManifest(backupData),
       integrity: {scope:'data', algorithm:integrity.algorithm, digest:integrity.digest},
+      readableView: readableBackupView(backupData),
       data: backupData
     };
   }
@@ -7526,7 +7550,7 @@ layout: null
       storedDayTotalsMap = new Map();
       persistedRecordMap = new Map(); dayTotalsRecordMap = new Map(); persistedDeletedFastMap = new Map(); persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
       data.revision = 1; data.updatedAt = new Date().toISOString();
-      await persistPrimaryNow(data);
+      await persistPrimaryNow(data, {force:true});
       snapshotCache = [];
       await idbClearStoresAtomic(['snapshotMeta','snapshotPayload','records','deletedFasts','weights','deletedWeights']);
       try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); localStorage.removeItem(NOTIFICATION_STATE_KEY); } catch {}
@@ -7629,6 +7653,21 @@ layout: null
     }
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { flushPrimaryPersistence(); return; } reloadBackupMetaFromStorage(); markViewsDirty(); renderBackupStatus(); renderNotificationSettings(); renderNotificationDetails(); renderScreen(activeScreenId()); if(activeScreenId()==='settings')renderStorageHealth(); checkFastNotifications(); checkMaintenanceNotifications(); if (!emergencyBoot) checkForUpdates({ quiet: true }); });
+  // Safari may restore the installed PWA from the back-forward cache after a
+  // documentation page. Restore its already loaded UI instead of writing an
+  // uninitialized in-memory default over the user's IndexedDB history.
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted || !uiReady) return;
+    try {
+      const target = location.hash.slice(1);
+      activateScreen(APP_SCREENS.includes(target) ? target : 'fasting', {updateHash:false});
+      markViewsDirty();
+      renderScreen(activeScreenId(), {force:true});
+      updateTimer();
+      reloadBackupMetaFromStorage();
+      renderBackupStatus();
+    } catch (err) { noteDiagnosticError('document-return-resume'); console.error(err); }
+  });
   window.addEventListener('pagehide', () => { flushPrimaryPersistence(); });
 
   el('installStorageDismiss').addEventListener('click', () => { try { localStorage.setItem(INSTALL_NOTICE_KEY, '1'); } catch {} renderInstallStorageNotice(); });
