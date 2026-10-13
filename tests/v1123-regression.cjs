@@ -24,8 +24,8 @@ assert.match(index,/snapshotData\.deletedFasts\.length <= persistedDeletedFastMa
 assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeightMap\.size/);
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
-assert.match(index,/const APP_VERSION\s*=\s*['"]1\.12\.4['"]/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.4');
+assert.match(index,/const APP_VERSION\s*=\s*['"]1\.12\.5['"]/);
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.5');
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);
@@ -59,3 +59,20 @@ for (const [key,file] of [['public.license','license.html'],['public.branding','
     assert.ok(dict[key],lang+' missing '+key);
   }
 }
+
+// v1.12.5 irreversible deletion guard: two prompts and typed acknowledgment.
+assert.match(index, /confirm\(t\('history\.deletedPermanentConfirm'\)\) \|\| !confirm\(t\('history\.deletedPermanentFinalConfirm'\)\)/);
+assert.match(index, /confirm\(t\('weight\.deletePermanentFinalConfirm'\)\)/);
+assert.match(index, /confirm\(t\('bulk\.purgeFinalConfirm'/);
+assert.match(index, /function requestDestructiveReset\(kind\)/);
+assert.match(index, /destructiveResetBackupAck'\)\.checked/);
+assert.match(index, /destructiveResetPhrase'\)\.value\.trim\(\) !== destructiveResetPhrase/);
+assert.match(index, /role="alertdialog"[^>]*aria-modal="true"/);
+for(const lang of ['en','bg','es']) {
+  const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8'));
+  for(const key of ['reset.backupAcknowledgement','reset.typePhrase','reset.finalTitle','reset.recoveryTitle',
+                    'bulk.purgeFinalConfirm','weight.deletePermanentFinalConfirm','history.deletedPermanentFinalConfirm']) {
+    assert.ok(dict[key] && dict[key] !== key, lang+': missing '+key);
+  }
+}
+console.log('PASS: v1.12.5 two-stage deletion and backup acknowledgment source checks');
