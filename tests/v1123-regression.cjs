@@ -25,7 +25,7 @@ assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeig
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
 assert.match(index,/const APP_VERSION\s*=\s*['"]1\.12\.3['"]/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.3');
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.4');
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);
@@ -50,3 +50,12 @@ for(const p of docs){
   assert.equal(store.has('fastingTracker.documentReturnUrl'),false);
 }
 console.log('PASS: syntax, release metadata, backup safeguards and four document-return simulations');
+
+// Legal documents must be discoverable from Settings in every supported language.
+for (const [key,file] of [['public.license','license.html'],['public.branding','branding.html']]) {
+  assert.match(index,new RegExp('data-i18n="'+key.replace('.','\\.')+'" href="'+file.replace('.','\\.')+'\\?return=settings"'));
+  for(const lang of ['en','bg','es']) {
+    const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8'));
+    assert.ok(dict[key],lang+' missing '+key);
+  }
+}
