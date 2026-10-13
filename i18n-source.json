@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 28,
-  "appVersion": "1.12.4",
+  "sourceRevision": 29,
+  "appVersion": "1.12.5",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -968,6 +968,31 @@
     "notifications.detailPolicy": "Device notifications are intentionally brief. Full details stay inside Fasting Tracker until you dismiss them.",
     "backup.exportExplanation": "Export saves a restorable JSON backup. Export everything includes the same backup plus fasting and weight CSV tables for easier reading in Excel. Internal recovery snapshots remain on this device.",
     "public.license": "MIT License",
-    "public.branding": "Branding Policy"
+    "public.branding": "Branding Policy",
+    "history.deletedPermanentFinalConfirm": "FINAL CONFIRMATION: Permanently erase this fasting record and its deletion audit? This cannot be undone.",
+    "weight.deletePermanentFinalConfirm": "FINAL CONFIRMATION: Permanently erase this weight entry and its deletion audit? This cannot be undone.",
+    "bulk.purgeFinalConfirm": "FINAL CONFIRMATION: Permanently erase {n} selected deleted records and their audit history? This cannot be undone.",
+    "reset.finalTitle": "Final confirmation — delete all data",
+    "reset.finalWarning": "This permanently deletes ALL fasting records, weight entries, settings, deleted-record audit history and internal recovery snapshots on this device. Only a separately saved external JSON backup may restore them.",
+    "reset.recoveryTitle": "Final confirmation — start with empty data",
+    "reset.recoveryWarning": "The app cannot safely read the current data. Starting fresh may overwrite the remaining raw data. Export the raw data and try recovery or import first.",
+    "reset.recordedBackupNotVerified": "A recent export is recorded, but the app cannot verify that the JSON file still exists or can be restored.",
+    "reset.noVerifiedBackup": "No current external backup is recorded. The app cannot verify an external backup. Export one before proceeding if possible.",
+    "reset.recoveryBackupStatus": "The original data is unreadable. Export the raw data first; the app cannot verify whether a recoverable copy exists elsewhere.",
+    "reset.backupAcknowledgement": "I understand I may have no usable external backup and accept permanent loss of the data on this device.",
+    "reset.typePhrase": "Type {phrase} exactly to unlock the final button:",
+    "reset.confirmAll": "Permanently delete all data",
+    "reset.confirmRecovery": "Start fresh and replace data",
+    "backupChip.current": "Backup current",
+    "backupChip.currentHelp": "Manual JSON export recorded {date}. No tracked fasting or weight changes since then. The app cannot verify the file is still saved externally.",
+    "backupChip.aged": "Backup over 7 days old",
+    "backupChip.agedHelp": "The last recorded manual JSON export was {date}. Your tracked data has not changed, but a fresh external backup is recommended.",
+    "backupChip.stale": "Backup needed",
+    "backupChip.staleHelp": "Fasting or weight data has changed since the recorded manual export on {date}. Make a new JSON backup.",
+    "backupChip.never": "No backup yet",
+    "backupChip.neverHelp": "There is fasting or weight data, but no manual external JSON backup has been recorded.",
+    "backupChip.empty": "No data to back up",
+    "backupChip.emptyHelp": "There are no fasting or weight records yet.",
+    "backupChip.action": "Tap to export a JSON backup. A successful share or confirmed download is recorded, but the app cannot verify external storage."
   }
 }

@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.4" />
+  <meta name="ft-app-version" content="1.12.5" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -286,6 +286,17 @@ layout: null
     .iconSafetyNote button { margin-top:10px; width:100%; white-space:normal; }
     .sectionHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 18px; }
     .sectionHeader h1 { margin: 0; }
+    .fastingSectionHeader { flex-wrap:wrap; }
+    .fastingHeaderActions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; min-width:0; }
+    .fastingHeaderActions button { min-height:44px; padding:9px 11px; font-size:13px; line-height:1.2; }
+    .backupStatusButton { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--line); border-radius:12px; color:var(--muted); background:var(--card); white-space:normal; }
+    .backupStatusDot { width:10px; height:10px; flex:none; border-radius:50%; background:currentColor; }
+    .backupStatusButton[data-state="current"] { color:var(--good); background:color-mix(in srgb,var(--good) 9%,var(--card)); border-color:color-mix(in srgb,var(--good) 37%,var(--line)); }
+    .backupStatusButton[data-state="aged"] { color:var(--text); background:color-mix(in srgb,#d78e16 15%,var(--card)); border-color:#ba881d; }
+    .backupStatusButton[data-state="aged"] .backupStatusDot { background:#cf9121; }
+    .backupStatusButton[data-state="stale"], .backupStatusButton[data-state="never"] { color:var(--danger); background:color-mix(in srgb,var(--danger) 9%,var(--card)); border-color:color-mix(in srgb,var(--danger) 42%,var(--line)); }
+    .backupStatusButton[data-state="empty"] { color:var(--muted); }
+    @media (max-width:370px) { .fastingSectionHeader h1 { width:100%; } .fastingHeaderActions { width:100%; justify-content:flex-start; } }
     .historyRow { align-items: flex-start; }
     .historyActions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 5px; }
     .historyActions button { padding: 7px 9px; font-size: 13px; }
@@ -514,7 +525,7 @@ layout: null
   </div>
   <div id="notificationDetailStack" class="notificationDetailStack" aria-label="Notification details" data-i18n-aria="notifications.detailsHeading" hidden></div>
   <section id="fasting" class="screen active">
-    <div class="sectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
+    <div class="sectionHeader fastingSectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><div class="fastingHeaderActions"><button id="fastingBackupStatusBtn" class="backupStatusButton" data-state="empty" type="button"><span class="backupStatusDot" aria-hidden="true"></span><span id="fastingBackupStatusText" aria-live="polite">Backup status</span></button><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div></div>
     <div class="notice installStorageNotice" id="installStorageNotice" role="status" hidden>
       <strong data-i18n="installStorage.title">Using Safari on iPhone?</strong>
       <div class="small" data-i18n="installStorage.text">Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.</div>
@@ -1331,6 +1342,26 @@ layout: null
   </div>
 </div>
 
+<div class="modalBackdrop" id="destructiveResetModal" hidden>
+  <div class="modalCard" role="alertdialog" aria-modal="true" aria-labelledby="destructiveResetTitle" aria-describedby="destructiveResetWarning destructiveResetBackupStatus">
+    <h2 id="destructiveResetTitle"></h2>
+    <p class="small" id="destructiveResetWarning"></p>
+    <p class="small" id="destructiveResetBackupStatus" role="status"></p>
+    <label class="shareOption" for="destructiveResetBackupAck">
+      <input id="destructiveResetBackupAck" type="checkbox"/>
+      <span id="destructiveResetBackupAckLabel"></span>
+    </label>
+    <div class="formGroup">
+      <label id="destructiveResetPhraseLabel" for="destructiveResetPhrase"></label>
+      <input id="destructiveResetPhrase" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="destructiveResetPhraseLabel"/>
+    </div>
+    <div class="modalActions wrap">
+      <button id="destructiveResetCancelBtn" type="button" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="destructiveResetConfirmBtn" type="button" class="dangerText" disabled></button>
+    </div>
+  </div>
+</div>
+
 <div class="modalBackdrop" id="updateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
     <h2 id="updateModalTitle" data-i18n="update.install">Install update</h2>
@@ -1524,14 +1555,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 28;
+  const I18N_SOURCE_REVISION = 29;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.4';
+  const APP_VERSION = '1.12.5';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2120,6 +2151,33 @@ layout: null
     });
   }
 
+  async function persistFullResetAtomic(empty) {
+    // Clear every record and internal snapshot in ONE IndexedDB transaction.
+    // If it aborts, the existing data remains intact instead of being partially erased.
+    const db = await openAppDb();
+    const stores = ['state','records','deletedFasts','weights','deletedWeights','snapshotMeta','snapshotPayload'];
+    if (stores.some(name => !db.objectStoreNames.contains(name))) throw new Error('Missing reset data store');
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(stores, 'readwrite');
+      const state = tx.objectStore('state');
+      state.clear();
+      state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(empty)});
+      state.put({key:'dailyTotals', revision:empty.revision, entries:[]});
+      const savedAt = new Date().toISOString();
+      state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:empty.revision});
+      for (const name of stores.slice(1)) tx.objectStore(name).clear();
+      tx.oncomplete = () => {
+        persistedRecordMap = new Map(); persistedDeletedFastMap = new Map();
+        persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
+        lastSuccessfulIdbSaveAt = savedAt;
+        try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:empty.revision, at:Date.now()})); } catch {}
+        resolve(true);
+      };
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB reset transaction failed'));
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB reset transaction aborted'));
+    });
+  }
+
   function dataSettingsOnly(source = data) {
     const out = {...source};
     delete out.records; delete out.deletedFasts; delete out.weights; delete out.deletedWeights;
@@ -2697,6 +2755,7 @@ layout: null
       lastExternalBackupAt: last ? last.toISOString() : null,
       lastExternalBackupRevision: Math.max(0, Number(meta.lastExternalBackupRevision) || 0),
       lastExternalBackupDataUpdatedAt: validDate(meta.lastExternalBackupDataUpdatedAt)?.toISOString() || null,
+      lastExternalBackupDataSignature: typeof meta.lastExternalBackupDataSignature === 'string' && /^v1:[0-9a-f]{16}$/.test(meta.lastExternalBackupDataSignature) ? meta.lastExternalBackupDataSignature : null,
       snapshotProtectionStatus: ['ok','reduced','failed'].includes(meta.snapshotProtectionStatus) ? meta.snapshotProtectionStatus : 'ok',
       snapshotProtectionAt: snapshotAt ? snapshotAt.toISOString() : null,
       snapshotStoredCount: Math.max(0, Number(meta.snapshotStoredCount) || 0),
@@ -3369,6 +3428,7 @@ layout: null
       queuePrimaryPersistence();
       if (deferSnapshot) scheduleRollingSnapshot('automatic change');
       else maybeCreateRollingSnapshot('automatic change');
+      if (uiReady) renderBackupStatus();
       return true;
     } catch {
       alert(t('error.save'));
@@ -4381,11 +4441,11 @@ layout: null
     if(!save()){data.deletedFasts=oldDeleted;data.records=oldRecords;renderAll();return false;} selectedDeletedFastIds.clear();renderAll();return true;
   }
 
-  function bulkPurgeDeletedFasts(ids=[...selectedDeletedFastIds]){const set=new Set(ids.filter(id=>data.deletedFasts.some(r=>r.id===id)));if(!set.size)return false;if(!confirm(t('bulk.purgeConfirm',{n:set.size})))return false;const old=data.deletedFasts.slice();data.deletedFasts=data.deletedFasts.filter(r=>!set.has(r.id));if(!save({invalidateDerived:false,dirtyViews:['history','settings']})){data.deletedFasts=old;renderAll();return false;}selectedDeletedFastIds.clear();renderHistory();renderBackupStatus();return true;}
+  function bulkPurgeDeletedFasts(ids=[...selectedDeletedFastIds]){const set=new Set(ids.filter(id=>data.deletedFasts.some(r=>r.id===id)));if(!set.size)return false;if(!confirm(t('bulk.purgeConfirm',{n:set.size}))||!confirm(t('bulk.purgeFinalConfirm',{n:set.size})))return false;const old=data.deletedFasts.slice();data.deletedFasts=data.deletedFasts.filter(r=>!set.has(r.id));if(!save({invalidateDerived:false,dirtyViews:['history','settings']})){data.deletedFasts=old;renderAll();return false;}selectedDeletedFastIds.clear();renderHistory();renderBackupStatus();return true;}
 
   function bulkDeleteWeights(ids=[...selectedWeightIds],showConfirm=true){const targets=ids.map(id=>data.weights.find(w=>w.id===id)).filter(Boolean);if(!targets.length)return false;if(showConfirm&&!confirm(t('bulk.deleteConfirm',{n:targets.length})))return false;const oldW=data.weights.slice(),oldD=data.deletedWeights.slice(),now=new Date().toISOString(),tz=currentTimeZone(),set=new Set(targets.map(w=>w.id));data.weights=data.weights.filter(w=>!set.has(w.id));data.deletedWeights.push(...targets.map(w=>({...w,deleted:true,deletedAt:now,deletedTimeZone:tz,deletionReason:'user'})));if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.weights=oldW;data.deletedWeights=oldD;renderAll();return false;}const moved=[...set];selectedWeightIds.clear();renderAll();showUndoToast(t('bulk.deleted',{n:moved.length}),()=>bulkRestoreDeletedWeights(moved,false));return true;}
   function bulkRestoreDeletedWeights(ids=[...selectedDeletedWeightIds],showConfirm=true){const targets=ids.map(id=>data.deletedWeights.find(w=>w.id===id)).filter(Boolean);if(!targets.length)return false;if(showConfirm&&!confirm(t('bulk.restoreConfirm',{n:targets.length})))return false;if(targets.some(w=>data.weights.some(x=>x.id===w.id))){alert(t('weight.restoreConflict'));return false;}const restored=targets.map(normalizeWeightEntry);if(restored.some(x=>!x))return false;const oldW=data.weights.slice(),oldD=data.deletedWeights.slice(),set=new Set(targets.map(w=>w.id));data.deletedWeights=data.deletedWeights.filter(w=>!set.has(w.id));data.weights.push(...restored);if(!save({invalidateDerived:true,dirtyViews:['weight','stats','settings','fasting']})){data.weights=oldW;data.deletedWeights=oldD;renderAll();return false;}selectedDeletedWeightIds.clear();renderAll();return true;}
-  function bulkPurgeDeletedWeights(ids=[...selectedDeletedWeightIds]){const set=new Set(ids.filter(id=>data.deletedWeights.some(w=>w.id===id)));if(!set.size)return false;if(!confirm(t('bulk.purgeConfirm',{n:set.size})))return false;const old=data.deletedWeights.slice();data.deletedWeights=data.deletedWeights.filter(w=>!set.has(w.id));if(!save({invalidateDerived:false,dirtyViews:['weight','settings']})){data.deletedWeights=old;renderAll();return false;}selectedDeletedWeightIds.clear();renderWeight();return true;}
+  function bulkPurgeDeletedWeights(ids=[...selectedDeletedWeightIds]){const set=new Set(ids.filter(id=>data.deletedWeights.some(w=>w.id===id)));if(!set.size)return false;if(!confirm(t('bulk.purgeConfirm',{n:set.size}))||!confirm(t('bulk.purgeFinalConfirm',{n:set.size})))return false;const old=data.deletedWeights.slice();data.deletedWeights=data.deletedWeights.filter(w=>!set.has(w.id));if(!save({invalidateDerived:false,dirtyViews:['weight','settings']})){data.deletedWeights=old;renderAll();return false;}selectedDeletedWeightIds.clear();renderWeight();return true;}
 
   function deletedFastAuditFromRecord(record, deletionReason = 'user') {
     return {
@@ -4444,7 +4504,7 @@ layout: null
 
   function permanentlyDeleteFast(id) {
     const index = data.deletedFasts.findIndex(r => r.id === id);
-    if (index < 0 || !confirm(t('history.deletedPermanentConfirm'))) return;
+    if (index < 0 || !confirm(t('history.deletedPermanentConfirm')) || !confirm(t('history.deletedPermanentFinalConfirm'))) return;
     const [removed] = data.deletedFasts.splice(index, 1);
     if (!save({ invalidateDerived:false, dirtyViews:['history','settings'] })) {
       data.deletedFasts.splice(Math.min(index, data.deletedFasts.length), 0, removed);
@@ -5967,7 +6027,7 @@ layout: null
     const card=el('deletedWeightsCard'),box=el('deletedWeightsList'),spec=weightFilterSpec();if(!card||!box)return;const total=data.deletedWeights.length;card.hidden=!spec.includeDeleted||!total;box.replaceChildren();if(!spec.includeDeleted||!total){updateBulkActionBars();return;}
     const deletedSorted=[...data.deletedWeights].sort((a,b)=>String(b.deletedAt).localeCompare(String(a.deletedAt)));const filtered=weightFilterActive(spec)?deletedSorted.filter(w=>weightPassesFilter(w,spec)):deletedSorted;el('deletedWeightsCount').textContent=t('weight.deletedFilteredCount',{shown:filtered.length,total});const visible=filtered.slice(0,HISTORY_PAGE_SIZE);
     if(!visible.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=t('history.filterNoMatch');box.append(empty);}
-    for(const w of visible){const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedDeletedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');const strong=document.createElement('strong');strong.textContent=`${localDateTimeLabel(w.when,w.timeZone)} • ${formatWeight(w.kg,data.weightUnit)}`;const small=document.createElement('div');small.className='small';small.textContent=t('weight.deletedAt',{date:localDateTimeLabel(w.deletedAt,w.deletedTimeZone)});left.append(strong,small);const actions=document.createElement('div');actions.className='historyActions';if(!weightBulkMode){const restore=document.createElement('button');restore.className='secondary';restore.textContent=t('common.restore');restore.addEventListener('click',()=>{if(restoreDeletedWeightById(w.id))renderWeight();});const purge=document.createElement('button');purge.className='dangerText';purge.textContent=t('weight.deletePermanently');purge.addEventListener('click',()=>{if(confirm(t('weight.deletePermanentConfirm'))&&permanentlyDeleteWeightById(w.id))renderWeight();});actions.append(restore,purge);}row.append(left,actions);box.append(row);}updateBulkActionBars();
+    for(const w of visible){const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedDeletedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');const strong=document.createElement('strong');strong.textContent=`${localDateTimeLabel(w.when,w.timeZone)} • ${formatWeight(w.kg,data.weightUnit)}`;const small=document.createElement('div');small.className='small';small.textContent=t('weight.deletedAt',{date:localDateTimeLabel(w.deletedAt,w.deletedTimeZone)});left.append(strong,small);const actions=document.createElement('div');actions.className='historyActions';if(!weightBulkMode){const restore=document.createElement('button');restore.className='secondary';restore.textContent=t('common.restore');restore.addEventListener('click',()=>{if(restoreDeletedWeightById(w.id))renderWeight();});const purge=document.createElement('button');purge.className='dangerText';purge.textContent=t('weight.deletePermanently');purge.addEventListener('click',()=>{if(confirm(t('weight.deletePermanentConfirm'))&&confirm(t('weight.deletePermanentFinalConfirm'))&&permanentlyDeleteWeightById(w.id))renderWeight();});actions.append(restore,purge);}row.append(left,actions);box.append(row);}updateBulkActionBars();
   }
 
   function renderWeight() {
@@ -6222,15 +6282,62 @@ layout: null
     return firstData;
   }
 
-  function backupFreshnessState() {
-    if (!hasBackupWorthyData()) return {state:'empty', changed:false, last:null};
-    const last=validDate(backupMeta.lastExternalBackupAt); if(!last)return {state:'never',changed:true,last:null};
-    const backedRevision=Math.max(0,Number(backupMeta.lastExternalBackupRevision)||0);
-    const updated=validDate(data.updatedAt), backedUpdated=validDate(backupMeta.lastExternalBackupDataUpdatedAt);
-    const changed=backedRevision ? Number(data.revision)>backedRevision : (!!updated && updated.getTime()>last.getTime()+1000);
-    return {state:changed?'stale':'current',changed,last,backedRevision,backedUpdated};
+  // This is a local change detector, NOT proof that an external backup file exists.
+  // Track the actual records and active fasting state; ordinary setting changes
+  // (such as language, colors or notification settings) must not falsely mark
+  // an otherwise current fasting/weight backup as outdated.
+  let backupDatasetSignatureCache = null;
+  function backupDatasetSignature(sourceData = data) {
+    const revision = Number(sourceData.revision) || 0;
+    if (sourceData === data && backupDatasetSignatureCache &&
+        backupDatasetSignatureCache.source === data && backupDatasetSignatureCache.revision === revision)
+      return backupDatasetSignatureCache.signature;
+    const tracked = {
+      activeStart:sourceData.activeStart || null,
+      activeTimeZone:sourceData.activeTimeZone || null,
+      activeGoalHours:sourceData.activeGoalHours ?? null,
+      activeCreatedAt:sourceData.activeCreatedAt || null,
+      activeModifiedAt:sourceData.activeModifiedAt || null,
+      records:sourceData.records || [], deletedFasts:sourceData.deletedFasts || [],
+      weights:sourceData.weights || [], deletedWeights:sourceData.deletedWeights || []
+    };
+    const signature = 'v1:' + fnv1a64Hex(stableStringify(tracked));
+    if (sourceData === data) backupDatasetSignatureCache = {source:data,revision,signature};
+    return signature;
   }
 
+  function backupFreshnessState() {
+    const hasData = hasBackupWorthyData();
+    const last=validDate(backupMeta.lastExternalBackupAt);
+    if (!last) return {state:hasData?'never':'empty', changed:hasData, last:null};
+    const backedRevision=Math.max(0,Number(backupMeta.lastExternalBackupRevision)||0);
+    const updated=validDate(data.updatedAt), backedUpdated=validDate(backupMeta.lastExternalBackupDataUpdatedAt);
+    // Pre-v1.12.5 exports have no data-only signature. Retain the previous
+    // revision-based behavior for those exports until a new JSON is made.
+    const changed=backupMeta.lastExternalBackupDataSignature
+      ? backupDatasetSignature() !== backupMeta.lastExternalBackupDataSignature
+      : (backedRevision ? Number(data.revision)>backedRevision : (!!updated && updated.getTime()>last.getTime()+1000));
+    // A deletion of the FINAL fasting/weight record must still mark the
+    // previous export outdated, even though the live dataset is now empty.
+    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
+  }
+
+  function renderFastingBackupIndicator(freshness, due) {
+    const button=el('fastingBackupStatusBtn'), text=el('fastingBackupStatusText');
+    if (!button || !text) return;
+    const age = freshness.last ? Date.now() - freshness.last.getTime() : 0;
+    const state = freshness.state === 'current' && age >= BACKUP_REMINDER_MS ? 'aged' : freshness.state;
+    const labelKey = 'backupChip.' + state;
+    const descriptionKey = 'backupChip.' + state + 'Help';
+    const date = freshness.last ? localDateTimeLabel(freshness.last) : '';
+    const status = t(labelKey);
+    const explanation = t(descriptionKey, {date});
+    button.dataset.state=state;
+    if (text.textContent!==status) text.textContent=status;
+    const action=t('backupChip.action');
+    button.title = explanation + ' ' + action;
+    button.setAttribute('aria-label', status + '. ' + explanation + ' ' + action);
+  }
   function backupIsDue() {
     if (!hasBackupWorthyData()) return false;
     const firstData = ensureBackupTrackingStarted();
@@ -6253,6 +6360,7 @@ layout: null
     const freshness=backupFreshnessState();
     if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?t('backup.current'):freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
+    renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
     banner.hidden = !(due || snapshotAttention);
     banner.classList.toggle('warn', snapshotAttention);
@@ -6299,10 +6407,11 @@ layout: null
   function openManualSnapshotModal(){const input=el('manualSnapshotLabel');if(input)input.value='';showModal('manualSnapshotModal','manualSnapshotLabel');}
   async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;try{if(!(await allowStorageIntensiveOperation()))return;const ok=await createManualRecoverySnapshot(input?.value||'');if(ok)hideModal('manualSnapshotModal');}finally{if(btn)btn.disabled=false;}}
 
-  function markExternalBackupNow() {
+  function markExternalBackupNow(exportedData = data) {
     backupMeta.lastExternalBackupAt = new Date().toISOString();
-    backupMeta.lastExternalBackupRevision = Math.max(0,Number(data.revision)||0);
-    backupMeta.lastExternalBackupDataUpdatedAt = validDate(data.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
+    backupMeta.lastExternalBackupRevision = Math.max(0,Number(exportedData.revision)||0);
+    backupMeta.lastExternalBackupDataUpdatedAt = validDate(exportedData.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
+    backupMeta.lastExternalBackupDataSignature = backupDatasetSignature(exportedData);
     saveBackupMeta();
     renderBackupStatus();
     renderGamification();
@@ -6395,7 +6504,7 @@ layout: null
       const file = new File([json], name, { type: 'application/json' });
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file] });
-        markExternalBackupNow();
+        markExternalBackupNow(backup.data);
         return true;
       }
     } catch (err) {
@@ -6407,7 +6516,7 @@ layout: null
       a.href = URL.createObjectURL(blob); a.download = name; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       const confirmed = confirm(t('backup.downloadConfirm'));
-      if (confirmed) markExternalBackupNow();
+      if (confirmed) markExternalBackupNow(backup.data);
       return confirmed;
     } catch {
       alert(t('backup.errCreate'));
@@ -6444,8 +6553,8 @@ layout: null
     const weightHeaders=['id','when','when_local','weight_kg','time_zone','created_at','modified_at'];
     const weightRows=sortedWeightsAsc().slice().reverse().map(w=>[w.id,w.when,localDateTimeLabel(w.when,w.timeZone),w.kg,w.timeZone,w.createdAt||'',w.modifiedAt||'']);
     const files=[new File([json],jsonName,{type:'application/json'}),new File([csvText(fastHeaders,fastRows)],fastName,{type:'text/csv'}),new File([csvText(weightHeaders,weightRows)],weightName,{type:'text/csv'})];
-    try{if(navigator.share&&navigator.canShare?.({files})){await navigator.share({files});markExternalBackupNow();return true;}}catch(err){if(err?.name==='AbortError')return false;noteDiagnosticError('export.share');}
-    try{const bundle={format:'fasting-tracker-export-bundle',bundleVersion:1,appVersion:APP_VERSION,exportedAt:new Date().toISOString(),backup,files:{fastingCsv:csvText(fastHeaders,fastRows),weightCsv:csvText(weightHeaders,weightRows)}};const name=`fasting-tracker-export-all-${stamp}.json`;await shareOrDownloadText(JSON.stringify(bundle,null,2),name,'application/json');const confirmed=confirm(t('backup.everythingBundleConfirm'));if(confirmed)markExternalBackupNow();return confirmed;}catch{noteDiagnosticError('export.bundle');alert(t('backup.errCreate'));return false;}
+    try{if(navigator.share&&navigator.canShare?.({files})){await navigator.share({files});markExternalBackupNow(backup.data);return true;}}catch(err){if(err?.name==='AbortError')return false;noteDiagnosticError('export.share');}
+    try{const bundle={format:'fasting-tracker-export-bundle',bundleVersion:1,appVersion:APP_VERSION,exportedAt:new Date().toISOString(),backup,files:{fastingCsv:csvText(fastHeaders,fastRows),weightCsv:csvText(weightHeaders,weightRows)}};const name=`fasting-tracker-export-all-${stamp}.json`;await shareOrDownloadText(JSON.stringify(bundle,null,2),name,'application/json');const confirmed=confirm(t('backup.everythingBundleConfirm'));if(confirmed)markExternalBackupNow(backup.data);return confirmed;}catch{noteDiagnosticError('export.bundle');alert(t('backup.errCreate'));return false;}
   }
 
   function storagePressureFromEstimate(estimate){if(!estimate||!Number.isFinite(estimate.usage)||!Number.isFinite(estimate.quota)||estimate.quota<=0)return {known:false,warning:false,ratio:null,free:null};const ratio=estimate.usage/estimate.quota,free=Math.max(0,estimate.quota-estimate.usage);return {known:true,warning:ratio>=STORAGE_PRESSURE_RATIO||free<STORAGE_PRESSURE_FREE_BYTES,ratio,free};}
@@ -7105,13 +7214,96 @@ layout: null
     } catch { alert(t('backup.errCreate')); }
   }
 
-  function resetFromRecovery() {
-    if (!recoveryMode || !confirm(t('recovery.resetConfirm'))) return;
-    if (persistResolvedData(cloneDefault())) {
-      recoveryMode = null;
-      renderAll();
+  let pendingDestructiveReset = null;
+  let destructiveResetBusy = false;
+  function destructiveResetPhrase(kind) { return kind === 'recovery' ? 'RESET DATA' : 'DELETE ALL'; }
+
+  function updateDestructiveResetGuard() {
+    const phrase = destructiveResetPhrase(pendingDestructiveReset);
+    el('destructiveResetConfirmBtn').disabled = destructiveResetBusy || !pendingDestructiveReset ||
+      !el('destructiveResetBackupAck').checked || el('destructiveResetPhrase').value.trim() !== phrase;
+  }
+
+  function closeDestructiveReset() {
+    if (destructiveResetBusy) return;
+    pendingDestructiveReset = null;
+    el('destructiveResetPhrase').value = '';
+    el('destructiveResetBackupAck').checked = false;
+    el('destructiveResetConfirmBtn').disabled = true;
+    hideModal('destructiveResetModal');
+  }
+
+  function requestDestructiveReset(kind) {
+    if (destructiveResetBusy || pendingDestructiveReset || (kind === 'recovery' && !recoveryMode)) return;
+    // Stage 1: explicit warning before even showing the second, typed confirmation.
+    if (!confirm(t(kind === 'recovery' ? 'recovery.resetConfirm' : 'reset.confirm'))) return;
+    pendingDestructiveReset = kind;
+    const phrase = destructiveResetPhrase(kind);
+    el('destructiveResetTitle').textContent = t(kind === 'recovery' ? 'reset.recoveryTitle' : 'reset.finalTitle');
+    el('destructiveResetWarning').textContent = t(kind === 'recovery' ? 'reset.recoveryWarning' : 'reset.finalWarning');
+    // Export timestamps are metadata, not proof that a usable file is still stored elsewhere.
+    const freshness = backupFreshnessState();
+    const last = freshness.last;
+    const recent = freshness.state === 'current' && last &&
+      Date.now() >= last.getTime() && Date.now() - last.getTime() <= BACKUP_REMINDER_MS;
+    el('destructiveResetBackupStatus').textContent = kind === 'recovery'
+      ? t('reset.recoveryBackupStatus')
+      : t(recent ? 'reset.recordedBackupNotVerified' : 'reset.noVerifiedBackup');
+    el('destructiveResetBackupAckLabel').textContent = t('reset.backupAcknowledgement');
+    el('destructiveResetPhraseLabel').textContent = t('reset.typePhrase', {phrase});
+    el('destructiveResetConfirmBtn').textContent = t(kind === 'recovery' ? 'reset.confirmRecovery' : 'reset.confirmAll');
+    el('destructiveResetPhrase').value = '';
+    el('destructiveResetBackupAck').checked = false;
+    updateDestructiveResetGuard();
+    showModal('destructiveResetModal', 'destructiveResetPhrase');
+  }
+
+  async function executeDestructiveReset() {
+    if (destructiveResetBusy || !pendingDestructiveReset ||
+        !el('destructiveResetBackupAck').checked ||
+        el('destructiveResetPhrase').value.trim() !== destructiveResetPhrase(pendingDestructiveReset)) return;
+    const kind = pendingDestructiveReset;
+    destructiveResetBusy = true;
+    updateDestructiveResetGuard();
+    try {
+      if (kind === 'recovery') {
+        if (!recoveryMode || !(await persistResolvedDataAtomic(cloneDefault()))) return;
+        recoveryMode = null;
+      } else {
+        // Persist an empty primary before removing the old local recovery stores.
+        const empty = cloneDefault();
+        empty.revision = 1;
+        empty.updatedAt = new Date().toISOString();
+        await primaryPersistPromise;
+        ++deferredSnapshotTicket;
+        await persistFullResetAtomic(empty);
+        data = empty;
+        persistSmallPreferences();
+        storedDayTotalsMap = new Map();
+        persistedRecordMap = new Map(); dayTotalsRecordMap = new Map(); persistedDeletedFastMap = new Map(); persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
+        snapshotCache = [];
+        try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); localStorage.removeItem(NOTIFICATION_STATE_KEY); } catch {}
+        notificationRuntimeState = {};
+        backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null, lastExternalBackupRevision:0, lastExternalBackupDataUpdatedAt:null, snapshotProtectionStatus:'ok', snapshotProtectionAt:null, snapshotStoredCount:0, snapshotDesiredCount:0 };
+        try { localStorage.removeItem(PERF_META_KEY); } catch {}
+        snapshotProtectionState = { status:'ok', kept:0, desired:0 };
+        automaticSnapshotFailureAlerted = false;
+        saveBackupMeta();
+      }
+      pendingDestructiveReset = null;
+      destructiveResetBusy = false;
+      hideModal('destructiveResetModal');
+      invalidateDerivedCaches(); markViewsDirty(); renderAll();
+    } catch (err) {
+      noteDiagnosticError('destructive_reset_failed');
+      alert(t('error.save'));
+    } finally {
+      destructiveResetBusy = false;
+      updateDestructiveResetGuard();
     }
   }
+
+  function resetFromRecovery() { requestDestructiveReset('recovery'); }
 
   let settingsSearchActive = false;
   let settingsGroupToggleSuppressed = false;
@@ -7431,6 +7623,7 @@ layout: null
       else if (modal.id === 'entryModal') closeEntryModal();
       else if (modal.id === 'weightModal') closeWeightModal();
       else if (modal.id === 'updateModal') closeUpdateModal();
+      else if (modal.id === 'destructiveResetModal') closeDestructiveReset();
       else if (modal.id === 'snapshotModal') closeSnapshotModal();
       else if (modal.id === 'snapshotPreviewModal') { pendingSnapshotRestoreId=null; hideModal('snapshotPreviewModal'); }
       else if (modal.id === 'manualSnapshotModal') hideModal('manualSnapshotModal');
@@ -7546,25 +7739,12 @@ layout: null
     e.target.value = '';
   });
 
-  el('resetBtn').addEventListener('click', async () => {
-    if (confirm(t('reset.confirm'))) {
-      data = cloneDefault();
-      storedDayTotalsMap = new Map();
-      persistedRecordMap = new Map(); dayTotalsRecordMap = new Map(); persistedDeletedFastMap = new Map(); persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
-      data.revision = 1; data.updatedAt = new Date().toISOString();
-      await persistPrimaryNow(data, {force:true});
-      snapshotCache = [];
-      await idbClearStoresAtomic(['snapshotMeta','snapshotPayload','records','deletedFasts','weights','deletedWeights']);
-      try { localStorage.removeItem(SNAPSHOT_KEY); localStorage.removeItem(LONG_FAST_NOTICE_KEY); localStorage.removeItem('fastingTrackerPublicLang'); localStorage.removeItem(NOTIFICATION_STATE_KEY); } catch {}
-      notificationRuntimeState = {};
-      backupMeta = { firstSeenAt: new Date().toISOString(), firstDataAt: null, lastExternalBackupAt: null, lastExternalBackupRevision:0, lastExternalBackupDataUpdatedAt:null, snapshotProtectionStatus: 'ok', snapshotProtectionAt: null, snapshotStoredCount: 0, snapshotDesiredCount: 0 };
-      try{localStorage.removeItem(PERF_META_KEY);}catch{}
-      snapshotProtectionState = { status: 'ok', kept: 0, desired: 0 };
-      automaticSnapshotFailureAlerted = false;
-      saveBackupMeta();
-      invalidateDerivedCaches(); markViewsDirty(); renderAll();
-    }
-  });
+  el('resetBtn').addEventListener('click', () => requestDestructiveReset('all'));
+  el('destructiveResetBackupAck').addEventListener('change', updateDestructiveResetGuard);
+  el('destructiveResetPhrase').addEventListener('input', updateDestructiveResetGuard);
+  el('destructiveResetConfirmBtn').addEventListener('click', executeDestructiveReset);
+  el('destructiveResetCancelBtn').addEventListener('click', closeDestructiveReset);
+  el('destructiveResetModal').addEventListener('click', e => { if (e.target === el('destructiveResetModal')) closeDestructiveReset(); });
 
   el('restoreSnapshotBtn').addEventListener('click', openSnapshotModal);
   el('snapshotCloseBtn').addEventListener('click', closeSnapshotModal);
@@ -7696,6 +7876,7 @@ layout: null
   el('setupUnitLbBtn').addEventListener('click', () => { setupWeightUnitChoice='lb'; renderSetupUnitChoice(); });
   document.querySelectorAll('[data-setup-goal]').forEach(btn => btn.addEventListener('click', () => { const input=el('setupGoalInput'); if (input) input.value=formatNumber(Number(btn.dataset.setupGoal),0,3); }));
 
+  bindResponsiveAction(el('fastingBackupStatusBtn'), () => exportBackup());
   bindResponsiveAction(el('shareProgressBtn'), openShareModal);
   bindResponsiveAction(el('shareStatsBtn'), openShareModal);
   el('shareCancelBtn').addEventListener('click', closeShareModal);
