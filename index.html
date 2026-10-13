@@ -2140,6 +2140,33 @@ layout: null
     });
   }
 
+  async function persistFullResetAtomic(empty) {
+    // Clear every record and internal snapshot in ONE IndexedDB transaction.
+    // If it aborts, the existing data remains intact instead of being partially erased.
+    const db = await openAppDb();
+    const stores = ['state','records','deletedFasts','weights','deletedWeights','snapshotMeta','snapshotPayload'];
+    if (stores.some(name => !db.objectStoreNames.contains(name))) throw new Error('Missing reset data store');
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(stores, 'readwrite');
+      const state = tx.objectStore('state');
+      state.clear();
+      state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(empty)});
+      state.put({key:'dailyTotals', revision:empty.revision, entries:[]});
+      const savedAt = new Date().toISOString();
+      state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:empty.revision});
+      for (const name of stores.slice(1)) tx.objectStore(name).clear();
+      tx.oncomplete = () => {
+        persistedRecordMap = new Map(); persistedDeletedFastMap = new Map();
+        persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
+        lastSuccessfulIdbSaveAt = savedAt;
+        try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:empty.revision, at:Date.now()})); } catch {}
+        resolve(true);
+      };
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB reset transaction failed'));
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB reset transaction aborted'));
+    });
+  }
+
   function dataSettingsOnly(source = data) {
     const out = {...source};
     delete out.records; delete out.deletedFasts; delete out.weights; delete out.deletedWeights;
@@ -7178,16 +7205,18 @@ layout: null
     updateDestructiveResetGuard();
     try {
       if (kind === 'recovery') {
-        if (!recoveryMode || !persistResolvedData(cloneDefault())) return;
+        if (!recoveryMode || !(await persistResolvedDataAtomic(cloneDefault()))) return;
         recoveryMode = null;
       } else {
         // Persist an empty primary before removing the old local recovery stores.
         const empty = cloneDefault();
         empty.revision = 1;
         empty.updatedAt = new Date().toISOString();
-        await persistPrimaryNow(empty, {force:true});
-        await idbClearStoresAtomic(['snapshotMeta','snapshotPayload','records','deletedFasts','weights','deletedWeights']);
+        await primaryPersistPromise;
+        ++deferredSnapshotTicket;
+        await persistFullResetAtomic(empty);
         data = empty;
+        persistSmallPreferences();
         storedDayTotalsMap = new Map();
         persistedRecordMap = new Map(); dayTotalsRecordMap = new Map(); persistedDeletedFastMap = new Map(); persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
         snapshotCache = [];
