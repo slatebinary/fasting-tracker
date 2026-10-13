@@ -14,6 +14,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify all release integrity hashes and metadata
+        run: python3 tools/build_release.py --check
+      - name: Run release integrity and data safeguards regression
+        run: python3 tests/test_release.py
+      - name: Install browser test dependencies
+        run: |
+          python3 -m pip install --break-system-packages playwright
+          python3 -m playwright install --with-deps chromium
+          sudo ln -sf "$(python3 -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')" /usr/bin/chromium
+      - name: Execute backup restore and safe-merge browser tests
+        run: |
+          python3 tests/test_backup_version_restore_matrix.py
+          python3 tests/test_import_preview_merge.py
       - name: Check application JavaScript and document navigation
         run: node tests/v1123-regression.cjs
       - name: Verify release archive
