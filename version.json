@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.12.5",
+  "version": "1.12.6",
   "released": "2026-10-13",
-  "notes": "Two-stage irreversible deletion confirmation and atomic full reset; a color-coded manual JSON backup indicator on Fasting flags new or changed fasting/weight records, stale and older exports, with accessible EN/BG/ES labels.",
+  "notes": "Refine Fasting header: Share progress stays aligned right; show backup action below only when data needs backup or export is older than seven days, with brief green confirmation after export. Retains deletion safeguards and accessible status details in Settings.",
   "entry": "./index.html",
   "shell": [
     "./",
