@@ -6,7 +6,9 @@ _site/
 
 # Python caches and local virtual environments
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
 .pytest_cache/
 .venv/
 venv/
