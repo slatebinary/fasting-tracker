@@ -978,5 +978,16 @@
   "reset.backupAcknowledgement": "Entiendo que quizá no disponga de una copia externa utilizable y acepto la pérdida permanente de los datos de este dispositivo.",
   "reset.typePhrase": "Escribe {phrase} exactamente para activar el botón final:",
   "reset.confirmAll": "Eliminar definitivamente todos los datos",
-  "reset.confirmRecovery": "Empezar de nuevo y reemplazar los datos"
+  "reset.confirmRecovery": "Empezar de nuevo y reemplazar los datos",
+  "backupChip.current": "Copia al día",
+  "backupChip.currentHelp": "Exportación manual JSON registrada el {date}. No hay cambios de ayuno ni peso desde entonces. La aplicación no puede verificar que el archivo siga guardado fuera de ella.",
+  "backupChip.aged": "Copia de más de 7 días",
+  "backupChip.agedHelp": "La última exportación manual JSON registrada fue el {date}. Los datos no han cambiado, pero se recomienda una nueva copia externa.",
+  "backupChip.stale": "Copia necesaria",
+  "backupChip.staleHelp": "Los datos de ayuno o peso han cambiado desde la exportación manual del {date}. Crea una nueva copia JSON.",
+  "backupChip.never": "Sin copia aún",
+  "backupChip.neverHelp": "Hay datos de ayuno o peso, pero no se ha registrado ninguna copia JSON manual externa.",
+  "backupChip.empty": "Sin datos",
+  "backupChip.emptyHelp": "Todavía no hay registros de ayuno ni peso.",
+  "backupChip.action": "Toca para exportar una copia JSON. Se registra el compartir o la descarga confirmada, pero no se puede verificar el almacenamiento externo."
 }
