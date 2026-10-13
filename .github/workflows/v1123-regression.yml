@@ -1,0 +1,84 @@
+name: v1.12.3 regression checks
+on:
+  push:
+    branches:
+      - fix/data-protection-readable-backups
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build consistent localization and release assets in runner
+        run: |
+          python3 tools/build_i18n_runtime.py
+          python3 tools/export_i18n_source.py
+          python3 tools/build_release.py
+      - name: Verify all release integrity hashes and metadata
+        run: python3 tools/build_release.py --check
+      - name: Run release integrity and data safeguards regression
+        run: python3 tests/test_release.py
+      - name: Validate GitHub Pages artifact preparation without deployment
+        run: |
+          python3 tools/prepare_pages.py
+          test -f _site/index.html
+          test -f _site/version.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('_site')
+          version=json.loads((root/'version.json').read_text())
+          assert version['version']=='1.12.3'
+          assert all((root/name).exists() for name in ('index.html','about.html','privacy.html','branding.html','license.html'))
+          print('PASS: GitHub Pages build artifact and required documents')
+          PY
+      - name: Install browser test dependencies
+        run: |
+          python3 -m pip install playwright
+          python3 -m playwright install --with-deps chromium
+          sudo ln -sf "$(python3 -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')" /usr/bin/chromium
+      - name: Execute backup restore and safe-merge browser tests
+        run: |
+          python3 tests/test_backup_version_restore_matrix.py
+          python3 tests/test_import_preview_merge.py
+      - name: Check application JavaScript and document navigation
+        run: node tests/v1123-regression.cjs
+      - name: Verify release archive
+        run: |
+          python3 - <<'PY'
+          import os, zipfile
+          ignore={'.git','.github','node_modules'}
+          with zipfile.ZipFile('/tmp/fasting-tracker-v1.12.3.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for root,dirs,files in os.walk('.'):
+                  dirs[:]=[d for d in dirs if d not in ignore]
+                  for name in files:
+                      p=os.path.join(root,name)
+                      z.write(p,p.removeprefix('./'))
+          with zipfile.ZipFile('/tmp/fasting-tracker-v1.12.3.zip') as z:
+              bad=z.testzip()
+              assert bad is None, bad
+              assert {'index.html','version.json','about.html','privacy.html','branding.html','license.html'} <= set(z.namelist())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fasting-tracker-v1.12.3-regression
+          path: /tmp/fasting-tracker-v1.12.3.zip
+          retention-days: 14
+
+      - name: Synchronize generated assets to development branch after passing tests
+        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add i18n-source.json i18n/en.js i18n/bg.js i18n/es.js version.json index.html about.html privacy.html branding.html license.html
+          if ! git diff --cached --quiet; then
+            git commit -m "build(release): synchronize generated localization and release assets"
+            git push origin HEAD:fix/data-protection-readable-backups
+          fi
