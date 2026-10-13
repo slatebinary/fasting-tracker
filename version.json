@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.12.4",
+  "version": "1.12.5",
   "released": "2026-10-13",
-  "notes": "Direct access to MIT License and Branding Policy from Settings, localized in English, Bulgarian and Spanish; document return navigation and data-preservation regression coverage.",
+  "notes": "Two-stage irreversible deletion confirmations; typed DELETE ALL or RESET DATA and explicit external-backup risk acknowledgement for full-data or recovery resets; preserves Recently Deleted and Undo.",
   "entry": "./index.html",
   "shell": [
     "./",
