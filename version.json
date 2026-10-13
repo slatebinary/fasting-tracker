@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.12.5",
   "released": "2026-10-13",
-  "notes": "Two-stage irreversible deletion confirmations; typed DELETE ALL or RESET DATA and explicit external-backup risk acknowledgement for full-data or recovery resets; preserves Recently Deleted and Undo.",
+  "notes": "Two-stage irreversible deletion confirmation and atomic full reset; a color-coded manual JSON backup indicator on Fasting flags new or changed fasting/weight records, stale and older exports, with accessible EN/BG/ES labels.",
   "entry": "./index.html",
   "shell": [
     "./",
