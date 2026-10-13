@@ -1,10 +1,25 @@
-__pycache__/
-*.pyc
-*.pyo
+# Generated GitHub Pages output; rebuilt by tools/prepare_pages.py
+_site/
 
+# Release packages (keep archives outside the working repository)
+*.zip
+
+# Python caches and local virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Browser automation and local dependency output
+node_modules/
+playwright-report/
+test-results/
+
+# Platform-specific files and temporary output
 .DS_Store
 Thumbs.db
 desktop.ini
-
 *.tmp
 *.temp
+*.log
