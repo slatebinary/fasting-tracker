@@ -72,9 +72,9 @@
   "hashes": {
     "./": "657e8bd2dc84f7d31cef1018cd1fa157dff092ed5261c425f3fb4ddb172c3fa5",
     "./index.html": "657e8bd2dc84f7d31cef1018cd1fa157dff092ed5261c425f3fb4ddb172c3fa5",
-    "./i18n/en.js": "031800a51907bccc754bb299942fbb86239e16b70700ed49fb9630ddaa7ee128",
-    "./i18n/bg.js": "dede409fedc4aa29bf9765514e307bfd1e172a8029af532c59c9238414456c82",
-    "./i18n/es.js": "6b89bd01348d9268af320a23ee646926bf58a5e99de604c746c64225fd76d754",
+    "./i18n/en.js": "383be7addd7e7f2fdf761aa9e1d552aaee87e8bcd1785dbf57b47bec6f005876",
+    "./i18n/bg.js": "ba554f3575211622ce9e7044d8d3d31b8d9b8de593373646efad5f8f8602340b",
+    "./i18n/es.js": "c47005c62b416dc4319507e33b9daf644e2d23ab429f6620ed6fa36e14316f71",
     "./js/platform-diagnostics.js": "6082fb3c3cf03cafcc39bd20f8c5e3729213ce64595d5318166fb81573089408",
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "ea833c37cb0977c6b0db7c0a6e6182b9572aa0e996a2205400294bb89996d769",
