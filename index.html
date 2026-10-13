@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.5" />
+  <meta name="ft-app-version" content="1.12.6" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -286,17 +286,20 @@ layout: null
     .iconSafetyNote button { margin-top:10px; width:100%; white-space:normal; }
     .sectionHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 18px; }
     .sectionHeader h1 { margin: 0; }
-    .fastingSectionHeader { flex-wrap:wrap; }
-    .fastingHeaderActions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; min-width:0; }
-    .fastingHeaderActions button { min-height:44px; padding:9px 11px; font-size:13px; line-height:1.2; }
-    .backupStatusButton { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--line); border-radius:12px; color:var(--muted); background:var(--card); white-space:normal; }
+    /* Fasting header stays consistent with Statistics and other sections. */
+    .fastingSectionHeader { flex-wrap:nowrap; }
+    .fastingSectionHeader h1 { flex:1 1 auto; min-width:0; }
+    .fastingSectionHeader #shareProgressBtn { flex:0 0 auto; max-width:55%; min-height:44px; padding:10px 12px; font-size:13px; line-height:1.2; }
+    .fastingSectionHeader.hasBackupAttention { margin-bottom:8px; }
+    .fastingBackupRow { display:flex; align-items:center; margin:0 0 14px; }
+    .fastingBackupRow[hidden] { display:none !important; }
+    .backupStatusButton { min-height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:12px; color:var(--muted); background:var(--card); white-space:normal; text-align:left; font-size:13px; line-height:1.3; }
     .backupStatusDot { width:10px; height:10px; flex:none; border-radius:50%; background:currentColor; }
     .backupStatusButton[data-state="current"] { color:var(--good); background:color-mix(in srgb,var(--good) 9%,var(--card)); border-color:color-mix(in srgb,var(--good) 37%,var(--line)); }
     .backupStatusButton[data-state="aged"] { color:var(--text); background:color-mix(in srgb,#d78e16 15%,var(--card)); border-color:#ba881d; }
     .backupStatusButton[data-state="aged"] .backupStatusDot { background:#cf9121; }
     .backupStatusButton[data-state="stale"], .backupStatusButton[data-state="never"] { color:var(--danger); background:color-mix(in srgb,var(--danger) 9%,var(--card)); border-color:color-mix(in srgb,var(--danger) 42%,var(--line)); }
     .backupStatusButton[data-state="empty"] { color:var(--muted); }
-    @media (max-width:370px) { .fastingSectionHeader h1 { width:100%; } .fastingHeaderActions { width:100%; justify-content:flex-start; } }
     .historyRow { align-items: flex-start; }
     .historyActions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 5px; }
     .historyActions button { padding: 7px 9px; font-size: 13px; }
@@ -525,7 +528,10 @@ layout: null
   </div>
   <div id="notificationDetailStack" class="notificationDetailStack" aria-label="Notification details" data-i18n-aria="notifications.detailsHeading" hidden></div>
   <section id="fasting" class="screen active">
-    <div class="sectionHeader fastingSectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><div class="fastingHeaderActions"><button id="fastingBackupStatusBtn" class="backupStatusButton" data-state="empty" type="button"><span class="backupStatusDot" aria-hidden="true"></span><span id="fastingBackupStatusText" aria-live="polite">Backup status</span></button><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div></div>
+    <div class="sectionHeader fastingSectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
+    <div id="fastingBackupRow" class="fastingBackupRow" hidden>
+      <button id="fastingBackupStatusBtn" class="backupStatusButton" data-state="empty" type="button"><span class="backupStatusDot" aria-hidden="true"></span><span id="fastingBackupStatusText" aria-live="polite">Backup status</span></button>
+    </div>
     <div class="notice installStorageNotice" id="installStorageNotice" role="status" hidden>
       <strong data-i18n="installStorage.title">Using Safari on iPhone?</strong>
       <div class="small" data-i18n="installStorage.text">Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.</div>
@@ -1562,7 +1568,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.5';
+  const APP_VERSION = '1.12.6';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6322,11 +6328,16 @@ layout: null
     return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
   }
 
+  let backupSuccessVisibleUntil = 0;
+  let backupSuccessHideTimer = 0;
   function renderFastingBackupIndicator(freshness, due) {
+    const row=el('fastingBackupRow'), header=el('fasting')?.querySelector('.fastingSectionHeader');
     const button=el('fastingBackupStatusBtn'), text=el('fastingBackupStatusText');
-    if (!button || !text) return;
+    if (!row || !header || !button || !text) return;
     const age = freshness.last ? Date.now() - freshness.last.getTime() : 0;
     const state = freshness.state === 'current' && age >= BACKUP_REMINDER_MS ? 'aged' : freshness.state;
+    const visible = state === 'stale' || state === 'never' || state === 'aged' ||
+      (state === 'current' && Date.now() < backupSuccessVisibleUntil);
     const labelKey = 'backupChip.' + state;
     const descriptionKey = 'backupChip.' + state + 'Help';
     const date = freshness.last ? localDateTimeLabel(freshness.last) : '';
@@ -6337,6 +6348,8 @@ layout: null
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
     button.setAttribute('aria-label', status + '. ' + explanation + ' ' + action);
+    row.hidden = !visible;
+    header.classList.toggle('hasBackupAttention', visible);
   }
   function backupIsDue() {
     if (!hasBackupWorthyData()) return false;
@@ -6362,7 +6375,9 @@ layout: null
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
-    banner.hidden = !(due || snapshotAttention);
+    // The compact fasting backup action already covers aged and missing exports.
+    // Preserve the banner only for separate internal-snapshot problems.
+    banner.hidden = !snapshotAttention;
     banner.classList.toggle('warn', snapshotAttention);
     if (titleBox) titleBox.textContent = snapshotAttention ? t('backup.snapshotAttentionTitle') : t('backup.reminderTitle');
     if (snapshotAttention) {
@@ -6408,6 +6423,9 @@ layout: null
   async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;try{if(!(await allowStorageIntensiveOperation()))return;const ok=await createManualRecoverySnapshot(input?.value||'');if(ok)hideModal('manualSnapshotModal');}finally{if(btn)btn.disabled=false;}}
 
   function markExternalBackupNow(exportedData = data) {
+    backupSuccessVisibleUntil = Date.now() + 7000;
+    if (backupSuccessHideTimer) clearTimeout(backupSuccessHideTimer);
+    backupSuccessHideTimer = setTimeout(() => { backupSuccessHideTimer = 0; renderBackupStatus(); }, 7000);
     backupMeta.lastExternalBackupAt = new Date().toISOString();
     backupMeta.lastExternalBackupRevision = Math.max(0,Number(exportedData.revision)||0);
     backupMeta.lastExternalBackupDataUpdatedAt = validDate(exportedData.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
