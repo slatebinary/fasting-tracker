@@ -29,7 +29,7 @@ def status(page, expected):
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844}, accept_downloads=True)
-    errors=[]; decision=[False,True,True]
+    errors=[]; decision=[False]+[True]*20
     page.on('pageerror', lambda e: errors.append(str(e)))
     def dialog(d):
         if 'backup' in d.message.lower() or 'json' in d.message.lower():
@@ -58,12 +58,36 @@ with sync_playwright() as p:
     page.locator('#fastingBackupStatusBtn').click()
     status(page,'current')
     meta=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.backupMeta'))")
+    # Save the live snapshot at the exact time of export for the age test.
+    exported_snapshot=page.evaluate("""async ()=>{let db=await new Promise((ok,bad)=>{let r=indexedDB.open('FastingTrackerDB',2);r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)});let out={};for(let name of ['records','weights','deletedFasts','deletedWeights'])out[name]=await new Promise((ok,bad)=>{let r=db.transaction(name,'readonly').objectStore(name).getAll();r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)});let state=await new Promise((ok,bad)=>{let r=db.transaction('state','readonly').objectStore('state').get('settings');r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)});return {...state.data,...out};}""")
     # Weight addition after manual export must immediately show stale.
     page.locator('[data-screen="weight"]').click()
     page.locator('#addWeightBtn').click()
     page.locator('#weightValueInput').fill('78.2')
     page.locator('#weightSaveBtn').click()
     page.locator('[data-screen="fasting"]').click()
+    status(page,'stale')
+    page.locator('#fastingBackupStatusBtn').click()
+    status(page,'current')
+    # Editing an existing weight invalidates the recorded backup too.
+    page.locator('[data-screen="weight"]').click()
+    page.locator('#weightHistoryList .historyActions button.secondary').first.click()
+    page.locator('#weightValueInput').fill('78.4')
+    page.locator('#weightSaveBtn').click()
+    page.locator('[data-screen="fasting"]').click()
+    status(page,'stale')
+    page.locator('#fastingBackupStatusBtn').click()
+    status(page,'current')
+    page.locator('[data-screen="weight"]').click()
+    page.locator('#weightHistoryList .historyActions button.dangerText').first.click()
+    page.locator('[data-screen="fasting"]').click()
+    status(page,'stale')
+    page.locator('#fastingBackupStatusBtn').click()
+    status(page,'current')
+    # Stopping a fast creates a new completed history record.
+    page.locator('#toggleFast').click()
+    page.wait_for_function("!document.querySelector('#stopFastModal').hidden")
+    page.locator('#stopAndSaveBtn').click()
     status(page,'stale')
     assert not errors, errors[:5]
     # An older export with the very same signature receives an amber reminder,
@@ -74,10 +98,7 @@ with sync_playwright() as p:
     errors2=[];page2.on('pageerror',lambda e:errors2.append(str(e)))
     # The second page starts with the active fast included in the last export.
     # This seed is built from the app's live state via IDB for exact equivalence.
-    snapshot=page.evaluate("""async ()=>{let db=await new Promise((ok,bad)=>{let r=indexedDB.open('FastingTrackerDB',2);r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)});let out={};for(let name of ['records','weights','deletedFasts','deletedWeights'])out[name]=await new Promise((ok,bad)=>{let r=db.transaction(name,'readonly').objectStore(name).getAll();r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)});let state=await new Promise((ok,bad)=>{let r=db.transaction('state','readonly').objectStore('state').get('settings');r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)});return {...state.data,...out};}""")
-    # We need data from right after active-fast export, before new weight.
-    # Simply strip the newly entered weight, reverting to exported dataset.
-    snapshot['weights']=[w for w in snapshot['weights'] if w['id']=='w0']
+    snapshot=exported_snapshot
     page2.evaluate(STORAGE_SHIM)
     page2.evaluate("""arg=>{
       __seedFastingDbV2(arg.data,[]);
