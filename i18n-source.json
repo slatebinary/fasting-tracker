@@ -1,6 +1,6 @@
 {
   "sourceRevision": 28,
-  "appVersion": "1.12.3",
+  "appVersion": "1.12.4",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -966,6 +966,8 @@
     "notifications.detailsDismissAria": "Dismiss notification details: {title}",
     "notifications.detailsFallback": "Open the relevant Fasting Tracker screen for more information.",
     "notifications.detailPolicy": "Device notifications are intentionally brief. Full details stay inside Fasting Tracker until you dismiss them.",
-    "backup.exportExplanation": "Export saves a restorable JSON backup. Export everything includes the same backup plus fasting and weight CSV tables for easier reading in Excel. Internal recovery snapshots remain on this device."
+    "backup.exportExplanation": "Export saves a restorable JSON backup. Export everything includes the same backup plus fasting and weight CSV tables for easier reading in Excel. Internal recovery snapshots remain on this device.",
+    "public.license": "MIT License",
+    "public.branding": "Branding Policy"
   }
 }
