@@ -16,8 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build consistent release assets in runner
-        run: python3 tools/build_release.py
+      - name: Build consistent localization and release assets in runner
+        run: |
+          python3 tools/build_i18n_runtime.py
+          python3 tools/build_release.py
       - name: Verify all release integrity hashes and metadata
         run: python3 tools/build_release.py --check
       - name: Run release integrity and data safeguards regression
