@@ -50,6 +50,7 @@ jobs:
           python3 tests/test_backup_version_restore_matrix.py
           python3 tests/test_import_preview_merge.py
           python3 tests/test_destructive_guard.py
+          python3 tests/test_permanent_purge_confirmation.py
       - name: Check application JavaScript and document navigation
         run: node tests/v1123-regression.cjs
       - name: Verify release archive
