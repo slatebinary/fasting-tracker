@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.6" />
+  <meta name="ft-app-version" content="1.12.7" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -209,6 +209,22 @@ layout: null
     .notificationCadenceToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); gap:2px; }
     .notificationCadenceToggle button { min-width:74px; padding:8px 11px; border-radius:9px; background:transparent; color:var(--text); font-size:13px; }
     .notificationCadenceToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 3px rgba(0,0,0,.08); }
+    /* In the onboarding dialog, narrow phones must not force the Daily/Weekly
+       selector beyond the clipped modal content. Keep both choices equal-width. */
+    .setupNotificationWeighRow { padding:0; border:0; align-items:center; flex-wrap:wrap; }
+    .setupNotificationWeighRow .setupInlineToggle { display:flex; align-items:center; min-width:0; margin:0; }
+    .setupNotificationWeighRow .notificationCadenceToggle { flex:0 1 auto; min-width:0; max-width:100%; box-sizing:border-box; }
+    .setupNotificationWeighRow .notificationCadenceToggle button { min-height:44px; }
+    @media (max-width:600px) {
+      .setupNotificationWeighRow { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; }
+      .setupNotificationWeighRow .notificationCadenceToggle {
+        display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+        width:100%; max-width:100%;
+      }
+      .setupNotificationWeighRow .notificationCadenceToggle button {
+        min-width:0; width:100%; min-height:44px; padding:10px 8px; white-space:normal;
+      }
+    }
     input.numericInput { width: 112px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; text-align: end; }
     .presetWrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .chip { padding: 9px 12px; border-radius: 999px; background: var(--line); color: var(--text); font-size: 13px; }
@@ -1183,8 +1199,8 @@ layout: null
         <label class="setupInlineToggle"><input id="setupNotificationTargetToggle" type="checkbox"><span data-i18n="notifications.targetReached">Target reached</span></label>
         <label class="setupInlineToggle"><input id="setupNotificationBackupToggle" type="checkbox"><span data-i18n="notifications.backupDue">Backup reminder</span></label>
         <label class="setupInlineToggle"><input id="setupNotificationSafetyToggle" type="checkbox"><span data-i18n="notifications.longFastSafety">Prolonged-fast safety reminder</span></label>
-        <div class="row" style="padding:0;border:0;align-items:center">
-          <label class="setupInlineToggle" style="margin:0"><input id="setupNotificationWeighToggle" type="checkbox"><span data-i18n="notifications.weighIn">Weigh-in reminder</span></label>
+        <div class="row setupNotificationWeighRow">
+          <label class="setupInlineToggle"><input id="setupNotificationWeighToggle" type="checkbox"><span data-i18n="notifications.weighIn">Weigh-in reminder</span></label>
           <input id="setupNotificationWeighCadence" type="hidden" value="weekly">
           <div class="notificationCadenceToggle" id="setupNotificationWeighCadenceButtons" role="group" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><button id="setupNotificationWeighDailyBtn" type="button" data-setup-notification-cadence="daily" aria-pressed="false" data-i18n="notifications.daily">Daily</button><button id="setupNotificationWeighWeeklyBtn" type="button" data-setup-notification-cadence="weekly" aria-pressed="true" class="active" data-i18n="notifications.weekly">Weekly</button></div>
         </div>
@@ -1568,7 +1584,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.6';
+  const APP_VERSION = '1.12.7';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;

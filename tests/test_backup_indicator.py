@@ -12,11 +12,11 @@ def boot(page, backup_meta=None):
     page.evaluate(STORAGE_SHIM)
     page.evaluate("""arg => {
       __seedFastingDbV2(arg.data,[]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.6'}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.7'}));
       if (arg.meta) localStorage.setItem('fastingTracker.backupMeta', JSON.stringify(arg.meta));
     }""", {'data':DATA, 'meta':backup_meta})
     page.set_content(HTML, wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.6'", timeout=30000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.7'", timeout=30000)
     page.wait_for_function("document.querySelector('#fastingBackupStatusBtn')?.dataset.state!=='empty'", timeout=30000)
 
 def status(page, expected):
@@ -118,11 +118,11 @@ with sync_playwright() as p:
     page2.evaluate(STORAGE_SHIM)
     page2.evaluate("""arg=>{
       __seedFastingDbV2(arg.data,[]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.6'}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.7'}));
       localStorage.setItem('fastingTracker.backupMeta',JSON.stringify(arg.meta));
     }""", {'data':snapshot,'meta':old})
     page2.set_content(HTML,wait_until='domcontentloaded')
-    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.6'",timeout=30000)
+    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.7'",timeout=30000)
     status(page2,'aged')
     assert not errors2, errors2[:5]
     browser.close()
