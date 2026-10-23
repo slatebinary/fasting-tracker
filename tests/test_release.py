@@ -198,7 +198,37 @@ assert(zonedLocalToDate('2026-10-25T03:30','Europe/Sofia')===null,'autumn DST am
 assert(compareVersions('1.0.1','1.0.0')>0,'version compare upgrade');
 assert(compareVersions('1.0.0','1.0.0')===0,'version compare equal');
 const m=new Map();addIntervalToDayMap(m,'2026-09-01T00:00:00Z','2026-09-03T00:00:00Z','UTC');
-console.log([...m.entries()]); assert(Math.abs((m.get('2026-09-01')||0)-86400000)<2000 && Math.abs((m.get('2026-09-02')||0)-86400000)<2000,'multi-day allocation');
+console.log([...m.entries()]); assert((m.get('2026-09-01')||0)===86400000 && (m.get('2026-09-02')||0)===86400000,'each complete UTC calendar day must equal exactly 24 hours (no 23h 59m undercount)');
+const exact=new Map(); addIntervalToDayMap(exact,'2026-10-19T00:00:00.000Z','2026-10-22T00:00:00.000Z','UTC');
+for (const key of ['2026-10-19','2026-10-20','2026-10-21']) assert(exact.get(key)===86400000,`complete day ${key} must be exactly 24 hours`);
+const partial=new Map(); addIntervalToDayMap(partial,'2026-10-19T12:00:00.000Z','2026-10-20T12:00:00.000Z','UTC');
+assert(partial.get('2026-10-19')===43200000 && partial.get('2026-10-20')===43200000,'fast spanning midnight must allocate 12h to each date');
+const springStart=zonedLocalToDate('2026-03-29T00:00','Europe/Sofia');
+const springEnd=zonedLocalToDate('2026-03-30T00:00','Europe/Sofia');
+const spring=new Map(); addIntervalToDayMap(spring,springStart.toISOString(),springEnd.toISOString(),'Europe/Sofia');
+assert(spring.get('2026-03-29')===23*3600000,'Sofia spring DST day must total 23 elapsed hours, not be forced to 24');
+const autumnStart=zonedLocalToDate('2026-10-25T00:00','Europe/Sofia');
+const autumnEnd=zonedLocalToDate('2026-10-26T00:00','Europe/Sofia');
+const autumn=new Map(); addIntervalToDayMap(autumn,autumnStart.toISOString(),autumnEnd.toISOString(),'Europe/Sofia');
+assert(autumn.get('2026-10-25')===25*3600000,'Sofia autumn DST day must total 25 elapsed hours, not be forced to 24');
+for (const [zone,date,expected,label] of [
+  ['America/New_York','2026-03-08',23,'New York spring DST'],
+  ['America/New_York','2026-11-01',25,'New York autumn DST'],
+  ['Europe/London','2026-03-29',23,'London spring DST'],
+  ['Europe/London','2026-10-25',25,'London autumn DST'],
+  ['Australia/Sydney','2026-10-04',23,'Sydney spring DST'],
+  ['Australia/Sydney','2026-04-05',25,'Sydney autumn DST'],
+  ['Pacific/Auckland','2026-09-27',23,'Auckland spring DST'],
+  ['Pacific/Auckland','2026-04-05',25,'Auckland autumn DST'],
+  ['Australia/Lord_Howe','2026-10-04',23.5,'Lord Howe 30-minute spring DST'],
+  ['Australia/Lord_Howe','2026-04-05',24.5,'Lord Howe 30-minute autumn DST']
+]) {
+  const next = new Date(Date.parse(date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
+  const start = zonedLocalToDate(date+'T00:00',zone);
+  const end = zonedLocalToDate(next+'T00:00',zone);
+  const day = new Map(); addIntervalToDayMap(day,start.toISOString(),end.toISOString(),zone);
+  assert(day.get(date)===expected*3600000, `${label} (${zone}, ${date}) must be ${expected} elapsed hours, got ${day.get(date)/3600000}`);
+}
 console.log('algorithm regression tests passed');
 '''
     with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:

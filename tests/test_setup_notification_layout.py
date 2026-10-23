@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.12.7: on narrow iPhones, the Daily/Weekly chooser stays inside onboarding."""
+"""v1.12.8: on narrow iPhones, the Daily/Weekly chooser stays inside onboarding."""
 
 from browser_perf_common import STORAGE_SHIM, build_data, inlined_html
 from playwright.sync_api import sync_playwright
@@ -21,10 +21,10 @@ with sync_playwright() as pw:
         page.evaluate(STORAGE_SHIM)
         page.evaluate('''data => {
           __seedFastingDbV2(data, []);
-          localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.7'}));
+          localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.8'}));
         }''', DATA)
         page.set_content(HTML, wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.7'",timeout=15000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.8'",timeout=15000)
         for lang in ('en','bg','es'):
             page.evaluate('''lang => {
               const select=document.querySelector('#languageSelect');
