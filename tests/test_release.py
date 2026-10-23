@@ -203,6 +203,14 @@ const exact=new Map(); addIntervalToDayMap(exact,'2026-10-19T00:00:00.000Z','202
 for (const key of ['2026-10-19','2026-10-20','2026-10-21']) assert(exact.get(key)===86400000,`complete day ${key} must be exactly 24 hours`);
 const partial=new Map(); addIntervalToDayMap(partial,'2026-10-19T12:00:00.000Z','2026-10-20T12:00:00.000Z','UTC');
 assert(partial.get('2026-10-19')===43200000 && partial.get('2026-10-20')===43200000,'fast spanning midnight must allocate 12h to each date');
+const springStart=zonedLocalToDate('2026-03-29T00:00','Europe/Sofia');
+const springEnd=zonedLocalToDate('2026-03-30T00:00','Europe/Sofia');
+const spring=new Map(); addIntervalToDayMap(spring,springStart.toISOString(),springEnd.toISOString(),'Europe/Sofia');
+assert(spring.get('2026-03-29')===23*3600000,'Sofia spring DST day must total 23 elapsed hours, not be forced to 24');
+const autumnStart=zonedLocalToDate('2026-10-25T00:00','Europe/Sofia');
+const autumnEnd=zonedLocalToDate('2026-10-26T00:00','Europe/Sofia');
+const autumn=new Map(); addIntervalToDayMap(autumn,autumnStart.toISOString(),autumnEnd.toISOString(),'Europe/Sofia');
+assert(autumn.get('2026-10-25')===25*3600000,'Sofia autumn DST day must total 25 elapsed hours, not be forced to 24');
 console.log('algorithm regression tests passed');
 '''
     with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
