@@ -25,7 +25,7 @@ assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeig
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
 assert.match(index,/const APP_VERSION\s*=\s*['"]1\.12\.8['"]/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.8');
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.9');
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);
