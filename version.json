@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.0",
+  "version": "1.13.1",
   "released": "2026-10-23",
-  "notes": "Extend the interactive fasting timeline to all recorded fasting history and preserve precise non-fasting gap durations.",
+  "notes": "Add subtle month labels and month-boundary separators to the full-history fasting timeline.",
   "entry": "./index.html",
   "shell": [
     "./",
