@@ -5114,8 +5114,8 @@ layout: null
 
     const top = 18, bottom = 38, left = 6, right = 6;
     const w = cssW - left - right, h = cssH - top - bottom;
-    const slot = Math.max(0.35, w / Math.max(1, days.length));
-    const gap = Math.min(8, slot * 0.18), bw = Math.max(0.2, slot - gap);
+    const slot = w / Math.max(1, days.length);
+    const gap = Math.min(8, slot * 0.18), bw = Math.max(0.01, slot - gap);
     timelineChartDays = days;
     timelineChartGeometry = { top, bottom, left, right, w, h, gap, bw, slot, cssW, cssH };
     const style = getComputedStyle(document.documentElement);
