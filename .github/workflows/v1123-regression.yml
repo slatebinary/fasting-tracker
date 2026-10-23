@@ -55,8 +55,19 @@ jobs:
           python3 -m pip install playwright
           python3 -m playwright install --with-deps chromium
           sudo ln -sf "$(python3 -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')" /usr/bin/chromium
-      - name: Execute backup restore and safe-merge browser tests
+      - name: Prepare exact historical release trees for native upgrade test
         run: |
+          git fetch --no-tags origin dc9cb50bb1397077cfacef30038cd92cce3b0e2e
+          git fetch --no-tags origin 770c4e8d53ab0a1bfca5381047998ccf28d39fb6
+          mkdir -p /tmp/ft-v1126 /tmp/ft-v1128
+          git archive dc9cb50bb1397077cfacef30038cd92cce3b0e2e | tar -x -C /tmp/ft-v1126
+          git archive 770c4e8d53ab0a1bfca5381047998ccf28d39fb6 | tar -x -C /tmp/ft-v1128
+          test -f /tmp/ft-v1126/index.html
+          test -f /tmp/ft-v1128/index.html
+      - name: Execute native and synthetic history upgrade tests
+        run: |
+          python3 tests/test_native_upgrade_history_v1126_to_v1128.py
+          python3 tests/test_upgrade_history_v1126_to_v1128.py
           python3 tests/test_backup_version_restore_matrix.py
           python3 tests/test_import_preview_merge.py
           python3 tests/test_destructive_guard.py
