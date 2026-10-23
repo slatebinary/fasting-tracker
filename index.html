@@ -802,7 +802,7 @@ layout: null
         <div class="timelineShell">
           <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
           <div class="timelineScroller" id="timelineScroller">
-            <canvas id="chart" width="700" height="310" role="img" tabindex="0" aria-describedby="statsVizHelp" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
+            <canvas id="chart" width="700" height="310" role="img" tabindex="0" aria-describedby="statsVizHelp" aria-label="Fasting timeline for all recorded fastings" data-i18n-aria="a11y.fastChart"></canvas>
           </div>
           <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
         </div>
@@ -4854,12 +4854,21 @@ layout: null
     return map;
   }
 
-  function buildInteractiveChartDays(dayCount = 14, timeZone = currentTimeZone()) {
+  function buildInteractiveChartDays(dayCount = null, timeZone = currentTimeZone()) {
     const tz = normalizeTimeZone(timeZone);
     const newestAnchor = new Date(); newestAnchor.setHours(12,0,0,0);
+    if (!Number.isInteger(dayCount) || dayCount < 1) {
+      const starts = data.records.map(record => Date.parse(record.start)).filter(Number.isFinite);
+      if (data.activeStart) { const activeStartMs = Date.parse(data.activeStart); if (Number.isFinite(activeStartMs)) starts.push(activeStartMs); }
+      const oldestMs = starts.length ? Math.min(...starts) : newestAnchor.getTime();
+      const oldestDate = new Date(oldestMs); oldestDate.setHours(12,0,0,0);
+      dayCount = Math.max(14, Math.floor((newestAnchor.getTime() - oldestDate.getTime()) / 86400000) + 1);
+    }
+    dayCount = Math.min(dayCount, 100000);
     const oldestAnchor = new Date(newestAnchor); oldestAnchor.setDate(oldestAnchor.getDate() - dayCount - 1);
     const intervals = allFastingIntervals(oldestAnchor.getTime(), newestAnchor.getTime() + 2*86400000);
     const days = [];
+    let intervalCursor = 0;
     for (let i = dayCount - 1; i >= 0; i--) {
       const anchor = new Date();
       anchor.setHours(12, 0, 0, 0);
@@ -4873,8 +4882,9 @@ layout: null
       let cursor = startMs;
       let fastCount = 0;
       let totalFastMs = 0;
-      for (const interval of intervals) {
-        if (interval.end <= startMs) continue;
+      while (intervalCursor < intervals.length && intervals[intervalCursor].end <= startMs) intervalCursor++;
+      for (let intervalIndex = intervalCursor; intervalIndex < intervals.length; intervalIndex++) {
+        const interval = intervals[intervalIndex];
         if (interval.start >= endMs) break;
         const segStart = Math.max(startMs, interval.start);
         const segEnd = Math.min(endMs, interval.end);
@@ -5078,19 +5088,26 @@ layout: null
   }
 
   function drawChart(daysOverride = null) {
-    const c = el('chart'), ctx = c.getContext('2d');
-    const ratio = window.devicePixelRatio || 1;
-    const cssW = c.clientWidth || 700, cssH = c.clientHeight || 310;
+    const c = el('chart');
+    const days = Array.isArray(daysOverride) && daysOverride.length ? daysOverride : buildInteractiveChartDays();
+    // Keep canvas dimensions under browser limits while retaining every day.
+    // Longer histories compress gradually instead of truncating older records.
+    const maxTimelineWidth = 9000;
+    const timelineWidth = Math.max(700, Math.min(maxTimelineWidth, days.length * 42));
+    c.style.width = `${timelineWidth}px`;
+    c.style.minWidth = `${timelineWidth}px`;
+    const cssW = c.clientWidth || timelineWidth, cssH = c.clientHeight || 310;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
     c.width = Math.floor(cssW * ratio); c.height = Math.floor(cssH * ratio);
+    const ctx = c.getContext('2d');
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
     c.style.touchAction = 'pan-x';
 
-    const days = Array.isArray(daysOverride) && daysOverride.length ? daysOverride : buildInteractiveChartDays(14);
     const top = 18, bottom = 38, left = 6, right = 6;
     const w = cssW - left - right, h = cssH - top - bottom;
-    const gap = 8, bw = (w - gap * 13) / 14;
-    const slot = bw + gap;
+    const slot = Math.max(0.35, w / Math.max(1, days.length));
+    const gap = Math.min(8, slot * 0.18), bw = Math.max(0.2, slot - gap);
     timelineChartDays = days;
     timelineChartGeometry = { top, bottom, left, right, w, h, gap, bw, slot, cssW, cssH };
     const style = getComputedStyle(document.documentElement);
@@ -5177,7 +5194,14 @@ layout: null
 
       const dp = zonedParts(day.startMs, day.timeZone);
       ctx.fillStyle = muted; ctx.font = '11px -apple-system'; ctx.textAlign = 'center';
-      ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
+      if (slot >= 18) {
+        ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
+      } else if (slot >= 3 && dp.day === 1) {
+        const labelDate = new Date(day.startMs);
+        ctx.fillText(labelDate.toLocaleDateString(currentLocale(), {month:'short',year:'2-digit',timeZone:day.timeZone}), x0 + bw / 2, cssH - 11);
+      } else if (slot < 3 && dp.day === 1 && dp.month === 1) {
+        ctx.fillText(String(dp.year), x0 + bw / 2, cssH - 11);
+      }
     });
     ctx.textAlign = 'start';
     renderChartDetail(days);
