@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.12.7",
-  "released": "2026-10-14",
-  "notes": "Fix clipped Daily/Weekly weigh-in reminder control in first-run notifications setup on small iPhone screens: responsive full-width equal-size buttons, preserving VoiceOver and existing reminder behavior.",
+  "version": "1.12.8",
+  "released": "2026-10-23",
+  "notes": "Fix Statistics calendar day totals: resolve zoned-midnight boundaries to millisecond precision so a complete fasting day is not undercounted as 23h 59m.",
   "entry": "./index.html",
   "shell": [
     "./",
