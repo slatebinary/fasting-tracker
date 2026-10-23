@@ -73,11 +73,11 @@ def main():
 
         page.locator('.tab[data-screen="history"]').click()
         page.wait_for_function(
-            "() => document.querySelector('#historyFilterStatus')?.textContent.includes('16')",
+            "() => document.querySelectorAll('#historyList .historyRow').length === 16",
             timeout=10000
         )
-        status = page.locator("#historyFilterStatus").inner_text()
-        assert "16" in status, f"History UI does not expose all 16 records: {status!r}"
+        visible_rows = page.locator("#historyList .historyRow").count()
+        assert visible_rows == 16, f"History UI shows {visible_rows} rows instead of 16"
         assert not errors, f"JavaScript errors during upgrade: {errors[:5]}"
         browser.close()
     print("PASS: v1.12.6-to-v1.12.8 startup preserves all 16 fasts, weights, and History count")
