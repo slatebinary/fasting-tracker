@@ -1,9 +1,9 @@
-name: v1.12.7 regression checks
+name: v1.12.8 regression checks
 on:
   push:
     branches:
       - fix/data-protection-readable-backups
-      - feat/v1.12.7-deletion-safeguards
+      - fix/v1.12.8-calendar-day-precision
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -25,7 +25,7 @@ jobs:
               p = Path(filename)
               s = p.read_text()
               if '1.12.6' in s:
-                  p.write_text(s.replace('1.12.6', '1.12.7'))
+                  p.write_text(s.replace('1.12.6', '1.12.8').replace('1.12.7', '1.12.8'))
           PYTEST
       - name: Build consistent localization and release assets in runner
         run: |
@@ -46,7 +46,7 @@ jobs:
           from pathlib import Path
           root=Path('_site')
           version=json.loads((root/'version.json').read_text())
-          assert version['version']=='1.12.7'
+          assert version['version']=='1.12.8'
           assert all((root/name).exists() for name in ('index.html','about.html','privacy.html','branding.html','license.html'))
           print('PASS: GitHub Pages build artifact and required documents')
           PY
