@@ -34,7 +34,7 @@ jobs:
           python3 tools/build_release.py
       - name: Verify all release integrity hashes and metadata
         run: python3 tools/build_release.py --check
-      - name: Validate GitHub Pages artifact preparation without deployment
+      - name: Run release integrity and data safeguards regression\n        run: python3 tests/test_release.py\n      - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
           test -f _site/index.html
