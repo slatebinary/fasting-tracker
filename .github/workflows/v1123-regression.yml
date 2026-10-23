@@ -4,6 +4,7 @@ on:
     branches:
       - fix/data-protection-readable-backups
       - fix/v1.12.9-calendar-day-precision
+      - fix/v1.12.9-gap-duration-display
   pull_request:
     branches: [main]
   workflow_dispatch:
