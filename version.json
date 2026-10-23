@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.12.9",
+  "version": "1.13.0",
   "released": "2026-10-23",
-  "notes": "Make non-fasting gap detail reveal seconds when minute-only boundaries misrepresent the displayed duration.",
+  "notes": "Extend the interactive fasting timeline to all recorded fasting history and preserve precise non-fasting gap durations.",
   "entry": "./index.html",
   "shell": [
     "./",
