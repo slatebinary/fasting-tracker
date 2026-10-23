@@ -198,7 +198,11 @@ assert(zonedLocalToDate('2026-10-25T03:30','Europe/Sofia')===null,'autumn DST am
 assert(compareVersions('1.0.1','1.0.0')>0,'version compare upgrade');
 assert(compareVersions('1.0.0','1.0.0')===0,'version compare equal');
 const m=new Map();addIntervalToDayMap(m,'2026-09-01T00:00:00Z','2026-09-03T00:00:00Z','UTC');
-console.log([...m.entries()]); assert(Math.abs((m.get('2026-09-01')||0)-86400000)<2000 && Math.abs((m.get('2026-09-02')||0)-86400000)<2000,'multi-day allocation');
+console.log([...m.entries()]); assert((m.get('2026-09-01')||0)===86400000 && (m.get('2026-09-02')||0)===86400000,'each complete UTC calendar day must equal exactly 24 hours (no 23h 59m undercount)');
+const exact=new Map(); addIntervalToDayMap(exact,'2026-10-19T00:00:00.000Z','2026-10-22T00:00:00.000Z','UTC');
+for (const key of ['2026-10-19','2026-10-20','2026-10-21']) assert(exact.get(key)===86400000,`complete day ${key} must be exactly 24 hours`);
+const partial=new Map(); addIntervalToDayMap(partial,'2026-10-19T12:00:00.000Z','2026-10-20T12:00:00.000Z','UTC');
+assert(partial.get('2026-10-19')===43200000 && partial.get('2026-10-20')===43200000,'fast spanning midnight must allocate 12h to each date');
 console.log('algorithm regression tests passed');
 '''
     with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
