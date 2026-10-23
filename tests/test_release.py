@@ -647,6 +647,11 @@ ok("self.addEventListener('notificationclick'" in (ROOT/'sw.js').read_text(), 's
 ok('Notifications</h2>' in privacy_text and 'Известия</h2>' in privacy_text and 'Notificaciones</h2>' in privacy_text, 'localized notification privacy disclosure missing')
 ok((ROOT/'tests'/'test_notifications.py').is_file(), 'notification browser regression test missing')
 
+# Non-fasting gap detail must expose sub-minute boundaries when needed.
+ok('includeSeconds = false' in index and 'return includeSeconds ?' in index, 'chart time labels must support optional seconds')
+ok("const showGapSeconds = segment.type === 'gap'" in index and 'segment.start % 60000 !== 0 || segment.end % 60000 !== 0' in index, 'non-fasting gap details must reveal sub-minute boundaries')
+ok('chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone, showGapSeconds)' in index and 'chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone, showGapSeconds)' in index, 'gap boundary formatting must use the precision decision for both ends')
+
 # v1.12.2 notification onboarding regression checks
 ok('id="setupStepNotifications" data-setup-step="5"' in index and 'id="setupStepReady" data-setup-step="6"' in index, 'notification onboarding step/order missing')
 ok('id="setupEnableNotificationsBtn"' in index and 'id="setupSkipNotificationsBtn"' in index, 'notification onboarding explicit actions missing')

@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.8" />
+  <meta name="ft-app-version" content="1.12.9" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1584,7 +1584,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.8';
+  const APP_VERSION = '1.12.9';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4923,10 +4923,11 @@ layout: null
     return days;
   }
 
-  function chartTimeWithinDayLabel(ms, dayEndMs, timeZone) {
+  function chartTimeWithinDayLabel(ms, dayEndMs, timeZone, includeSeconds = false) {
     if (Math.abs(ms - dayEndMs) < 1000) return '23:59';
     const parts = zonedParts(ms, timeZone);
-    return `${pad(parts.hour)}:${pad(parts.minute)}`;
+    const base = `${pad(parts.hour)}:${pad(parts.minute)}`;
+    return includeSeconds ? `${base}:${pad(parts.second)}` : base;
   }
 
   function chartSelectionDetail(days) {
@@ -4941,13 +4942,18 @@ layout: null
     }
     const segment = day.segments[chartSelectedTarget.segmentIndex];
     if (!segment) return null;
-    const start = chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone);
+    // Minute-only labels can make an exact 18m interval look like 08:30–08:49
+    // while its duration displays 18m. For gaps, expose seconds whenever either
+    // boundary is not aligned to a whole minute so the range explains the duration.
+    const showGapSeconds = segment.type === 'gap' &&
+      (segment.start % 60000 !== 0 || segment.end % 60000 !== 0);
+    const start = chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone, showGapSeconds);
     // The internal interval still ends at exact midnight. Calling that boundary
     // "end of day" keeps the displayed range consistent with the true 24-hour
     // duration while the axis itself can remain labelled 23:59.
     const end = Math.abs(segment.end - day.endMs) < 1000
       ? t('stats.endOfDay')
-      : chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone);
+      : chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone, showGapSeconds);
     if (segment.type === 'fast') {
       const segmentDuration = Math.max(0, segment.end - segment.start);
       const sourceDuration = Math.max(0, (segment.sourceEnd ?? segment.end) - (segment.sourceStart ?? segment.start));
