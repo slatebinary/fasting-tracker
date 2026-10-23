@@ -211,6 +211,24 @@ const autumnStart=zonedLocalToDate('2026-10-25T00:00','Europe/Sofia');
 const autumnEnd=zonedLocalToDate('2026-10-26T00:00','Europe/Sofia');
 const autumn=new Map(); addIntervalToDayMap(autumn,autumnStart.toISOString(),autumnEnd.toISOString(),'Europe/Sofia');
 assert(autumn.get('2026-10-25')===25*3600000,'Sofia autumn DST day must total 25 elapsed hours, not be forced to 24');
+for (const [zone,date,expected,label] of [
+  ['America/New_York','2026-03-08',23,'New York spring DST'],
+  ['America/New_York','2026-11-01',25,'New York autumn DST'],
+  ['Europe/London','2026-03-29',23,'London spring DST'],
+  ['Europe/London','2026-10-25',25,'London autumn DST'],
+  ['Australia/Sydney','2026-10-04',23,'Sydney spring DST'],
+  ['Australia/Sydney','2026-04-05',25,'Sydney autumn DST'],
+  ['Pacific/Auckland','2026-09-27',23,'Auckland spring DST'],
+  ['Pacific/Auckland','2026-04-05',25,'Auckland autumn DST'],
+  ['Australia/Lord_Howe','2026-10-04',23.5,'Lord Howe 30-minute spring DST'],
+  ['Australia/Lord_Howe','2026-04-05',24.5,'Lord Howe 30-minute autumn DST']
+]) {
+  const next = new Date(Date.parse(date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
+  const start = zonedLocalToDate(date+'T00:00',zone);
+  const end = zonedLocalToDate(next+'T00:00',zone);
+  const day = new Map(); addIntervalToDayMap(day,start.toISOString(),end.toISOString(),zone);
+  assert(day.get(date)===expected*3600000, `${label} (${zone}, ${date}) must be ${expected} elapsed hours, got ${day.get(date)/3600000}`);
+}
 console.log('algorithm regression tests passed');
 '''
     with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
