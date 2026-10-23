@@ -23,11 +23,12 @@ jobs:
         run: |
           python3 - <<'PYTEST'
           from pathlib import Path
-          for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py'):
+          for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py'):
               p = Path(filename)
               s = p.read_text()
-              if '1.12.6' in s:
-                  p.write_text(s.replace('1.12.6', '1.13.1').replace('1.12.7', '1.13.1'))
+              for previous in ('1.12.6', '1.12.7', '1.13.0'):
+                  s = s.replace(previous, '1.13.1')
+              p.write_text(s)
           PYTEST
       - name: Build consistent localization and release assets in runner
         run: |
