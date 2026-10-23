@@ -4867,9 +4867,10 @@ layout: null
         const activeStartMs = Date.parse(data.activeStart);
         if (Number.isFinite(activeStartMs) && activeStartMs < oldestMs) oldestMs = activeStartMs;
       }
-      const oldestDate = new Date(oldestMs); oldestDate.setHours(12,0,0,0);
-      const newestDayOrdinal = Date.UTC(newestAnchor.getFullYear(),newestAnchor.getMonth(),newestAnchor.getDate());
-      const oldestDayOrdinal = Date.UTC(oldestDate.getFullYear(),oldestDate.getMonth(),oldestDate.getDate());
+      const oldestKeyParts = dayKey(oldestMs,tz).split('-').map(Number);
+      const newestKeyParts = dayKey(newestAnchor.getTime(),tz).split('-').map(Number);
+      const oldestDayOrdinal = Date.UTC(oldestKeyParts[0],oldestKeyParts[1]-1,oldestKeyParts[2]);
+      const newestDayOrdinal = Date.UTC(newestKeyParts[0],newestKeyParts[1]-1,newestKeyParts[2]);
       dayCount = Math.max(14, Math.floor((newestDayOrdinal - oldestDayOrdinal) / 86400000) + 1);
     }
     dayCount = Math.min(dayCount, 100000);
