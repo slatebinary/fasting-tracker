@@ -4858,11 +4858,19 @@ layout: null
     const tz = normalizeTimeZone(timeZone);
     const newestAnchor = new Date(); newestAnchor.setHours(12,0,0,0);
     if (!Number.isInteger(dayCount) || dayCount < 1) {
-      const starts = data.records.map(record => Date.parse(record.start)).filter(Number.isFinite);
-      if (data.activeStart) { const activeStartMs = Date.parse(data.activeStart); if (Number.isFinite(activeStartMs)) starts.push(activeStartMs); }
-      const oldestMs = starts.length ? Math.min(...starts) : newestAnchor.getTime();
+      let oldestMs = newestAnchor.getTime();
+      for (const record of data.records) {
+        const startMs = Date.parse(record.start);
+        if (Number.isFinite(startMs) && startMs < oldestMs) oldestMs = startMs;
+      }
+      if (data.activeStart) {
+        const activeStartMs = Date.parse(data.activeStart);
+        if (Number.isFinite(activeStartMs) && activeStartMs < oldestMs) oldestMs = activeStartMs;
+      }
       const oldestDate = new Date(oldestMs); oldestDate.setHours(12,0,0,0);
-      dayCount = Math.max(14, Math.floor((newestAnchor.getTime() - oldestDate.getTime()) / 86400000) + 1);
+      const newestDayOrdinal = Date.UTC(newestAnchor.getFullYear(),newestAnchor.getMonth(),newestAnchor.getDate());
+      const oldestDayOrdinal = Date.UTC(oldestDate.getFullYear(),oldestDate.getMonth(),oldestDate.getDate());
+      dayCount = Math.max(14, Math.floor((newestDayOrdinal - oldestDayOrdinal) / 86400000) + 1);
     }
     dayCount = Math.min(dayCount, 100000);
     const oldestAnchor = new Date(newestAnchor); oldestAnchor.setDate(oldestAnchor.getDate() - dayCount - 1);
