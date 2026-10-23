@@ -99,7 +99,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add i18n-source.json i18n/en.js i18n/bg.js i18n/es.js version.json index.html about.html privacy.html branding.html license.html tests/test_backup_indicator.py tests/test_permanent_purge_confirmation.py
+          git add i18n-source.json i18n/en.js i18n/bg.js i18n/es.js version.json index.html about.html privacy.html branding.html license.html tests/test_backup_indicator.py tests/test_permanent_purge_confirmation.py tests/test_backup_version_restore_matrix.py tests/test_import_preview_merge.py tests/test_destructive_guard.py tests/test_setup_notification_layout.py tests/v1123-regression.cjs
           if ! git diff --cached --quiet; then
             git commit -m "build(release): synchronize generated localization and release assets"
             git push origin "HEAD:${GITHUB_REF_NAME}"
