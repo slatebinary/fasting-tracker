@@ -1,6 +1,6 @@
 {
   "sourceRevision": 29,
-  "appVersion": "1.12.8",
+  "appVersion": "1.13.0",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -442,7 +442,7 @@
     "a11y.fastWeeksChart": "Weekly fasting hours for the last 8 weeks",
     "a11y.xpProgress": "Consistency level progress",
     "a11y.weightUnit": "Weight unit",
-    "a11y.fastChart": "Fasting hours chart for the last 14 days",
+    "a11y.fastChart": "Fasting timeline for all recorded fasting history",
     "a11y.weightChart": "Weight trend chart",
     "unit.day.one": "day",
     "unit.day.other": "days",

@@ -460,7 +460,7 @@ if errors:
 ok('.vizGroupSwitcher { display:grid; grid-template-columns:repeat(4,minmax(0,1fr))' in index and '@media (max-width:430px) { .vizGroupSwitcher { grid-template-columns:repeat(2,minmax(0,1fr)); }' in index, 'grouped statistics navigator is not compact/responsive')
 ok('.vizGroupSwitcher button { min-height:44px' in index, 'statistics group controls do not keep compact touch targets')
 ok('.timelineScroller #chart { min-width:700px; width:100%; height:310px; touch-action:pan-x; }' in index, 'timeline CSS height must match its 310px chart geometry')
-ok('const cssW = c.clientWidth || 700, cssH = c.clientHeight || 310;' in index, 'timeline must use measured CSS height for proportional drawing/hit-testing')
+ok('cssH = c.clientHeight || 310' in index, 'timeline must use measured CSS height for proportional drawing/hit-testing')
 ok('padding:13px 4px 33px' in index, 'dual time axes are not aligned with the timeline plot area')
 ok("el('chart').addEventListener('pointerdown', beginTimelinePointer);" in index, 'timeline lacks Pointer Events input')
 ok("el('chart').addEventListener('pointerup', finishTimelinePointer);" in index, 'timeline lacks prompt pointer-up selection')
@@ -646,6 +646,11 @@ ok('Privacy-first limitation: this app has no push server.' in index and 'lock s
 ok("self.addEventListener('notificationclick'" in (ROOT/'sw.js').read_text(), 'service worker notification click routing missing')
 ok('Notifications</h2>' in privacy_text and 'Известия</h2>' in privacy_text and 'Notificaciones</h2>' in privacy_text, 'localized notification privacy disclosure missing')
 ok((ROOT/'tests'/'test_notifications.py').is_file(), 'notification browser regression test missing')
+
+# Non-fasting gap detail must expose sub-minute boundaries when needed.
+ok('includeSeconds = false' in index and 'return includeSeconds ?' in index, 'chart time labels must support optional seconds')
+ok("const showGapSeconds = segment.type === 'gap'" in index and 'segment.start % 60000 !== 0 || segment.end % 60000 !== 0' in index, 'non-fasting gap details must reveal sub-minute boundaries')
+ok('chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone, showGapSeconds)' in index and 'chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone, showGapSeconds)' in index, 'gap boundary formatting must use the precision decision for both ends')
 
 # v1.12.2 notification onboarding regression checks
 ok('id="setupStepNotifications" data-setup-step="5"' in index and 'id="setupStepReady" data-setup-step="6"' in index, 'notification onboarding step/order missing')
