@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Upgrade regression: v1.12.6-era persisted history must survive v1.12.8 startup."""
-import json
+"""Synthetic persisted-record startup guard for the v1.12.8 app.
+
+This is not a real v1.12.6-to-v1.12.8 browser-profile upgrade simulation:
+IndexedDB and localStorage are supplied by STORAGE_SHIM. Keep this limitation
+explicit until a native IndexedDB, same-origin version-transition test exists.
+"""
 from playwright.sync_api import sync_playwright
 from browser_perf_common import STORAGE_SHIM, build_data, inlined_html
-
-EXPECTED_VERSION = "1.12.8"
-PREVIOUS_VERSION = "1.12.6"
 
 
 def inspect_record_stores(page):
@@ -80,7 +81,7 @@ def main():
         assert visible_rows == 16, f"History UI shows {visible_rows} rows instead of 16"
         assert not errors, f"JavaScript errors during upgrade: {errors[:5]}"
         browser.close()
-    print("PASS: v1.12.6-to-v1.12.8 startup preserves all 16 fasts, weights, and History count")
+    print("PASS: synthetic v1.12.8 startup guard preserves 16 seeded fasts, weights, and History rows (storage shim; not a real version-transition test)")
 
 
 if __name__ == "__main__":
