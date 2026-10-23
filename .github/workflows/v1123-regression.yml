@@ -58,6 +58,7 @@ jobs:
       - name: Execute backup restore and safe-merge browser tests
         run: |
           python3 tests/test_backup_version_restore_matrix.py
+          python3 tests/test_upgrade_history_v1126_to_v1128.py
           python3 tests/test_import_preview_merge.py
           python3 tests/test_destructive_guard.py
           python3 tests/test_permanent_purge_confirmation.py
