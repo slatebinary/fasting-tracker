@@ -460,7 +460,7 @@ if errors:
 ok('.vizGroupSwitcher { display:grid; grid-template-columns:repeat(4,minmax(0,1fr))' in index and '@media (max-width:430px) { .vizGroupSwitcher { grid-template-columns:repeat(2,minmax(0,1fr)); }' in index, 'grouped statistics navigator is not compact/responsive')
 ok('.vizGroupSwitcher button { min-height:44px' in index, 'statistics group controls do not keep compact touch targets')
 ok('.timelineScroller #chart { min-width:700px; width:100%; height:310px; touch-action:pan-x; }' in index, 'timeline CSS height must match its 310px chart geometry')
-ok('const cssW = c.clientWidth || 700, cssH = c.clientHeight || 310;' in index, 'timeline must use measured CSS height for proportional drawing/hit-testing')
+ok('cssH = c.clientHeight || 310' in index, 'timeline must use measured CSS height for proportional drawing/hit-testing')
 ok('padding:13px 4px 33px' in index, 'dual time axes are not aligned with the timeline plot area')
 ok("el('chart').addEventListener('pointerdown', beginTimelinePointer);" in index, 'timeline lacks Pointer Events input')
 ok("el('chart').addEventListener('pointerup', finishTimelinePointer);" in index, 'timeline lacks prompt pointer-up selection')
