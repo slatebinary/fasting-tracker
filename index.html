@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.13.0" />
+  <meta name="ft-app-version" content="1.13.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1584,7 +1584,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.0';
+  const APP_VERSION = '1.13.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5142,6 +5142,29 @@ layout: null
       ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(cssW - right, y); ctx.stroke();
     });
 
+    // Group the visible day columns by calendar month. Boundary rules are
+    // always drawn, even when the history is too long to fit every label.
+    const timelineMonthGroups = [];
+    days.forEach((day, index) => {
+      const dp = zonedParts(day.startMs, day.timeZone);
+      const key = `${dp.year}-${String(dp.month).padStart(2, '0')}`;
+      const last = timelineMonthGroups[timelineMonthGroups.length - 1];
+      if (!last || last.key !== key) timelineMonthGroups.push({key, year:dp.year, month:dp.month, startIndex:index, endIndex:index});
+      else last.endIndex = index;
+    });
+    ctx.save();
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = .58;
+    timelineMonthGroups.slice(1).forEach(group => {
+      const x = left + group.startIndex * slot;
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, cssH - 27);
+      ctx.stroke();
+    });
+    ctx.restore();
+
     days.forEach((day, i) => {
       const x0 = left + i * (bw + gap);
       const isDaySelected = chartSelectedTarget && chartSelectedTarget.kind === 'day' && chartSelectedTarget.dayKey === day.key;
@@ -5205,14 +5228,38 @@ layout: null
       ctx.fillStyle = muted; ctx.font = '11px -apple-system'; ctx.textAlign = 'center';
       if (slot >= 18) {
         ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
-      } else if (slot >= 3 && dp.day === 1) {
-        const labelDate = new Date(day.startMs);
-        ctx.fillText(labelDate.toLocaleDateString(currentLocale(), {month:'short',year:'2-digit',timeZone:day.timeZone}), x0 + bw / 2, cssH - 11);
       } else if (slot < 3 && dp.day === 1 && dp.month === 1) {
         ctx.fillText(String(dp.year), x0 + bw / 2, cssH - 11);
       }
     });
+
+    // Month labels occupy their own subtle row beneath the day numbers.
+    // Skip labels that would collide at very long history spans; month-boundary
+    // separators above remain visible for every month.
+    ctx.font = '10px -apple-system';
+    ctx.fillStyle = muted;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    let lastMonthLabelRight = -Infinity;
+    timelineMonthGroups.forEach(group => {
+      const startX = left + group.startIndex * slot;
+      const endX = left + (group.endIndex + 1) * slot;
+      const centerX = (startX + endX) / 2;
+      const date = new Date(Date.UTC(group.year, group.month - 1, 1, 12));
+      const options = group.month === 1
+        ? {month:'short',year:'2-digit',timeZone:'UTC'}
+        : {month:'short',timeZone:'UTC'};
+      const label = date.toLocaleDateString(currentLocale(), options);
+      const labelWidth = ctx.measureText(label).width;
+      const fitsMonth = endX - startX >= labelWidth + 6;
+      const fitsGap = centerX - labelWidth / 2 >= lastMonthLabelRight + 5;
+      if (fitsMonth && fitsGap && centerX >= left && centerX <= cssW - right) {
+        ctx.fillText(label, centerX, cssH - 24);
+        lastMonthLabelRight = centerX + labelWidth / 2;
+      }
+    });
     ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
     renderChartDetail(days);
     scrollTimelineToLatest();
   }
