@@ -7600,7 +7600,7 @@ layout: null
     if (el('weight').classList.contains('active')) drawWeightChart();
   });
   el('timeZoneSearch').addEventListener('input', () => renderTimeZoneOptions());
-  el('timeZoneSelect').addEventListener('change', () => { const value=el('timeZoneSelect').value;preferredTimeZone=value==='system'?null:(isValidTimeZone(value)?value:null);persistSmallPreferences();invalidateDerivedCaches();markViewsDirty();el('timeZoneSearch').value='';renderAll(); });
+  el('timeZoneSelect').addEventListener('change', () => { const value=el('timeZoneSelect').value;preferredTimeZone=value==='system'?null:(isValidTimeZone(value)?value:null);persistSmallPreferences();invalidateDerivedCaches();markViewsDirty();el('timeZoneSearch').value='';renderTimeZoneOptions();renderAll(); });
   document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn => btn.addEventListener('click', () => {
     urlIconOverride = null;
     try { const u=new URL(location.href); u.searchParams.delete('icon'); history.replaceState(null,'',u); } catch {}
