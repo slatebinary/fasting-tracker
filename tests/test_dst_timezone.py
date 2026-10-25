@@ -22,6 +22,8 @@ with sync_playwright() as p:
     # A manually selected zone overrides the device zone for new date inputs and calendar views.
     page.locator('#timeZoneSelect').select_option('America/New_York')
     page.wait_for_timeout(80)
+    saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
+    if saved_zone!='America/New_York': print('FAIL: selected time zone was not persisted',saved_zone);sys.exit(1)
     page.locator('.tab[data-screen="history"]').click()
     def attempt(start,end,expect_error=False):
         page.locator('#addEntryBtn').click();page.locator('#entryStart').fill(start);page.locator('#entryEnd').fill(end);page.locator('#entryGoal').fill('16');page.locator('#entrySaveBtn').click();page.wait_for_timeout(80)
@@ -43,6 +45,8 @@ with sync_playwright() as p:
     page.locator('.tab[data-screen="settings"]').click()
     page.locator('#timeZoneSelect').select_option('Europe/Sofia')
     page.wait_for_timeout(80)
+    saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
+    if saved_zone!='Europe/Sofia': print('FAIL: updated time zone was not persisted',saved_zone);sys.exit(1)
     page.locator('.tab[data-screen="history"]').click()
     attempt('2026-03-29T03:30','2026-03-29T05:00',True)
     attempt('2025-10-26T03:30','2025-10-26T04:30',True)
