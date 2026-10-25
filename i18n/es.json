@@ -989,5 +989,8 @@
   "backupChip.neverHelp": "Hay datos de ayuno o peso, pero no se ha registrado ninguna copia JSON manual externa.",
   "backupChip.empty": "Sin datos",
   "backupChip.emptyHelp": "Todavía no hay registros de ayuno ni peso.",
-  "backupChip.action": "Toca para exportar una copia JSON. Se registra el compartir o la descarga confirmada, pero no se puede verificar el almacenamiento externo."
+  "backupChip.action": "Toca para exportar una copia JSON. Se registra el compartir o la descarga confirmada, pero no se puede verificar el almacenamiento externo.",
+  "settings.timeZone": "Zona horaria",
+  "settings.timeZoneHelp": "Elige la zona horaria para las nuevas entradas y las vistas de calendario actuales. Los registros existentes conservan su zona horaria original; las reglas del horario de verano siguen las del lugar seleccionado.",
+  "settings.timeZoneSystem": "Usar la zona horaria del dispositivo"
 }
