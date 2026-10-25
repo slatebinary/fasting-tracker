@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: DST gaps/repeated hours are rejected; full-day fasts across DST use true elapsed time."""
+"""Regression: global IANA zone selection, DST gaps/folds, and true elapsed durations."""
 import sys
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
@@ -11,8 +11,17 @@ data=build_data(0)
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Sofia');errors=[];page.on('pageerror',lambda exc:errors.append(str(exc)))
-    page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",data)
-    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.2'",timeout=20000)
+    page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.13.2'}));}",data)
+    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.2'",timeout=20000)
+    page.locator('.tab[data-screen="settings"]').click()
+    page.wait_for_timeout(80)
+    zones=page.locator('#timeZoneSelect option').evaluate_all("(options)=>options.map(o=>o.value)")
+    required=['UTC','America/New_York','Asia/Kathmandu','Africa/Casablanca','Pacific/Chatham','Europe/Sofia']
+    if len(zones)<300 or any(zone not in zones for zone in required):
+        print('FAIL: global IANA time-zone list is incomplete',len(zones),[z for z in required if z not in zones]);sys.exit(1)
+    # A manually selected zone overrides the device zone for new date inputs and calendar views.
+    page.locator('#timeZoneSelect').select_option('America/New_York')
+    page.wait_for_timeout(80)
     page.locator('.tab[data-screen="history"]').click()
     def attempt(start,end,expect_error=False):
         page.locator('#addEntryBtn').click();page.locator('#entryStart').fill(start);page.locator('#entryEnd').fill(end);page.locator('#entryGoal').fill('16');page.locator('#entrySaveBtn').click();page.wait_for_timeout(80)
@@ -22,13 +31,22 @@ with sync_playwright() as p:
             page.locator('#entryCancelBtn').click()
         else:
             if visible: print('FAIL: valid DST-spanning fast was rejected',page.locator('#entryError').inner_text());sys.exit(1)
-    # Sofia jumps from 03:00 to 04:00 on 29 Mar 2026: 03:30 does not exist.
-    attempt('2026-03-29T03:30','2026-03-29T05:00',True)
-    # Sofia repeated 03:xx hour on 26 Oct 2025: 03:30 is ambiguous.
-    attempt('2025-10-26T03:30','2025-10-26T04:30',True)
+    # New York jumps from 02:00 to 03:00 on 8 Mar 2026: 02:30 does not exist.
+    attempt('2026-03-08T02:30','2026-03-08T04:00',True)
+    # New York repeats 01:xx on 2 Nov 2025: 01:30 is ambiguous.
+    attempt('2025-11-02T01:30','2025-11-02T02:30',True)
     # 20:00 -> 20:00 across spring forward is 23 real hours.
-    attempt('2026-03-28T20:00','2026-03-29T20:00',False)
+    attempt('2026-03-07T20:00','2026-03-08T20:00',False)
     # 20:00 -> 20:00 across autumn fallback is 25 real hours.
+    attempt('2025-11-01T20:00','2025-11-02T20:00',False)
+    # Switch to a second DST-observing region and verify its distinct transition rules.
+    page.locator('.tab[data-screen="settings"]').click()
+    page.locator('#timeZoneSelect').select_option('Europe/Sofia')
+    page.wait_for_timeout(80)
+    page.locator('.tab[data-screen="history"]').click()
+    attempt('2026-03-29T03:30','2026-03-29T05:00',True)
+    attempt('2025-10-26T03:30','2025-10-26T04:30',True)
+    attempt('2026-03-28T20:00','2026-03-29T20:00',False)
     attempt('2025-10-25T20:00','2025-10-26T20:00',False)
     rows=page.locator('#historyList .historyRow').all_inner_texts()
     joined=' | '.join(rows)
