@@ -1960,7 +1960,7 @@ layout: null
   }
   function currentTimeZone() {
     if (typeof preferredTimeZone !== 'undefined' && preferredTimeZone && isValidTimeZone(preferredTimeZone)) return preferredTimeZone;
-    return deviceTimeZone();
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
   }
   function isValidTimeZone(value) {
     if (typeof value !== 'string' || !value.trim() || value.length > 100) return false;
