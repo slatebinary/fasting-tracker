@@ -886,7 +886,8 @@ layout: null
 <option data-i18n="settings.appearanceLight" value="light">Light</option>
 <option data-i18n="settings.appearanceDark" value="dark">Dark</option>
 </select>
-</div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
+</div>
+<div class="row"><div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div><select aria-label="Time zone" data-i18n-aria="settings.timeZone" id="timeZoneSelect"><option value="system"></option></select></div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
 <div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
 <div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
 <button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
@@ -1577,14 +1578,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 29;
+  const I18N_SOURCE_REVISION = 30;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.1';
+  const APP_VERSION = '1.13.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1621,6 +1622,11 @@ layout: null
   const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false }, language: 'system', appearance: 'system', iconChoice: 'plate' };
   const timeZoneValidityCache = new Map();
   const numberSymbolsCache = new Map();
+  let preferredTimeZone = null;
+  try {
+    const savedPreferences = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+    if (savedPreferences && savedPreferences.timeZone && savedPreferences.timeZone !== 'system') preferredTimeZone = String(savedPreferences.timeZone);
+  } catch {}
   const zonedFormatterCache = new Map();
   // Initialize URL-dependent UI state and a safe default data object before loading
   // persisted data. Legacy-number normalization may ask currentLocale() ->
@@ -1830,6 +1836,27 @@ layout: null
     }
     sel.value = selected;
   }
+  function renderTimeZoneOptions() {
+    const sel = document.getElementById('timeZoneSelect');
+    if (!sel) return;
+    const selected = preferredTimeZone && isValidTimeZone(preferredTimeZone) ? preferredTimeZone : 'system';
+    const deviceZone = deviceTimeZone();
+    const systemOption = document.createElement('option');
+    systemOption.value = 'system';
+    systemOption.textContent = `${t('settings.timeZoneSystem')} (${deviceZone})`;
+    sel.replaceChildren(systemOption);
+    let zones = [];
+    try { if (typeof Intl.supportedValuesOf === 'function') zones = Intl.supportedValuesOf('timeZone'); } catch {}
+    zones = [...new Set([...zones, 'UTC', deviceZone, ...(selected !== 'system' ? [selected] : [])])].filter(isValidTimeZone).sort((a,b)=>a.localeCompare(b, uiLanguage()));
+    for (const zone of zones) {
+      const option = document.createElement('option');
+      option.value = zone;
+      option.textContent = zone;
+      sel.append(option);
+    }
+    sel.value = selected;
+    if (sel.value !== selected) sel.value = 'system';
+  }
   function applyLanguage() {
     const lang = uiLanguage();
     const meta = LANGUAGE_META[lang] || LANGUAGE_META.en;
@@ -1843,6 +1870,7 @@ layout: null
     document.querySelectorAll('[data-i18n-label]').forEach(node => { node.label = t(node.dataset.i18nLabel); });
     syncStatsVizNavigator();
     renderLanguageOptions();
+    renderTimeZoneOptions();
     applyIconChoice();
     const appleTitle = document.getElementById('appleAppTitle');
     if (appleTitle) appleTitle.content = meta.appTitle;
@@ -1927,8 +1955,12 @@ layout: null
     const d = new Date(value);
     return Number.isFinite(d.getTime()) ? d : null;
   }
-  function currentTimeZone() {
+  function deviceTimeZone() {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
+  }
+  function currentTimeZone() {
+    if (preferredTimeZone && isValidTimeZone(preferredTimeZone)) return preferredTimeZone;
+    return deviceTimeZone();
   }
   function isValidTimeZone(value) {
     if (typeof value !== 'string' || !value.trim() || value.length > 100) return false;
@@ -2367,6 +2399,7 @@ layout: null
         appearance: normalizeAppearance(data.appearance),
         iconChoice: normalizeIconChoice(data.iconChoice),
         weightUnit: normalizeWeightUnit(data.weightUnit),
+        timeZone: preferredTimeZone && isValidTimeZone(preferredTimeZone) ? preferredTimeZone : 'system',
         gamificationEnabled: data.gamificationEnabled !== false
       }));
     } catch {}
@@ -7573,6 +7606,14 @@ layout: null
     applyAppearance();
     if (el('stats').classList.contains('active')) renderStatsVisualizations();
     if (el('weight').classList.contains('active')) drawWeightChart();
+  });
+  el('timeZoneSelect').addEventListener('change', () => {
+    const value = el('timeZoneSelect').value;
+    preferredTimeZone = value === 'system' ? null : (isValidTimeZone(value) ? value : null);
+    persistSmallPreferences();
+    invalidateDerivedCaches();
+    markViewsDirty();
+    renderAll();
   });
   document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn => btn.addEventListener('click', () => {
     urlIconOverride = null;
