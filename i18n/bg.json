@@ -992,5 +992,18 @@
   "backupChip.action": "Натиснете за експорт на JSON копие. Успешното споделяне или потвърденото изтегляне се записва, но външното съхранение не може да се провери.",
   "settings.timeZone": "Часова зона",
   "settings.timeZoneHelp": "Изберете часова зона за новите записи и текущите календарни изгледи. Съществуващите записи запазват първоначалната си часова зона; правилата за лятно и зимно часово време следват избрания регион.",
-  "settings.timeZoneSystem": "Използвай часовата зона на устройството"
+  "settings.timeZoneSystem": "Използвай часовата зона на устройството",
+  "settings.timeZoneSearchLabel": "Намиране на часова зона",
+  "settings.timeZoneSearchPlaceholder": "Град, държава, континент или часова зона",
+  "settings.timeZoneSearchPrompt": "Въведете текст за търсене. Изберете резултат по-долу.",
+  "settings.timeZoneSearchNoResults": "Няма съвпадащи часови зони. Опитайте с град, държава или регион.",
+  "settings.timeZoneSearchResults": "Намерени часови зони: {n}",
+  "settings.timeZoneSelected": "Текущ избор",
+  "settings.timeZoneContinentAfrica": "Африка",
+  "settings.timeZoneContinentAsia": "Азия",
+  "settings.timeZoneContinentEurope": "Европа",
+  "settings.timeZoneContinentNorthAmerica": "Северна Америка",
+  "settings.timeZoneContinentSouthAmerica": "Южна Америка",
+  "settings.timeZoneContinentOceania": "Океания",
+  "settings.timeZoneContinentAntarctica": "Антарктида"
 }

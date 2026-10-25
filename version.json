@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.2",
+  "version": "1.13.3",
   "released": "2026-10-25",
-  "notes": "Add global IANA time-zone selection and preserve region-specific daylight-saving rules for new entries and calendar views.",
+  "notes": "Add a localized searchable time-zone picker with city, country, continent and IANA-zone search while preserving DST-aware behavior.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -10,6 +10,7 @@
     "./i18n/en.js",
     "./i18n/bg.js",
     "./i18n/es.js",
+    "./js/time-zone-data.js",
     "./js/platform-diagnostics.js",
     "./js/fasting-visuals.js",
     "./js/fasting-analytics.js",
@@ -70,19 +71,19 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "2d25b74d9258516ee9af40df920f2fc2cd6a9b3636c4bb0f0b72f1a5bb96dc02",
-    "./index.html": "2d25b74d9258516ee9af40df920f2fc2cd6a9b3636c4bb0f0b72f1a5bb96dc02",
-    "./i18n/en.js": "b93cf0b6ad8c4c6c02ea589099039c0f2a23abe3ff446ddece63eba92d9aadd4",
-    "./i18n/bg.js": "47e227393b2b926738c13ee8b649b3018d6740f07f23b7ff452214c3d5a60d37",
-    "./i18n/es.js": "bc63e24c0563071fceb476481d1f93dbad883c40f96aea3dc55a3e773183bcdc",
+    "./": "cec2a4cdcdb90352d95c0fa3c1c1df1ee17b985d1664010e6a17eca0f70fd73c",
+    "./index.html": "cec2a4cdcdb90352d95c0fa3c1c1df1ee17b985d1664010e6a17eca0f70fd73c",
+    "./i18n/en.js": "46dfe9370a2df1e1c08dcd44481551c51f482a4e61c8ae083ed33ad4e7955977",
+    "./i18n/bg.js": "251387d46734cefb0bb76843af74e650f378c715464e4ad2143588ffb444b3c9",
+    "./i18n/es.js": "75300fbd1dfca1cef617cca39455b872d43db1d5f40e2a05a052bdc1ede36d10",
     "./js/platform-diagnostics.js": "6082fb3c3cf03cafcc39bd20f8c5e3729213ce64595d5318166fb81573089408",
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "ea833c37cb0977c6b0db7c0a6e6182b9572aa0e996a2205400294bb89996d769",
     "./js/release-health.js": "451ebd00c53c8458e94f94f2ec10e5b95730fa2f9511e056158635fc7a94241c",
-    "./privacy.html": "6caa9e29fd7fd74bb20e93c8f104ec1dc095c06ab4c02d2339863de3f0990cdf",
-    "./about.html": "b43d59555d0c93ef63f2920958ad5656979f0150f15bd34e262fcbe401c52eb6",
-    "./branding.html": "3c3b4cf3c01e043e9abbd02701b129badc31b4cf27c6ef77f1fa9bd6804c6ba1",
-    "./license.html": "9fd2b8ae032d8816a827a1c9790948dba8e331aeb15840a127770b0241ca9c43",
+    "./privacy.html": "d87d5109b9b198e15087ade0c64c005f2dff237e78b6ff9c55ac4c74073a27d9",
+    "./about.html": "893f7e6e11010573f5d0dcb6bbda7a35a2dcc077260c71fc842a627b8259f4f4",
+    "./branding.html": "9f61951c5ee603f124a53f1caec134dc6a4b223ebc55cfe5b99b258b0b93c2bc",
+    "./license.html": "f6b578740d695cef318cd3c819b5d0b782a4bad6721148ab488d38b797f40300",
     "./404.html": "afa92afe8dd7cd8f4e3878b22f27a9fd89f469e5d01da9b8cb7bfc94898a1f7d",
     "./en/": "43a8e58e8c09ebab103418781c6f32bfb2b837870c62049368258727ae4d29ed",
     "./bg/": "ea495c81b191e3ad009de3578666dbd59415e637320922685a45af22b5de21ec",
@@ -130,6 +131,7 @@
     "./icons/timer/icon-maskable-192.png": "bc55cb911e320b6a1e65149e97aec617aebe1508e8a2cf513815c4815e0cf963",
     "./icons/timer/icon-maskable-512.png": "c674090d0dcdbc840ca7ac20367b897906961275d1f35250e1a0fd7e63455d2e",
     "./icons/icon-maskable-192.png": "8f5e18e2ee42272f972c454b5119aeeaa5e0df4fb0be7c3040e207d3d4659abe",
-    "./icons/icon-maskable-512.png": "f674f685966760490132d5e1919d4f6a150a9f2ae3564151e135d95bf0713dd6"
+    "./icons/icon-maskable-512.png": "f674f685966760490132d5e1919d4f6a150a9f2ae3564151e135d95bf0713dd6",
+    "./js/time-zone-data.js": "38499928c102a8213302a22eb7f648ef39de99d91f1bd20c4a5df0277368106d"
   }
 }

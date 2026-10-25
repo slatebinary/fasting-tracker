@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: global IANA zone selection, DST gaps/folds, and true elapsed durations."""
+"""Regression: searchable global IANA zone selection, DST gaps/folds, and true elapsed durations."""
 import sys
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
@@ -11,15 +11,28 @@ data=build_data(0)
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Sofia');errors=[];page.on('pageerror',lambda exc:errors.append(str(exc)))
-    page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.13.2'}));}",data)
-    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.2'",timeout=20000)
+    page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.13.3'}));}",data)
+    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.3'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click()
     page.wait_for_timeout(80)
-    zones=page.locator('#timeZoneSelect option').evaluate_all("(options)=>options.map(o=>o.value)")
-    required=['UTC','America/New_York','Asia/Katmandu','Africa/Casablanca','Pacific/Chatham','Europe/Sofia']
-    if len(zones)<300 or any(zone not in zones for zone in required):
-        print('FAIL: global IANA time-zone list is incomplete',len(zones),[z for z in required if z not in zones]);sys.exit(1)
+    if not page.locator('#timeZoneSearch').is_visible():
+        print('FAIL: searchable time-zone field is missing');sys.exit(1)
+    # Search by city, country, and IANA zone; continent search must return a short African list.
+    for query, expected in [('New York','America/New_York'),('Bulgaria','Europe/Sofia'),('Casablanca','Africa/Casablanca'),('Chatham','Pacific/Chatham'),('Kathmandu','Asia/Katmandu')]:
+        page.locator('#timeZoneSearch').fill(query)
+        page.wait_for_timeout(30)
+        found=page.locator('#timeZoneSelect option').evaluate_all("(options)=>options.map(o=>o.value)")
+        if expected not in found:
+            print('FAIL: time-zone search did not find',expected,'for',query,found);sys.exit(1)
+        if len(found)>14:
+            print('FAIL: time-zone search list is not limited',len(found));sys.exit(1)
+    page.locator('#timeZoneSearch').fill('Africa')
+    page.wait_for_timeout(30)
+    continent_results=page.locator('#timeZoneSelect option').evaluate_all("(options)=>options.map(o=>o.value)")
+    if not any(zone.startswith('Africa/') for zone in continent_results):
+        print('FAIL: continent search did not return African zones',continent_results);sys.exit(1)
     # A manually selected zone overrides the device zone for new date inputs and calendar views.
+    page.locator('#timeZoneSearch').fill('New York')
     page.locator('#timeZoneSelect').select_option('America/New_York')
     page.wait_for_timeout(80)
     saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
@@ -43,6 +56,7 @@ with sync_playwright() as p:
     attempt('2025-11-01T20:00','2025-11-02T20:00',False)
     # Switch to a second DST-observing region and verify its distinct transition rules.
     page.locator('.tab[data-screen="settings"]').click()
+    page.locator('#timeZoneSearch').fill('Sofia')
     page.locator('#timeZoneSelect').select_option('Europe/Sofia')
     page.wait_for_timeout(80)
     saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")

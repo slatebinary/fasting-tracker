@@ -992,5 +992,18 @@
   "backupChip.action": "Toca para exportar una copia JSON. Se registra el compartir o la descarga confirmada, pero no se puede verificar el almacenamiento externo.",
   "settings.timeZone": "Zona horaria",
   "settings.timeZoneHelp": "Elige la zona horaria para las nuevas entradas y las vistas de calendario actuales. Los registros existentes conservan su zona horaria original; las reglas del horario de verano siguen las del lugar seleccionado.",
-  "settings.timeZoneSystem": "Usar la zona horaria del dispositivo"
+  "settings.timeZoneSystem": "Usar la zona horaria del dispositivo",
+  "settings.timeZoneSearchLabel": "Buscar una zona horaria",
+  "settings.timeZoneSearchPlaceholder": "Ciudad, país, continente o zona horaria",
+  "settings.timeZoneSearchPrompt": "Escribe para buscar ubicaciones. Elige un resultado abajo.",
+  "settings.timeZoneSearchNoResults": "No hay zonas horarias coincidentes. Prueba con una ciudad, país o región.",
+  "settings.timeZoneSearchResults": "Zonas horarias coincidentes: {n}",
+  "settings.timeZoneSelected": "Selección actual",
+  "settings.timeZoneContinentAfrica": "África",
+  "settings.timeZoneContinentAsia": "Asia",
+  "settings.timeZoneContinentEurope": "Europa",
+  "settings.timeZoneContinentNorthAmerica": "América del Norte",
+  "settings.timeZoneContinentSouthAmerica": "América del Sur",
+  "settings.timeZoneContinentOceania": "Oceanía",
+  "settings.timeZoneContinentAntarctica": "Antártida"
 }
