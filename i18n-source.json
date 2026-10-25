@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 29,
-  "appVersion": "1.13.1",
+  "sourceRevision": 30,
+  "appVersion": "1.13.2",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -993,6 +993,9 @@
     "backupChip.neverHelp": "There is fasting or weight data, but no manual external JSON backup has been recorded.",
     "backupChip.empty": "No data to back up",
     "backupChip.emptyHelp": "There are no fasting or weight records yet.",
-    "backupChip.action": "Tap to export a JSON backup. A successful share or confirmed download is recorded, but the app cannot verify external storage."
+    "backupChip.action": "Tap to export a JSON backup. A successful share or confirmed download is recorded, but the app cannot verify external storage.",
+    "settings.timeZone": "Time zone",
+    "settings.timeZoneHelp": "Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.",
+    "settings.timeZoneSystem": "Follow device time zone"
   }
 }
