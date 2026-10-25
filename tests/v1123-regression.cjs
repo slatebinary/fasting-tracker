@@ -30,7 +30,8 @@ assert.match(index,/buildInteractiveChartDays\(\)/);
 assert.match(index,/const maxTimelineWidth = 9000/);
 assert.match(index,/dayKey\(oldestMs,tz\)/);
 assert.match(index,/Fasting timeline for all recorded fastings/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.13.2');
+const releaseVersion=JSON.parse(fs.readFileSync('version.json','utf8')).version;
+assert.ok(fs.readFileSync('index.html','utf8').includes("const APP_VERSION = '"+releaseVersion+"';"),'index app version must match version.json');
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);
