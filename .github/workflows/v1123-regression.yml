@@ -42,7 +42,6 @@ jobs:
         run: |
           python3 tests/test_release.py
           python3 tests/test_timeline_month_axis.py
-          python3 tests/test_dst_timezone.py
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
@@ -70,6 +69,7 @@ jobs:
           python3 tests/test_permanent_purge_confirmation.py
           python3 tests/test_backup_indicator.py
           python3 tests/test_setup_notification_layout.py
+          python3 tests/test_dst_timezone.py
       - name: Check application JavaScript and document navigation
         run: node tests/v1123-regression.cjs
       - name: Verify release archive
