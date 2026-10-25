@@ -1,4 +1,4 @@
-name: v1.13.1 regression checks
+name: v1.13.2 regression checks
 on:
   push:
     branches:
@@ -6,6 +6,7 @@ on:
       - fix/v1.12.9-calendar-day-precision
       - fix/v1.12.9-gap-duration-display
       - fix/v1.13.1-timeline-month-axis
+      - feat/global-time-zones-dst
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -26,7 +27,7 @@ jobs:
           for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py', 'tests/test_import_preview_merge.py', 'tests/test_destructive_guard.py', 'tests/test_setup_notification_layout.py'):
               p = Path(filename)
               s = p.read_text()
-              for previous in ('1.12.6', '1.12.7', '1.13.0'):
+              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.2'):
                   s = s.replace(previous, '1.13.1')
               p.write_text(s)
           PYTEST
@@ -80,7 +81,7 @@ jobs:
           assert tracked, 'No tracked source files found'
           assert all(path.is_file() for path in tracked), 'A tracked file is missing'
           assert not any('_site' in path.parts or '__pycache__' in path.parts or path.suffix == '.pyc' for path in tracked)
-          archive = Path('/tmp/fasting-tracker-v1.13.1.zip')
+          archive = Path('/tmp/fasting-tracker-v1.13.2.zip')
           with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
               for path in tracked:
                   z.write(path, path.as_posix())
@@ -95,7 +96,7 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: fasting-tracker-v1.13.1-regression
+          name: fasting-tracker-v1.13.2-regression
           path: /tmp/fasting-tracker-v1.13.1.zip
           retention-days: 14
 
