@@ -16,7 +16,7 @@ with sync_playwright() as p:
     page.locator('.tab[data-screen="settings"]').click()
     page.wait_for_timeout(80)
     zones=page.locator('#timeZoneSelect option').evaluate_all("(options)=>options.map(o=>o.value)")
-    required=['UTC','America/New_York','Asia/Kathmandu','Africa/Casablanca','Pacific/Chatham','Europe/Sofia']
+    required=['UTC','America/New_York','Asia/Katmandu','Africa/Casablanca','Pacific/Chatham','Europe/Sofia']
     if len(zones)<300 or any(zone not in zones for zone in required):
         print('FAIL: global IANA time-zone list is incomplete',len(zones),[z for z in required if z not in zones]);sys.exit(1)
     # A manually selected zone overrides the device zone for new date inputs and calendar views.
