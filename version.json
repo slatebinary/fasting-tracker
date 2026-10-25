@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.1",
-  "released": "2026-10-23",
-  "notes": "Add subtle month labels and month-boundary separators to the full-history fasting timeline.",
+  "version": "1.13.2",
+  "released": "2026-10-25",
+  "notes": "Add global IANA time-zone selection and preserve region-specific daylight-saving rules for new entries and calendar views.",
   "entry": "./index.html",
   "shell": [
     "./",
