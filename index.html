@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.13.2" />
+  <meta name="ft-app-version" content="1.13.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -381,8 +381,8 @@ layout: null
     .setupBasicsGrid { display:grid; gap:14px; margin-top:12px; }
     .setupBasicsGrid label { display:block; font-weight:650; margin-bottom:6px; }
     .setupBasicsGrid input[type="text"] { width:100%; padding:12px; border-radius:11px; border:1px solid var(--line); background:var(--bg); color:var(--text); font:inherit; }
-    .setupUnitToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); }
-    .setupUnitToggle button { min-width:64px; padding:8px 12px; border-radius:9px; background:transparent; color:var(--text); }
+    .setupUnitToggle { display:inline-flex; flex:0 0 auto; flex-wrap:nowrap; white-space:nowrap; padding:3px; border-radius:12px; background:var(--line); }
+    .setupUnitToggle button { flex:0 0 auto; min-width:64px; white-space:nowrap; padding:8px 12px; border-radius:9px; background:transparent; color:var(--text); }
     .setupUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .setupInlineToggle { display:flex; align-items:center; gap:9px; font-weight:650; }
     .setupInlineToggle input { width:22px; height:22px; accent-color:var(--accent); }
@@ -417,13 +417,13 @@ layout: null
     .loadMoreWrap button { min-width: 180px; }
     .achievementBadge[aria-label] { position: relative; }
     .weightTop { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    .weightUnitToggle { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--line); }
-    .weightUnitToggle button { padding: 7px 12px; border-radius: 9px; background: transparent; color: var(--text); font-size: 13px; }
+    .weightUnitToggle { display: inline-flex; flex: 0 0 auto; flex-wrap: nowrap; white-space: nowrap; padding: 3px; border-radius: 12px; background: var(--line); }
+    .weightUnitToggle button { flex: 0 0 auto; min-width: 44px; white-space: nowrap; padding: 7px 12px; border-radius: 9px; background: transparent; color: var(--text); font-size: 13px; }
     .weightUnitToggle button.active { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
     .weightValue { font-variant-numeric: tabular-nums; }
     .weightHistory { margin-top: 14px; }
-    .weightTargetWrap { display:flex; align-items:center; gap:7px; }
-    .weightTargetWrap input { width: 112px; }
+    .weightTargetWrap { display:flex; flex:0 0 auto; flex-wrap:nowrap; align-items:center; gap:7px; white-space:nowrap; }
+    .weightTargetWrap input { flex:0 0 112px; box-sizing:border-box; width:112px; }
     .weightChartWrap { position: relative; }
 
     .scienceCard { overflow: hidden; }
@@ -1585,7 +1585,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.2';
+  const APP_VERSION = '1.13.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
