@@ -56,7 +56,7 @@ def main():
             page.evaluate(STORAGE_SHIM)
             page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",current)
             page.set_content(inlined_html(),wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.3'",timeout=20000)
+            page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.4'",timeout=20000)
             page.locator('#importFile').set_input_files(str(f))
             page.wait_for_function("!document.querySelector('#importPreviewModal').hidden",timeout=10000)
             meta=page.locator('#importPreviewMeta').inner_text().lower()
