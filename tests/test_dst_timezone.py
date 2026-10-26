@@ -90,6 +90,18 @@ with sync_playwright() as p:
         # compactDuration may use day wording for 25h.
         if '1d 1h' not in joined:
             print('FAIL: DST-spanning elapsed durations are incorrect',joined);sys.exit(1)
+    # Regression: Sofia's 2026-10-25 local calendar day is 25 hours long.
+    # A 52-minute non-fasting pause leaves 24h 8m of fasting time for the calendar.
+    pause_start = __import__('datetime').datetime.fromisoformat('2026-10-25T00:30:00+00:00')
+    pause_end = __import__('datetime').datetime.fromisoformat('2026-10-25T01:22:00+00:00')
+    pause_minutes = int((pause_end - pause_start).total_seconds() // 60)
+    calendar_fast_minutes = 25 * 60 - pause_minutes
+    if pause_minutes != 52 or calendar_fast_minutes != 24 * 60 + 8:
+        print('FAIL: Sofia autumn DST calendar should show 24h 8m after a 52m pause', pause_minutes, calendar_fast_minutes);sys.exit(1)
+    source = open('index.html', encoding='utf-8').read()
+    calendar_renderer = source[source.index('for (const {d,day} of calendarDays) {'):source.index('function buildSummaryChartDays')]
+    if calendar_renderer.count('totalHoursDuration(day.totalFastMs)') != 3 or 'compactDuration(day.totalFastMs)' in calendar_renderer:
+        print('FAIL: calendar tile, accessible label, and detail must show total hours without day-based truncation');sys.exit(1)
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3]));sys.exit(1)
     browser.close()
 print('PASS: DST/time-zone gap, fallback and elapsed-duration regression checks')
