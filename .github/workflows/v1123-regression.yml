@@ -1,4 +1,4 @@
-name: v1.13.6 regression checks
+name: Fasting Tracker regression checks
 on:
   push:
     branches:
