@@ -34,7 +34,7 @@ with sync_playwright() as p:
         if not page.locator('#timeZoneSelect option[value=\"\"]').count():
             print('FAIL: search prompt option missing');sys.exit(1)
         options=page.locator('#timeZoneSelect option').evaluate_all("(items)=>items.map(o=>({value:o.value,label:o.textContent}))")
-        if len(options)>17: print('FAIL: search results are not capped',query,len(options));sys.exit(1)
+        if len(options)>18: print('FAIL: search results are not capped (allowing system, prompt, and current-zone options)',query,len(options));sys.exit(1)
         if not any(o['value']==value for o in options): print('FAIL: expected zone missing from search',query,value,options);sys.exit(1)
         if any('_' in o['label'] for o in options): print('FAIL: raw underscore shown in labels',options);sys.exit(1)
         page.locator('#timeZoneSelect').select_option(value)
@@ -43,7 +43,7 @@ with sync_playwright() as p:
     page.locator('#timeZoneSearch').fill('Tokyo')
     if not page.locator('#timeZoneSelect option[value="Asia/Tokyo"]').count(): print('FAIL: city search did not find Tokyo');sys.exit(1)
     page.locator('#timeZoneSearch').fill('Oceania')
-    if page.locator('#timeZoneSelect option').count()>17: print('FAIL: continent search unbounded');sys.exit(1)
+    if page.locator('#timeZoneSelect option').count()>18: print('FAIL: continent search unbounded');sys.exit(1)
     search_zone('America/New_York','America/New_York')
     page.wait_for_timeout(80)
     saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
