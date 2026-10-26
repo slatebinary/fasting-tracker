@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.13.3",
   "released": "2026-10-26",
-  "notes": "Replace the oversized time-zone list with an accessible searchable city/country/region picker; preserve IANA identifiers, device-zone selection, and DST behavior.",
+  "notes": "Add an accessible searchable city/country/region time-zone picker and prevent kg/lb controls from shrinking or wrapping on narrow screens; preserve IANA identifiers, device-zone selection, and DST behavior.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -70,8 +70,8 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "cfbfd2c62650cb7935dc0bd9cf0446bd63ba8a9ec66d1a5e3bc5da62754a4552",
-    "./index.html": "cfbfd2c62650cb7935dc0bd9cf0446bd63ba8a9ec66d1a5e3bc5da62754a4552",
+    "./": "fc6c0fbfbacbec1593aa4e445a3e528ea389d866f13944af0f9146ae3695316d",
+    "./index.html": "fc6c0fbfbacbec1593aa4e445a3e528ea389d866f13944af0f9146ae3695316d",
     "./i18n/en.js": "c481c528e540dd12454ebe4c36a31e1bcde7f63c5bf1d4a099c85cb4b968f917",
     "./i18n/bg.js": "bd1c5ed6f9407018e1fa939f1bc0051c5255312285fcb3d8053851722db28e00",
     "./i18n/es.js": "36710203e0a7e59bde173cc63f08801e1ff7110ede55d1ba2d5ef3382c120c52",
