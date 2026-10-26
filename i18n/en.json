@@ -992,5 +992,12 @@
   "backupChip.action": "Tap to export a JSON backup. A successful share or confirmed download is recorded, but the app cannot verify external storage.",
   "settings.timeZone": "Time zone",
   "settings.timeZoneHelp": "Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.",
-  "settings.timeZoneSystem": "Follow device time zone"
+  "settings.timeZoneSystem": "Follow device time zone",
+  "settings.timeZoneSearchLabel": "Find a time zone",
+  "settings.timeZoneSearchPlaceholder": "City, country, continent, or time-zone name",
+  "settings.timeZoneResultsLabel": "Matching locations",
+  "settings.timeZoneBrowseHelp": "Popular locations are shown first. Search by city, country, continent, or IANA time-zone name.",
+  "settings.timeZoneResultsCount": "Showing {shown} of {total} matching time zones.",
+  "settings.timeZoneNoResults": "No matching time zones. Try another city, country, or region.",
+  "settings.timeZoneCurrent": "Current selection"
 }

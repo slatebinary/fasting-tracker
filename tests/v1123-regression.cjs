@@ -24,13 +24,13 @@ assert.match(index,/snapshotData\.deletedFasts\.length <= persistedDeletedFastMa
 assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeightMap\.size/);
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
-assert.match(index,/const APP_VERSION\s*=\s*['"]1\.13\.2['"]/);
+assert.match(index,/const APP_VERSION\s*=\s*['"]1\.13\.3['"]/);
 assert.match(index,/function buildInteractiveChartDays\(dayCount = null/);
 assert.match(index,/buildInteractiveChartDays\(\)/);
 assert.match(index,/const maxTimelineWidth = 9000/);
 assert.match(index,/dayKey\(oldestMs,tz\)/);
 assert.match(index,/Fasting timeline for all recorded fastings/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.13.2');
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.13.3');
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);

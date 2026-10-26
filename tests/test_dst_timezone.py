@@ -12,15 +12,32 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Sofia');errors=[];page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.13.2'}));}",data)
-    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.2'",timeout=20000)
+    page.set_content(inlined_html(),wait_until='domcontentloaded')
+    try:
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.3'",timeout=20000)
+    except Exception:
+        print('FAIL: app boot did not reach the version label; page errors:',errors)
+        print('FAIL: version label text:',page.locator('#appVersionLabel').text_content())
+        raise
     page.locator('.tab[data-screen="settings"]').click()
     page.wait_for_timeout(80)
-    zones=page.locator('#timeZoneSelect option').evaluate_all("(options)=>options.map(o=>o.value)")
-    required=['UTC','America/New_York','Asia/Katmandu','Africa/Casablanca','Pacific/Chatham','Europe/Sofia']
-    if len(zones)<300 or any(zone not in zones for zone in required):
-        print('FAIL: global IANA time-zone list is incomplete',len(zones),[z for z in required if z not in zones]);sys.exit(1)
-    # A manually selected zone overrides the device zone for new date inputs and calendar views.
-    page.locator('#timeZoneSelect').select_option('America/New_York')
+    zones=page.evaluate("window.FT_TIME_ZONE_LOCATIONS.map(z=>z.z)")
+    if len(zones)<300:
+        print('FAIL: global time-zone location dataset is incomplete',len(zones));sys.exit(1)
+    def search_zone(query,value):
+        page.locator('#timeZoneSearch').fill(query)
+        options=page.locator('#timeZoneSelect option').evaluate_all("(items)=>items.map(o=>({value:o.value,label:o.textContent}))")
+        if len(options)>17: print('FAIL: search results are not capped',query,len(options));sys.exit(1)
+        if not any(o['value']==value for o in options): print('FAIL: expected zone missing from search',query,value,options);sys.exit(1)
+        if any('_' in o['label'] for o in options): print('FAIL: raw underscore shown in labels',options);sys.exit(1)
+        page.locator('#timeZoneSelect').select_option(value)
+    # Country, city and continent searches must be readable and bounded.
+    search_zone('Bulgaria','Europe/Sofia')
+    page.locator('#timeZoneSearch').fill('Tokyo')
+    if not page.locator('#timeZoneSelect option[value="Asia/Tokyo"]').count(): print('FAIL: city search did not find Tokyo');sys.exit(1)
+    page.locator('#timeZoneSearch').fill('Oceania')
+    if page.locator('#timeZoneSelect option').count()>17: print('FAIL: continent search unbounded');sys.exit(1)
+    search_zone('America/New_York','America/New_York')
     page.wait_for_timeout(80)
     saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
     if saved_zone!='America/New_York': print('FAIL: selected time zone was not persisted',saved_zone);sys.exit(1)
@@ -43,7 +60,7 @@ with sync_playwright() as p:
     attempt('2025-11-01T20:00','2025-11-02T20:00',False)
     # Switch to a second DST-observing region and verify its distinct transition rules.
     page.locator('.tab[data-screen="settings"]').click()
-    page.locator('#timeZoneSelect').select_option('Europe/Sofia')
+    search_zone('Sofia','Europe/Sofia')
     page.wait_for_timeout(80)
     saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
     if saved_zone!='Europe/Sofia': print('FAIL: updated time zone was not persisted',saved_zone);sys.exit(1)
@@ -52,12 +69,39 @@ with sync_playwright() as p:
     attempt('2025-10-26T03:30','2025-10-26T04:30',True)
     attempt('2026-03-28T20:00','2026-03-29T20:00',False)
     attempt('2025-10-25T20:00','2025-10-26T20:00',False)
+    # Southern-hemisphere DST rules and a 30-minute transition are also covered.
+    page.locator('.tab[data-screen="settings"]').click()
+    search_zone('Sydney','Australia/Sydney')
+    page.locator('.tab[data-screen="history"]').click()
+    attempt('2026-10-04T02:30','2026-10-04T04:00',True)
+    attempt('2026-04-05T02:30','2026-04-05T03:30',True)
+    attempt('2026-10-03T20:00','2026-10-04T20:00',False)
+    attempt('2026-04-04T20:00','2026-04-05T20:00',False)
+    page.locator('.tab[data-screen="settings"]').click()
+    search_zone('Lord Howe','Australia/Lord_Howe')
+    page.locator('.tab[data-screen="history"]').click()
+    attempt('2025-10-05T02:15','2025-10-05T03:00',True)
+    attempt('2025-04-06T01:45','2025-04-06T02:30',True)
+    attempt('2025-10-04T20:00','2025-10-05T20:00',False)
+    attempt('2025-04-05T20:00','2025-04-06T20:00',False)
     rows=page.locator('#historyList .historyRow').all_inner_texts()
     joined=' | '.join(rows)
     if '23h 0m' not in joined or '1 day 1h 0m' not in joined and '25h 0m' not in joined:
         # compactDuration may use day wording for 25h.
         if '1d 1h' not in joined:
             print('FAIL: DST-spanning elapsed durations are incorrect',joined);sys.exit(1)
+    # Regression: Sofia's 2026-10-25 local calendar day is 25 hours long.
+    # A 52-minute non-fasting pause leaves 24h 8m of fasting time for the calendar.
+    pause_start = __import__('datetime').datetime.fromisoformat('2026-10-25T00:30:00+00:00')
+    pause_end = __import__('datetime').datetime.fromisoformat('2026-10-25T01:22:00+00:00')
+    pause_minutes = int((pause_end - pause_start).total_seconds() // 60)
+    calendar_fast_minutes = 25 * 60 - pause_minutes
+    if pause_minutes != 52 or calendar_fast_minutes != 24 * 60 + 8:
+        print('FAIL: Sofia autumn DST calendar should show 24h 8m after a 52m pause', pause_minutes, calendar_fast_minutes);sys.exit(1)
+    source = open('index.html', encoding='utf-8').read()
+    calendar_renderer = source[source.index('for (const {d,day} of calendarDays) {'):source.index('function buildSummaryChartDays')]
+    if calendar_renderer.count('totalHoursDuration(day.totalFastMs)') != 3 or 'compactDuration(day.totalFastMs)' in calendar_renderer:
+        print('FAIL: calendar tile, accessible label, and detail must show total hours without day-based truncation');sys.exit(1)
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3]));sys.exit(1)
     browser.close()
 print('PASS: DST/time-zone gap, fallback and elapsed-duration regression checks')
