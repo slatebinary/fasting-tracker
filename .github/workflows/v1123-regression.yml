@@ -7,6 +7,7 @@ on:
       - fix/v1.12.9-gap-duration-display
       - fix/v1.13.1-timeline-month-axis
       - feat/global-time-zones-dst
+      - fix/timezone-picker-weight-units-v1.13.3
   pull_request:
     branches: [main]
   workflow_dispatch:
