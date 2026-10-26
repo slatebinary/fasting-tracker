@@ -172,6 +172,7 @@ layout: null
     .calendarWeekday { color:var(--muted); font-size:10px; text-align:center; padding:2px 0; }
     .calendarDay { min-height:54px; padding:6px 3px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--text); text-align:center; font-size:12px; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
     .calendarDay .calendarHours { font-size:9px; color:var(--muted); font-weight:600; }
+    .calendarDay .calendarClockChange { font-size:8px; line-height:1; font-weight:750; color:var(--accent); white-space:nowrap; }
     .calendarDay.level1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
     .calendarDay.level2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
     .calendarDay.level3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
@@ -1597,7 +1598,7 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 31;
+  const I18N_SOURCE_REVISION = 32;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
@@ -5285,6 +5286,14 @@ layout: null
       });
 
       const dp = zonedParts(day.startMs, day.timeZone);
+      const clockInfo=dayClockChangeInfo(day);
+      if(clockInfo&&slot>=18){
+        const clockLabel=clockInfo.label.replace(/^(Day|Offset)\\s+/,'');
+        ctx.save();ctx.font='8px -apple-system';ctx.textAlign='center';
+        const clockWidth=Math.min(bw,Math.max(18,ctx.measureText(clockLabel).width+5));
+        ctx.fillStyle=card;ctx.fillRect(x0+bw/2-clockWidth/2,top+2,clockWidth,10);
+        ctx.fillStyle=accent;ctx.fillText(clockLabel,x0+bw/2,top+10);ctx.restore();
+      }
       ctx.fillStyle = muted; ctx.font = '11px -apple-system'; ctx.textAlign = 'center';
       if (slot >= 18) {
         ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
@@ -5357,8 +5366,9 @@ layout: null
     let detail = statsDetailOverride;
     if (!detail && statsVizMode === 'timeline' && days) detail = chartSelectionDetail(days);
     title.textContent = detail?.title || t('stats.chartDetailDefaultTitle');
-    text.textContent = detail?.text || t('stats.chartDetailDefaultText');
-    if(detail){announceStatsSelection(detail);setStatsDrilldown(detail.records||[]);}else setStatsDrilldown([]);
+    const clockNote=detail?clockChangeNoteForDetail(detail,statsVizMode):'';
+    text.textContent = [detail?.text,clockNote].filter(Boolean).join(' ');
+    if(detail){announceStatsSelection({...detail,text:text.textContent});setStatsDrilldown(detail.records||[]);}else setStatsDrilldown([]);
     const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
     updateStatsRangeControl();
   }
@@ -5528,6 +5538,58 @@ layout: null
     const d = new Date(); d.setHours(12,0,0,0); d.setDate(1); d.setMonth(d.getMonth() + offset); return d;
   }
 
+  function formatClockChangeDuration(minutes) {
+    const total=Math.abs(Math.round(Number(minutes)||0)),hours=Math.floor(total/60),mins=total%60;
+    return [hours?hours+'h':'',mins?mins+'m':''].filter(Boolean).join(' ')||'0m';
+  }
+  // A local calendar day is not always 24 elapsed hours. Compare its actual
+  // boundaries and its UTC offsets so unusual non-hour transitions are handled.
+  function dayClockChangeInfo(day) {
+    if(!day||!Number.isFinite(day.startMs)||!Number.isFinite(day.endMs)||day.endMs<=day.startMs)return null;
+    const tz=normalizeTimeZone(day.timeZone||currentTimeZone()),elapsed=day.endMs-day.startMs;
+    const dayDelta=Math.round((elapsed-86400000)/60000);
+    const startOffset=timeZoneOffsetMs(day.startMs+1000,tz),endOffset=timeZoneOffsetMs(day.endMs-1000,tz);
+    const offsetDelta=Math.round((endOffset-startOffset)/60000);
+    if(Math.abs(dayDelta)<1&&Math.abs(offsetDelta)<1)return null;
+    const isDayLengthChange=Math.abs(dayDelta)>=1,delta=isDayLengthChange?dayDelta:offsetDelta;
+    const sign=delta>0?'+':'−',duration=formatClockChangeDuration(delta),change=sign+duration;
+    const label=t(isDayLengthChange?'stats.clockDayChangeLabel':'stats.clockOffsetChangeLabel',{sign,duration});
+    const description=t(isDayLengthChange?'stats.clockDayChangeHelp':'stats.clockOffsetChangeHelp',{
+      date:day.label||localDateLabel(day.startMs,tz),dayLength:totalHoursDuration(elapsed),change,zone:tz
+    });
+    return {label,description,deltaMinutes:delta,dayDeltaMinutes:dayDelta,offsetDeltaMinutes:offsetDelta};
+  }
+  function clockChangeSummaryForRange(startMs,endMs,timeZone=currentTimeZone()) {
+    const tz=normalizeTimeZone(timeZone),changes=[];let cursor=startMs,guard=0;
+    while(Number.isFinite(cursor)&&cursor<endMs&&guard++<400) {
+      const key=dayKey(cursor,tz),localStart=zonedLocalToDate(`${key}T00:00`,tz),dayStart=localStart?localStart.getTime():cursor;
+      const dayEnd=Math.min(endMs,Math.max(dayStart+1,nextZonedDayBoundary(dayStart,tz)));
+      const info=dayClockChangeInfo({key,startMs:dayStart,endMs:Math.max(dayStart+1,nextZonedDayBoundary(dayStart,tz)),timeZone:tz,label:localDateLabel(dayStart,tz)});
+      if(info)changes.push(`${localDateLabel(dayStart,tz)} (${info.label})`);
+      cursor=Math.max(dayEnd,cursor+1);
+    }
+    return changes.length?t('stats.clockPeriodChangeList',{changes:changes.join(', ')}):'';
+  }
+  function clockChangeNoteForDetail(detail,mode) {
+    const key=String(detail?.dayKey||''),tz=currentTimeZone();
+    if(mode==='weeks'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(key)) {
+      const start=zonedLocalToDate(`${key}T00:00`,tz);if(!start)return '';
+      let end=start.getTime();for(let i=0;i<7;i++)end=nextZonedDayBoundary(end,tz);
+      return clockChangeSummaryForRange(start.getTime(),end,tz);
+    }
+    if(mode==='months'&&/^\\d{4}-\\d{2}$/.test(key)) {
+      const [year,month]=key.split('-').map(Number),nextYear=month===12?year+1:year,nextMonth=month===12?1:month+1;
+      const start=zonedLocalToDate(`${key}-01T00:00`,tz),end=zonedLocalToDate(`${nextYear}-${String(nextMonth).padStart(2,'0')}-01T00:00`,tz);
+      return start&&end?clockChangeSummaryForRange(start.getTime(),end.getTime(),tz):'';
+    }
+    if(['calendar','timeline','trend','cumulative'].includes(mode)&&/^\\d{4}-\\d{2}-\\d{2}$/.test(key)) {
+      const start=zonedLocalToDate(`${key}T00:00`,tz);if(!start)return '';
+      const startMs=start.getTime(),endMs=nextZonedDayBoundary(startMs,tz);
+      return dayClockChangeInfo({key,startMs,endMs,timeZone:tz,label:localDateLabel(startMs,tz)})?.description||'';
+    }
+    return '';
+  }
+
   function chartDayForAnchor(anchor, timeZone = currentTimeZone(), summaries = currentZoneDaySummaries(timeZone)) {
     const tz = normalizeTimeZone(timeZone), key = dayKey(anchor, tz);
     const start = zonedLocalToDate(`${key}T00:00`, tz);
@@ -5582,8 +5644,10 @@ layout: null
       btn.disabled=future; btn.dataset.dayKey=day.key;
       const n=document.createElement('span'); n.textContent=formatNumber(d.getDate());
       const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? totalHoursDuration(day.totalFastMs) : '—';
+      const clockInfo=dayClockChangeInfo(day);
       btn.append(n,h);
-      btn.setAttribute('aria-label',`${day.label}: ${totalHoursDuration(day.totalFastMs)}`);
+      if(clockInfo){const clock=document.createElement('span');clock.className='calendarClockChange';clock.textContent=clockInfo.label.replace(/^(Day|Offset)\\s+/,'');clock.setAttribute('aria-hidden','true');btn.append(clock);btn.title=clockInfo.description;}
+      btn.setAttribute('aria-label',`${day.label}: ${totalHoursDuration(day.totalFastMs)}${clockInfo?'; '+clockInfo.description:''}`);
       const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:totalHoursDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
       btn.addEventListener('pointerdown',event=>{ selectCalendarDay(); if(event.cancelable) event.preventDefault(); });
       btn.addEventListener('click',event=>{ if(event.detail===0) selectCalendarDay(); });
