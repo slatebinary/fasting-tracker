@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.2",
-  "released": "2026-10-25",
-  "notes": "Add global IANA time-zone selection and preserve region-specific daylight-saving rules for new entries and calendar views.",
+  "version": "1.13.3",
+  "released": "2026-10-26",
+  "notes": "Fix DST-crossing non-fasting gap duration regression and prevent weight-unit/time-zone controls from clipping on narrow screens.",
   "entry": "./index.html",
   "shell": [
     "./",
