@@ -999,5 +999,10 @@
   "settings.timeZoneBrowseHelp": "Primero se muestran ubicaciones populares. Busca por ciudad, país, continente o nombre de zona horaria IANA.",
   "settings.timeZoneResultsCount": "Se muestran {shown} de {total} zonas horarias coincidentes.",
   "settings.timeZoneNoResults": "No hay zonas horarias coincidentes. Prueba con otra ciudad, país o región.",
-  "settings.timeZoneCurrent": "Selección actual"
+  "settings.timeZoneCurrent": "Selección actual",
+  "stats.clockDayChangeLabel": "Día {sign}{duration}",
+  "stats.clockOffsetChangeLabel": "Desfase {sign}{duration}",
+  "stats.clockDayChangeHelp": "{date}: el día natural local duró {dayLength} en {zone} ({change} respecto a 24 horas). El ayuno se calcula con el tiempo real transcurrido.",
+  "stats.clockOffsetChangeHelp": "{date}: el desfase respecto a UTC cambió {change} en {zone}; este día local duró {dayLength}. El ayuno se calcula con el tiempo real transcurrido.",
+  "stats.clockPeriodChangeList": "Cambios de hora/desfase UTC durante este período: {changes}. Los totales diarios usan el tiempo real transcurrido."
 }
