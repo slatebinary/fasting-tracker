@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.13.3" />
+  <meta name="ft-app-version" content="1.13.4" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1604,7 +1604,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.3';
+  const APP_VERSION = '1.13.4';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1876,11 +1876,12 @@ layout: null
     let matches=query?zones.filter(z=>normalizeTimeZoneSearch(timeZoneLocationInfo(z).search).includes(query)):timeZonePopularChoices.filter(z=>zones.includes(z));
     if(query)matches.sort((a,b)=>timeZoneLocationInfo(a).label.localeCompare(timeZoneLocationInfo(b).label,uiLanguage()));
     const total=matches.length,shown=matches.slice(0,15);sel.replaceChildren();
-    const sys=document.createElement('option');sys.value='system';sys.textContent=`${t('settings.timeZoneSystem')} (${deviceZone.replace(/_/g,' ')})`;sel.append(sys);
-    if(selected!=='system'&&!shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=`${t('settings.timeZoneCurrent')}: ${timeZoneLocationInfo(selected).label}`;sel.append(cur);}
+    const sys=document.createElement('option');sys.value='system';sys.textContent=t('settings.timeZoneSystem')+' ('+deviceZone.replace(/_/g,' ')+')';sel.append(sys);
+    if(query){const prompt=document.createElement('option');prompt.value='';prompt.disabled=true;prompt.textContent=({en:'Choose a matching time zone…',bg:'Изберете часова зона от резултатите…',es:'Elige una zona horaria de los resultados…'})[uiLanguage()]||'Choose a matching time zone…';sel.append(prompt);}
+    if(selected!=='system'&&!shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=t('settings.timeZoneCurrent')+': '+timeZoneLocationInfo(selected).label;sel.append(cur);}
     for(const z of shown){if(z===selected)continue;const o=document.createElement('option');o.value=z;o.textContent=timeZoneLocationInfo(z).label;sel.append(o);}
-    if(selected!=='system'&&shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=timeZoneLocationInfo(selected).label;sel.insertBefore(cur,sel.children[1]||null);}
-    sel.value=selected;if(sel.value!==selected)sel.value='system';
+    if(selected!=='system'&&shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=timeZoneLocationInfo(selected).label;sel.insertBefore(cur,sel.children[query?2:1]||null);}
+    sel.value=query?'':selected;if(!query&&sel.value!==selected)sel.value='system';
     const status=document.getElementById('timeZoneSearchStatus');if(status){if(query&&total===0)status.textContent=t('settings.timeZoneNoResults');else if(query)status.textContent=t('settings.timeZoneResultsCount',{shown:shown.length,total});else status.textContent=t('settings.timeZoneBrowseHelp');}
   }
   function applyLanguage() {

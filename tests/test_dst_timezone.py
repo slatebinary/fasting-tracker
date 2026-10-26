@@ -14,7 +14,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.13.2'}));}",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     try:
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.3'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.4'",timeout=20000)
     except Exception:
         print('FAIL: app boot did not reach the version label; page errors:',errors)
         print('FAIL: version label text:',page.locator('#appVersionLabel').text_content())
@@ -25,9 +25,16 @@ with sync_playwright() as p:
     if len(zones)<300:
         print('FAIL: global time-zone location dataset is incomplete',len(zones));sys.exit(1)
     def search_zone(query,value):
+        saved_before=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
         page.locator('#timeZoneSearch').fill(query)
+        if page.locator('#timeZoneSelect').input_value()!='':
+            print('FAIL: typing a time-zone search should prompt the user to choose a result, not leave the old zone selected',query,page.locator('#timeZoneSelect').input_value());sys.exit(1)
+        if page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone") != saved_before:
+            print('FAIL: searching changed the saved time zone before the user selected a result');sys.exit(1)
+        if not page.locator('#timeZoneSelect option[value=\"\"]').count():
+            print('FAIL: search prompt option missing');sys.exit(1)
         options=page.locator('#timeZoneSelect option').evaluate_all("(items)=>items.map(o=>({value:o.value,label:o.textContent}))")
-        if len(options)>17: print('FAIL: search results are not capped',query,len(options));sys.exit(1)
+        if len(options)>18: print('FAIL: search results are not capped (allowing system, prompt, and current-zone options)',query,len(options));sys.exit(1)
         if not any(o['value']==value for o in options): print('FAIL: expected zone missing from search',query,value,options);sys.exit(1)
         if any('_' in o['label'] for o in options): print('FAIL: raw underscore shown in labels',options);sys.exit(1)
         page.locator('#timeZoneSelect').select_option(value)
@@ -36,7 +43,7 @@ with sync_playwright() as p:
     page.locator('#timeZoneSearch').fill('Tokyo')
     if not page.locator('#timeZoneSelect option[value="Asia/Tokyo"]').count(): print('FAIL: city search did not find Tokyo');sys.exit(1)
     page.locator('#timeZoneSearch').fill('Oceania')
-    if page.locator('#timeZoneSelect option').count()>17: print('FAIL: continent search unbounded');sys.exit(1)
+    if page.locator('#timeZoneSelect option').count()>18: print('FAIL: continent search unbounded');sys.exit(1)
     search_zone('America/New_York','America/New_York')
     page.wait_for_timeout(80)
     saved_zone=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
