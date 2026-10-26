@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.13.3",
   "released": "2026-10-26",
-  "notes": "Add searchable city/country/continent time-zone selection with readable labels; preserve IANA and daylight-saving behavior; prevent kg/lb controls and suffixes from being squeezed on narrow screens.",
+  "notes": "Add searchable global IANA time-zone selection; correctly show total fasting hours on 23/25-hour DST calendar days; prevent kg/lb controls and suffixes from wrapping on narrow screens.",
   "entry": "./index.html",
   "shell": [
     "./",
