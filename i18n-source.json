@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 30,
-  "appVersion": "1.13.2",
+  "sourceRevision": 31,
+  "appVersion": "1.13.3",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -996,6 +996,11 @@
     "backupChip.action": "Tap to export a JSON backup. A successful share or confirmed download is recorded, but the app cannot verify external storage.",
     "settings.timeZone": "Time zone",
     "settings.timeZoneHelp": "Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.",
-    "settings.timeZoneSystem": "Follow device time zone"
+    "settings.timeZoneSystem": "Follow device time zone",
+    "settings.timeZoneSearchLabel": "Search by city, country, or region",
+    "settings.timeZoneSearchPlaceholder": "e.g. Sofia, Bulgaria, New York",
+    "settings.timeZoneSearchHint": "Type a city, country, or continent/region. Choose a result below.",
+    "settings.timeZoneCurrent": "Selected time zone",
+    "settings.timeZoneNoResults": "No matching time zones."
   }
 }
