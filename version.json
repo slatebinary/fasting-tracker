@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.4",
+  "version": "1.13.5",
   "released": "2026-10-26",
-  "notes": "Make time-zone searches visibly require a result selection without changing the saved zone while typing; preserve 23/25-hour DST calendar durations and responsive kg/lb controls.",
+  "notes": "Add localized DST/time-zone clock-change indicators and explanations to Calendar, Timeline, and chart details while preserving actual elapsed-time calculations.",
   "entry": "./index.html",
   "shell": [
     "./",
