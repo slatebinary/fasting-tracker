@@ -386,8 +386,8 @@ layout: null
     .setupBasicsGrid { display:grid; gap:14px; margin-top:12px; }
     .setupBasicsGrid label { display:block; font-weight:650; margin-bottom:6px; }
     .setupBasicsGrid input[type="text"] { width:100%; padding:12px; border-radius:11px; border:1px solid var(--line); background:var(--bg); color:var(--text); font:inherit; }
-    .setupUnitToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); }
-    .setupUnitToggle button { min-width:64px; padding:8px 12px; border-radius:9px; background:transparent; color:var(--text); }
+    .setupUnitToggle { display:inline-flex; flex:0 0 auto; white-space:nowrap; padding:3px; border-radius:12px; background:var(--line); }
+    .setupUnitToggle button { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; min-width:64px; padding:8px 12px; border-radius:9px; background:transparent; color:var(--text); white-space:nowrap; }
     .setupUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .setupInlineToggle { display:flex; align-items:center; gap:9px; font-weight:650; }
     .setupInlineToggle input { width:22px; height:22px; accent-color:var(--accent); }
