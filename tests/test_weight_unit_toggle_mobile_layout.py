@@ -13,7 +13,7 @@ for selector in (".setupUnitToggle", ".weightUnitToggle"):
     css = rule(selector)
     assert "flex-wrap:nowrap" in css, f"{selector} must not wrap"
     assert "white-space:nowrap" in css, f"{selector} labels must stay horizontal"
-    assert "flex: 0 0 auto" in css, f"{selector} must not shrink"
+    assert "flex:0 0 auto" in css, f"{selector} must not shrink"
 
 for selector in (".setupUnitToggle button", ".weightUnitToggle button"):
     css = rule(selector)
@@ -23,6 +23,6 @@ for selector in (".setupUnitToggle button", ".weightUnitToggle button"):
 target = rule(".weightTargetWrap")
 assert "flex-wrap:nowrap" in target and "white-space:nowrap" in target
 target_input = rule(".weightTargetWrap input")
-assert "flex: 0 0 112px" in target_input and "box-sizing:border-box" in target_input
+assert "flex:0 0 112px" in target_input and "box-sizing:border-box" in target_input
 
 print("PASS: kg/lb controls and target-weight input retain horizontal layout")
