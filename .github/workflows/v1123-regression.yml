@@ -26,17 +26,18 @@ jobs:
           import json, os
           version = json.loads(open('version.json', encoding='utf-8').read())['version']
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env:
-              env.write(f'RELEASE_VERSION={version}\\n')
+              env.write('RELEASE_VERSION=' + version + chr(10))
           PY
       - name: Align earlier browser-test version assertions
         run: |
           python3 - <<'PYTEST'
+          import os
           from pathlib import Path
           for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py', 'tests/test_import_preview_merge.py', 'tests/test_destructive_guard.py', 'tests/test_setup_notification_layout.py'):
               p = Path(filename)
               s = p.read_text()
-              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1'):
-                  s = s.replace(previous, '1.13.2')
+              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3'):
+                  s = s.replace(previous, os.environ['RELEASE_VERSION'])
               p.write_text(s)
           PYTEST
       - name: Build consistent localization and release assets in runner
@@ -57,6 +58,7 @@ jobs:
           test -f _site/version.json
           python3 - <<'PY'
           import json, os
+          import os
           from pathlib import Path
           root=Path('_site')
           version=json.loads((root/'version.json').read_text())
@@ -84,13 +86,14 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os, subprocess, zipfile
+          import os
           from pathlib import Path
           tracked = [Path(raw.decode('utf-8')) for raw in subprocess.check_output(['git', 'ls-files', '-z']).split(b'\0') if raw]
           tracked.sort()
           assert tracked, 'No tracked source files found'
           assert all(path.is_file() for path in tracked), 'A tracked file is missing'
           assert not any('_site' in path.parts or '__pycache__' in path.parts or path.suffix == '.pyc' for path in tracked)
-          archive = Path(f\"/tmp/fasting-tracker-v{os.environ['RELEASE_VERSION']}.zip\")
+          archive = Path('/tmp/fasting-tracker-' + os.environ['RELEASE_VERSION'] + '.zip')
           with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
               for path in tracked:
                   z.write(path, path.as_posix())
@@ -101,7 +104,7 @@ jobs:
               assert set(names) == {path.as_posix() for path in tracked}, 'Archive differs from Git-tracked source'
               assert {'.github/workflows/pages.yml', '.github/workflows/v1123-regression.yml', 'index.html', 'version.json', 'about.html', 'privacy.html', 'branding.html', 'license.html'} <= set(names)
               assert json.loads(z.read('version.json'))['version'] == os.environ['RELEASE_VERSION']
-              print(f\"PASS: complete clean GitHub Desktop ZIP for v{os.environ['RELEASE_VERSION']} ({len(names)} tracked source files)\")
+              print('PASS: complete clean GitHub Desktop ZIP for v' + os.environ['RELEASE_VERSION'] + ' (' + str(len(names)) + ' tracked source files)')
           PY
       - uses: actions/upload-artifact@v4
         with:
