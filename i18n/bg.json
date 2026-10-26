@@ -999,5 +999,10 @@
   "settings.timeZoneBrowseHelp": "Първо се показват популярни местоположения. Търсете по град, държава, континент или име на IANA часова зона.",
   "settings.timeZoneResultsCount": "Показани са {shown} от {total} съвпадащи часови зони.",
   "settings.timeZoneNoResults": "Няма съвпадащи часови зони. Опитайте с друг град, държава или регион.",
-  "settings.timeZoneCurrent": "Текущ избор"
+  "settings.timeZoneCurrent": "Текущ избор",
+  "stats.clockDayChangeLabel": "Ден {sign}{duration}",
+  "stats.clockOffsetChangeLabel": "Отместване {sign}{duration}",
+  "stats.clockDayChangeHelp": "{date}: местният календарен ден е бил {dayLength} в {zone} ({change} спрямо 24 часа). Времето на гладуване се изчислява по реално изминалото време.",
+  "stats.clockOffsetChangeHelp": "{date}: часовото отместване спрямо UTC се е променило с {change} в {zone}; местният ден е бил {dayLength}. Времето на гладуване се изчислява по реално изминалото време.",
+  "stats.clockPeriodChangeList": "Промени на часовника/отместването спрямо UTC през периода: {changes}. Дневното време на гладуване използва реално изминалото време."
 }
