@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.13.2" />
+  <meta name="ft-app-version" content="1.13.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -205,6 +205,11 @@ layout: null
     .row strong { display: block; }
     .small { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
     .goalInputWrap { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+    .timeZoneSettings { padding:12px 0; border-bottom:1px solid var(--line); }
+    .timeZonePicker { display:grid; gap:7px; margin-top:10px; min-width:0; }
+    .timeZonePicker label { display:block; margin-top:3px; }
+    .timeZonePicker input, .timeZonePicker select { width:100%; max-width:none; min-width:0; box-sizing:border-box; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--text); font:inherit; }
+    .timeZonePicker select { white-space:normal; }
     select { max-width: 190px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
     .notificationCadenceToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); gap:2px; }
     .notificationCadenceToggle button { min-width:74px; padding:8px 11px; border-radius:9px; background:transparent; color:var(--text); font-size:13px; }
@@ -416,14 +421,18 @@ layout: null
     .loadMoreWrap { display: flex; justify-content: center; padding: 14px 0 2px; }
     .loadMoreWrap button { min-width: 180px; }
     .achievementBadge[aria-label] { position: relative; }
-    .weightTop { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    .weightUnitToggle { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--line); }
-    .weightUnitToggle button { padding: 7px 12px; border-radius: 9px; background: transparent; color: var(--text); font-size: 13px; }
-    .weightUnitToggle button.active { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .weightTop { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px; }
+    .weightUnitToggle { display:inline-flex; flex:0 0 auto; white-space:nowrap; padding:3px; border-radius:12px; background:var(--line); }
+    .weightUnitToggle button { flex:0 0 auto; min-width:42px; padding:7px 12px; border-radius:9px; background:transparent; color:var(--text); font-size:13px; white-space:nowrap; }
+    .weightUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .weightValue { font-variant-numeric: tabular-nums; }
     .weightHistory { margin-top: 14px; }
-    .weightTargetWrap { display:flex; align-items:center; gap:7px; }
-    .weightTargetWrap input { width: 112px; }
+    .weightTargetRow { flex-wrap:wrap; align-items:center; }
+    .weightTargetRow > div:first-child { flex:1 1 160px; min-width:0; }
+    .weightTargetWrap { display:flex; align-items:center; gap:7px; flex:0 0 auto; min-width:max-content; }
+    .weightTargetWrap input { width:112px; min-width:112px; flex:0 0 112px; box-sizing:border-box; }
+    #weightTargetUnit, #weightModalUnit { display:inline-block; flex:0 0 auto; white-space:nowrap; }
+    #weightValueInput { width:100%; min-width:0; box-sizing:border-box; }
     .weightChartWrap { position: relative; }
 
     .scienceCard { overflow: hidden; }
@@ -696,7 +705,7 @@ layout: null
       <div class="metric"><div class="value weightValue" id="wToTarget">—</div><div class="label" data-i18n="weight.toTarget">Difference to target</div></div>
     </div>
     <div class="card" style="margin-top:14px">
-      <div class="row">
+      <div class="row weightTargetRow">
         <div><strong data-i18n="weight.target">Target weight</strong><div class="small" data-i18n="weight.targetHelp">Optional. Leave blank if you only want to track the trend.</div></div>
         <div class="weightTargetWrap"><input id="weightTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Target weight" data-i18n-aria="weight.target"><span id="weightTargetUnit">kg</span></div>
       </div>
@@ -887,7 +896,16 @@ layout: null
 <option data-i18n="settings.appearanceDark" value="dark">Dark</option>
 </select>
 </div>
-<div class="row"><div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div><select aria-label="Time zone" data-i18n-aria="settings.timeZone" id="timeZoneSelect"><option value="system"></option></select></div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
+<div class="timeZoneSettings">
+  <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
+  <div class="timeZonePicker">
+    <label for="timeZoneSearch" class="small" data-i18n="settings.timeZoneSearchLabel">Find a time zone</label>
+    <input id="timeZoneSearch" type="search" autocomplete="off" data-i18n-placeholder="settings.timeZoneSearchPlaceholder" placeholder="City, country, continent, or time-zone name" aria-label="Find a time zone" data-i18n-aria="settings.timeZoneSearchLabel">
+    <label for="timeZoneSelect" class="small" data-i18n="settings.timeZoneResultsLabel">Matching locations</label>
+    <select id="timeZoneSelect" aria-label="Matching locations" data-i18n-aria="settings.timeZoneResultsLabel"><option value="system"></option></select>
+    <div id="timeZoneSearchStatus" class="small" role="status" aria-live="polite"></div>
+  </div>
+</div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
 <div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
 <div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
 <button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
@@ -1549,6 +1567,7 @@ layout: null
 <script src="js/fasting-visuals.js"></script>
 <script src="js/fasting-analytics.js"></script>
 <script src="js/platform-diagnostics.js"></script>
+<script src="js/time-zone-locations.js"></script>
 <script>
 (async () => {
   'use strict';
@@ -1578,14 +1597,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 30;
+  const I18N_SOURCE_REVISION = 31;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.2';
+  const APP_VERSION = '1.13.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1836,26 +1855,33 @@ layout: null
     }
     sel.value = selected;
   }
-  function renderTimeZoneOptions() {
-    const sel = document.getElementById('timeZoneSelect');
-    if (!sel) return;
-    const selected = preferredTimeZone && isValidTimeZone(preferredTimeZone) ? preferredTimeZone : 'system';
-    const deviceZone = deviceTimeZone();
-    const systemOption = document.createElement('option');
-    systemOption.value = 'system';
-    systemOption.textContent = `${t('settings.timeZoneSystem')} (${deviceZone})`;
-    sel.replaceChildren(systemOption);
-    let zones = [];
-    try { if (typeof Intl.supportedValuesOf === 'function') zones = Intl.supportedValuesOf('timeZone'); } catch {}
-    zones = [...new Set([...zones, 'UTC', deviceZone, ...(selected !== 'system' ? [selected] : [])])].filter(isValidTimeZone).sort((a,b)=>a.localeCompare(b, uiLanguage()));
-    for (const zone of zones) {
-      const option = document.createElement('option');
-      option.value = zone;
-      option.textContent = zone;
-      sel.append(option);
-    }
-    sel.value = selected;
-    if (sel.value !== selected) sel.value = 'system';
+  const timeZoneLocationRecords = Array.isArray(window.FT_TIME_ZONE_LOCATIONS) ? window.FT_TIME_ZONE_LOCATIONS : [];
+  const timeZoneLocationById = (() => { const map=new Map(); for(const r of timeZoneLocationRecords){map.set(r.z,r);for(const alias of r.g||[])map.set(alias,r);}return map; })();
+  const timeZonePopularChoices = ['Europe/Sofia','America/New_York','Europe/London','Asia/Tokyo','Australia/Sydney','Asia/Dubai','America/Sao_Paulo','Asia/Kolkata','Africa/Johannesburg','UTC'];
+  function normalizeTimeZoneSearch(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/_/g,' ').toLocaleLowerCase().replace(/\s+/g,' ').trim();}
+  function localizedTimeZoneContinent(r){const n={en:{AF:'Africa',AS:'Asia',EU:'Europe',NA:'North America',SA:'South America',OC:'Oceania',AN:'Antarctica'},bg:{AF:'Африка',AS:'Азия',EU:'Европа',NA:'Северна Америка',SA:'Южна Америка',OC:'Океания',AN:'Антарктида'},es:{AF:'África',AS:'Asia',EU:'Europa',NA:'América del Norte',SA:'América del Sur',OC:'Oceanía',AN:'Antártida'}};return n[uiLanguage()]?.[r?.ccn]||r?.ct||'';}
+  function timeZoneLocationInfo(zone){
+    const r=timeZoneLocationById.get(zone);if(!r){const label=String(zone).replace(/_/g,' ');return {label,search:label};}
+    const city=r.ci?.[0]||r.z.split('/').pop().replace(/_/g,' ');let country=r.c||'';
+    try{if(r.cc&&typeof Intl.DisplayNames==='function')country=new Intl.DisplayNames([uiLanguage()],{type:'region'}).of(r.cc)||country;}catch{}
+    const zoneLabel=r.z.replace(/_/g,' ');
+    return {label:zone==='UTC'?'UTC':`${city}, ${country} — ${zoneLabel}`,search:[zone,zoneLabel,...(r.g||[]),r.c,country,r.ct,localizedTimeZoneContinent(r),...(r.ci||[]),r.a].join(' ')};
+  }
+  function renderTimeZoneOptions(){
+    const sel=document.getElementById('timeZoneSelect');if(!sel)return;
+    const selected=preferredTimeZone&&isValidTimeZone(preferredTimeZone)?preferredTimeZone:'system',deviceZone=deviceTimeZone();
+    const query=normalizeTimeZoneSearch(document.getElementById('timeZoneSearch')?.value||'');let zones=[];
+    try{if(typeof Intl.supportedValuesOf==='function')zones=Intl.supportedValuesOf('timeZone');}catch{}
+    zones=[...new Set([...zones,...timeZoneLocationRecords.map(r=>r.z),'UTC',deviceZone,...(selected!=='system'?[selected]:[])])].filter(isValidTimeZone);
+    let matches=query?zones.filter(z=>normalizeTimeZoneSearch(timeZoneLocationInfo(z).search).includes(query)):timeZonePopularChoices.filter(z=>zones.includes(z));
+    if(query)matches.sort((a,b)=>timeZoneLocationInfo(a).label.localeCompare(timeZoneLocationInfo(b).label,uiLanguage()));
+    const total=matches.length,shown=matches.slice(0,15);sel.replaceChildren();
+    const sys=document.createElement('option');sys.value='system';sys.textContent=`${t('settings.timeZoneSystem')} (${deviceZone.replace(/_/g,' ')})`;sel.append(sys);
+    if(selected!=='system'&&!shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=`${t('settings.timeZoneCurrent')}: ${timeZoneLocationInfo(selected).label}`;sel.append(cur);}
+    for(const z of shown){if(z===selected)continue;const o=document.createElement('option');o.value=z;o.textContent=timeZoneLocationInfo(z).label;sel.append(o);}
+    if(selected!=='system'&&shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=timeZoneLocationInfo(selected).label;sel.insertBefore(cur,sel.children[1]||null);}
+    sel.value=selected;if(sel.value!==selected)sel.value='system';
+    const status=document.getElementById('timeZoneSearchStatus');if(status){if(query&&total===0)status.textContent=t('settings.timeZoneNoResults');else if(query)status.textContent=t('settings.timeZoneResultsCount',{shown:shown.length,total});else status.textContent=t('settings.timeZoneBrowseHelp');}
   }
   function applyLanguage() {
     const lang = uiLanguage();
@@ -7607,6 +7633,7 @@ layout: null
     if (el('stats').classList.contains('active')) renderStatsVisualizations();
     if (el('weight').classList.contains('active')) drawWeightChart();
   });
+  el('timeZoneSearch').addEventListener('input', renderTimeZoneOptions);
   el('timeZoneSelect').addEventListener('change', () => {
     const value = el('timeZoneSelect').value;
     preferredTimeZone = value === 'system' ? null : (isValidTimeZone(value) ? value : null);
