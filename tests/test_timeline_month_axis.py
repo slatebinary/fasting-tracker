@@ -14,6 +14,6 @@ assert "date.toLocaleDateString(currentLocale(), options)" in html, "month label
 assert "ctx.fillText(label, centerX, cssH - 24)" in html, "month labels must occupy a dedicated axis row"
 assert "if (fitsMonth && fitsGap" in html, "labels must avoid collisions when long histories are compressed"
 release_info = json.loads(version)
-assert re.fullmatch(r'\\d+\\.\\d+\\.\\d+', release_info['version']), 'release version must be semantic X.Y.Z'
+assert re.fullmatch(r'[0-9]+[.][0-9]+[.][0-9]+', release_info['version']), 'release version must be semantic X.Y.Z'
 assert release_info['version'] in html, 'application version must match the release'
 print("PASS: fasting timeline includes localized month labels and month-boundary separators")
