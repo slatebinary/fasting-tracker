@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.5",
+  "version": "1.13.6",
   "released": "2026-10-26",
-  "notes": "Add localized DST/time-zone clock-change indicators and explanations to Calendar, Timeline, and chart details while preserving actual elapsed-time calculations.",
+  "notes": "Preserve minute precision for durations over 24 hours and show DST/time-zone changes directly in daily chart data.",
   "entry": "./index.html",
   "shell": [
     "./",
