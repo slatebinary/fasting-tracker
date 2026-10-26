@@ -999,5 +999,10 @@
   "settings.timeZoneBrowseHelp": "Popular locations are shown first. Search by city, country, continent, or IANA time-zone name.",
   "settings.timeZoneResultsCount": "Showing {shown} of {total} matching time zones.",
   "settings.timeZoneNoResults": "No matching time zones. Try another city, country, or region.",
-  "settings.timeZoneCurrent": "Current selection"
+  "settings.timeZoneCurrent": "Current selection",
+  "stats.clockDayChangeLabel": "Day {sign}{duration}",
+  "stats.clockOffsetChangeLabel": "Offset {sign}{duration}",
+  "stats.clockDayChangeHelp": "{date}: the local day lasted {dayLength} in {zone} ({change} relative to 24 hours). Fasting time uses actual elapsed time.",
+  "stats.clockOffsetChangeHelp": "{date}: the UTC offset changed by {change} in {zone}; this local day lasted {dayLength}. Fasting time uses actual elapsed time.",
+  "stats.clockPeriodChangeList": "Clock/time-zone offset changes in this period: {changes}. Daily fasting values use actual elapsed time."
 }
