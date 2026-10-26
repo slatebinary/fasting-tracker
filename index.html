@@ -5580,10 +5580,10 @@ layout: null
       if (statsDetailOverride?.dayKey===day.key) btn.classList.add('selected');
       btn.disabled=future; btn.dataset.dayKey=day.key;
       const n=document.createElement('span'); n.textContent=formatNumber(d.getDate());
-      const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? compactDuration(day.totalFastMs) : '—';
+      const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? totalHoursDuration(day.totalFastMs) : '—';
       btn.append(n,h);
-      btn.setAttribute('aria-label',`${day.label}: ${compactDuration(day.totalFastMs)}`);
-      const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:compactDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
+      btn.setAttribute('aria-label',`${day.label}: ${totalHoursDuration(day.totalFastMs)}`);
+      const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:totalHoursDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
       btn.addEventListener('pointerdown',event=>{ selectCalendarDay(); if(event.cancelable) event.preventDefault(); });
       btn.addEventListener('click',event=>{ if(event.detail===0) selectCalendarDay(); });
       grid.append(btn);
