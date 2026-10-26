@@ -116,6 +116,8 @@ with sync_playwright() as p:
                      'stats.clockDayChangeHelp', 'stats.clockPeriodChangeList'):
         if required not in app_source:
             print('FAIL: missing DST indicator implementation:', required);sys.exit(1)
+    if 'Math.round((elapsed-86400000)/60000)' not in app_source or 'timeZoneOffsetMs(day.startMs+1000,tz)' not in app_source:
+        print('FAIL: clock-change indicators must derive from actual elapsed day length and UTC offsets');sys.exit(1)
     for lang in ('en','bg','es'):
         import json
         dictionary=json.load(open(f'i18n/{lang}.json',encoding='utf-8'))
