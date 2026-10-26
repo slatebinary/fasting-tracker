@@ -10,6 +10,7 @@ on:
       - fix/timezone-picker-weight-units-v1.13.3
       - fix/timezone-search-selection-v1.13.4
       - feat/dst-change-indicators-v1.13.5
+      - main
   pull_request:
     branches: [main]
   workflow_dispatch:
