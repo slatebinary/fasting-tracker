@@ -12,7 +12,8 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Sofia');errors=[];page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.13.2'}));}",data)
-    page.set_content(inlined_html(),wait_until='domcontentloaded');try:
+    page.set_content(inlined_html(),wait_until='domcontentloaded')
+    try:
         page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.3'",timeout=20000)
     except Exception:
         print('FAIL: app boot did not reach the version label; page errors:',errors)
