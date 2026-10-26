@@ -1960,13 +1960,13 @@ layout: null
       const mark = commaCount ? ',' : '.';
       const count = commaCount || dotCount;
       if (count > 1) {
-        const grouped = new RegExp(`^[+-]?\\d{1,3}(?:\\${mark}\\d{3})+$`);
+        const grouped = new RegExp(`^[+-]?\d{1,3}(?:\\${mark}\d{3})+$`);
         if (mark === localeGroup && grouped.test(text)) text = text.split(mark).join('');
         else return NaN;
       } else if (mark === localeDecimal) {
         if (mark === ',') text = text.replace(',', '.');
       } else if (mark === localeGroup) {
-        const grouped = new RegExp(`^[+-]?\\d{1,3}\\${mark}\\d{3}$`);
+        const grouped = new RegExp(`^[+-]?\d{1,3}\\${mark}\d{3}$`);
         if (grouped.test(text)) text = text.replace(mark, '');
         else text = text.replace(mark, '.');
       } else {
@@ -5288,7 +5288,7 @@ layout: null
       const dp = zonedParts(day.startMs, day.timeZone);
       const clockInfo=dayClockChangeInfo(day);
       if(clockInfo&&slot>=18){
-        const clockLabel=clockInfo.label.replace(/^(Day|Offset)\\s+/,'');
+        const clockLabel=clockInfo.label.replace(/^(Day|Offset)\s+/,'');
         ctx.save();ctx.font='8px -apple-system';ctx.textAlign='center';
         const clockWidth=Math.min(bw,Math.max(18,ctx.measureText(clockLabel).width+5));
         ctx.fillStyle=card;ctx.fillRect(x0+bw/2-clockWidth/2,top+2,clockWidth,10);
@@ -5572,17 +5572,17 @@ layout: null
   }
   function clockChangeNoteForDetail(detail,mode) {
     const key=String(detail?.dayKey||''),tz=currentTimeZone();
-    if(mode==='weeks'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(key)) {
+    if(mode==='weeks'&&/^\d{4}-\d{2}-\d{2}$/.test(key)) {
       const start=zonedLocalToDate(`${key}T00:00`,tz);if(!start)return '';
       let end=start.getTime();for(let i=0;i<7;i++)end=nextZonedDayBoundary(end,tz);
       return clockChangeSummaryForRange(start.getTime(),end,tz);
     }
-    if(mode==='months'&&/^\\d{4}-\\d{2}$/.test(key)) {
+    if(mode==='months'&&/^\d{4}-\d{2}$/.test(key)) {
       const [year,month]=key.split('-').map(Number),nextYear=month===12?year+1:year,nextMonth=month===12?1:month+1;
       const start=zonedLocalToDate(`${key}-01T00:00`,tz),end=zonedLocalToDate(`${nextYear}-${String(nextMonth).padStart(2,'0')}-01T00:00`,tz);
       return start&&end?clockChangeSummaryForRange(start.getTime(),end.getTime(),tz):'';
     }
-    if(['calendar','timeline','trend','cumulative'].includes(mode)&&/^\\d{4}-\\d{2}-\\d{2}$/.test(key)) {
+    if(['calendar','timeline','trend','cumulative'].includes(mode)&&/^\d{4}-\d{2}-\d{2}$/.test(key)) {
       const start=zonedLocalToDate(`${key}T00:00`,tz);if(!start)return '';
       const startMs=start.getTime(),endMs=nextZonedDayBoundary(startMs,tz);
       return dayClockChangeInfo({key,startMs,endMs,timeZone:tz,label:localDateLabel(startMs,tz)})?.description||'';
@@ -5646,7 +5646,7 @@ layout: null
       const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? totalHoursDuration(day.totalFastMs) : '—';
       const clockInfo=dayClockChangeInfo(day);
       btn.append(n,h);
-      if(clockInfo){const clock=document.createElement('span');clock.className='calendarClockChange';clock.textContent=clockInfo.label.replace(/^(Day|Offset)\\s+/,'');clock.setAttribute('aria-hidden','true');btn.append(clock);btn.title=clockInfo.description;}
+      if(clockInfo){const clock=document.createElement('span');clock.className='calendarClockChange';clock.textContent=clockInfo.label.replace(/^(Day|Offset)\s+/,'');clock.setAttribute('aria-hidden','true');btn.append(clock);btn.title=clockInfo.description;}
       btn.setAttribute('aria-label',`${day.label}: ${totalHoursDuration(day.totalFastMs)}${clockInfo?'; '+clockInfo.description:''}`);
       const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:totalHoursDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
       btn.addEventListener('pointerdown',event=>{ selectCalendarDay(); if(event.cancelable) event.preventDefault(); });
