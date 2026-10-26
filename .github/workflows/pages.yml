@@ -1,7 +1,9 @@
 name: Validate and deploy Fasting Tracker
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Fasting Tracker regression checks"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -16,6 +18,7 @@ concurrency:
 
 jobs:
   validate-and-deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
