@@ -1960,13 +1960,13 @@ layout: null
       const mark = commaCount ? ',' : '.';
       const count = commaCount || dotCount;
       if (count > 1) {
-        const grouped = new RegExp(`^[+-]?\d{1,3}(?:\\${mark}\d{3})+$`);
+        const grouped = new RegExp(`^[+-]?\\d{1,3}(?:\\${mark}\\d{3})+$`);
         if (mark === localeGroup && grouped.test(text)) text = text.split(mark).join('');
         else return NaN;
       } else if (mark === localeDecimal) {
         if (mark === ',') text = text.replace(',', '.');
       } else if (mark === localeGroup) {
-        const grouped = new RegExp(`^[+-]?\d{1,3}\\${mark}\d{3}$`);
+        const grouped = new RegExp(`^[+-]?\\d{1,3}\\${mark}\\d{3}$`);
         if (grouped.test(text)) text = text.replace(mark, '');
         else text = text.replace(mark, '.');
       } else {
