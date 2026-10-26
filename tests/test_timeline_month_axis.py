@@ -14,5 +14,5 @@ assert "date.toLocaleDateString(currentLocale(), options)" in html, "month label
 assert "ctx.fillText(label, centerX, cssH - 24)" in html, "month labels must occupy a dedicated axis row"
 assert "if (fitsMonth && fitsGap" in html, "labels must avoid collisions when long histories are compressed"
 assert '"version": "1.13.3"' in version, "release version must be bumped for the chart fix"
-assert "1.13.2" in html, "application version must match the release"
+assert "1.13.3" in html, "application version must match the release"
 print("PASS: fasting timeline includes localized month labels and month-boundary separators")
