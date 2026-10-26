@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.3",
+  "version": "1.13.4",
   "released": "2026-10-26",
-  "notes": "Add searchable global IANA time-zone selection; correctly show total fasting hours on 23/25-hour DST calendar days; prevent kg/lb controls and suffixes from wrapping on narrow screens.",
+  "notes": "Make time-zone searches visibly require a result selection without changing the saved zone while typing; preserve 23/25-hour DST calendar durations and responsive kg/lb controls.",
   "entry": "./index.html",
   "shell": [
     "./",
