@@ -416,7 +416,11 @@ layout: null
     .loadMoreWrap { display: flex; justify-content: center; padding: 14px 0 2px; }
     .loadMoreWrap button { min-width: 180px; }
     .achievementBadge[aria-label] { position: relative; }
-    .weightTop { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .weightTop { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .weightTop > .small { flex: 1 1 180px; }
+    .weightUnitToggle, .setupUnitToggle { flex-wrap: wrap; max-width: 100%; min-width: 0; }
+    .weightUnitToggle button, .setupUnitToggle button { flex: 0 0 auto; min-width: 44px; white-space: nowrap; }
+    #settings #timeZoneSelect { flex: 1 1 100%; width: 100%; max-width: 100%; min-height: 44px; }
     .weightUnitToggle { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--line); }
     .weightUnitToggle button { padding: 7px 12px; border-radius: 9px; background: transparent; color: var(--text); font-size: 13px; }
     .weightUnitToggle button.active { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
