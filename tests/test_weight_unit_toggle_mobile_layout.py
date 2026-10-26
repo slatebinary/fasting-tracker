@@ -7,7 +7,7 @@ html = Path("index.html").read_text(encoding="utf-8")
 def rule(selector):
     match = re.search(r"(?m)^\s*" + re.escape(selector) + r"\s*\{([^}]*)\}", html)
     assert match, f"Missing CSS rule: {selector}"
-    return re.sub(r"\s+", " ", match.group(1)).strip()
+    return re.sub(r"\s*:\s*", ":", re.sub(r"\s+", " ", match.group(1))).strip()
 
 for selector in (".setupUnitToggle", ".weightUnitToggle"):
     css = rule(selector)
