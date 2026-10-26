@@ -7,7 +7,7 @@ html = Path("index.html").read_text(encoding="utf-8")
 def rule(selector):
     match = re.search(r"(?m)^\s*" + re.escape(selector) + r"\s*\{([^}]*)\}", html)
     assert match, f"Missing CSS rule: {selector}"
-    return re.sub(r"\s+", "", match.group(1))
+    return re.sub(r"\s+", " ", match.group(1)).strip()
 
 for selector in (".setupUnitToggle", ".weightUnitToggle"):
     css = rule(selector)
@@ -17,7 +17,7 @@ for selector in (".setupUnitToggle", ".weightUnitToggle"):
 
 for selector in (".setupUnitToggle button", ".weightUnitToggle button"):
     css = rule(selector)
-    assert "flex:0 0 auto" in css, f"{selector} buttons must not shrink"
+    assert "flex: 0 0 auto" in css, f"{selector} buttons must not shrink"
     assert "white-space:nowrap" in css, f"{selector} button text must not wrap"
 
 target = rule(".weightTargetWrap")
