@@ -1,4 +1,4 @@
-name: v1.13.5 regression checks
+name: v1.13.6 regression checks
 on:
   push:
     branches:
@@ -55,7 +55,7 @@ jobs:
           from pathlib import Path
           root=Path('_site')
           version=json.loads((root/'version.json').read_text())
-          assert version['version']=='1.13.5'
+          assert version['version']=='1.13.6'
           assert all((root/name).exists() for name in ('index.html','about.html','privacy.html','branding.html','license.html'))
           print('PASS: GitHub Pages build artifact and required documents')
           PY
@@ -86,7 +86,7 @@ jobs:
           assert tracked, 'No tracked source files found'
           assert all(path.is_file() for path in tracked), 'A tracked file is missing'
           assert not any('_site' in path.parts or '__pycache__' in path.parts or path.suffix == '.pyc' for path in tracked)
-          archive = Path('/tmp/fasting-tracker-v1.13.5.zip')
+          archive = Path('/tmp/fasting-tracker-v1.13.6.zip')
           with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
               for path in tracked:
                   z.write(path, path.as_posix())
@@ -96,12 +96,12 @@ jobs:
               assert len(names) == len(set(names)) == len(tracked), 'Archive member count mismatch'
               assert set(names) == {path.as_posix() for path in tracked}, 'Archive differs from Git-tracked source'
               assert {'.github/workflows/pages.yml', '.github/workflows/v1123-regression.yml', 'index.html', 'version.json', 'about.html', 'privacy.html', 'branding.html', 'license.html'} <= set(names)
-              assert json.loads(z.read('version.json'))['version'] == '1.13.5'
+              assert json.loads(z.read('version.json'))['version'] == '1.13.6'
               print(f'PASS: complete clean GitHub Desktop ZIP ({len(names)} tracked source files)')
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: fasting-tracker-v1.13.5-regression
+          name: fasting-tracker-v1.13.6-regression
           path: /tmp/fasting-tracker-v1.13.5.zip
           retention-days: 14
 
