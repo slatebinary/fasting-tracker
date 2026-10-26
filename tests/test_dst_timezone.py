@@ -25,11 +25,11 @@ with sync_playwright() as p:
     if len(zones)<300:
         print('FAIL: global time-zone location dataset is incomplete',len(zones));sys.exit(1)
     def search_zone(query,value):
-        previous_zone=page.locator('#timeZoneSelect').input_value()
+        saved_before=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone")
         page.locator('#timeZoneSearch').fill(query)
         if page.locator('#timeZoneSelect').input_value()!='':
             print('FAIL: typing a time-zone search should prompt the user to choose a result, not leave the old zone selected',query,page.locator('#timeZoneSelect').input_value());sys.exit(1)
-        if page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone") != (previous_zone if previous_zone!='system' else None):
+        if page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.preferences')||'{}').timeZone") != saved_before:
             print('FAIL: searching changed the saved time zone before the user selected a result');sys.exit(1)
         if not page.locator('#timeZoneSelect option[value=\"\"]').count():
             print('FAIL: search prompt option missing');sys.exit(1)
