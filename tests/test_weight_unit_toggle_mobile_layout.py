@@ -17,7 +17,7 @@ for selector in (".setupUnitToggle", ".weightUnitToggle"):
 
 for selector in (".setupUnitToggle button", ".weightUnitToggle button"):
     css = rule(selector)
-    assert "flex: 0 0 auto" in css, f"{selector} buttons must not shrink"
+    assert "flex:0 0 auto" in css, f"{selector} buttons must not shrink"
     assert "white-space:nowrap" in css, f"{selector} button text must not wrap"
 
 target = rule(".weightTargetWrap")
