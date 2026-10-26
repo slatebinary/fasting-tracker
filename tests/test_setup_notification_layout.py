@@ -24,7 +24,7 @@ with sync_playwright() as pw:
           localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.8'}));
         }''', DATA)
         page.set_content(HTML, wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.13.4'",timeout=15000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.13.5'",timeout=15000)
         for lang in ('en','bg','es'):
             page.evaluate('''lang => {
               const select=document.querySelector('#languageSelect');

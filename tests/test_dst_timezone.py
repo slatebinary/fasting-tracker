@@ -14,7 +14,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.13.2'}));}",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     try:
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.4'",timeout=20000)
+        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.5'",timeout=20000)
     except Exception:
         print('FAIL: app boot did not reach the version label; page errors:',errors)
         print('FAIL: version label text:',page.locator('#appVersionLabel').text_content())
@@ -109,6 +109,22 @@ with sync_playwright() as p:
     calendar_renderer = source[source.index('for (const {d,day} of calendarDays) {'):source.index('function buildSummaryChartDays')]
     if calendar_renderer.count('totalHoursDuration(day.totalFastMs)') != 3 or 'compactDuration(day.totalFastMs)' in calendar_renderer:
         print('FAIL: calendar tile, accessible label, and detail must show total hours without day-based truncation');sys.exit(1)
+    # Clock-change indicators must remain localized and explain actual elapsed-day length.
+    app_source = open('index.html', encoding='utf-8').read()
+    for required in ('function dayClockChangeInfo(day)', 'function clockChangeSummaryForRange',
+                     'function clockChangeNoteForDetail', 'calendarClockChange',
+                     'stats.clockDayChangeHelp', 'stats.clockPeriodChangeList'):
+        if required not in app_source:
+            print('FAIL: missing DST indicator implementation:', required);sys.exit(1)
+    if 'Math.round((elapsed-86400000)/60000)' not in app_source or 'timeZoneOffsetMs(day.startMs+1000,tz)' not in app_source:
+        print('FAIL: clock-change indicators must derive from actual elapsed day length and UTC offsets');sys.exit(1)
+    for lang in ('en','bg','es'):
+        import json
+        dictionary=json.load(open(f'i18n/{lang}.json',encoding='utf-8'))
+        for key in ('stats.clockDayChangeLabel','stats.clockOffsetChangeLabel',
+                    'stats.clockDayChangeHelp','stats.clockOffsetChangeHelp','stats.clockPeriodChangeList'):
+            if not dictionary.get(key):
+                print('FAIL: missing localized clock-change string',lang,key);sys.exit(1)
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3]));sys.exit(1)
     browser.close()
 print('PASS: DST/time-zone gap, fallback and elapsed-duration regression checks')
