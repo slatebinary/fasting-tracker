@@ -15,6 +15,11 @@ with sync_playwright() as p:
     page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.13.2'})); }",data)
     page.set_content(inlined_html(),wait_until="domcontentloaded");page.wait_for_timeout(150)
     page.locator('.tab[data-screen="weight"]').click()
+    # The setup/onboarding unit buttons use the same no-wrap protection.
+    setup=page.evaluate("""() => {const modal=document.querySelector('#setupModal'),step=document.querySelector('#setupStepBasics');modal.hidden=false;modal.style.display='flex';step.hidden=false;const toggle=document.querySelector('.setupUnitToggle'),kg=document.querySelector('#setupUnitKgBtn'),lb=document.querySelector('#setupUnitLbBtn');const rect=e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height};};return {toggle:rect(toggle),kg:rect(kg),lb:rect(lb),toggleWS:getComputedStyle(toggle).whiteSpace,kgWS:getComputedStyle(kg).whiteSpace,lbWS:getComputedStyle(lb).whiteSpace};}""")
+    if setup["kg"]["width"]<64 or setup["lb"]["width"]<64 or any(setup[k]!="nowrap" for k in ["toggleWS","kgWS","lbWS"]):
+        print("FAIL: onboarding kg/lb buttons are squeezed",setup);sys.exit(1)
+    page.locator('#setupModal').evaluate("(el)=>{el.hidden=true;el.style.display='';}")
     for width in (320,360,390):
         page.set_viewport_size({"width":width,"height":844});page.wait_for_timeout(50)
         m=page.evaluate("""() => {const kg=document.querySelector('#unitKgBtn'),lb=document.querySelector('#unitLbBtn'),input=document.querySelector('#weightTargetInput'),unit=document.querySelector('#weightTargetUnit');const r=e=>{const x=e.getBoundingClientRect();return {left:x.left,right:x.right,width:x.width};};return {kg:r(kg),lb:r(lb),input:r(input),unit:r(unit),unitWS:getComputedStyle(unit).whiteSpace,kgWS:getComputedStyle(kg).whiteSpace,lbWS:getComputedStyle(lb).whiteSpace};}""")
