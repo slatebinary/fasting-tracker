@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const docs = ['about.html','privacy.html','branding.html','license.html'];
+const docs = ['about.html','privacy.html','branding.html','license.html','changelog.html'];
 const index = fs.readFileSync('index.html','utf8');
 const jsBlocks = html => [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 function checkSyntax(path) {
@@ -24,7 +24,8 @@ assert.equal((index.match(/data-i18n="public\.changelogLink"/g)||[]).length,1,'C
 const changelog=fs.readFileSync('changelog.html','utf8');
 assert.match(changelog,/v1\.8\.0/,'historical changelog should include the earliest documented release');
 assert.match(changelog,/history\.back\(\)/,'changelog should return to the prior app instance when possible');
-assert.match(changelog,/document\.referrer/,'changelog should check its same-origin return path');
+assert.match(changelog,/fastingTracker\.documentReturnUrl/,'changelog should use the established session return URL');
+assert.match(changelog,/const fromApp=!!exactReturn/,'changelog should restore the prior app instance when possible');
 
 assert.match(index,/persistedRecordMap\.size > 0 && snapshotData\.records\.length === 0/);
 assert.match(index,/persistedWeightMap\.size > 0 && snapshotData\.weights\.length === 0/);
