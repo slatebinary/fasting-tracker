@@ -24,14 +24,14 @@ assert.match(index,/snapshotData\.deletedFasts\.length <= persistedDeletedFastMa
 assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeightMap\.size/);
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
-assert.match(index,/const APP_VERSION\s*=\s*['"]1\.13\.7['"]/);
+assert.match(index,/const APP_VERSION\s*=\s*['"]1\.14\.0['"]/);
 assert.match(index,/function buildInteractiveChartDays\(dayCount = null/);
 assert.match(index,/buildInteractiveChartDays\(\)/);
 assert.match(index,/const maxTimelineWidth = 9000/);
 assert.match(index,/dayKey\(oldestMs,tz\)/);
 assert.match(index,/Fasting timeline for all recorded fastings/);
 assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.14.0');
-assert.match(index,/data-i18n="public\\.changelogLink" href="changelog\\.html\\?return=settings"/);
+assert.match(index,/data-i18n="public\.changelogLink" href="changelog\.html\?return=settings"/);
 for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
 assert.match(index,/function safeUpdateErrorMessage\(error\)/);
 assert.match(index,/failPendingMigration\(latestVersion, 'update-stage-failed', err\)/);
