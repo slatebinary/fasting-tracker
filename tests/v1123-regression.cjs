@@ -18,6 +18,14 @@ function checkSyntax(path) {
 for(const p of ['index.html',...docs,'changelog.html','version.json','i18n/en.js','i18n/bg.js','i18n/es.js'])checkSyntax(p);
 assert.match(index,/window\.addEventListener\('pageshow'/);
 assert.match(index,/if \(!event\.persisted \|\| !uiReady\) return;/);
+assert.match(index,/data-i18n="public\.changelogLink" href="changelog\.html\?return=settings"/);
+assert.match(index,/id="settingsUpdatesCard"/);
+assert.equal((index.match(/data-i18n="public\.changelogLink"/g)||[]).length,1,'Changelog link should appear exactly once');
+const changelog=fs.readFileSync('changelog.html','utf8');
+assert.match(changelog,/v1\.8\.0/,'historical changelog should include the earliest documented release');
+assert.match(changelog,/history\.back\(\)/,'changelog should return to the prior app instance when possible');
+assert.match(changelog,/document\.referrer/,'changelog should check its same-origin return path');
+
 assert.match(index,/persistedRecordMap\.size > 0 && snapshotData\.records\.length === 0/);
 assert.match(index,/persistedWeightMap\.size > 0 && snapshotData\.weights\.length === 0/);
 assert.match(index,/snapshotData\.deletedFasts\.length <= persistedDeletedFastMap\.size/);
@@ -132,12 +140,13 @@ assert.match(index, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 console.log('PASS: narrow-screen onboarding notification cadence layout source');
 
 
-// v1.14.0: the read-only changelog is linked from Settings and available in all supported languages.
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.14.0');
+// v1.14.1: the read-only changelog is linked from Settings and available in all supported languages.
+assert.ok(/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersion));
+assert.ok(index.includes(`<meta name="ft-app-version" content="${releaseVersion}"`));
 assert.ok(index.includes('data-i18n="public.changelogLink" href="changelog.html?return=settings"'));
 assert.ok(index.includes("APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html','changelog.html'])"));
 const changelogHtml=fs.readFileSync('changelog.html','utf8');
 for(const lang of ['en','bg','es']) assert.match(changelogHtml,new RegExp('data-lang="'+lang+'"'));
 assert.match(changelogHtml,/read-only|solo lectura|само за четене/i);
 for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
-console.log('PASS: v1.14.0 changelog link, localized labels, and read-only multilingual document');
+console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multilingual document');
