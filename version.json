@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.7",
+  "version": "1.13.8",
   "released": "2026-10-27",
-  "notes": "Record sanitized update-stage errors in diagnostics to distinguish release download, integrity, and staging failures.",
+  "notes": "Show affected dates and cached-versus-recalculated durations when daily fasting totals fail the integrity check; include issue details in diagnostic exports.",
   "entry": "./index.html",
   "shell": [
     "./",
