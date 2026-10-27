@@ -16,7 +16,7 @@ def boot(page, backup_meta=None):
       if (arg.meta) localStorage.setItem('fastingTracker.backupMeta', JSON.stringify(arg.meta));
     }""", {'data':DATA, 'meta':backup_meta})
     page.set_content(HTML, wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.7'", timeout=30000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.8'", timeout=30000)
     page.wait_for_function("document.querySelector('#fastingBackupStatusBtn')?.dataset.state!=='empty'", timeout=30000)
 
 def status(page, expected):
@@ -122,7 +122,7 @@ with sync_playwright() as p:
       localStorage.setItem('fastingTracker.backupMeta',JSON.stringify(arg.meta));
     }""", {'data':snapshot,'meta':old})
     page2.set_content(HTML,wait_until='domcontentloaded')
-    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.7'",timeout=30000)
+    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.8'",timeout=30000)
     status(page2,'aged')
     assert not errors2, errors2[:5]
     browser.close()
