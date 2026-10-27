@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.15.0 — 27 October 2026
+- Added grayscale, high-contrast light/dark, and colour-vision-friendly appearance palettes, with English, Bulgarian, and Spanish labels.
+- Rebuild and persist derived daily fasting totals when the selected time zone changes, preventing stale prior-zone derived data from causing a false mismatch warning.
+- No fasting or weight record schema changes, migrations, or deletions.
+
 ## v1.14.2 — 27 October 2026
 - Fixed Changelog return navigation to use the same session-based return URL as the other documentation pages.
 - Prefer browser history restoration to avoid forcing a fresh app startup when returning from Changelog.

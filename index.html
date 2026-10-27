@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.14.2" />
+  <meta name="ft-app-version" content="1.15.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -45,7 +45,7 @@ layout: null
       const q=params.get('lang');
       const qi=params.get('icon');
       let pref=null, storedData=null;
-      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=storedData.appearance==='dark'?'#000000':'#ffffff'; } } catch {}
+      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=['dark','high-contrast-dark'].includes(storedData.appearance)?'#000000':'#ffffff'; } } catch {}
       const primarySystemTag=((Array.isArray(navigator.languages)&&navigator.languages[0])||navigator.language||'en').toLowerCase();
       const systemBase=primarySystemTag.split(/[-_]/,1)[0];
       const systemLang=allowed.includes(systemBase)?systemBase:'en';
@@ -115,6 +115,11 @@ layout: null
       --line: #38383a; --accent: #0a84ff; --good: #32d583; --danger: #ff453a;
       --tab: rgba(28,28,30,.94);
     }
+    /* Accessibility palettes; status must remain understandable without colour alone. */
+    html[data-theme="grayscale"] { color-scheme: light; --bg:#f2f2f2; --card:#fff; --text:#000; --muted:#333; --line:#555; --accent:#111; --good:#111; --danger:#000; --tab:rgba(255,255,255,.98); }
+    html[data-theme="high-contrast-light"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#000; --accent:#0037b3; --good:#005a00; --danger:#b00020; --tab:#fff; }
+    html[data-theme="high-contrast-dark"] { color-scheme: dark; --bg:#000; --card:#000; --text:#fff; --muted:#f0f0f0; --line:#fff; --accent:#80dfff; --good:#a8ff9e; --danger:#ff9eaa; --tab:#000; }
+    html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f5f5f7; --card:#fff; --text:#111114; --muted:#444; --line:#777; --accent:#0072b2; --good:#009e73; --danger:#d55e00; --tab:rgba(250,250,252,.98); }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
     body { padding: env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom)); }
@@ -895,6 +900,10 @@ layout: null
 <option data-i18n="settings.appearanceSystem" value="system">System</option>
 <option data-i18n="settings.appearanceLight" value="light">Light</option>
 <option data-i18n="settings.appearanceDark" value="dark">Dark</option>
+<option data-i18n="settings.appearanceGrayscale" value="grayscale">Grayscale</option>
+<option data-i18n="settings.appearanceHighContrastLight" value="high-contrast-light">High contrast (light)</option>
+<option data-i18n="settings.appearanceHighContrastDark" value="high-contrast-dark">High contrast (dark)</option>
+<option data-i18n="settings.appearanceColorblind" value="colorblind">Colour-vision friendly</option>
 </select>
 </div>
 <div class="timeZoneSettings">
@@ -1601,14 +1610,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 33;
+  const I18N_SOURCE_REVISION = 34;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.14.2';
+  const APP_VERSION = '1.15.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1801,7 +1810,7 @@ layout: null
     return SUPPORTED_LANGUAGES.includes(base) ? base : 'en';
   }
   function normalizeLanguage(value) { return value === 'system' || SUPPORTED_LANGUAGES.includes(value) ? value : 'system'; }
-  function normalizeAppearance(value) { return ['system','light','dark'].includes(value) ? value : 'system'; }
+  function normalizeAppearance(value) { return ['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(value) ? value : 'system'; }
   function normalizeIconChoice(value) { return ['plate','moon','hourglass','timer'].includes(value) ? value : 'plate'; }
   function manifestFor(lang, icon) {
     icon = normalizeIconChoice(icon);
@@ -1915,8 +1924,8 @@ layout: null
 
   function effectiveAppearance() {
     const pref = normalizeAppearance(data?.appearance || 'system');
-    if (pref !== 'system') return pref;
-    return systemThemeQuery.matches ? 'dark' : 'light';
+    if (pref === 'system') return systemThemeQuery.matches ? 'dark' : 'light';
+    return pref === 'dark' || pref === 'high-contrast-dark' ? 'dark' : 'light';
   }
   function applyAppearance() {
     const pref = normalizeAppearance(data?.appearance || 'system');
@@ -3288,7 +3297,7 @@ layout: null
     if (!Number.isFinite(parseLocalizedNumber(rawData.goalHours)) || parseLocalizedNumber(rawData.goalHours) <= 0 || parseLocalizedNumber(rawData.goalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid default goal');
     if (!['kg','lb'].includes(rawData.weightUnit)) throw new Error('invalid weight unit');
     if (rawData.language != null && typeof rawData.language !== 'string') throw new Error('invalid language');
-    if (!['system','light','dark'].includes(rawData.appearance)) throw new Error('invalid appearance');
+    if (!['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(rawData.appearance)) throw new Error('invalid appearance');
     if (rawData.iconChoice != null && !['plate','moon','hourglass','timer'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
     if (typeof rawData.gamificationEnabled !== 'boolean') throw new Error('invalid gamification setting');
     const notificationPreferences = rawData.notificationPreferences;
@@ -7737,10 +7746,14 @@ layout: null
   el('timeZoneSelect').addEventListener('change', () => {
     const value = el('timeZoneSelect').value;
     preferredTimeZone = value === 'system' ? null : (isValidTimeZone(value) ? value : null);
+    // Daily totals are derived by local calendar day. Rebuild them when the
+    // selected zone changes, rather than compare new-zone records with a stale map.
+    updateStoredDayTotalsIncrementally();
     persistSmallPreferences();
     invalidateDerivedCaches();
     markViewsDirty();
     renderAll();
+    persistDailyTotals(data.revision).catch(() => noteDiagnosticError('daily_totals_persist_failed'));
   });
   document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn => btn.addEventListener('click', () => {
     urlIconOverride = null;

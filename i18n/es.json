@@ -59,7 +59,7 @@
   "settings.languageHelp": "Usa automáticamente el idioma del dispositivo o elige un idioma solo para esta app.",
   "settings.systemLanguage": "Idioma del sistema",
   "settings.appearance": "Apariencia",
-  "settings.appearanceHelp": "Sigue automáticamente la apariencia del dispositivo o elige modo claro u oscuro solo para esta app.",
+  "settings.appearanceHelp": "Sigue la apariencia del dispositivo o elige un modo claro, oscuro, en escala de grises, de alto contraste o adaptado a la visión del color.",
   "settings.appearanceSystem": "Sistema",
   "settings.appearanceLight": "Claro",
   "settings.appearanceDark": "Oscuro",
@@ -1008,5 +1008,9 @@
   "integrity.copy": "Copiar informe",
   "integrity.copied": "Informe de integridad copiado.",
   "integrity.copyFailed": "No se pudo copiar. Selecciona y copia el texto manualmente.",
-  "public.changelogLink": "Registro de cambios"
+  "public.changelogLink": "Registro de cambios",
+  "settings.appearanceGrayscale": "Escala de grises",
+  "settings.appearanceHighContrastLight": "Alto contraste (claro)",
+  "settings.appearanceHighContrastDark": "Alto contraste (oscuro)",
+  "settings.appearanceColorblind": "Adaptada a la visión del color"
 }

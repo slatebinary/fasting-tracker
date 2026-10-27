@@ -677,6 +677,14 @@ ok("renderWeighCadenceButtons('notification', prefs.weighInCadence)" in index, '
 ok("renderWeighCadenceButtons('setupNotification', prefs.weighInCadence)" in index, 'onboarding cadence control is not rendered from saved preference')
 ok("disabled=!prefs.weighIn" not in index and "disabled = !prefs.weighIn" not in index, 'cadence must remain selectable while weigh-in reminder is off')
 
+# v1.15.0 accessibility palettes and timezone-derived cache regression checks
+ok("high-contrast-light" in index and "high-contrast-dark" in index and "grayscale" in index and "colorblind" in index, "accessibility appearance palettes missing")
+ok('settings.appearanceGrayscale' in index and 'settings.appearanceHighContrastLight' in index and 'settings.appearanceHighContrastDark' in index and 'settings.appearanceColorblind' in index, "accessibility appearance options are not localized")
+tz_start=index.find("el('timeZoneSelect').addEventListener('change'")
+tz_end=index.find("});",tz_start)
+tz_handler=index[tz_start:tz_end+3] if tz_start>=0 and tz_end>=0 else ""
+ok("updateStoredDayTotalsIncrementally()" in tz_handler and "persistDailyTotals(data.revision)" in tz_handler, "time-zone changes must rebuild and persist derived daily totals")
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)

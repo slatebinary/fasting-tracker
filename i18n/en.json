@@ -59,7 +59,7 @@
   "settings.languageHelp": "Use the device language automatically, or choose a language for this app.",
   "settings.systemLanguage": "System language",
   "settings.appearance": "Appearance",
-  "settings.appearanceHelp": "Follow the device appearance automatically, or choose light or dark mode for this app.",
+  "settings.appearanceHelp": "Follow the device appearance, or choose light, dark, grayscale, high-contrast, or colour-vision-friendly colours.",
   "settings.appearanceSystem": "System",
   "settings.appearanceLight": "Light",
   "settings.appearanceDark": "Dark",
@@ -1008,5 +1008,9 @@
   "integrity.copy": "Copy report",
   "integrity.copied": "Integrity report copied.",
   "integrity.copyFailed": "Could not copy. Select and copy the text manually.",
-  "public.changelogLink": "Release notes / changelog"
+  "public.changelogLink": "Release notes / changelog",
+  "settings.appearanceGrayscale": "Grayscale",
+  "settings.appearanceHighContrastLight": "High contrast (light)",
+  "settings.appearanceHighContrastDark": "High contrast (dark)",
+  "settings.appearanceColorblind": "Colour-vision friendly"
 }
