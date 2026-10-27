@@ -1007,5 +1007,6 @@
   "stats.clockPeriodChangeList": "Clock/time-zone offset changes in this period: {changes}. Daily fasting values use actual elapsed time.",
   "integrity.copy": "Copy report",
   "integrity.copied": "Integrity report copied.",
-  "integrity.copyFailed": "Could not copy. Select and copy the text manually."
+  "integrity.copyFailed": "Could not copy. Select and copy the text manually.",
+  "public.changelogLink": "Release notes / changelog"
 }
