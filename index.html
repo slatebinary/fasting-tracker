@@ -6890,7 +6890,7 @@ layout: null
     el('healthIntegrityStatus').textContent=lastIntegrityCheck?(lastIntegrityCheck.ok?t('integrity.lastOk',{date:localDateTimeLabel(lastIntegrityCheck.at)}):t('integrity.lastIssues',{n:lastIntegrityCheck.issues.length,date:localDateTimeLabel(lastIntegrityCheck.at)})):t('integrity.notChecked');
   }
 
-  function addIntegrityIssue(issues, code, detail='') { issues.push({code,detail:String(detail||'').slice(0,160)}); }
+  function addIntegrityIssue(issues, code, detail='') { const text=String(detail||''); issues.push({code,detail:code==='daily-totals-mismatch'?text:text.slice(0,160)}); }
 
   function mapsApproximatelyEqual(a,b,tolerance=2) {
     const keys=new Set([...a.keys(),...b.keys()]);
