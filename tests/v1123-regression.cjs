@@ -24,7 +24,7 @@ assert.match(index,/snapshotData\.deletedFasts\.length <= persistedDeletedFastMa
 assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeightMap\.size/);
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
-assert.match(index,/const APP_VERSION\s*=\s*['"]1\.13\.8['"]/);
+assert.match(index,/const APP_VERSION\s*=\s*['"]1\.13\.9['"]/);
 assert.match(index,/function buildInteractiveChartDays\(dayCount = null/);
 assert.match(index,/buildInteractiveChartDays\(\)/);
 assert.match(index,/const maxTimelineWidth = 9000/);
@@ -34,7 +34,7 @@ assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.13.9'
 assert.match(index,/function safeUpdateErrorMessage\(error\)/);
 assert.match(index,/failPendingMigration\(latestVersion, 'update-stage-failed', err\)/);
 assert.match(index,/error:migration\.last\.error\|\|null/);
-assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,tolerance=2\)/);
+assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,tolerance=2\)/);\nassert.match(index,/const details=keys\\.map\\(key=>/);\nassert.doesNotMatch(index,/keys\\.slice\\(0,3\\)/);\nassert.match(index,/id=\"settingsGroupUpdates\" data-settings-group=\"settingsGroupUpdates\" open/);\nassert.match(index,/id=\"updateBtn\"[^>]*>Check for new version</);
 assert.match(index,/id="integrityCopyBtn"/);
 assert.match(index,/async function copyIntegrityReport\(\)/);
 assert.match(index,/el\('integrityCopyBtn'\)\.addEventListener\('click',copyIntegrityReport\)/);
