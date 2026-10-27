@@ -2,7 +2,7 @@
 
 A privacy-focused Progressive Web App (PWA) for tracking intermittent and extended fasting, weight, progress, and personal goals.
 
-- **[Changelog](CHANGELOG.md)** — release history is also available inside the app from Settings → About & help → Changelog.
+- **[Changelog](CHANGELOG.md)** — release history is also available inside the app from Settings → Updates → Changelog.
 
 Fasting Tracker is designed to work locally on your device, including offline after installation. It does not require an account and does not use an application backend to store your fasting or weight records.
 
