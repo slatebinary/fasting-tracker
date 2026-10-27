@@ -103,7 +103,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: fasting-tracker-v1.13.8-regression
-          path: /tmp/fasting-tracker-v1.13.7.zip
+          path: /tmp/fasting-tracker-v1.13.8.zip
           retention-days: 14
 
       - name: Synchronize generated assets to development branch after passing tests
