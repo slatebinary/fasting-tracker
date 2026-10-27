@@ -1605,7 +1605,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.6';
+  const APP_VERSION = '1.13.7';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2920,7 +2920,20 @@ layout: null
     }
   }
 
-  function failPendingMigration(toVersion, reason='update-failed') { const meta=readAppMeta(),pending=meta.pendingMigration; if(pending&&pending.to===String(toVersion)){meta.lastMigration={...pending,status:'failed',reason,completedAt:new Date().toISOString()};delete meta.pendingMigration;writeAppMeta(meta);} }
+  function safeUpdateErrorMessage(error) {
+    const message=String(error?.message||error||'unknown update error')
+      .replace(/https?:\/\/[^\s"'<>]+/gi,'[url]')
+      .replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').trim().slice(0,180);
+    return message||'unknown update error';
+  }
+
+  function failPendingMigration(toVersion, reason='update-failed', error=null) {
+    const meta=readAppMeta(),pending=meta.pendingMigration;
+    if(pending&&pending.to===String(toVersion)){
+      meta.lastMigration={...pending,status:'failed',reason:String(reason||'update-failed').slice(0,60),error:error?safeUpdateErrorMessage(error):null,completedAt:new Date().toISOString()};
+      delete meta.pendingMigration;writeAppMeta(meta);
+    }
+  }
 
   function migrationStatusMeta() { const meta=readAppMeta(); return {pending:meta.pendingMigration||null,last:meta.lastMigration||null}; }
 
@@ -6960,7 +6973,7 @@ layout: null
       format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, updateProtocolVersion:UPDATE_PROTOCOL_VERSION, exportedAt:new Date().toISOString(),
       environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth,deployment:{state:deploymentConsistencyState,metadataVersion:liveMetadataVersion,entryVersion:liveEntryVersion,lastCheckedAt:lastUpdateCheckAt}},
       database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,storageGeneration:STORAGE_GENERATION,minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION,supportedBackupVersions:[BACKUP_MIN_VERSION,BACKUP_VERSION],lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,excusedStops:data.records.filter(isExcusedStop).length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
-      migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,completedAt:migration.last.completedAt}:null,storage:readAppMeta().lastStorageMigration||null},
+      migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,reason:migration.last.reason||null,error:migration.last.error||null,completedAt:migration.last.completedAt}:null,storage:readAppMeta().lastStorageMigration||null},
       integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code)}:null,
       recoveryMode:recoveryMode?String(recoveryMode.reason||recoveryMode):null,
       performance:loadPerformanceMeta(),
@@ -7397,7 +7410,7 @@ layout: null
       window.location.reload();
     } catch (err) {
       noteDiagnosticError('update.stage');
-      failPendingMigration(latestVersion, 'update-stage-failed');
+      failPendingMigration(latestVersion, 'update-stage-failed', err);
       updateInProgress = false; setUpdateUI('offline', t('update.failedInstall'));
     }
   }
