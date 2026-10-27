@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const docs = ['about.html','privacy.html','branding.html','license.html'];
+const docs = ['about.html','privacy.html','branding.html','license.html','changelog.html'];
 const index = fs.readFileSync('index.html','utf8');
 const jsBlocks = html => [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 function checkSyntax(path) {
@@ -130,3 +130,14 @@ assert.match(index, /class="row setupNotificationWeighRow"/);
 assert.match(index, /\.setupNotificationWeighRow \.notificationCadenceToggle/);
 assert.match(index, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 console.log('PASS: narrow-screen onboarding notification cadence layout source');
+
+
+// v1.14.0: the read-only changelog is linked from Settings and available in all supported languages.
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.14.0');
+assert.match(index,/data-i18n="public\\.changelogLink" href="changelog\\.html\\?return=settings"/);
+assert.match(index,/APP_DOC_PATHS = Object\\.freeze\\(\\['about\\.html','privacy\\.html','branding\\.html','license\\.html','changelog\\.html'\\]\\)/);
+const changelogHtml=fs.readFileSync('changelog.html','utf8');
+for(const lang of ['en','bg','es']) assert.match(changelogHtml,new RegExp('data-lang="'+lang+'"'));
+assert.match(changelogHtml,/read-only|solo lectura|само за четене/i);
+for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
+console.log('PASS: v1.14.0 changelog link, localized labels, and read-only multilingual document');
