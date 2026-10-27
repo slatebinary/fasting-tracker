@@ -59,7 +59,7 @@
   "settings.languageHelp": "Използвайте автоматично езика на устройството или изберете език само за приложението.",
   "settings.systemLanguage": "Системен език",
   "settings.appearance": "Външен вид",
-  "settings.appearanceHelp": "Следвайте автоматично режима на устройството или изберете светъл или тъмен режим само за приложението.",
+  "settings.appearanceHelp": "Следвайте изгледа на устройството или изберете светъл, тъмен, сив, висококонтрастен или подходящ за нарушения на цветното зрение режим.",
   "settings.appearanceSystem": "Системен",
   "settings.appearanceLight": "Светъл",
   "settings.appearanceDark": "Тъмен",
@@ -1008,5 +1008,9 @@
   "integrity.copy": "Копирай отчета",
   "integrity.copied": "Диагностичният отчет е копиран.",
   "integrity.copyFailed": "Копирането не бе успешно. Изберете и копирайте текста ръчно.",
-  "public.changelogLink": "История на промените"
+  "public.changelogLink": "История на промените",
+  "settings.appearanceGrayscale": "Сива скала",
+  "settings.appearanceHighContrastLight": "Висок контраст (светъл)",
+  "settings.appearanceHighContrastDark": "Висок контраст (тъмен)",
+  "settings.appearanceColorblind": "Подходяща за нарушения на цветното зрение"
 }
