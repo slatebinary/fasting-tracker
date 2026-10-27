@@ -16,7 +16,7 @@ with sync_playwright() as p:
     seeded=build_data(1)
     page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.4'}));}",seeded)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.13.11'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.14.0'",timeout=20000)
     page.wait_for_timeout(500)
     page.evaluate("document.querySelector('#resetBtn').click()")
     page.wait_for_function("!document.querySelector('#destructiveResetModal').hidden")

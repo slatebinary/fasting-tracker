@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 32,
-  "appVersion": "1.13.11",
+  "sourceRevision": 33,
+  "appVersion": "1.14.0",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1011,6 +1011,7 @@
     "stats.clockPeriodChangeList": "Clock/time-zone offset changes in this period: {changes}. Daily fasting values use actual elapsed time.",
     "integrity.copy": "Copy report",
     "integrity.copied": "Integrity report copied.",
-    "integrity.copyFailed": "Could not copy. Select and copy the text manually."
+    "integrity.copyFailed": "Could not copy. Select and copy the text manually.",
+    "public.changelogLink": "Release notes / changelog"
   }
 }
