@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.14.2 — 27 October 2026
+- Fixed Changelog return navigation to use the same session-based return URL as the other documentation pages.
+- Prefer browser history restoration to avoid forcing a fresh app startup when returning from Changelog.
+- No fasting or weight record schema changes, migrations, or deletions.
+
 ## v1.14.1 — 27 October 2026
 - Expanded the in-app and repository changelog with available historical release notes back to v1.8.0.
 - Moved the Changelog link beside the installed app version in Settings → Updates.
