@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.13.8" />
+  <meta name="ft-app-version" content="1.13.9" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1037,14 +1037,14 @@ layout: null
 </div>
     </details></div>
     </details>
-    <details class="settingsGroup" id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates">
+    <details class="settingsGroup" id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open>
       <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.updates">Updates</strong><span class="small" data-i18n="settings.group.updatesHelp">Installed version and update checks</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
       <div class="settingsGroupBody"><div class="card settingsCompactCard" id="settingsUpdatesCard"><div class="row" style="margin-top:10px">
 <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
 <div class="duration" id="appVersionLabel">—</div>
 </div><div class="row">
 <div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
-<button class="secondary" data-i18n="update.check" id="updateBtn">Check</button>
+<button class="secondary" data-i18n="update.check" id="updateBtn">Check for new version</button>
 </div></div>
     <details class="settingsSubgroup" id="settingsUpdateAdvanced">
       <summary data-i18n="settings.updateAdvanced">Advanced update details</summary>
@@ -1456,7 +1456,8 @@ layout: null
     <h2 id="integrityModalTitle" data-i18n="integrity.title">Data integrity check</h2>
     <div id="integritySummary" class="small"></div>
     <ul id="integrityIssueList" class="integrityList small"></ul>
-    <div class="modalActions"><button id="integrityCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+    <div id="integrityCopyStatus" class="small" role="status" aria-live="polite"></div>
+    <div class="modalActions"><button id="integrityCopyBtn" class="secondary" type="button" data-i18n="integrity.copy">Copy report</button><button id="integrityCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
   </div>
 </div>
 
@@ -1605,7 +1606,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.8';
+  const APP_VERSION = '1.13.9';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6902,12 +6903,15 @@ layout: null
       .filter(key=>Math.abs((recalculated.get(key)||0)-(cached.get(key)||0))>tolerance)
       .sort();
     if(!keys.length)return '';
-    const shown=keys.slice(0,3).map(key=>{
-      const expected=((recalculated.get(key)||0)/3600000).toFixed(2);
-      const found=((cached.get(key)||0)/3600000).toFixed(2);
-      return `${key}: records ${expected}h, cached ${found}h`;
+    const details=keys.map(key=>{
+      const recordMs=recalculated.get(key)||0;
+      const cachedMs=cached.get(key)||0;
+      const expected=(recordMs/3600000).toFixed(5);
+      const found=(cachedMs/3600000).toFixed(5);
+      const deltaSeconds=((cachedMs-recordMs)/1000).toFixed(3);
+      return `${key}: records ${expected}h, cached ${found}h (cached − records: ${deltaSeconds}s)`;
     });
-    return `Dates (${keys.length}): ${shown.join('; ')}${keys.length>shown.length?'; …':''}`;
+    return `Dates (${keys.length}): ${details.join('; ')}`;
   }
 
   async function collectStartupIntegrityIssues() {
@@ -6972,10 +6976,26 @@ layout: null
     lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};if(lastIntegrityCheck.ok)markLastKnownGood('integrity-check');
     const summary=el('integritySummary'),list=el('integrityIssueList'); list.replaceChildren();
     summary.textContent=issues.length?t('integrity.issuesFound',{n:issues.length}):t('integrity.ok');
+    el('integrityCopyStatus').textContent='';
     if(!issues.length){const li=document.createElement('li');li.textContent=t('integrity.noProblems');list.append(li);}
     else for(const issue of issues){const li=document.createElement('li');li.textContent=integrityIssueLabel(issue)+(issue.detail?' — '+issue.detail:'');list.append(li);}
     if(btn)btn.disabled=false; renderStorageHealth(); showModal('integrityModal','integrityCloseBtn');
     return lastIntegrityCheck;
+  }
+
+  async function copyIntegrityReport(){
+    const status=el('integrityCopyStatus');
+    const report=[t('integrity.title'),lastIntegrityCheck?.ok?t('integrity.ok'):t('integrity.issuesFound',{n:lastIntegrityCheck?.issues?.length||0})];
+    for(const issue of (lastIntegrityCheck?.issues||[])) report.push(integrityIssueLabel(issue)+(issue.detail?' — '+issue.detail:''));
+    const text=report.join('\n');
+    let copied=false;
+    try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);copied=true;}}catch{}
+    if(!copied){
+      let area=null;
+      try{area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.append(area);area.focus();area.select();copied=!!document.execCommand('copy');}
+      catch{}finally{area?.remove();}
+    }
+    status.textContent=copied?t('integrity.copied'):t('integrity.copyFailed');
   }
 
   async function exportDiagnostics(){
@@ -8071,6 +8091,7 @@ layout: null
   el('chart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('diagnosticExportBtn').addEventListener('click',exportDiagnostics);
   el('integrityCheckBtn').addEventListener('click',runDataIntegrityCheck);
+  el('integrityCopyBtn').addEventListener('click',copyIntegrityReport);
   el('integrityCloseBtn').addEventListener('click',()=>hideModal('integrityModal'));
   el('createSnapshotBtn').addEventListener('click',openManualSnapshotModal);
   el('snapshotCreateNowBtn').addEventListener('click',openManualSnapshotModal);
