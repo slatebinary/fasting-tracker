@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const docs = ['about.html','privacy.html','branding.html','license.html','changelog.html'];
+const docs = ['about.html','privacy.html','branding.html','license.html'];
 const index = fs.readFileSync('index.html','utf8');
 const jsBlocks = html => [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 function checkSyntax(path) {
@@ -15,7 +15,7 @@ function checkSyntax(path) {
   } else if(path.endsWith('.json')) JSON.parse(text);
   else new vm.Script(text,{filename:path});
 }
-for(const p of ['index.html',...docs,'version.json','i18n/en.js','i18n/bg.js','i18n/es.js'])checkSyntax(p);
+for(const p of ['index.html',...docs,'changelog.html','version.json','i18n/en.js','i18n/bg.js','i18n/es.js'])checkSyntax(p);
 assert.match(index,/window\.addEventListener\('pageshow'/);
 assert.match(index,/if \(!event\.persisted \|\| !uiReady\) return;/);
 assert.match(index,/persistedRecordMap\.size > 0 && snapshotData\.records\.length === 0/);
