@@ -37,7 +37,7 @@ assert.match(index,/error:migration\.last\.error\|\|null/);
 assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,tolerance=2\)/);
 assert.match(index,/id="integrityCopyBtn"/);
 assert.match(index,/async function copyIntegrityReport\(\)/);
-assert.match(index,/integrityCopyBtn.*copyIntegrityReport/);
+assert.match(index,/el\('integrityCopyBtn'\)\.addEventListener\('click',copyIntegrityReport\)/);
 assert.match(index,/cached − records/);
 assert.match(index,/describeDailyTotalsMismatch\(recalculated,storedDayTotalsMap\)/);
 assert.match(index,/issueDetails:lastIntegrityCheck\.issues\.map\(x=>\(\{code:x\.code,detail:x\.detail\|\|''\}\)\)/);
