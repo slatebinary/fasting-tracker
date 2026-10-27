@@ -1,12 +1,13 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.7",
+  "version": "1.14.0",
   "released": "2026-10-27",
-  "notes": "Record sanitized update-stage errors in diagnostics to distinguish release download, integrity, and staging failures.",
+  "notes": "Add a localized, read-only in-app changelog and repository release history.",
   "entry": "./index.html",
   "shell": [
     "./",
     "./index.html",
+    "./changelog.html",
     "./i18n/en.js",
     "./i18n/bg.js",
     "./i18n/es.js",
