@@ -30,7 +30,10 @@ assert.match(index,/buildInteractiveChartDays\(\)/);
 assert.match(index,/const maxTimelineWidth = 9000/);
 assert.match(index,/dayKey\(oldestMs,tz\)/);
 assert.match(index,/Fasting timeline for all recorded fastings/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.13.6');
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.13.7');
+assert.match(index,/function safeUpdateErrorMessage\(error\)/);
+assert.match(index,/failPendingMigration\(latestVersion, 'update-stage-failed', err\)/);
+assert.match(index,/error:migration\.last\.error\|\|null/);
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);
