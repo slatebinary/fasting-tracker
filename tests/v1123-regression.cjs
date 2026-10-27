@@ -32,6 +32,10 @@ assert.match(index,/dayKey\(oldestMs,tz\)/);
 assert.match(index,/Fasting timeline for all recorded fastings/);
 assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.14.0');
 assert.match(index,/data-i18n="public\.changelogLink" href="changelog\.html\?return=settings"/);
+assert.match(index,/APP_DOC_PATHS = Object\.freeze\(\['about\.html','privacy\.html','branding\.html','license\.html','changelog\.html'\]\)/);
+const changelogHtml=fs.readFileSync('changelog.html','utf8');
+for(const lang of ['en','bg','es']) assert.match(changelogHtml,new RegExp('data-lang="'+lang+'"'));
+assert.match(changelogHtml,/read-only|solo lectura|само за четене/i);
 for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
 assert.match(index,/function safeUpdateErrorMessage\(error\)/);
 assert.match(index,/failPendingMigration\(latestVersion, 'update-stage-failed', err\)/);
