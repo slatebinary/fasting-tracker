@@ -32,7 +32,7 @@ jobs:
               p = Path(filename)
               s = p.read_text()
               for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3', '1.13.4', '1.13.5', '1.13.6'):
-                  s = s.replace(previous, '1.13.6')
+                  s = s.replace(previous, '1.13.7')
               p.write_text(s)
           PYTEST
       - name: Build consistent localization and release assets in runner
