@@ -15,7 +15,7 @@ function checkSyntax(path) {
   } else if(path.endsWith('.json')) JSON.parse(text);
   else new vm.Script(text,{filename:path});
 }
-for(const p of ['index.html',...docs,'version.json','i18n/en.js','i18n/bg.js','i18n/es.js'])checkSyntax(p);
+for(const p of ['index.html','changelog.html',...docs,'version.json','i18n/en.js','i18n/bg.js','i18n/es.js'])checkSyntax(p);
 assert.match(index,/window\.addEventListener\('pageshow'/);
 assert.match(index,/if \(!event\.persisted \|\| !uiReady\) return;/);
 assert.match(index,/persistedRecordMap\.size > 0 && snapshotData\.records\.length === 0/);
@@ -30,7 +30,9 @@ assert.match(index,/buildInteractiveChartDays\(\)/);
 assert.match(index,/const maxTimelineWidth = 9000/);
 assert.match(index,/dayKey\(oldestMs,tz\)/);
 assert.match(index,/Fasting timeline for all recorded fastings/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.13.7');
+assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.14.0');
+assert.match(index,/data-i18n="public\\.changelogLink" href="changelog\\.html\\?return=settings"/);
+for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
 assert.match(index,/function safeUpdateErrorMessage\(error\)/);
 assert.match(index,/failPendingMigration\(latestVersion, 'update-stage-failed', err\)/);
 assert.match(index,/error:migration\.last\.error\|\|null/);
