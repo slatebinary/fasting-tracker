@@ -341,7 +341,7 @@
   "update.releaseReady": "Hay una versión más reciente de Fasting Tracker.",
   "update.update": "Actualizar",
   "update.updates": "Actualizaciones",
-  "update.check": "Comprobar",
+  "update.check": "Buscar nueva versión",
   "update.checking": "Buscando actualizaciones…",
   "update.checkingBtn": "Comprobando…",
   "update.available": "Está disponible la versión v{version}.",
