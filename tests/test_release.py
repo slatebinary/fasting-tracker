@@ -35,6 +35,8 @@ ok(bool(re.fullmatch(r'\d+\.\d+\.\d+',str(ver.get('version','')))),'version must
 expected_version=ver.get('version')
 ok(f'<meta name="ft-app-version" content="{expected_version}"' in index,'index meta version mismatch')
 ok(f"const APP_VERSION = '{expected_version}';" in index,'APP_VERSION mismatch')
+ok("function addIntegrityIssue(issues, code, detail='') { const text=String(detail||''); issues.push({code,detail:code==='daily-totals-mismatch'?text:text.slice(0,160)}); }" in index, 'daily-total integrity details must not be truncated')
+ok("const details=keys.map(key=>" in index and "return `Dates (${keys.length}): ${details.join('; ')}`;" in index, 'daily-total mismatch report must include every mismatched date')
 ok(bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}',str(ver.get('released','')))),'release date must be ISO YYYY-MM-DD')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')

@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.13.9" />
+  <meta name="ft-app-version" content="1.13.10" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1606,7 +1606,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.9';
+  const APP_VERSION = '1.13.10';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6890,7 +6890,7 @@ layout: null
     el('healthIntegrityStatus').textContent=lastIntegrityCheck?(lastIntegrityCheck.ok?t('integrity.lastOk',{date:localDateTimeLabel(lastIntegrityCheck.at)}):t('integrity.lastIssues',{n:lastIntegrityCheck.issues.length,date:localDateTimeLabel(lastIntegrityCheck.at)})):t('integrity.notChecked');
   }
 
-  function addIntegrityIssue(issues, code, detail='') { issues.push({code,detail:String(detail||'').slice(0,160)}); }
+  function addIntegrityIssue(issues, code, detail='') { const text=String(detail||''); issues.push({code,detail:code==='daily-totals-mismatch'?text:text.slice(0,160)}); }
 
   function mapsApproximatelyEqual(a,b,tolerance=2) {
     const keys=new Set([...a.keys(),...b.keys()]);
