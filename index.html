@@ -6897,6 +6897,19 @@ layout: null
     return true;
   }
 
+  function describeDailyTotalsMismatch(recalculated,cached,tolerance=2) {
+    const keys=[...new Set([...recalculated.keys(),...cached.keys()])]
+      .filter(key=>Math.abs((recalculated.get(key)||0)-(cached.get(key)||0))>tolerance)
+      .sort();
+    if(!keys.length)return '';
+    const shown=keys.slice(0,3).map(key=>{
+      const expected=((recalculated.get(key)||0)/3600000).toFixed(2);
+      const found=((cached.get(key)||0)/3600000).toFixed(2);
+      return `${key}: records ${expected}h, cached ${found}h`;
+    });
+    return `Dates (${keys.length}): ${shown.join('; ')}${keys.length>shown.length?'; …':''}`;
+  }
+
   async function collectStartupIntegrityIssues() {
     // Keep automatic startup validation deliberately lightweight. Full integrity
     // verification can rebuild daily totals and decode every recovery snapshot,
@@ -6930,7 +6943,7 @@ layout: null
     const sorted=[...data.records].sort((a,b)=>String(a.start).localeCompare(String(b.start)));
     for(let i=1;i<sorted.length;i++){if(new Date(sorted[i].start)<new Date(sorted[i-1].end)){addIntegrityIssue(issues,'overlapping-fasts');break;}}
     if(data.activeStart){const a=new Date(data.activeStart).getTime();if(sorted.some(r=>a<new Date(r.end).getTime()&&Date.now()>new Date(r.start).getTime()))addIntegrityIssue(issues,'active-fast-overlap');}
-    const recalculated=buildStoredDayTotals(data.records); if(!mapsApproximatelyEqual(recalculated,storedDayTotalsMap))addIntegrityIssue(issues,'daily-totals-mismatch');
+    const recalculated=buildStoredDayTotals(data.records); if(!mapsApproximatelyEqual(recalculated,storedDayTotalsMap))addIntegrityIssue(issues,'daily-totals-mismatch',describeDailyTotalsMismatch(recalculated,storedDayTotalsMap));
     try {
       const [metas,payloads]=await Promise.all([idbGetAll('snapshotMeta'),idbGetAll('snapshotPayload')]);
       const metaIds=new Set(metas.map(x=>x.id)),payloadIds=new Set(payloads.map(x=>x.id));
@@ -6960,7 +6973,7 @@ layout: null
     const summary=el('integritySummary'),list=el('integrityIssueList'); list.replaceChildren();
     summary.textContent=issues.length?t('integrity.issuesFound',{n:issues.length}):t('integrity.ok');
     if(!issues.length){const li=document.createElement('li');li.textContent=t('integrity.noProblems');list.append(li);}
-    else for(const issue of issues){const li=document.createElement('li');li.textContent=integrityIssueLabel(issue);list.append(li);}
+    else for(const issue of issues){const li=document.createElement('li');li.textContent=integrityIssueLabel(issue)+(issue.detail?' — '+issue.detail:'');list.append(li);}
     if(btn)btn.disabled=false; renderStorageHealth(); showModal('integrityModal','integrityCloseBtn');
     return lastIntegrityCheck;
   }
@@ -6974,7 +6987,7 @@ layout: null
       environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth,deployment:{state:deploymentConsistencyState,metadataVersion:liveMetadataVersion,entryVersion:liveEntryVersion,lastCheckedAt:lastUpdateCheckAt}},
       database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,storageGeneration:STORAGE_GENERATION,minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION,supportedBackupVersions:[BACKUP_MIN_VERSION,BACKUP_VERSION],lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,excusedStops:data.records.filter(isExcusedStop).length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
       migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,reason:migration.last.reason||null,error:migration.last.error||null,completedAt:migration.last.completedAt}:null,storage:readAppMeta().lastStorageMigration||null},
-      integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code)}:null,
+      integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code),issueDetails:lastIntegrityCheck.issues.map(x=>({code:x.code,detail:x.detail||''}))}:null,
       recoveryMode:recoveryMode?String(recoveryMode.reason||recoveryMode):null,
       performance:loadPerformanceMeta(),
       recentErrorCodes:diagnosticErrors.slice(-20)
