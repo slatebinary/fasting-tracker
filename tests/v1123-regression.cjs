@@ -134,8 +134,8 @@ console.log('PASS: narrow-screen onboarding notification cadence layout source')
 
 // v1.14.0: the read-only changelog is linked from Settings and available in all supported languages.
 assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.14.0');
-assert.match(index,/data-i18n="public\\.changelogLink" href="changelog\\.html\\?return=settings"/);
-assert.match(index,/APP_DOC_PATHS = Object\\.freeze\\(\\['about\\.html','privacy\\.html','branding\\.html','license\\.html','changelog\\.html'\\]\\)/);
+assert.ok(index.includes('data-i18n="public.changelogLink" href="changelog.html?return=settings"'));
+assert.ok(index.includes("APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html','changelog.html'])"));
 const changelogHtml=fs.readFileSync('changelog.html','utf8');
 for(const lang of ['en','bg','es']) assert.match(changelogHtml,new RegExp('data-lang="'+lang+'"'));
 assert.match(changelogHtml,/read-only|solo lectura|само за четене/i);
