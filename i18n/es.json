@@ -1007,5 +1007,6 @@
   "stats.clockPeriodChangeList": "Cambios de hora/desfase UTC durante este período: {changes}. Los totales diarios usan el tiempo real transcurrido.",
   "integrity.copy": "Copiar informe",
   "integrity.copied": "Informe de integridad copiado.",
-  "integrity.copyFailed": "No se pudo copiar. Selecciona y copia el texto manualmente."
+  "integrity.copyFailed": "No se pudo copiar. Selecciona y copia el texto manualmente.",
+  "public.changelogLink": "Registro de cambios"
 }
