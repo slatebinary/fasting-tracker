@@ -1595,6 +1595,8 @@ layout: null
   const NOTIFICATION_DETAIL_LIMIT = 5;
   const NOTIFICATION_DETAIL_TTL_MS = 14 * 24 * 60 * 60 * 1000;
   const DATA_VERSION = 1;
+  // Bump when the daily-total cache calculation or storage semantics change.
+  const DAILY_TOTALS_ALGORITHM_VERSION = 2;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
@@ -2402,23 +2404,10 @@ layout: null
   }
 
   function updateStoredDayTotalsIncrementally() {
-    const nextMap = new Map(data.records.map(r => [r.id, r]));
-    // Remove deleted or changed old contributions.
-    for (const [id, oldRecord] of dayTotalsRecordMap) {
-      const next = nextMap.get(id);
-      if (next && canonicalRecordFingerprint(next) === canonicalRecordFingerprint(oldRecord)) continue;
-      for (const [key, ms] of recordDayContribution(oldRecord)) {
-        const value = (storedDayTotalsMap.get(key)||0) - ms;
-        if (value > 0.5) storedDayTotalsMap.set(key, value); else storedDayTotalsMap.delete(key);
-      }
-    }
-    // Add new or changed contributions.
-    for (const [id, next] of nextMap) {
-      const oldRecord = dayTotalsRecordMap.get(id);
-      if (oldRecord && canonicalRecordFingerprint(next) === canonicalRecordFingerprint(oldRecord)) continue;
-      for (const [key, ms] of recordDayContribution(next)) storedDayTotalsMap.set(key, (storedDayTotalsMap.get(key)||0) + ms);
-    }
-    dayTotalsRecordMap = nextMap;
+    // Daily totals are derived data. Recompute from authoritative fasting records
+    // rather than accumulating add/subtract deltas, which can drift over time.
+    storedDayTotalsMap = buildStoredDayTotals(data.records);
+    dayTotalsRecordMap = recordMap(data.records);
   }
 
   function persistSmallPreferences() {
@@ -2435,7 +2424,7 @@ layout: null
   }
 
   async function persistDailyTotals(revision = data.revision) {
-    await idbPut('state', {key:'dailyTotals', revision, entries:[...storedDayTotalsMap.entries()]});
+    await idbPut('state', {key:'dailyTotals', revision, algorithmVersion:DAILY_TOTALS_ALGORITHM_VERSION, entries:[...storedDayTotalsMap.entries()]});
   }
 
   async function persistPrimaryNow(snapshotData = data, options = {}) {
@@ -2563,7 +2552,7 @@ layout: null
       snapshotCache = pruneSnapshots((await idbGetAll('snapshotMeta')).map(normalizeSnapshot).filter(Boolean));
 
       const daily = await idbGet('state', 'dailyTotals');
-      if (daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)) storedDayTotalsMap = new Map(daily.entries);
+      if (daily && Number(daily.revision) === Number(data.revision) && Number(daily.algorithmVersion) === DAILY_TOTALS_ALGORITHM_VERSION && Array.isArray(daily.entries)) storedDayTotalsMap = new Map(daily.entries);
       else {
         storedDayTotalsMap = buildStoredDayTotals(data.records);
         await persistDailyTotals(data.revision);

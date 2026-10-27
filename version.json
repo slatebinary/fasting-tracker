@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.10",
+  "version": "1.13.11",
   "released": "2026-10-27",
-  "notes": "Fix truncation of full daily-total integrity mismatch details.",
+  "notes": "Rebuild stale daily-total caches using an explicit calculation version and prevent incremental cache drift.",
   "entry": "./index.html",
   "shell": [
     "./",
