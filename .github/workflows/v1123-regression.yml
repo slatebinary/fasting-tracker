@@ -31,7 +31,7 @@ jobs:
           for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py', 'tests/test_import_preview_merge.py', 'tests/test_destructive_guard.py', 'tests/test_setup_notification_layout.py'):
               p = Path(filename)
               s = p.read_text()
-              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3', '1.13.4', '1.13.5'):
+              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3', '1.13.4', '1.13.5', '1.13.6'):
                   s = s.replace(previous, '1.13.6')
               p.write_text(s)
           PYTEST
@@ -56,7 +56,7 @@ jobs:
           from pathlib import Path
           root=Path('_site')
           version=json.loads((root/'version.json').read_text())
-          assert version['version']=='1.13.6'
+          assert version['version']=='1.13.7'
           assert all((root/name).exists() for name in ('index.html','about.html','privacy.html','branding.html','license.html'))
           print('PASS: GitHub Pages build artifact and required documents')
           PY
