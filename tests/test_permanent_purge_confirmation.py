@@ -20,7 +20,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM)
     page.evaluate('d=>{__seedFastingDbV2(d,[]);localStorage.setItem("fastingTracker.appMeta",JSON.stringify({lastAppVersion:"1.12.4"}));}',seed)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.14.1'",timeout=20000)
+    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.14.2'",timeout=20000)
     page.locator('[data-screen="history"]').click()
     page.wait_for_function("!document.querySelector('#deletedFastsCard').hidden")
     fast_purge=page.locator('#deletedFastsList button.dangerText')
