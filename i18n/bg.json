@@ -341,7 +341,7 @@
   "update.releaseReady": "Налична е по-нова версия на Fasting Tracker.",
   "update.update": "Обнови",
   "update.updates": "Обновявания",
-  "update.check": "Провери",
+  "update.check": "Провери за нова версия",
   "update.checking": "Проверка за обновявания…",
   "update.checkingBtn": "Проверка…",
   "update.available": "Налична е версия v{version}.",
