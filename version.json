@@ -1,12 +1,13 @@
 {
   "protocolVersion": 1,
-  "version": "1.13.11",
+  "version": "1.14.0",
   "released": "2026-10-27",
-  "notes": "Rebuild stale daily-total caches using an explicit calculation version and prevent incremental cache drift.",
+  "notes": "Add a localized, read-only in-app changelog and repository release history.",
   "entry": "./index.html",
   "shell": [
     "./",
     "./index.html",
+    "./changelog.html",
     "./i18n/en.js",
     "./i18n/bg.js",
     "./i18n/es.js",

@@ -59,7 +59,7 @@ jobs:
           root=Path('_site')
           version=json.loads((root/'version.json').read_text())
           assert version['version']==json.loads(Path('version.json').read_text())['version']
-          assert all((root/name).exists() for name in ('index.html','about.html','privacy.html','branding.html','license.html'))
+          assert all((root/name).exists() for name in ('index.html','about.html','privacy.html','branding.html','license.html','changelog.html'))
           print('PASS: GitHub Pages build artifact and required documents')
           PY
       - name: Install browser test dependencies
@@ -89,7 +89,7 @@ jobs:
           assert tracked, 'No tracked source files found'
           assert all(path.is_file() for path in tracked), 'A tracked file is missing'
           assert not any('_site' in path.parts or '__pycache__' in path.parts or path.suffix == '.pyc' for path in tracked)
-          archive = Path('/tmp/fasting-tracker-v1.13.11.zip')
+          archive = Path('/tmp/fasting-tracker-v1.14.0.zip')
           with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
               for path in tracked:
                   z.write(path, path.as_posix())
@@ -98,14 +98,14 @@ jobs:
               names = z.namelist()
               assert len(names) == len(set(names)) == len(tracked), 'Archive member count mismatch'
               assert set(names) == {path.as_posix() for path in tracked}, 'Archive differs from Git-tracked source'
-              assert {'.github/workflows/pages.yml', '.github/workflows/v1123-regression.yml', 'index.html', 'version.json', 'about.html', 'privacy.html', 'branding.html', 'license.html'} <= set(names)
-              assert json.loads(z.read('version.json'))['version'] == '1.13.11'
+              assert {'.github/workflows/pages.yml', '.github/workflows/v1123-regression.yml', 'index.html', 'version.json', 'about.html', 'privacy.html', 'branding.html', 'license.html', 'changelog.html', 'CHANGELOG.md'} <= set(names)
+              assert json.loads(z.read('version.json'))['version'] == '1.14.0'
               print(f'PASS: complete clean GitHub Desktop ZIP ({len(names)} tracked source files)')
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: fasting-tracker-v1.13.11-regression
-          path: /tmp/fasting-tracker-v1.13.11.zip
+          name: fasting-tracker-v1.14.0-regression
+          path: /tmp/fasting-tracker-v1.14.0.zip
           retention-days: 14
 
       - name: Synchronize generated assets to development branch after passing tests
@@ -113,7 +113,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add i18n-source.json i18n/en.js i18n/bg.js i18n/es.js version.json index.html about.html privacy.html branding.html license.html tests/test_backup_indicator.py tests/test_permanent_purge_confirmation.py tests/test_backup_version_restore_matrix.py tests/test_import_preview_merge.py tests/test_destructive_guard.py tests/test_setup_notification_layout.py tests/test_dst_timezone.py tests/test_weight_unit_layout.py tests/test_timeline_month_axis.py tests/v1123-regression.cjs
+          git add i18n-source.json i18n/en.js i18n/bg.js i18n/es.js version.json index.html about.html privacy.html branding.html license.html changelog.html CHANGELOG.md README.md tests/v1123-regression.cjs tests/test_backup_indicator.py tests/test_permanent_purge_confirmation.py tests/test_backup_version_restore_matrix.py tests/test_import_preview_merge.py tests/test_destructive_guard.py tests/test_setup_notification_layout.py tests/test_dst_timezone.py tests/test_weight_unit_layout.py tests/test_timeline_month_axis.py tests/v1123-regression.cjs
           if ! git diff --cached --quiet; then
             git commit -m "build(release): synchronize generated localization and release assets"
             git push origin "HEAD:${GITHUB_REF_NAME}"

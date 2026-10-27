@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.13.11" />
+  <meta name="ft-app-version" content="1.14.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1132,6 +1132,7 @@ layout: null
 <div class="helpHeading" data-i18n="public.infoTitle">Public information</div>
 <div class="small" data-i18n="public.infoText">Read the full privacy information, health disclaimer and scientific-source notes.</div>
 <div class="publicLinks">
+<a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a>
 <a class="publicLink" data-i18n="public.privacy" href="privacy.html?return=settings" rel="noopener">Privacy</a>
 <a class="publicLink" data-i18n="public.about" href="about.html?return=settings" rel="noopener">About &amp; sources</a>
 <a class="publicLink" data-i18n="public.license" href="license.html?return=settings" rel="noopener">MIT License</a>
@@ -1601,14 +1602,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 32;
+  const I18N_SOURCE_REVISION = 33;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.13.11';
+  const APP_VERSION = '1.14.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -7784,7 +7785,7 @@ layout: null
   el('notificationCycleToggle').addEventListener('change', () => saveNotificationOption('cycleComplete', el('notificationCycleToggle').checked));
   el('notificationTestBtn').addEventListener('click', sendTestNotification);
 
-  const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html']);
+  const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html','changelog.html']);
   function rememberDocumentReturn(event) {
     const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
     if (!anchor) return;
