@@ -97,9 +97,14 @@ function hexFromBuffer(buffer) {
 
 function normalizeHtmlForIntegrity(text) {
   const siteBase = SCOPE_URL.href.replace(/\/$/, '');
+  const siteOrigin = SCOPE_URL.origin;
   return String(text)
     .replace(/\r\n?/g, '\n')
+    // GitHub Pages renders {{ site.github.url }} as the origin (without
+    // the project path), while app-scoped URLs include /fasting-tracker.
+    // Normalize both forms to the same token used by tools/build_release.py.
     .split(siteBase).join('__SITE_URL__')
+    .split(siteOrigin).join('__SITE_URL__')
     .replace(/https:\/\/github\.com\/[^\/"'<>\s]+\/[^\/"'<>\s]+/g, '__REPO_URL__');
 }
 
