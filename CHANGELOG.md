@@ -1,6 +1,13 @@
 # Fasting Tracker changelog
 
-This file records user-visible changes. The in-app version is available from **Settings → About & help → Changelog**.
+## v1.14.1 — 27 October 2026
+- Expanded the in-app and repository changelog with available historical release notes back to v1.8.0.
+- Moved the Changelog link beside the installed app version in Settings → Updates.
+- Changelog navigation now returns to the prior same-origin app page when possible, allowing the browser to resume the existing app instance instead of forcing a fresh load.
+- No fasting or weight record schema or migration changes.
+
+
+This file records user-visible changes. In the app, open **Settings → Updates → Changelog**.
 
 ## v1.14.0 — 27 October 2026
 - Added a read-only, in-app changelog in English, Bulgarian, and Spanish.
@@ -26,3 +33,111 @@ This file records user-visible changes. The in-app version is available from **S
 ## v1.13.6 — October 2026
 - Duration formatting preserves minutes for durations of one day or longer.
 - Daily Timeline, Trend, and Cumulative chart views show localized daylight-saving/time-zone change notes.
+
+## v1.13.5 — October 2026
+- Added visible daylight-saving/time-zone adjustment indicators to daily Timeline, Trend, and Cumulative views.
+
+## v1.13.4 — October 2026
+- Fixed kg/lb controls on narrow screens so the unit selector and target-weight input remain aligned.
+
+## v1.13.3 — October 2026
+- Added an accessible searchable time-zone picker and fixed the narrow-screen weight-unit layout.
+
+## v1.13.2 — October 2026
+- Expanded time-zone support and daylight-saving handling across the app.
+
+## v1.13.1 — October 2026
+- Improved the Timeline month axis.
+
+## v1.12.2 — earlier release
+- Reliable Statistics rendering: restore the selected visualization and redraw charts after layout changes.
+
+## v1.12.1 — earlier release
+- Improved Stop confirmation and prevented accidental touch-through actions.
+
+## v1.12.0 — earlier release
+- Added concise device notifications and in-app notification details.
+
+## v1.11.9 — earlier release
+- Simplified Settings with progressive disclosure.
+
+## v1.11.7 — earlier release
+- Quality update with reliability and usability refinements.
+
+## v1.11.5 — earlier release
+- Improved chart interaction and repository quality checks.
+
+## v1.11.4 — earlier release
+- Clarified single-user compatibility and local-data behavior.
+
+## v1.11.3 — earlier release
+- Fixed refresh after weight entry.
+
+## v1.11.2 — earlier release
+- Improved chart readability and visual quality.
+
+## v1.11.1 — earlier release
+- Added analytical controls and stabilization fixes.
+
+## v1.11.0 — earlier release
+- Improved reliability and fasting visualizations.
+
+## v1.10.1 — earlier release
+- Expanded quality, recovery, and history tools.
+
+## v1.10.0 — earlier release
+- Improved reliability, recovery, and data transparency.
+
+## v1.9.2 — earlier release
+- Improved notification recovery and newest-first chart data.
+
+## v1.9.1 — earlier release
+- Improved corrections to completed fasts.
+
+## v1.9.0 — earlier release
+- Introduced a more robust long-term architecture.
+
+## v1.8.19 — earlier release
+- Fixed weigh-in reminder cadence.
+
+## v1.8.18 — earlier release
+- Improved notification onboarding.
+
+## v1.8.17 — earlier release
+- Added optional device notifications.
+
+## v1.8.16 — earlier release
+- Used neutral wording for the 24-hour cycle.
+
+## v1.8.15 — earlier release
+- Added an audit trail for deleted fasts.
+
+## v1.8.13 — earlier release
+- Added continuation context to the Timeline.
+
+## v1.8.12 — earlier release
+- Improved the Timeline end-of-day label.
+
+## v1.8.11 — earlier release
+- Added fasting-target details to Statistics.
+
+## v1.8.10 — earlier release
+- Added progress sharing.
+
+## v1.8.9 — earlier release
+- Added an optional first-run setup guide.
+
+## v1.8.8 — earlier release
+- Added a daily and labelled weight timeline.
+
+## v1.8.7 — earlier release
+- Added an aggregated weight timeline.
+
+## v1.8.6 — earlier release
+- Added weight statistics.
+
+## v1.8.5 — earlier release
+- Refined stop-fast behavior and the weight chart.
+
+## v1.8.0 — earlier release
+- Introduced the performance architecture.
