@@ -28,7 +28,7 @@ jobs:
         run: |
           python3 - <<'PYTEST'
           from pathlib import Path
-          for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py', 'tests/test_import_preview_merge.py', 'tests/test_destructive_guard.py', 'tests/test_setup_notification_layout.py'):
+          for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py', 'tests/test_import_preview_merge.py', 'tests/test_destructive_guard.py', 'tests/test_setup_notification_layout.py', 'tests/test_dst_timezone.py', 'tests/test_weight_unit_layout.py')
               p = Path(filename)
               s = p.read_text()
               for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3', '1.13.4', '1.13.5', '1.13.6', '1.13.7'):
