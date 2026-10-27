@@ -52,7 +52,8 @@ for item in ver.get('shell',[]):
     if p.is_file(): ok(hashlib.sha256(canonical_bytes(p)).hexdigest()==ver.get('hashes',{}).get(item),f'hash mismatch {item}')
 ok(set(ver.get('hashes',{}))==set(ver.get('shell',[])),'hash map must exactly match shell')
 # Simulate GitHub Pages rendering and the service worker's HTML normalization.
-site_url='https://example.github.io/fasting-tracker'
+site_url='https://example.github.io'
+site_base=f'{site_url}/fasting-tracker'
 repo_url='https://github.com/example/fasting-tracker'
 for item in ver.get('shell',[]):
     p=source_path(item)
@@ -60,7 +61,9 @@ for item in ver.get('shell',[]):
         continue
     src=p.read_text()
     rendered=fm.sub('',src,count=1).replace('{{ site.github.url }}',site_url).replace('{{ site.github.repository_url }}',repo_url)
-    normalized=rendered.replace('\r\n','\n').replace('\r','\n').replace(site_url,'__SITE_URL__')
+    # Match sw.js: normalize both project-scoped URLs and the root origin
+    # that GitHub Pages emits for {{ site.github.url }}.
+    normalized=rendered.replace('\r\n','\n').replace('\r','\n').replace(site_base,'__SITE_URL__').replace(site_url,'__SITE_URL__')
     normalized=re.sub(r'https://github\.com/[^/"\'<>\s]+/[^/"\'<>\s]+','__REPO_URL__',normalized)
     ok(hashlib.sha256(normalized.encode()).hexdigest()==ver['hashes'][item],f'GitHub Pages normalized hash mismatch {item}')
 ok('responseDigestHex' in sw and 'integrity check failed' in sw,'service worker integrity verification missing')
