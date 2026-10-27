@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.14.0" />
+  <meta name="ft-app-version" content="1.14.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1042,7 +1042,7 @@ layout: null
       <div class="settingsGroupBody"><div class="card settingsCompactCard" id="settingsUpdatesCard"><div class="row" style="margin-top:10px">
 <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
 <div class="duration" id="appVersionLabel">—</div>
-</div><div class="row">
+</div><div class="publicLinks" style="margin-top:8px"><a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a></div><div class="row">
 <div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
 <button class="secondary" data-i18n="update.check" id="updateBtn">Check for new version</button>
 </div></div>
@@ -1132,7 +1132,6 @@ layout: null
 <div class="helpHeading" data-i18n="public.infoTitle">Public information</div>
 <div class="small" data-i18n="public.infoText">Read the full privacy information, health disclaimer and scientific-source notes.</div>
 <div class="publicLinks">
-<a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a>
 <a class="publicLink" data-i18n="public.privacy" href="privacy.html?return=settings" rel="noopener">Privacy</a>
 <a class="publicLink" data-i18n="public.about" href="about.html?return=settings" rel="noopener">About &amp; sources</a>
 <a class="publicLink" data-i18n="public.license" href="license.html?return=settings" rel="noopener">MIT License</a>
@@ -1609,7 +1608,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.14.0';
+  const APP_VERSION = '1.14.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
