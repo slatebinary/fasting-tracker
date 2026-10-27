@@ -1004,5 +1004,8 @@
   "stats.clockOffsetChangeLabel": "Offset {sign}{duration}",
   "stats.clockDayChangeHelp": "{date}: the local day lasted {dayLength} in {zone} ({change} relative to 24 hours). Fasting time uses actual elapsed time.",
   "stats.clockOffsetChangeHelp": "{date}: the UTC offset changed by {change} in {zone}; this local day lasted {dayLength}. Fasting time uses actual elapsed time.",
-  "stats.clockPeriodChangeList": "Clock/time-zone offset changes in this period: {changes}. Daily fasting values use actual elapsed time."
+  "stats.clockPeriodChangeList": "Clock/time-zone offset changes in this period: {changes}. Daily fasting values use actual elapsed time.",
+  "integrity.copy": "Copy report",
+  "integrity.copied": "Integrity report copied.",
+  "integrity.copyFailed": "Could not copy. Select and copy the text manually."
 }
