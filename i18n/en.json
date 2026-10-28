@@ -64,7 +64,7 @@
   "settings.appearanceLight": "Light",
   "settings.appearanceDark": "Dark",
   "settings.appIcon": "App icon",
-  "settings.appIconHelp": "Choose the icon for the next installation of Fasting Tracker. Changing this setting does not replace the icon of an app that is already installed.",
+  "settings.appIconHelp": "Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android. Accessible options include grayscale, high contrast, and a colour-vision-friendly palette; the clock symbol and contrast carry meaning without red/green cues.",
   "settings.appIconIOSHeading": "iPhone / iPad",
   "settings.appIconIOSHelp": "Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.",
   "settings.appIconAndroidHeading": "Android",
