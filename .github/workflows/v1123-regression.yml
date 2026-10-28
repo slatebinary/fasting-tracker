@@ -48,6 +48,7 @@ jobs:
         run: |
           python3 tests/test_release.py
           python3 tests/test_timeline_month_axis.py
+          python3 tests/test_accessibility_theme_contrast.py
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
