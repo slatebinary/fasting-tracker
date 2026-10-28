@@ -721,6 +721,12 @@ ok("renderWeighCadenceButtons('notification', prefs.weighInCadence)" in index, '
 ok("renderWeighCadenceButtons('setupNotification', prefs.weighInCadence)" in index, 'onboarding cadence control is not rendered from saved preference')
 ok("disabled=!prefs.weighIn" not in index and "disabled = !prefs.weighIn" not in index, 'cadence must remain selectable while weigh-in reminder is off')
 
+# v1.15.7 diagnostic feedback must be temporary and replace stale messages.
+ok('let diagnosticFeedbackTimer = null;' in index and 'let diagnosticFeedbackSequence = 0;' in index, 'diagnostic feedback dismissal state missing')
+ok('clearTimeout(diagnosticFeedbackTimer)' in index and '},8000);' in index, 'diagnostic feedback must auto-dismiss after eight seconds')
+ok("node.textContent='';node.hidden=true;node.removeAttribute('data-state');" in index, 'diagnostic feedback banner must clear and hide after dismissal')
+ok("currentSummary.textContent='';currentSummary.hidden=true;" in index, 'device-check summary must also clear after dismissal')
+
 # v1.15.0 accessibility palettes and timezone-derived cache regression checks
 ok("high-contrast-light" in index and "high-contrast-dark" in index and "grayscale" in index and "colorblind" in index, "accessibility appearance palettes missing")
 ok('settings.appearanceGrayscale' in index and 'settings.appearanceHighContrastLight' in index and 'settings.appearanceHighContrastDark' in index and 'settings.appearanceColorblind' in index, "accessibility appearance options are not localized")

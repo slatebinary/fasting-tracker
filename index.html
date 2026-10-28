@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.15.6" />
+  <meta name="ft-app-version" content="1.15.7" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -6707,9 +6707,13 @@ layout: null
     btn.disabled = snapshots.length === 0;
   }
 
+  let diagnosticFeedbackTimer = null;
+  let diagnosticFeedbackSequence = 0;
   function announceDiagnosticAction(message,state='info') {
     const palette={success:['#17663b','#e8f5ec'],warning:['#805400','#fff4d6'],error:['#9b1c1c','#fdeaea'],info:['#31506d','#edf4fa']};
     const colors=palette[state]||palette.info;
+    const sequence=++diagnosticFeedbackSequence;
+    if(diagnosticFeedbackTimer!==null)clearTimeout(diagnosticFeedbackTimer);
     for(const id of ['diagnosticActionFeedback','manualSnapshotFeedback']){
       const node=el(id);if(!node)continue;
       node.hidden=false;node.textContent=message;node.dataset.state=state;
@@ -6718,7 +6722,18 @@ layout: null
       node.style.borderLeftColor=colors[0];node.style.color=colors[0];node.style.backgroundColor=colors[1];
     }
     const summary=el('deviceCheckSummary');
-    if(summary&&!el('deviceCheckModal')?.hidden){summary.textContent=message;summary.dataset.state=state;}
+    if(summary&&!el('deviceCheckModal')?.hidden){summary.hidden=false;summary.textContent=message;summary.dataset.state=state;}
+    // Keep feedback long enough to read, then clear it so stale results do not remain on screen.
+    diagnosticFeedbackTimer=setTimeout(()=>{
+      if(sequence!==diagnosticFeedbackSequence)return;
+      for(const id of ['diagnosticActionFeedback','manualSnapshotFeedback']){
+        const node=el(id);if(!node)continue;
+        node.textContent='';node.hidden=true;node.removeAttribute('data-state');
+      }
+      const currentSummary=el('deviceCheckSummary');
+      if(currentSummary){currentSummary.textContent='';currentSummary.hidden=true;currentSummary.removeAttribute('data-state');}
+      diagnosticFeedbackTimer=null;
+    },8000);
   }
 
   async function createManualRecoverySnapshot(label = '') {

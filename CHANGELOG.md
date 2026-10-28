@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.15.7 — 28 October 2026
+- Diagnostic action feedback banners now disappear automatically after 8 seconds, preventing stale messages from remaining on screen.
+- A new action replaces the previous message and restarts the dismissal timer; device-check summaries clear as well.
+- No fasting, weight, active-fast, or backup data changes.
+
 ## v1.15.6 — 28 October 2026
 - Added visible, accessible running/success/warning/failure feedback to integrity checks, recovery snapshots, cache repair, local benchmark, device checks, and statistics/chart recalculation.
 - Hardened diagnostic actions so errors restore button availability and do not silently disappear.
