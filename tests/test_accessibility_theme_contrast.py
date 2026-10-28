@@ -13,13 +13,13 @@ assert "const APP_VERSION = '1.15.3';" in html
 
 # These rules deliberately override widget-level colors that previously won the cascade.
 required_rules = [
-    'html[data-theme="high-contrast-light"] button:not(.primary):not(.stop):not(.dangerText)',
+    'html[data-theme="high-contrast-light"] button:not(.primary):not(.stop):not(.dangerText):not(.secondary)',
     'html[data-theme="high-contrast-light"] button.primary',
     'html[data-theme="high-contrast-light"] button.stop',
-    'html[data-theme="high-contrast-dark"] button:not(.primary):not(.stop):not(.dangerText)',
+    'html[data-theme="high-contrast-dark"] button:not(.primary):not(.stop):not(.dangerText):not(.secondary)',
     'html[data-theme="high-contrast-dark"] button.primary',
     'html[data-theme="high-contrast-dark"] button.stop',
-    'html[data-theme="grayscale"] button:not(.primary):not(.stop):not(.dangerText)',
+    'html[data-theme="grayscale"] button:not(.primary):not(.stop):not(.dangerText):not(.secondary)',
     'html[data-theme="grayscale"] button.secondary',
     'html[data-theme="grayscale"] button.primary',
 ]
