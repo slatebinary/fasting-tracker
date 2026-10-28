@@ -1154,6 +1154,7 @@ layout: null
 <button class="secondary" data-i18n="derived.rebuild" id="rebuildDerivedBtn" type="button">Recalculate statistics &amp; charts</button>
 <button class="dangerText" data-i18n="deleted.empty" id="emptyDeletedBtn" type="button">Empty Recently Deleted</button>
 </div>
+<div aria-atomic="true" aria-live="polite" class="small" id="diagnosticActionFeedback" role="status" style="margin-top:8px;padding:8px 10px;border-left:4px solid transparent" hidden></div>
 </div></div>
     </details>
     <details class="settingsGroup" id="settingsGroupHelp" data-settings-group="settingsGroupHelp">
@@ -6704,16 +6705,26 @@ layout: null
     btn.disabled = snapshots.length === 0;
   }
 
+  function announceDiagnosticAction(message,state='info') {
+    const node=el('diagnosticActionFeedback');if(!node)return;
+    node.hidden=false;node.textContent=message;node.dataset.state=state;
+    node.setAttribute('role',state==='error'?'alert':'status');
+    node.setAttribute('aria-live',state==='error'?'assertive':'polite');
+    const palette={success:['#17663b','#e8f5ec'],warning:['#805400','#fff4d6'],error:['#9b1c1c','#fdeaea'],info:['#31506d','#edf4fa']};
+    const colors=palette[state]||palette.info;node.style.borderLeftColor=colors[0];node.style.color=colors[0];node.style.backgroundColor=colors[1];
+  }
+
   async function createManualRecoverySnapshot(label = '') {
     const meta = await createInternalSnapshotAsync('manual recovery point', APP_VERSION, label);
-    if (!meta) { alert(t('backup.snapshotFailed')); return false; }
+    if (!meta) { alert(t('backup.snapshotFailed')); announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error'); return false; }
     renderSnapshotStatus(); renderStorageHealth();
     if (!el('snapshotModal')?.hidden) openSnapshotModal();
+    announceDiagnosticAction(t('actionFeedback.snapshotCreated'),'success');
     return true;
   }
 
-  function openManualSnapshotModal(){const input=el('manualSnapshotLabel');if(input)input.value='';showModal('manualSnapshotModal','manualSnapshotLabel');}
-  async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;try{if(!(await allowStorageIntensiveOperation()))return;const ok=await createManualRecoverySnapshot(input?.value||'');if(ok)hideModal('manualSnapshotModal');}finally{if(btn)btn.disabled=false;}}
+  function openManualSnapshotModal(){const input=el('manualSnapshotLabel');if(input)input.value='';announceDiagnosticAction(t('actionFeedback.snapshotFormOpened'),'info');showModal('manualSnapshotModal','manualSnapshotLabel');}
+  async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.snapshotRunning'),'info');try{if(!(await allowStorageIntensiveOperation())){announceDiagnosticAction(t('actionFeedback.cancelled'),'warning');return;}const ok=await createManualRecoverySnapshot(input?.value||'');if(ok){hideModal('manualSnapshotModal');alert(t('actionFeedback.snapshotCreated'));}}catch(err){noteDiagnosticError('snapshot.manual');announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');alert(t('backup.snapshotFailed'));}finally{if(btn)btn.disabled=false;}}
 
   function markExternalBackupNow(exportedData = data) {
     backupSuccessVisibleUntil = Date.now() + 7000;
@@ -6881,6 +6892,7 @@ layout: null
     const btn=el('performanceTestBtn'),status=el('healthPerformance');
     if(btn){btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent=t('performance.running');}
     if(status)status.textContent=t('performance.runningStatus');
+    announceDiagnosticAction(t('actionFeedback.benchmarkRunning'),'info');
     await new Promise(r=>setTimeout(r,0));
     try{
       const p=globalThis.performance?.now?()=>performance.now():()=>Date.now();
@@ -6889,29 +6901,41 @@ layout: null
       JSON.stringify({records:data.records,weights:data.weights,deletedFasts:data.deletedFasts,deletedWeights:data.deletedWeights});const t3=p();
       const result={at:new Date().toISOString(),records:data.records.length,weights:data.weights.length,sortMs:+(t1-t0).toFixed(2),totalsMs:+(t2-t1).toFixed(2),serializeMs:+(t3-t2).toFixed(2),totalMs:+(t3-t0).toFixed(2)};
       savePerformanceMeta(result);renderBenchmarkResult(result);
+      announceDiagnosticAction(t('actionFeedback.benchmarkComplete',{total:formatNumber(result.totalMs,0,2)}),'success');
       // Refresh slower storage/service-worker diagnostics only after the benchmark result is visible.
       setTimeout(()=>{renderStorageHealth().catch(()=>{});},0);
       return result;
     }catch(err){
-      noteDiagnosticError('performance.benchmark');if(status)status.textContent=t('performance.failed');return null;
+      noteDiagnosticError('performance.benchmark');if(status)status.textContent=t('performance.failed');announceDiagnosticAction(t('actionFeedback.benchmarkFailed'),'error');return null;
     }finally{
       if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=t('performance.run');}
     }
   }
   async function queryServiceWorkerHealth(){if(!('serviceWorker'in navigator))return {supported:false};try{const reg=await navigator.serviceWorker.getRegistration();const worker=navigator.serviceWorker.controller||reg?.active;if(!worker)return {supported:true,registered:!!reg,controlled:false};return await new Promise(resolve=>{const ch=new MessageChannel(),timer=setTimeout(()=>resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,timeout:true}),4000);ch.port1.onmessage=e=>{clearTimeout(timer);resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,...(e.data||{})});};worker.postMessage({type:'CHECK_HEALTH',protocolVersion:UPDATE_PROTOCOL_VERSION},[ch.port2]);});}catch(err){return {supported:true,error:String(err?.message||err)};}}
-  async function repairAppCache(){if(!confirm(t('cache.repairConfirm')))return false;const btn=el('repairCacheBtn');if(btn)btn.disabled=true;try{const info=await fetchLiveReleaseStatus();if(info&&!info.consistency.ok){alert(t('update.deploymentIncomplete'));return false;}if(info?.metadataVersion&&compareVersions(info.metadataVersion,APP_VERSION)>0){latestVersion=info.metadataVersion;alert(t('cache.updateInstead',{version:info.metadataVersion}));setUpdateUI('available');return false;}await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();renderStorageHealth();alert(t('cache.repaired'));return true;}catch(err){noteDiagnosticError('cache.repair');alert(t('cache.repairFailed'));return false;}finally{if(btn)btn.disabled=false;}}
+  async function repairAppCache(){
+    const btn=el('repairCacheBtn');
+    if(!confirm(t('cache.repairConfirm'))){announceDiagnosticAction(t('actionFeedback.cancelled'),'warning');return false;}
+    if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.cacheRunning'),'info');
+    try{
+      const info=await fetchLiveReleaseStatus();
+      if(info&&!info.consistency.ok){alert(t('update.deploymentIncomplete'));announceDiagnosticAction(t('actionFeedback.cacheBlocked'),'warning');return false;}
+      if(info?.metadataVersion&&compareVersions(info.metadataVersion,APP_VERSION)>0){latestVersion=info.metadataVersion;alert(t('cache.updateInstead',{version:info.metadataVersion}));setUpdateUI('available');announceDiagnosticAction(t('actionFeedback.cacheUpdateRequired',{version:info.metadataVersion}),'warning');return false;}
+      await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();await renderStorageHealth();alert(t('cache.repaired'));announceDiagnosticAction(t('cache.repaired'),'success');return true;
+    }catch(err){noteDiagnosticError('cache.repair');alert(t('cache.repairFailed'));announceDiagnosticAction(t('cache.repairFailed'),'error');return false;}
+    finally{if(btn)btn.disabled=false;}
+  }
 
 
   function deletedAuditApproxBytes(){try{return new Blob([JSON.stringify({fasts:data.deletedFasts,weights:data.deletedWeights})]).size;}catch{return 0;}}
   function renderDeploymentStatus(){const status=el('healthDeploymentStatus'),versions=el('healthDeploymentVersions');if(!status||!versions)return;status.textContent=deploymentConsistencyState==='ok'?t('deployment.ok'):deploymentConsistencyState==='mismatch'?t('deployment.mismatch'):t('deployment.unknown');versions.textContent=t('deployment.versions',{installed:APP_VERSION,metadata:liveMetadataVersion||'—',entry:liveEntryVersion||'—',worker:lastServiceWorkerHealth?.activeVersion||'—',checked:lastUpdateCheckAt?localDateTimeLabel(lastUpdateCheckAt):t('common.never')});}
   async function runDeviceChecks(){
-    const btn=el('deviceChecksBtn');if(btn)btn.disabled=true;const checks=[];const add=(key,ok,detail='')=>checks.push({key,ok,detail});
+    const btn=el('deviceChecksBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.deviceChecksRunning'),'info');const checks=[];const add=(key,ok,detail='')=>checks.push({key,ok,detail});
     try{const key='device-check';await idbPut('state',{key,data:{at:new Date().toISOString()}});const row=await idbGet('state',key);await idbDelete('state',key);add('indexeddb',!!row);}catch(e){add('indexeddb',false);noteDiagnosticError('device.indexeddb');}
     try{const persistent=await navigator.storage?.persisted?.();add('storage',persistent===true,persistent===true?'persistent':persistent===false?'not-persistent':'unknown');}catch{add('storage',false,'unavailable');}
     try{const sw=await queryServiceWorkerHealth();add('serviceworker',!!(sw?.supported&&sw?.controlled&&sw?.cacheComplete!==false),sw?.activeVersion||'');}catch{add('serviceworker',false);}
     const caps=FTPlatform.shareCapabilities();add('files',caps.fileShare||caps.downloads,caps.fileShare?'file-share':caps.downloads?'download':'unsupported');
     add('notifications','Notification'in window,notificationPermissionState());add('standalone',isStandaloneApp(),installStateCode());
-    const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}if(btn)btn.disabled=false;showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+    const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}const passed=checks.filter(c=>c.ok).length,warning=checks.length-passed;announceDiagnosticAction(t('actionFeedback.deviceChecksComplete',{passed,total:checks.length,warning} ),warning?'warning':'success');if(btn)btn.disabled=false;showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
   }
   async function emptyRecentlyDeleted(){
     const total=data.deletedFasts.length+data.deletedWeights.length;if(!total){alert(t('deleted.none'));return false;}
@@ -6919,7 +6943,16 @@ layout: null
     if(backupFreshnessState().state!=='current'&&confirm(t('deleted.backupFirst'))){const ok=await exportBackup();if(!ok)return false;}
     const oldF=data.deletedFasts.slice(),oldW=data.deletedWeights.slice();data.deletedFasts=[];data.deletedWeights=[];if(!save({invalidateDerived:false,dirtyViews:['history','weight','settings']})){data.deletedFasts=oldF;data.deletedWeights=oldW;renderAll();return false;}renderAll();return true;
   }
-  async function rebuildDerivedData(){const btn=el('rebuildDerivedBtn');if(btn)btn.disabled=true;try{storedDayTotalsMap=buildStoredDayTotals(data.records);dayTotalsRecordMap=recordMap(data.records);await persistDailyTotals(data.revision);invalidateDerivedCaches();markViewsDirty();renderAll();const issues=await collectIntegrityIssues();lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};if(lastIntegrityCheck.ok){markLastKnownGood('rebuild-derived');alert(t('derived.rebuilt'));return true;}alert(t('derived.failed'));return false;}catch(err){noteDiagnosticError('derived.rebuild');alert(t('derived.failed'));return false;}finally{if(btn)btn.disabled=false;}}
+  async function rebuildDerivedData(){
+    const btn=el('rebuildDerivedBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.recalculateRunning'),'info');
+    try{
+      storedDayTotalsMap=buildStoredDayTotals(data.records);dayTotalsRecordMap=recordMap(data.records);await persistDailyTotals(data.revision);invalidateDerivedCaches();markViewsDirty();renderAll();
+      const issues=await collectIntegrityIssues();lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};
+      if(lastIntegrityCheck.ok){markLastKnownGood('rebuild-derived');alert(t('derived.rebuilt'));announceDiagnosticAction(t('derived.rebuilt'),'success');return true;}
+      alert(t('derived.failed'));announceDiagnosticAction(t('actionFeedback.recalculateWarning',{n:issues.length}),'warning');return false;
+    }catch(err){noteDiagnosticError('derived.rebuild');alert(t('derived.failed'));announceDiagnosticAction(t('actionFeedback.recalculateFailed'),'error');return false;}
+    finally{if(btn)btn.disabled=false;}
+  }
 
   async function renderStorageHealth() {
     const rc=el('healthRecordCount'); if(!rc)return;
@@ -7025,6 +7058,8 @@ layout: null
 
   async function runDataIntegrityCheck() {
     const btn=el('integrityCheckBtn'); if(btn)btn.disabled=true;
+    announceDiagnosticAction(t('actionFeedback.integrityRunning'),'info');
+    try {
     const issues=await collectIntegrityIssues();
     lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};if(lastIntegrityCheck.ok)markLastKnownGood('integrity-check');
     const summary=el('integritySummary'),list=el('integrityIssueList'); list.replaceChildren();
@@ -7032,8 +7067,18 @@ layout: null
     el('integrityCopyStatus').textContent='';
     if(!issues.length){const li=document.createElement('li');li.textContent=t('integrity.noProblems');list.append(li);}
     else for(const issue of issues){const li=document.createElement('li');li.textContent=integrityIssueLabel(issue)+(issue.detail?' — '+issue.detail:'');list.append(li);}
-    if(btn)btn.disabled=false; renderStorageHealth(); showModal('integrityModal','integrityCloseBtn');
+    announceDiagnosticAction(issues.length?t('integrity.issuesFound',{n:issues.length}):t('integrity.ok'),issues.length?'warning':'success');
+    if(btn)btn.disabled=false; await renderStorageHealth(); showModal('integrityModal','integrityCloseBtn');
     return lastIntegrityCheck;
+    } catch(err) {
+      noteDiagnosticError('integrity.check');
+      announceDiagnosticAction(t('actionFeedback.integrityFailed'),'error');
+      const summary=el('integritySummary'),list=el('integrityIssueList');
+      if(summary)summary.textContent=t('actionFeedback.integrityFailed');
+      if(list){list.replaceChildren();const li=document.createElement('li');li.textContent=t('actionFeedback.noDataChanged');list.append(li);}
+      showModal('integrityModal','integrityCloseBtn');
+      return null;
+    } finally { if(btn)btn.disabled=false; }
   }
 
   async function copyIntegrityReport(){
@@ -8216,7 +8261,12 @@ layout: null
   el('integrityCopyBtn').addEventListener('click',copyIntegrityReport);
   el('integrityCloseBtn').addEventListener('click',()=>hideModal('integrityModal'));
   el('createSnapshotBtn').addEventListener('click',openManualSnapshotModal);
-  el('snapshotCreateNowBtn').addEventListener('click',openManualSnapshotModal);
+  el('snapshotCreateNowBtn').addEventListener('click',async()=>{
+    const btn=el('snapshotCreateNowBtn');if(btn)btn.disabled=true;
+    try{announceDiagnosticAction(t('actionFeedback.snapshotRunning'),'info');const ok=await createManualRecoverySnapshot();if(ok)alert(t('actionFeedback.snapshotCreated'));else announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');}
+    catch(err){noteDiagnosticError('snapshot.manual-now');announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');alert(t('backup.snapshotFailed'));}
+    finally{if(btn)btn.disabled=false;}
+  });
   el('manualSnapshotCancelBtn').addEventListener('click',()=>hideModal('manualSnapshotModal'));
   el('manualSnapshotSaveBtn').addEventListener('click',saveManualSnapshotFromModal);
   el('manualSnapshotModal').addEventListener('click',e=>{if(e.target===el('manualSnapshotModal'))hideModal('manualSnapshotModal');});
