@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.16.0",
+  "version": "1.16.1",
   "released": "2026-10-28",
-  "notes": "Add selectable grayscale, high-contrast, and colour-vision-friendly app icons.",
+  "notes": "Make accessible app icons easier to find and ensure they work on Home Screen installations.",
   "entry": "./index.html",
   "shell": [
     "./",
