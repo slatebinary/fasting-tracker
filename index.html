@@ -122,6 +122,7 @@ layout: null
     html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#007f5f; --danger:#c44e00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#000; }
     .primary { color:var(--primary-button-text, #fff); }
     .stop { color:var(--danger-button-text, #fff); }
+    html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop, html[data-theme="colorblind"] .stop { color:#000; }
     html[data-theme="high-contrast-light"] button, html[data-theme="high-contrast-dark"] button { font-weight:700; }
     html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
     * { box-sizing: border-box; }
