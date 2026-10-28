@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.15.4",
+  "version": "1.15.5",
   "released": "2026-10-28",
-  "notes": "Distinguish cumulative target-fast achievements from consecutive target-fast streaks.",
+  "notes": "Improve Color-Friendly bottom navigation contrast and active-tab visibility.",
   "entry": "./index.html",
   "shell": [
     "./",
