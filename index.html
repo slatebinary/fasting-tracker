@@ -1508,6 +1508,7 @@ layout: null
     <h2 id="manualSnapshotTitle" data-i18n="backup.manualTitle">Create recovery snapshot</h2>
     <div class="formGroup"><label for="manualSnapshotLabel" data-i18n="backup.manualLabel">Optional label</label><input id="manualSnapshotLabel" type="text" maxlength="80" autocomplete="off" placeholder="" data-i18n-placeholder="backup.manualPlaceholder"></div>
     <div class="small" data-i18n="backup.manualHelp">A short label can help you recognize this recovery point later.</div>
+    <div aria-atomic="true" aria-live="polite" class="small" id="manualSnapshotFeedback" role="status" style="margin-top:8px;padding:8px 10px;border-left:4px solid transparent" hidden></div>
     <div class="modalActions"><button id="manualSnapshotCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="manualSnapshotSaveBtn" class="primary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button></div>
   </div>
 </div>
@@ -1526,6 +1527,7 @@ layout: null
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="deviceCheckModalTitle">
     <h2 id="deviceCheckModalTitle" data-i18n="deviceChecks.title">Device compatibility checks</h2>
     <div class="small" data-i18n="deviceChecks.help">These checks run only on this device and do not upload your data.</div>
+    <div aria-atomic="true" aria-live="polite" class="small" id="deviceCheckSummary" role="status" style="margin-top:8px"></div>
     <ul id="deviceCheckList" class="small" style="padding-left:22px"></ul>
     <div class="modalActions"><button id="deviceCheckCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
   </div>
@@ -6706,12 +6708,17 @@ layout: null
   }
 
   function announceDiagnosticAction(message,state='info') {
-    const node=el('diagnosticActionFeedback');if(!node)return;
-    node.hidden=false;node.textContent=message;node.dataset.state=state;
-    node.setAttribute('role',state==='error'?'alert':'status');
-    node.setAttribute('aria-live',state==='error'?'assertive':'polite');
     const palette={success:['#17663b','#e8f5ec'],warning:['#805400','#fff4d6'],error:['#9b1c1c','#fdeaea'],info:['#31506d','#edf4fa']};
-    const colors=palette[state]||palette.info;node.style.borderLeftColor=colors[0];node.style.color=colors[0];node.style.backgroundColor=colors[1];
+    const colors=palette[state]||palette.info;
+    for(const id of ['diagnosticActionFeedback','manualSnapshotFeedback']){
+      const node=el(id);if(!node)continue;
+      node.hidden=false;node.textContent=message;node.dataset.state=state;
+      node.setAttribute('role',state==='error'?'alert':'status');
+      node.setAttribute('aria-live',state==='error'?'assertive':'polite');
+      node.style.borderLeftColor=colors[0];node.style.color=colors[0];node.style.backgroundColor=colors[1];
+    }
+    const summary=el('deviceCheckSummary');
+    if(summary&&!el('deviceCheckModal')?.hidden){summary.textContent=message;summary.dataset.state=state;}
   }
 
   async function createManualRecoverySnapshot(label = '') {
@@ -6929,13 +6936,24 @@ layout: null
   function deletedAuditApproxBytes(){try{return new Blob([JSON.stringify({fasts:data.deletedFasts,weights:data.deletedWeights})]).size;}catch{return 0;}}
   function renderDeploymentStatus(){const status=el('healthDeploymentStatus'),versions=el('healthDeploymentVersions');if(!status||!versions)return;status.textContent=deploymentConsistencyState==='ok'?t('deployment.ok'):deploymentConsistencyState==='mismatch'?t('deployment.mismatch'):t('deployment.unknown');versions.textContent=t('deployment.versions',{installed:APP_VERSION,metadata:liveMetadataVersion||'—',entry:liveEntryVersion||'—',worker:lastServiceWorkerHealth?.activeVersion||'—',checked:lastUpdateCheckAt?localDateTimeLabel(lastUpdateCheckAt):t('common.never')});}
   async function runDeviceChecks(){
-    const btn=el('deviceChecksBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.deviceChecksRunning'),'info');const checks=[];const add=(key,ok,detail='')=>checks.push({key,ok,detail});
-    try{const key='device-check';await idbPut('state',{key,data:{at:new Date().toISOString()}});const row=await idbGet('state',key);await idbDelete('state',key);add('indexeddb',!!row);}catch(e){add('indexeddb',false);noteDiagnosticError('device.indexeddb');}
-    try{const persistent=await navigator.storage?.persisted?.();add('storage',persistent===true,persistent===true?'persistent':persistent===false?'not-persistent':'unknown');}catch{add('storage',false,'unavailable');}
-    try{const sw=await queryServiceWorkerHealth();add('serviceworker',!!(sw?.supported&&sw?.controlled&&sw?.cacheComplete!==false),sw?.activeVersion||'');}catch{add('serviceworker',false);}
-    const caps=FTPlatform.shareCapabilities();add('files',caps.fileShare||caps.downloads,caps.fileShare?'file-share':caps.downloads?'download':'unsupported');
-    add('notifications','Notification'in window,notificationPermissionState());add('standalone',isStandaloneApp(),installStateCode());
-    const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}const passed=checks.filter(c=>c.ok).length,warning=checks.length-passed;announceDiagnosticAction(t('actionFeedback.deviceChecksComplete',{passed,total:checks.length,warning} ),warning?'warning':'success');if(btn)btn.disabled=false;showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+    const btn=el('deviceChecksBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.deviceChecksRunning'),'info');
+    const checks=[];const add=(key,ok,detail='')=>checks.push({key,ok,detail});
+    try{
+      try{const key='device-check';await idbPut('state',{key,data:{at:new Date().toISOString()}});const row=await idbGet('state',key);await idbDelete('state',key);add('indexeddb',!!row);}catch(e){add('indexeddb',false);noteDiagnosticError('device.indexeddb');}
+      try{const persistent=await navigator.storage?.persisted?.();add('storage',persistent===true,persistent===true?'persistent':persistent===false?'not-persistent':'unknown');}catch{add('storage',false,'unavailable');}
+      try{const sw=await queryServiceWorkerHealth();add('serviceworker',!!(sw?.supported&&sw?.controlled&&sw?.cacheComplete!==false),sw?.activeVersion||'');}catch{add('serviceworker',false);}
+      try{const caps=FTPlatform.shareCapabilities();add('files',caps.fileShare||caps.downloads,caps.fileShare?'file-share':caps.downloads?'download':'unsupported');}catch{add('files',false,'unavailable');}
+      add('notifications','Notification'in window,notificationPermissionState());add('standalone',isStandaloneApp(),installStateCode());
+      const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};
+      const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}
+      const passed=checks.filter(c=>c.ok).length,warning=checks.length-passed;
+      announceDiagnosticAction(t('actionFeedback.deviceChecksComplete',{passed,total:checks.length,warning}),warning?'warning':'success');
+      showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+    }catch(err){
+      noteDiagnosticError('device.checks');announceDiagnosticAction(t('actionFeedback.deviceChecksFailed'),'error');
+      const summary=el('deviceCheckSummary');if(summary)summary.textContent=t('actionFeedback.deviceChecksFailed');
+      showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+    }finally{if(btn)btn.disabled=false;}
   }
   async function emptyRecentlyDeleted(){
     const total=data.deletedFasts.length+data.deletedWeights.length;if(!total){alert(t('deleted.none'));return false;}
