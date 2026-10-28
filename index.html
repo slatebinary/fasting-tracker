@@ -588,6 +588,22 @@ layout: null
     .settingsSubgroup > summary { list-style:none; cursor:pointer; padding:12px 14px; font-weight:700; }
     .settingsSubgroup[open] > summary { border-bottom:1px solid var(--border); }
     .settingsSubgroup > .card, .settingsSubgroup > .row { margin:0; border:0; border-radius:0; box-shadow:none; }
+    .settingsSubgroup.iconInstallationGroup { margin:14px 0; border:2px solid var(--accent); border-inline-start-width:5px; background:color-mix(in srgb, var(--accent) 5%, var(--card)); }
+    .iconInstallationGroup > summary { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 13px; }
+    .iconInstallationGroup > summary:focus-visible { outline:3px solid var(--accent); outline-offset:-4px; }
+    .settingsIconSectionLead { display:flex; align-items:center; gap:12px; min-width:0; }
+    .settingsIconSectionSymbol { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border:2px solid var(--accent); border-radius:12px; color:var(--accent); background:var(--card); font-size:25px; font-weight:800; line-height:1; }
+    .settingsIconSectionCopy { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .iconInstallationGroup .settingsIconSectionCopy > strong { font-size:1.08rem; line-height:1.25; }
+    .iconInstallationGroup .settingsIconSectionCopy > .small { color:var(--text); line-height:1.35; font-weight:500; }
+    .iconInstallationGroup .settingsGroupChevron { color:var(--accent); font-size:1.7rem; }
+    html[data-theme="grayscale"] .settingsSubgroup.iconInstallationGroup { background:#fff; border-color:#000; }
+    html[data-theme="grayscale"] .settingsIconSectionSymbol { color:#000; border-color:#000; }
+    html[data-theme="high-contrast-light"] .settingsSubgroup.iconInstallationGroup { background:#fff; border-color:#000; }
+    html[data-theme="high-contrast-light"] .settingsIconSectionSymbol { color:#000; border-color:#000; }
+    html[data-theme="high-contrast-dark"] .settingsSubgroup.iconInstallationGroup { background:#000; border-color:#fff; }
+    html[data-theme="high-contrast-dark"] .settingsIconSectionSymbol { color:#fff; border-color:#fff; }
+    @media (max-width:380px) { .iconInstallationGroup > summary { padding:12px 9px; gap:8px; } .settingsIconSectionLead { gap:9px; } .settingsIconSectionSymbol { flex-basis:36px; width:36px; height:36px; font-size:22px; } }
     .settingsCompactCard { box-shadow:none; }
     #settings .healthNotice { margin-top:0; }
     #settings .settingsGroup[hidden] { display:none; }
@@ -980,7 +996,7 @@ layout: null
     <select id="timeZoneSelect" aria-label="Matching locations" data-i18n-aria="settings.timeZoneResultsLabel"><option value="system"></option></select>
     <div id="timeZoneSearchStatus" class="small" role="status" aria-live="polite"></div>
   </div>
-</div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
+</div><details class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails"><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▣</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
 <div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
 <div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
 <button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
@@ -7843,6 +7859,9 @@ layout: null
       const hay=normalizeSettingsSearch(group.textContent);
       const matched=hay.includes(query);
       group.hidden=!matched; group.open=matched; if(matched)matches++;
+      if (matched) group.querySelectorAll('.settingsSubgroup').forEach(subgroup=>{
+        if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true;
+      });
     });
     settingsGroupToggleSuppressed=false;
     status.textContent=matches?t('settings.searchResults',{n:matches}):t('settings.searchNoResults');
