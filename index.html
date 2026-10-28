@@ -8417,6 +8417,7 @@ layout: null
   const patientTortoiseTrigger = el('appVersionLabel');
   let patientTortoiseTapCount = 0;
   const patientTortoiseProgress = el('patientTortoiseProgress');
+  const patientTortoiseTapMessageKeys = ['easterEgg.patientTortoiseTap1','easterEgg.patientTortoiseTap2','easterEgg.patientTortoiseTap3','easterEgg.patientTortoiseTap4','easterEgg.patientTortoiseTap5','easterEgg.patientTortoiseTap6'];
   const revealPatientTortoise = () => {
     patientTortoiseTapCount += 1;
     if (patientTortoiseTapCount < 7) {
@@ -8424,7 +8425,7 @@ layout: null
       const count = document.createElement('span');
       count.className = 'tapCount';
       count.textContent = t('easterEgg.patientTortoiseProgress').replace('{count}', String(patientTortoiseTapCount));
-      patientTortoiseProgress.append(count, document.createTextNode(' ' + t('easterEgg.patientTortoiseTap' + patientTortoiseTapCount)));
+      patientTortoiseProgress.append(count, document.createTextNode(' ' + t(patientTortoiseTapMessageKeys[patientTortoiseTapCount - 1])));
       patientTortoiseProgress.hidden = false;
       patientTortoiseProgress.classList.remove('isNew');
       void patientTortoiseProgress.offsetWidth;
