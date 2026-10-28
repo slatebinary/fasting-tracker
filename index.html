@@ -304,12 +304,18 @@ layout: null
     }
     .notice { background: color-mix(in srgb, var(--accent) 12%, var(--card)); border-radius: 14px; padding: 12px 14px; color: var(--text); font-size: 14px; margin-bottom: 14px; line-height: 1.4; }
     .patientTortoise { display:flex; align-items:center; gap:14px; margin:12px 0 4px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--card); }
+    .patientTortoiseProgress { margin:8px 0 0; padding:9px 11px; border:1px dashed var(--line); border-radius:12px; color:var(--text); background:var(--card); font-size:14px; line-height:1.4; }
+    .patientTortoiseProgress[hidden] { display:none !important; }
+    .patientTortoiseProgress.isNew { animation:tortoiseTapPop .24s ease-out; }
+    .patientTortoiseProgress .tapCount { font-weight:800; white-space:nowrap; }
+    @keyframes tortoiseTapPop { 0%{transform:scale(.97);opacity:.55} 65%{transform:scale(1.015)} 100%{transform:scale(1);opacity:1} }
+    @media (prefers-reduced-motion: reduce) { .patientTortoiseProgress.isNew { animation:none; } }
     .patientTortoise svg { width:58px; height:58px; flex:0 0 58px; color:var(--text); }
     .patientTortoiseMessage { font-size:17px; font-weight:750; line-height:1.35; }
     .patientTortoise button { margin-top:8px; padding:8px 12px; }
     #appVersionLabel[role="button"] { cursor:pointer; }
     #appVersionLabel[role="button"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; border-radius:4px; }
-    @media (prefers-reduced-motion: no-preference) { .patientTortoise svg { animation:tortoiseNod 1.4s ease-in-out 2; } @keyframes tortoiseNod { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-4deg)} } }
+    @media (prefers-reduced-motion: no-preference) { .patientTortoise svg { animation:tortoiseNod 1.4s ease-in-out 2; } .patientTortoise.isRevealed { animation:tortoiseArrive .55s cubic-bezier(.2,.85,.25,1.2) both; } .patientTortoise.isRevealed svg { animation:tortoiseNod .42s ease-in-out 3; } @keyframes tortoiseNod { 0%,100%{transform:rotate(0) translateY(0)} 50%{transform:rotate(-5deg) translateY(-3px)} } @keyframes tortoiseArrive { 0%{opacity:0;transform:translateY(10px) scale(.94)} 70%{opacity:1;transform:translateY(-2px) scale(1.015)} 100%{opacity:1;transform:translateY(0) scale(1)} } }
 
     [hidden] { display: none !important; }
     .updateBanner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--accent) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
@@ -582,6 +588,22 @@ layout: null
     .settingsSubgroup > summary { list-style:none; cursor:pointer; padding:12px 14px; font-weight:700; }
     .settingsSubgroup[open] > summary { border-bottom:1px solid var(--border); }
     .settingsSubgroup > .card, .settingsSubgroup > .row { margin:0; border:0; border-radius:0; box-shadow:none; }
+    .settingsSubgroup.iconInstallationGroup { margin:14px 0; border:2px solid var(--accent); border-inline-start-width:5px; background:color-mix(in srgb, var(--accent) 5%, var(--card)); }
+    .iconInstallationGroup > summary { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 13px; }
+    .iconInstallationGroup > summary:focus-visible { outline:3px solid var(--accent); outline-offset:-4px; }
+    .settingsIconSectionLead { display:flex; align-items:center; gap:12px; min-width:0; }
+    .settingsIconSectionSymbol { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border:2px solid var(--accent); border-radius:12px; color:var(--accent); background:var(--card); font-size:25px; font-weight:800; line-height:1; }
+    .settingsIconSectionCopy { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .iconInstallationGroup .settingsIconSectionCopy > strong { font-size:1.08rem; line-height:1.25; }
+    .iconInstallationGroup .settingsIconSectionCopy > .small { color:var(--text); line-height:1.35; font-weight:500; }
+    .iconInstallationGroup .settingsGroupChevron { color:var(--accent); font-size:1.7rem; }
+    html[data-theme="grayscale"] .settingsSubgroup.iconInstallationGroup { background:#fff; border-color:#000; }
+    html[data-theme="grayscale"] .settingsIconSectionSymbol { color:#000; border-color:#000; }
+    html[data-theme="high-contrast-light"] .settingsSubgroup.iconInstallationGroup { background:#fff; border-color:#000; }
+    html[data-theme="high-contrast-light"] .settingsIconSectionSymbol { color:#000; border-color:#000; }
+    html[data-theme="high-contrast-dark"] .settingsSubgroup.iconInstallationGroup { background:#000; border-color:#fff; }
+    html[data-theme="high-contrast-dark"] .settingsIconSectionSymbol { color:#fff; border-color:#fff; }
+    @media (max-width:380px) { .iconInstallationGroup > summary { padding:12px 9px; gap:8px; } .settingsIconSectionLead { gap:9px; } .settingsIconSectionSymbol { flex-basis:36px; width:36px; height:36px; font-size:22px; } }
     .settingsCompactCard { box-shadow:none; }
     #settings .healthNotice { margin-top:0; }
     #settings .settingsGroup[hidden] { display:none; }
@@ -974,7 +996,7 @@ layout: null
     <select id="timeZoneSelect" aria-label="Matching locations" data-i18n-aria="settings.timeZoneResultsLabel"><option value="system"></option></select>
     <div id="timeZoneSearchStatus" class="small" role="status" aria-live="polite"></div>
   </div>
-</div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
+</div><details class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▣</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
 <div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
 <div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
 <button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
@@ -1111,6 +1133,7 @@ layout: null
 <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
 <div class="duration" id="appVersionLabel" tabindex="0" role="button" aria-label="Reveal a small surprise">—</div>
 </div>
+<div id="patientTortoiseProgress" class="patientTortoiseProgress" hidden role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="patientTortoise" class="patientTortoise" hidden role="status" aria-live="polite" aria-atomic="true">
   <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M16 31c0-11 8-19 20-19s20 8 20 19v7H16z" fill="currentColor" opacity=".16"/><path d="M16 31c0-11 8-19 20-19s20 8 20 19v7H16z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M23 23h26M20 31h32M32 13v24" stroke="currentColor" stroke-width="2" opacity=".7"/><circle cx="52" cy="36" r="7" fill="currentColor" opacity=".45" stroke="currentColor" stroke-width="2"/><circle cx="54" cy="34" r="1.4" fill="currentColor"/><path d="M20 38l-3 8m15-8v9m15-9 3 8" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 31l-5 3 6 3" fill="currentColor" opacity=".45" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
   <div><div class="patientTortoiseMessage" data-i18n="easterEgg.patientTortoiseMessage">Steady is a pace, too.</div><button type="button" class="secondary" id="patientTortoiseDismiss" data-i18n="common.close">Close</button></div>
@@ -7836,6 +7859,9 @@ layout: null
       const hay=normalizeSettingsSearch(group.textContent);
       const matched=hay.includes(query);
       group.hidden=!matched; group.open=matched; if(matched)matches++;
+      if (matched) group.querySelectorAll('.settingsSubgroup').forEach(subgroup=>{
+        if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true;
+      });
     });
     settingsGroupToggleSuppressed=false;
     status.textContent=matches?t('settings.searchResults',{n:matches}):t('settings.searchNoResults');
@@ -8409,12 +8435,30 @@ layout: null
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
   const patientTortoiseTrigger = el('appVersionLabel');
   let patientTortoiseTapCount = 0;
+  const patientTortoiseProgress = el('patientTortoiseProgress');
+  const patientTortoiseTapMessageKeys = ['easterEgg.patientTortoiseTap1','easterEgg.patientTortoiseTap2','easterEgg.patientTortoiseTap3','easterEgg.patientTortoiseTap4','easterEgg.patientTortoiseTap5','easterEgg.patientTortoiseTap6'];
   const revealPatientTortoise = () => {
     patientTortoiseTapCount += 1;
-    if (patientTortoiseTapCount < 7) return;
+    if (patientTortoiseTapCount < 7) {
+      patientTortoiseProgress.textContent = '';
+      const count = document.createElement('span');
+      count.className = 'tapCount';
+      count.textContent = t('easterEgg.patientTortoiseProgress').replace('{count}', String(patientTortoiseTapCount));
+      patientTortoiseProgress.append(count, document.createTextNode(' ' + t(patientTortoiseTapMessageKeys[patientTortoiseTapCount - 1])));
+      patientTortoiseProgress.hidden = false;
+      patientTortoiseProgress.classList.remove('isNew');
+      void patientTortoiseProgress.offsetWidth;
+      patientTortoiseProgress.classList.add('isNew');
+      return;
+    }
     patientTortoiseTapCount = 0;
+    patientTortoiseProgress.hidden = true;
+    patientTortoiseProgress.textContent = '';
     const surprise = el('patientTortoise');
     surprise.hidden = false;
+    surprise.classList.remove('isRevealed');
+    void surprise.offsetWidth;
+    surprise.classList.add('isRevealed');
     el('patientTortoiseDismiss').focus();
   };
   patientTortoiseTrigger.setAttribute('aria-label', t('easterEgg.patientTortoiseTrigger'));

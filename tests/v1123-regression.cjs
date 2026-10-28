@@ -19,6 +19,15 @@ for(const p of ['index.html',...docs,'changelog.html','version.json','i18n/en.js
 assert.match(index,/window\.addEventListener\('pageshow'/);
 assert.match(index,/if \(!event\.persisted \|\| !uiReady\) return;/);
 assert.match(index,/data-i18n="public\.changelogLink" href="changelog\.html\?return=settings"/);
+assert.match(index,/id="patientTortoiseProgress"[^>]*role="status"[^>]*aria-live="polite"/,'Easter egg tap feedback must be announced accessibly');
+assert.match(index,/patientTortoiseTapCount < 7/,'Easter egg must provide six intermediate tap states');
+assert.match(index,/patientTortoiseTapMessageKeys = \['easterEgg\.patientTortoiseTap1','easterEgg\.patientTortoiseTap2','easterEgg\.patientTortoiseTap3','easterEgg\.patientTortoiseTap4','easterEgg\.patientTortoiseTap5','easterEgg\.patientTortoiseTap6'\]/,'Each intermediate tap must select an explicit localized message key');
+assert.match(index,/patientTortoise\.isRevealed \{ animation:tortoiseArrive/,'Reveal animation should be present');
+assert.match(index,/prefers-reduced-motion: reduce/,'Animations must respect reduced-motion preferences');
+assert.doesNotMatch(index,/localStorage\.(?:getItem|setItem)\([^)]*patientTortoise/i,'Easter egg tap progress must not be persisted');
+for (const key of ['patientTortoiseProgress','patientTortoiseTap1','patientTortoiseTap2','patientTortoiseTap3','patientTortoiseTap4','patientTortoiseTap5','patientTortoiseTap6']) {
+  for (const lang of ['en','bg','es']) assert.ok(fs.readFileSync('i18n/'+lang+'.json','utf8').includes('easterEgg.'+key), 'Missing localized Easter egg string '+lang+': '+key);
+}
 assert.match(index,/id="settingsUpdatesCard"/);
 assert.equal((index.match(/data-i18n="public\.changelogLink"/g)||[]).length,1,'Changelog link should appear exactly once');
 const changelog=fs.readFileSync('changelog.html','utf8');
@@ -155,3 +164,15 @@ for(const lang of ['en','bg','es']) assert.match(changelogHtml,new RegExp('data-
 assert.match(changelogHtml,/read-only|solo lectura|само за четене/i);
 for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
 console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multilingual document');
+
+
+// Settings discoverability: app icon subsection has a prominent heading and search opens it.
+assert.ok(index.includes('class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open'), 'App icon subsection must be visible by default and visually emphasized');
+assert.ok(index.includes('settingsIconSectionSymbol" aria-hidden="true"'), 'App icon subsection must have a non-colour visual marker');
+assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon subsection must explain its contents');
+assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
+for (const lang of ['en','bg','es']) {
+  const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8'));
+  assert.ok(dict['settings.appIconDetails'] && dict['settings.appIconSectionHelp'], lang+': missing prominent app icon section labels');
+}
+console.log('PASS: app icon section visibility, translated helper text and Settings search expansion');

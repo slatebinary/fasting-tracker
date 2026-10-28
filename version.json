@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.15.8",
+  "version": "1.15.9",
   "released": "2026-10-28",
-  "notes": "Add an accessible, dismissible Patient Tortoise Easter egg.",
+  "notes": "Improve Patient Tortoise feedback and animation; make app icon settings easier to find.",
   "entry": "./index.html",
   "shell": [
     "./",

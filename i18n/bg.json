@@ -936,7 +936,7 @@
   "settings.group.advancedHelp": "Цялост, съхранение, тестове и инструменти за поправка",
   "settings.group.help": "За приложението и помощ",
   "settings.group.helpHelp": "Инсталиране, поверителност, безопасност и поддръжка",
-  "settings.appIconDetails": "Икона на приложението и инсталиране",
+  "settings.appIconDetails": "Икони на приложението и инсталиране",
   "settings.storageDetails": "Защита на хранилището и местоположение на данните",
   "settings.updateAdvanced": "Разширени подробности за актуализациите",
   "settings.accessibilityVoiceOverTitle": "VoiceOver и екранни четци",
@@ -1044,5 +1044,13 @@
   "actionFeedback.noDataChanged": "Тази неуспешна проверка не е променила данни.",
   "actionFeedback.deviceChecksFailed": "Неуспешни проверки на устройството. Прегледайте диагностиката и опитайте отново.",
   "easterEgg.patientTortoiseTrigger": "Покажи малка изненада",
-  "easterEgg.patientTortoiseMessage": "Steady is a pace, too."
+  "easterEgg.patientTortoiseMessage": "Steady is a pace, too.",
+  "easterEgg.patientTortoiseProgress": "Докосване {count}/7",
+  "easterEgg.patientTortoiseTap1": "Едно докосване. Костенурката забеляза.",
+  "easterEgg.patientTortoiseTap2": "Две докосвания. Обмисля молбата ви.",
+  "easterEgg.patientTortoiseTap3": "Три докосвания. Моля, уважавайте скоростта на костенурката.",
+  "easterEgg.patientTortoiseTap4": "Четири докосвания. Провежда се много малко съвещание.",
+  "easterEgg.patientTortoiseTap5": "Пет докосвания. Комитетът на черупката почти е готов.",
+  "easterEgg.patientTortoiseTap6": "Шест докосвания. Подготвя се драматично появяване…",
+  "settings.appIconSectionHelp": "Изберете икона и намерете тук стъпките за инсталиране."
 }

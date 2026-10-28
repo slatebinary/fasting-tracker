@@ -936,7 +936,7 @@
   "settings.group.advancedHelp": "Integridad, almacenamiento, pruebas y herramientas de reparación",
   "settings.group.help": "Acerca de y ayuda",
   "settings.group.helpHelp": "Instalación, privacidad, seguridad y soporte",
-  "settings.appIconDetails": "Icono de la aplicación e instalación",
+  "settings.appIconDetails": "Iconos de la app e instalación",
   "settings.storageDetails": "Protección del almacenamiento y ubicación de los datos",
   "settings.updateAdvanced": "Detalles avanzados de actualización",
   "settings.accessibilityVoiceOverTitle": "VoiceOver y lectores de pantalla",
@@ -1044,5 +1044,13 @@
   "actionFeedback.noDataChanged": "Esta comprobación fallida no modificó ningún dato.",
   "actionFeedback.deviceChecksFailed": "Fallaron las comprobaciones del dispositivo. Revisa los diagnósticos e inténtalo de nuevo.",
   "easterEgg.patientTortoiseTrigger": "Mostrar una pequeña sorpresa",
-  "easterEgg.patientTortoiseMessage": "Steady is a pace, too."
+  "easterEgg.patientTortoiseMessage": "Steady is a pace, too.",
+  "easterEgg.patientTortoiseProgress": "Toque {count}/7",
+  "easterEgg.patientTortoiseTap1": "Un toque. La tortuga se ha dado cuenta.",
+  "easterEgg.patientTortoiseTap2": "Dos toques. Está considerando tu petición.",
+  "easterEgg.patientTortoiseTap3": "Tres toques. Respeta la velocidad de procesamiento de una tortuga.",
+  "easterEgg.patientTortoiseTap4": "Cuatro toques. Se está celebrando una reunión diminuta.",
+  "easterEgg.patientTortoiseTap5": "Cinco toques. El comité del caparazón casi está listo.",
+  "easterEgg.patientTortoiseTap6": "Seis toques. Preparando una entrada dramática…",
+  "settings.appIconSectionHelp": "Elige el icono de la app y consulta aquí los pasos de instalación."
 }

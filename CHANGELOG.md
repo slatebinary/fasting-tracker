@@ -1,5 +1,13 @@
 # Fasting Tracker changelog
 
+## v1.15.9 — 28 October 2026
+- Improved the Patient Tortoise Easter egg with visible tap progress and a different humorous response for each of the first six taps.
+- Added a more expressive reveal animation while respecting reduced-motion preferences; localized all tap messages in English, Bulgarian, and Spanish.
+- No analytics, network requests, or stored tap counts. No fasting, weight, active-fast, or backup data changes.
+- Made “App icons & installation” more prominent in Settings; searching for “icon” opens the matching subsection.
+- No fasting, weight, active-fast, or backup data changes.
+
+
 ## v1.15.8 — 28 October 2026
 - Added a hidden Patient Tortoise surprise after seven activations of the installed version label in Settings → Updates.
 - The message is dismissible, keyboard-accessible, and respects reduced-motion preferences; no analytics or network requests are added.
