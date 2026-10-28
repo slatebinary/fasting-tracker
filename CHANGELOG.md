@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.15.8 — 28 October 2026
+- Added a hidden Patient Tortoise surprise after seven activations of the installed version label in Settings → Updates.
+- The message is dismissible, keyboard-accessible, and respects reduced-motion preferences; no analytics or network requests are added.
+- No fasting, weight, active-fast, or backup data changes.
+
 ## v1.15.7 — 28 October 2026
 - Diagnostic action feedback banners now disappear automatically after 8 seconds, preventing stale messages from remaining on screen.
 - A new action replaces the previous message and restarts the dismissal timer; device-check summaries clear as well.

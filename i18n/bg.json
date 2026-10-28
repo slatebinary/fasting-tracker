@@ -1042,5 +1042,7 @@
   "actionFeedback.integrityRunning": "Проверка на целостта на данните…",
   "actionFeedback.integrityFailed": "Проверката на целостта е неуспешна. Данните не са променени. Експортирайте диагностиката и опитайте отново.",
   "actionFeedback.noDataChanged": "Тази неуспешна проверка не е променила данни.",
-  "actionFeedback.deviceChecksFailed": "Неуспешни проверки на устройството. Прегледайте диагностиката и опитайте отново."
+  "actionFeedback.deviceChecksFailed": "Неуспешни проверки на устройството. Прегледайте диагностиката и опитайте отново.",
+  "easterEgg.patientTortoiseTrigger": "Покажи малка изненада",
+  "easterEgg.patientTortoiseMessage": "Steady is a pace, too."
 }

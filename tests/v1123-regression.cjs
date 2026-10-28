@@ -48,6 +48,10 @@ assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,to
 assert.match(index,/const details=keys\.map\(key=>/);
 assert.doesNotMatch(index,/keys\.slice\(0,3\)/);
 assert.match(index,/id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open/);
+assert.match(index,/patientTortoiseTapCount < 7/);
+assert.match(index,/prefers-reduced-motion: no-preference/);
+assert.match(index,/data-i18n="easterEgg.patientTortoiseMessage"/);
+assert.match(index,/patientTortoiseTrigger.addEventListener\('keydown'/);
 assert.match(index,/id="updateBtn"[^>]*>Check for new version</);
 assert.match(index,/id="integrityCopyBtn"/);
 assert.match(index,/async function copyIntegrityReport\(\)/);
