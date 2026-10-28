@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.15.9",
   "released": "2026-10-28",
-  "notes": "Improve Patient Tortoise tap feedback and reveal animation.",
+  "notes": "Improve Patient Tortoise feedback and animation; make app icon settings easier to find.",
   "entry": "./index.html",
   "shell": [
     "./",
