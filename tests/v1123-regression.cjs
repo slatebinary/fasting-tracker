@@ -24,6 +24,7 @@ assert.match(index,/patientTortoiseTapCount < 7/,'Easter egg must provide six in
 assert.match(index,/patientTortoiseTapMessageKeys = \['easterEgg\.patientTortoiseTap1','easterEgg\.patientTortoiseTap2','easterEgg\.patientTortoiseTap3','easterEgg\.patientTortoiseTap4','easterEgg\.patientTortoiseTap5','easterEgg\.patientTortoiseTap6'\]/,'Each intermediate tap must select an explicit localized message key');
 assert.match(index,/patientTortoise\.isRevealed \{ animation:tortoiseArrive/,'Reveal animation should be present');
 assert.match(index,/prefers-reduced-motion: reduce/,'Animations must respect reduced-motion preferences');
+assert.doesNotMatch(index,/localStorage\.(?:getItem|setItem)\([^)]*patientTortoise/i,'Easter egg tap progress must not be persisted');
 for (const key of ['patientTortoiseProgress','patientTortoiseTap1','patientTortoiseTap2','patientTortoiseTap3','patientTortoiseTap4','patientTortoiseTap5','patientTortoiseTap6']) {
   for (const lang of ['en','bg','es']) assert.ok(fs.readFileSync('i18n/'+lang+'.json','utf8').includes('easterEgg.'+key), 'Missing localized Easter egg string '+lang+': '+key);
 }
