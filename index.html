@@ -6947,7 +6947,8 @@ layout: null
       const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};
       const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}
       const passed=checks.filter(c=>c.ok).length,warning=checks.length-passed;
-      announceDiagnosticAction(t('actionFeedback.deviceChecksComplete',{passed,total:checks.length,warning}),warning?'warning':'success');
+      const summary=t('actionFeedback.deviceChecksComplete',{passed,total:checks.length,warning});announceDiagnosticAction(summary,warning?'warning':'success');
+      const summaryNode=el('deviceCheckSummary');if(summaryNode)summaryNode.textContent=summary;
       showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
     }catch(err){
       noteDiagnosticError('device.checks');announceDiagnosticAction(t('actionFeedback.deviceChecksFailed'),'error');
