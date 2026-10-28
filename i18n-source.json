@@ -1,6 +1,6 @@
 {
   "sourceRevision": 34,
-  "appVersion": "1.15.7",
+  "appVersion": "1.15.8",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1046,6 +1046,8 @@
     "actionFeedback.integrityRunning": "Checking data integrity…",
     "actionFeedback.integrityFailed": "Data integrity check failed. No data was changed. Export diagnostics and try again.",
     "actionFeedback.noDataChanged": "No data was changed by this failed check.",
-    "actionFeedback.deviceChecksFailed": "Device checks failed unexpectedly. Review diagnostics and try again."
+    "actionFeedback.deviceChecksFailed": "Device checks failed unexpectedly. Review diagnostics and try again.",
+    "easterEgg.patientTortoiseTrigger": "Reveal a small surprise",
+    "easterEgg.patientTortoiseMessage": "Steady is a pace, too."
   }
 }
