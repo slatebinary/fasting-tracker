@@ -70,6 +70,23 @@ for item in ver.get('shell',[]):
     normalized=re.sub(r'https://github\.com/[^/"\'<>\s]+/[^/"\'<>\s]+','__REPO_URL__',normalized)
     ok(hashlib.sha256(normalized.encode()).hexdigest()==ver['hashes'][item],f'GitHub Pages normalized hash mismatch {item}')
 ok('responseDigestHex' in sw and 'integrity check failed' in sw,'service worker integrity verification missing')
+# Color-Friendly navigation must keep text readable and active/focus states non-colour-only.
+def rgb(hex_color):
+    value=hex_color.lstrip('#')
+    return tuple(int(value[i:i+2],16)/255 for i in (0,2,4))
+def luminance(hex_color):
+    channels=rgb(hex_color)
+    linear=[c/12.92 if c<=0.04045 else ((c+0.055)/1.055)**2.4 for c in channels]
+    return 0.2126*linear[0]+0.7152*linear[1]+0.0722*linear[2]
+def contrast_ratio(foreground,background):
+    a,b=sorted((luminance(foreground),luminance(background)),reverse=True)
+    return (a+0.05)/(b+0.05)
+ok('html[data-theme="colorblind"] nav' in index and 'background: #ffffff' in index,'Color-Friendly navigation must use a stable light background')
+ok('html[data-theme="colorblind"] .tab .ico' in index and 'filter: grayscale(1) contrast(1.4)' in index,'Color-Friendly navigation icons must have stronger neutral contrast')
+ok('html[data-theme="colorblind"] .tab.active' in index and 'box-shadow: inset 0 -4px 0 #003f73' in index,'active navigation tab must have a non-colour-only indicator')
+ok('html[data-theme="colorblind"] .tab:focus-visible' in index and 'outline: 3px solid #003f73' in index,'Color-Friendly navigation keyboard focus must be visible')
+ok(contrast_ratio('#26384d','#ffffff')>=4.5,'Color-Friendly inactive navigation labels must meet WCAG AA text contrast')
+ok(contrast_ratio('#003f73','#dcecf8')>=4.5,'Color-Friendly active navigation labels must meet WCAG AA text contrast')
 ok('async function getCurrentServiceWorkerController()' in index and 'await reg.update()' in index and 'service worker controller update timed out' in index, 'update must wait for the newest active service worker before staging a release')
 ok('const controller = await getCurrentServiceWorkerController();' in index, 'release staging must not message a stale page controller')
 ok("replace(/^---\\n[\\s\\S]*?\\n---\\n/, '')" in sw, 'service worker must strip static-artifact front matter before hashing HTML')
