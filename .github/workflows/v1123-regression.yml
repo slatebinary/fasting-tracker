@@ -33,7 +33,7 @@ jobs:
           for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py', 'tests/test_import_preview_merge.py', 'tests/test_destructive_guard.py', 'tests/test_setup_notification_layout.py', 'tests/test_dst_timezone.py', 'tests/test_weight_unit_layout.py', 'tests/test_timeline_month_axis.py'):
               p = Path(filename)
               s = p.read_text()
-              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3', '1.13.4', '1.13.5', '1.13.6', '1.13.7', '1.13.8', '1.13.9', '1.13.10', '1.13.11', '1.14.0', '1.14.1', '1.15.1'):
+              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3', '1.13.4', '1.13.5', '1.13.6', '1.13.7', '1.13.8', '1.13.9', '1.13.10', '1.13.11', '1.14.0', '1.14.1', '1.15.1', '1.15.2'):
                   s = re.sub(r'(?<![0-9.])' + re.escape(previous) + r'(?![0-9.])', current_version, s)
               p.write_text(s)
           PYTEST
