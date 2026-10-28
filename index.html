@@ -303,6 +303,14 @@ layout: null
       outline-offset: -4px;
     }
     .notice { background: color-mix(in srgb, var(--accent) 12%, var(--card)); border-radius: 14px; padding: 12px 14px; color: var(--text); font-size: 14px; margin-bottom: 14px; line-height: 1.4; }
+    .patientTortoise { display:flex; align-items:center; gap:14px; margin:12px 0 4px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--card); }
+    .patientTortoise svg { width:58px; height:58px; flex:0 0 58px; color:var(--text); }
+    .patientTortoiseMessage { font-size:17px; font-weight:750; line-height:1.35; }
+    .patientTortoise button { margin-top:8px; padding:8px 12px; }
+    #appVersionLabel[role="button"] { cursor:pointer; }
+    #appVersionLabel[role="button"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; border-radius:4px; }
+    @media (prefers-reduced-motion: no-preference) { .patientTortoise svg { animation:tortoiseNod 1.4s ease-in-out 2; } @keyframes tortoiseNod { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-4deg)} } }
+
     [hidden] { display: none !important; }
     .updateBanner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--accent) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
     .updateBanner strong { display: block; }
@@ -1101,8 +1109,13 @@ layout: null
       <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.updates">Updates</strong><span class="small" data-i18n="settings.group.updatesHelp">Installed version and update checks</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
       <div class="settingsGroupBody"><div class="card settingsCompactCard" id="settingsUpdatesCard"><div class="row" style="margin-top:10px">
 <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
-<div class="duration" id="appVersionLabel">—</div>
-</div><div class="publicLinks" style="margin-top:8px"><a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a></div><div class="row">
+<div class="duration" id="appVersionLabel" tabindex="0" role="button" aria-label="Reveal a small surprise">—</div>
+</div>
+<div id="patientTortoise" class="patientTortoise" hidden role="status" aria-live="polite" aria-atomic="true">
+  <svg viewBox="0 0 64 64" role="img" aria-label="A small tortoise" focusable="false"><path d="M16 31c0-11 8-19 20-19s20 8 20 19v7H16z" fill="currentColor" opacity=".16"/><path d="M16 31c0-11 8-19 20-19s20 8 20 19v7H16z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M23 23h26M20 31h32M32 13v24" stroke="currentColor" stroke-width="2" opacity=".7"/><circle cx="52" cy="36" r="7" fill="currentColor" opacity=".45" stroke="currentColor" stroke-width="2"/><circle cx="54" cy="34" r="1.4" fill="currentColor"/><path d="M20 38l-3 8m15-8v9m15-9 3 8" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 31l-5 3 6 3" fill="currentColor" opacity=".45" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+  <div><div class="patientTortoiseMessage" data-i18n="easterEgg.patientTortoiseMessage">Steady is a pace, too.</div><button type="button" class="secondary" id="patientTortoiseDismiss" data-i18n="common.close">Close</button></div>
+</div>
+<div class="publicLinks" style="margin-top:8px"><a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a></div><div class="row">
 <div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
 <button class="secondary" data-i18n="update.check" id="updateBtn">Check for new version</button>
 </div></div>
@@ -8394,6 +8407,25 @@ layout: null
   }
 
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
+  const patientTortoiseTrigger = el('appVersionLabel');
+  let patientTortoiseTapCount = 0;
+  const revealPatientTortoise = () => {
+    patientTortoiseTapCount += 1;
+    if (patientTortoiseTapCount < 7) return;
+    patientTortoiseTapCount = 0;
+    const surprise = el('patientTortoise');
+    surprise.hidden = false;
+    el('patientTortoiseDismiss').focus();
+  };
+  patientTortoiseTrigger.setAttribute('aria-label', t('easterEgg.patientTortoiseTrigger'));
+  patientTortoiseTrigger.addEventListener('click', revealPatientTortoise);
+  patientTortoiseTrigger.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); revealPatientTortoise(); }
+  });
+  el('patientTortoiseDismiss').addEventListener('click', () => {
+    el('patientTortoise').hidden = true;
+    patientTortoiseTrigger.focus();
+  });
   el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;
   uiReady = true;
   persistUrlLanguageOverride();
