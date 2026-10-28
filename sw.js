@@ -125,7 +125,7 @@ async function fetchReleaseAsset(canonical, version, expectedHash) {
   const response = await fetchWithTimeout(new Request(url.href, { cache:'no-store', credentials:'same-origin' }), ASSET_FETCH_TIMEOUT_MS);
   if (!response.ok) throw new Error(`failed to cache ${url.pathname}`);
   const actualHash = await responseDigestHex(canonical, response);
-  if (actualHash !== expectedHash) throw new Error(`integrity check failed for ${url.pathname}`);
+  if (actualHash !== expectedHash) throw new Error(`integrity check failed for ${url.pathname} (expected ${expectedHash}, received ${actualHash})`);
   return response;
 }
 
