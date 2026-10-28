@@ -1042,7 +1042,7 @@
     "actionFeedback.deviceChecksComplete": "{passed} of {total} device checks passed; {warning} need attention.",
     "actionFeedback.recalculateRunning": "Recalculating cached statistics and refreshing charts…",
     "actionFeedback.recalculateWarning": "Recalculation finished, but {n} integrity issue(s) remain. Review the integrity report.",
-    "actionFeedback.recalculateFailed": "Recalculation failed. Check diagnostics; no data was intentionally changed.",
+    "actionFeedback.recalculateFailed": "Recalculation failed. Check diagnostics; the data was not intentionally changed.",
     "actionFeedback.integrityRunning": "Checking data integrity…",
     "actionFeedback.integrityFailed": "Data integrity check failed. No data was changed. Export diagnostics and try again.",
     "actionFeedback.noDataChanged": "No data was changed by this failed check."
