@@ -1012,5 +1012,9 @@
   "settings.appearanceGrayscale": "Escala de grises",
   "settings.appearanceHighContrastLight": "Alto contraste (claro)",
   "settings.appearanceHighContrastDark": "Alto contraste (oscuro)",
-  "settings.appearanceColorblind": "Adaptada a la visión del color"
+  "settings.appearanceColorblind": "Adaptada a la visión del color",
+  "game.levelsExplainTitle": "Cómo funcionan los niveles",
+  "game.levelsExplain": "Los niveles miden puntos de constancia (XP), no la duración del ayuno. Obtienes 10 XP por cada ayuno completado que alcanza tu objetivo elegido y 2 XP por cada día distinto en que registras el peso. Ayunar más allá del objetivo no da XP adicional.",
+  "game.levelsThresholds": "Nivel 1: 0–49 XP. Nivel 2: 50–149 XP (100 XP más). Nivel 3: 150–349 XP (200 XP más). Nivel 4: 350+ XP.",
+  "game.levelsPurpose": "Los niveles superiores requieren más XP acumulada y representan hábitos mantenidos en el tiempo. Solo ofrecen hitos y motivación; no desbloquean funciones, no son indicadores de salud ni una razón para ayunar más tiempo."
 }

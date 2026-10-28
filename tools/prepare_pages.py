@@ -19,4 +19,15 @@ for item in sorted(paths):
         else: dst=OUT/rel
     if not src.is_file(): raise SystemExit(f'missing deployment asset: {item} -> {src}')
     dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(src,dst)
-print(f'Prepared {len(paths)} validated deployment entries in {OUT}')
+    if dst.suffix.lower()=='.html':
+        text=dst.read_text(encoding='utf-8')
+        lines=text.splitlines(keepends=True)
+        if lines and lines[0].strip()=='---':
+            closing=next((i for i in range(1,len(lines)) if lines[i].strip()=='---'),None)
+            if closing is None:
+                raise SystemExit(f'unclosed HTML front matter: {item}')
+            text=''.join(lines[closing+1:])
+            dst.write_text(text,encoding='utf-8')
+        if dst.read_text(encoding='utf-8').splitlines()[:1]==['---']:
+            raise SystemExit(f'HTML front matter leaked into deployment output: {item}')
+print(f'Prepared {len(paths)} validated deployment entries in {OUT}; HTML front matter removed.')

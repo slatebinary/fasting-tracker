@@ -1,5 +1,12 @@
 # Fasting Tracker changelog
 
+## v1.15.2 — 28 October 2026
+- Fixed button-label contrast in both high-contrast themes, including primary and stop actions.
+- Strengthened the distinction between grayscale and colour-vision-friendly palettes.
+- Explained consistency XP rules, increasing level thresholds and the motivational-only purpose of gamification.
+- Strip YAML front matter from published HTML during deployment.
+- No fasting/weight records or backup data are changed.
+
 ## v1.15.0 — 27 October 2026
 - Added grayscale, high-contrast light/dark, and colour-vision-friendly appearance palettes, with English, Bulgarian, and Spanish labels.
 - Rebuild and persist derived daily fasting totals when the selected time zone changes, preventing stale prior-zone derived data from causing a false mismatch warning.
