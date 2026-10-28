@@ -1,5 +1,9 @@
 # Fasting Tracker changelog
 
+## v1.15.5 — 28 October 2026
+- Improved Color-Friendly bottom navigation contrast, icon visibility, active-tab indication, and keyboard focus.
+- No fasting, weight, active-fast, or backup data changes.
+
 ## v1.15.4 — 28 October 2026
 - Distinguish cumulative target-fast milestones from consecutive target-fast streak achievements at 5, 25 and 50.
 - Clarify cumulative versus consecutive achievement rules in English, Bulgarian and Spanish.
