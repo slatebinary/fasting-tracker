@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.15.6",
+  "version": "1.15.7",
   "released": "2026-10-28",
-  "notes": "Add visible, accessible feedback and robust error handling for diagnostic actions.",
+  "notes": "Automatically dismiss diagnostic action feedback after eight seconds.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -73,8 +73,8 @@
   "htmlNormalization": "github-pages-v1",
   "hashes": {
     "./": "58efbd0cf7946848cb26c099fcfd868fd4924c109730682bbd9bf9191f006c98",
-    "./index.html": "58efbd0cf7946848cb26c099fcfd868fd4924c109730682bbd9bf9191f006c98",
-    "./changelog.html": "b921c6cc3d4bb2b3914d2f4ed269fbbf1818461e5183e8873fa355544c288ecb",
+    "./index.html": "d07c2c0dec419b5ce7cce66f6af0294882ff88f5318574d1263ba6b87a4ce001",
+    "./changelog.html": "1520af9a887d6ee66d99904417ca4bbccfac8377a9d5f90eb3046e5487efe180",
     "./i18n/en.js": "7f0602238cd2bf5334a8b8322ec66eac0d73ab73b6c790c307a65679a0213cac",
     "./i18n/bg.js": "a8168bd3a1a1d4ba40ec02c7553ef35f4203ffb76973593a678b482e50f37446",
     "./i18n/es.js": "0b9d0a54b7287936b84436e7f2e4a29558b5b9d0b94583952dab0e35b80c782c",
