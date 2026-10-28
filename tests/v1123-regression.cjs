@@ -164,3 +164,15 @@ for(const lang of ['en','bg','es']) assert.match(changelogHtml,new RegExp('data-
 assert.match(changelogHtml,/read-only|solo lectura|само за четене/i);
 for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
 console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multilingual document');
+
+
+// Settings discoverability: app icon subsection has a prominent heading and search opens it.
+assert.ok(index.includes('class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails"'), 'App icon subsection must be visually emphasized');
+assert.ok(index.includes('settingsIconSectionSymbol" aria-hidden="true"'), 'App icon subsection must have a non-colour visual marker');
+assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon subsection must explain its contents');
+assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
+for (const lang of ['en','bg','es']) {
+  const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8'));
+  assert.ok(dict['settings.appIconDetails'] && dict['settings.appIconSectionHelp'], lang+': missing prominent app icon section labels');
+}
+console.log('PASS: app icon section visibility, translated helper text and Settings search expansion');
