@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.15.3 — 28 October 2026
+- Force readable button text, backgrounds and borders across both high-contrast themes and grayscale, including widget-specific buttons.
+- Keep the gamification rules, level thresholds, and purpose visible without requiring the user to expand a hidden section.
+- No fasting, weight, active-fast, or backup data changes.
+
 ## v1.15.2 — 28 October 2026
 - Fixed button-label contrast in both high-contrast themes, including primary and stop actions.
 - Strengthened the distinction between grayscale and colour-vision-friendly palettes.
