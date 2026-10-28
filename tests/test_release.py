@@ -70,6 +70,8 @@ for item in ver.get('shell',[]):
     normalized=re.sub(r'https://github\.com/[^/"\'<>\s]+/[^/"\'<>\s]+','__REPO_URL__',normalized)
     ok(hashlib.sha256(normalized.encode()).hexdigest()==ver['hashes'][item],f'GitHub Pages normalized hash mismatch {item}')
 ok('responseDigestHex' in sw and 'integrity check failed' in sw,'service worker integrity verification missing')
+ok('async function getCurrentServiceWorkerController()' in index and 'await reg.update()' in index and 'service worker controller update timed out' in index, 'update must wait for the newest active service worker before staging a release')
+ok('const controller = await getCurrentServiceWorkerController();' in index, 'release staging must not message a stale page controller')
 ok("replace(/^---\\n[\\s\\S]*?\\n---\\n/, '')" in sw, 'service worker must strip static-artifact front matter before hashing HTML')
 ok(".replace(/{{ site\\.github\\.url }}/g, '__SITE_URL__')" in sw and ".replace(/{{ site\\.github\\.repository_url }}/g, '__REPO_URL__')" in sw, 'service worker must canonicalize literal Liquid placeholders in static Pages artifacts')
 ok("url.searchParams.has('__ft_probe')" in sw,'live entry deployment probe must bypass the active cache')
