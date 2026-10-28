@@ -72,8 +72,8 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "a78adc3afcf23d06c70ecd9c45fb157be5d76d4c1ea08940d89caffa5c4ed377",
-    "./index.html": "a78adc3afcf23d06c70ecd9c45fb157be5d76d4c1ea08940d89caffa5c4ed377",
+    "./": "0c418396478b9ee0dd1493ad2cbe3a7502f5cbaac0cea28f8a9bf8b9300b957f",
+    "./index.html": "0c418396478b9ee0dd1493ad2cbe3a7502f5cbaac0cea28f8a9bf8b9300b957f",
     "./changelog.html": "60e8046298876991a818aa6ca51cd37c250d29ce44edf79631d2e916d1a35829",
     "./i18n/en.js": "fc7960e30086db0fd11a88e2b6e98cf3ee0fae9dccdf3216ce2dd65fa6a952ec",
     "./i18n/bg.js": "7b4c5fc39a013dd3b1c6fed42e68ce2186067e0a2ab5fd098b227a64d84f5fd3",

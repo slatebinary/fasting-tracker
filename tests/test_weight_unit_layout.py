@@ -12,7 +12,7 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={"width":320,"height":844},timezone_id="Europe/Sofia")
     errors=[];page.on("pageerror",lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.15.2'})); }",data)
+    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.15.3'})); }",data)
     page.set_content(inlined_html(),wait_until="domcontentloaded");page.wait_for_timeout(150)
     page.locator('.tab[data-screen="weight"]').click()
     # The setup/onboarding unit buttons use the same no-wrap protection.
