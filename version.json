@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.15.7",
+  "version": "1.15.8",
   "released": "2026-10-28",
-  "notes": "Automatically dismiss diagnostic action feedback after eight seconds.",
+  "notes": "Add an accessible, dismissible Patient Tortoise Easter egg.",
   "entry": "./index.html",
   "shell": [
     "./",
