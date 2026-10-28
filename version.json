@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.15.2",
+  "version": "1.15.3",
   "released": "2026-10-28",
-  "notes": "Fix high-contrast button text, distinguish grayscale and colour-vision-friendly palettes, explain gamification levels, and strip HTML front matter from published pages.",
+  "notes": "Force readable button contrast across high-contrast and grayscale themes, and keep gamification level guidance visible.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -72,9 +72,9 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "3f87c455f19e74a56a8f720839fad8aba8c3472173b17a7b83bb01a38cd7517c",
-    "./index.html": "3f87c455f19e74a56a8f720839fad8aba8c3472173b17a7b83bb01a38cd7517c",
-    "./changelog.html": "e33c2bfeedea07c6d122261713128f43b94f06e7dcabd854afcca5e354bfd0c0",
+    "./": "38144fe930c7a9d807e3ffc98a19587d1ebdf9acffbb1b6efa53aff2c2ac183a",
+    "./index.html": "38144fe930c7a9d807e3ffc98a19587d1ebdf9acffbb1b6efa53aff2c2ac183a",
+    "./changelog.html": "60e8046298876991a818aa6ca51cd37c250d29ce44edf79631d2e916d1a35829",
     "./i18n/en.js": "fc7960e30086db0fd11a88e2b6e98cf3ee0fae9dccdf3216ce2dd65fa6a952ec",
     "./i18n/bg.js": "7b4c5fc39a013dd3b1c6fed42e68ce2186067e0a2ab5fd098b227a64d84f5fd3",
     "./i18n/es.js": "2e30dfd068e1d32d247a9093c39fbc643fddb583aeffb5735c9f4e0f8d5ebeb9",
