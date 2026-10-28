@@ -469,6 +469,15 @@ console.log('compatibility repair regression tests passed');
 except Exception as e:
     errors.append('could not build compatibility repair tests: '+str(e))
 
+# v1.15.4: cumulative achievements remain separate from consecutive target-fast streaks.
+ok("const consecutiveWins = currentStreak();" in index, "consecutive-fast achievement streak source missing")
+ok("unlocked: wins >= 5" in index and "unlocked: wins >= 25" in index and "unlocked: wins >= 50" in index, "cumulative achievement milestones must remain cumulative")
+ok("unlocked: consecutiveWins >= 5" in index and "unlocked: consecutiveWins >= 25" in index and "unlocked: consecutiveWins >= 50" in index, "consecutive-fast achievement milestones missing")
+for lang in ("en", "bg", "es"):
+    dictionary=json.loads((ROOT/"i18n"/f"{lang}.json").read_text(encoding="utf-8"))
+    for key in ("game.streak5","game.streak5d","game.streak25","game.streak25d","game.streak50","game.streak50d"):
+        ok(key in dictionary, f"{lang} consecutive-fast achievement translation missing: {key}")
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)
