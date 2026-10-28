@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import hashlib, json, re, subprocess, sys, tempfile, xml.etree.ElementTree as ET
+import hashlib, json, re, struct, subprocess, sys, tempfile, xml.etree.ElementTree as ET
 
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
@@ -486,7 +486,14 @@ for theme in accessible_icon_themes:
     for size in (192, 512):
         asset = f"./icons/{theme}/icon-{size}.png"
         ok(asset in release_info["shell"], f"{theme} {size}px icon must be covered by release integrity")
-        ok((ROOT / "icons" / theme / f"icon-{size}.png").is_file(), f"{theme} {size}px icon asset missing")
+        icon_path = ROOT / "icons" / theme / f"icon-{size}.png"
+        ok(icon_path.is_file(), f"{theme} {size}px icon asset missing")
+        if icon_path.is_file():
+            icon_bytes = icon_path.read_bytes()
+            ok(icon_bytes.startswith(b"\\x89PNG\\r\\n\\x1a\\n"), f"{theme} {size}px icon is not a PNG")
+            if icon_bytes.startswith(b"\\x89PNG\\r\\n\\x1a\\n") and len(icon_bytes) >= 24:
+                dimensions = struct.unpack(">II", icon_bytes[16:24])
+                ok(dimensions == (size, size), f"{theme} icon dimensions should be {size}x{size}, got {dimensions}")
     for lang in ("en", "bg", "es"):
         dictionary = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
         ok(f"icon.{theme}" in dictionary, f"{lang} accessible icon label missing: {theme}")
