@@ -1,5 +1,12 @@
 # Fasting Tracker changelog
 
+## v1.16.0 — 28 October 2026
+- Add selectable grayscale, high-contrast, and colour-vision-friendly Home Screen icon themes.
+- Make icon choices available in Settings and onboarding, with English, Bulgarian and Spanish labels.
+- Add separate localized PWA manifests and integrity-covered PNG assets for all three accessible icon themes.
+- Preserve existing icon choices and all fasting, weight, active-fast and backup data.
+
+
 ## v1.15.9 — 28 October 2026
 - Improved the Patient Tortoise Easter egg with visible tap progress and a different humorous response for each of the first six taps.
 - Added a more expressive reveal animation while respecting reduced-motion preferences; localized all tap messages in English, Bulgarian, and Spanish.

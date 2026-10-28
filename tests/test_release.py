@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import hashlib, json, re, subprocess, sys, tempfile, xml.etree.ElementTree as ET
+import hashlib, json, re, struct, subprocess, sys, tempfile, xml.etree.ElementTree as ET
 
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
@@ -741,6 +741,35 @@ tz_start=index.find("el('timeZoneSelect').addEventListener('change'")
 tz_end=index.find("});",tz_start)
 tz_handler=index[tz_start:tz_end+3] if tz_start>=0 and tz_end>=0 else ""
 ok("updateStoredDayTotalsIncrementally()" in tz_handler and "persistDailyTotals(data.revision)" in tz_handler, "time-zone changes must rebuild and persist derived daily totals")
+
+# v1.16.0: accessible icon themes must be complete and localized.
+accessible_icon_themes = ("grayscale", "highcontrast", "colorblind")
+release_info = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))
+for theme in accessible_icon_themes:
+    ok(f'data-icon-choice="{theme}"' in index, f"{theme} icon choice missing from Settings/onboarding")
+    for size in (192, 512):
+        asset = f"./icons/{theme}/icon-{size}.png"
+        ok(asset in release_info["shell"], f"{theme} {size}px icon must be covered by release integrity")
+        icon_path = ROOT / "icons" / theme / f"icon-{size}.png"
+        ok(icon_path.is_file(), f"{theme} {size}px icon asset missing")
+        if icon_path.is_file():
+            icon_bytes = icon_path.read_bytes()
+            ok(icon_bytes.startswith(b"\x89PNG\r\n\x1a\n"), f"{theme} {size}px icon is not a PNG")
+            if icon_bytes.startswith(b"\x89PNG\r\n\x1a\n") and len(icon_bytes) >= 24:
+                dimensions = struct.unpack(">II", icon_bytes[16:24])
+                ok(dimensions == (size, size), f"{theme} icon dimensions should be {size}x{size}, got {dimensions}")
+    for lang in ("en", "bg", "es"):
+        dictionary = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
+        ok(f"icon.{theme}" in dictionary, f"{lang} accessible icon label missing: {theme}")
+        manifest_name = f"manifest-{theme}" + ("" if lang == "en" else f"-{lang}") + ".webmanifest"
+        manifest_path = ROOT / manifest_name
+        ok(f"./{manifest_name}" in release_info["shell"], f"{manifest_name} must be covered by release integrity")
+        ok(manifest_path.is_file(), f"{manifest_name} missing")
+        if manifest_path.is_file():
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+            icon_sources = {entry["src"] for entry in manifest_data.get("icons", [])}
+            ok(f"./icons/{theme}/icon-192.png" in icon_sources and f"./icons/{theme}/icon-512.png" in icon_sources, f"{manifest_name} does not reference its theme's icon assets")
+            ok(any(entry.get("purpose") == "maskable" for entry in manifest_data.get("icons", [])), f"{manifest_name} lacks a maskable icon entry")
 
 if errors:
     print('FAIL')
