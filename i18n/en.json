@@ -936,7 +936,7 @@
   "settings.group.advancedHelp": "Integrity, storage health, benchmarks and repair tools",
   "settings.group.help": "About & help",
   "settings.group.helpHelp": "Installation, privacy, safety and support information",
-  "settings.appIconDetails": "App icon & installation",
+  "settings.appIconDetails": "App icons & installation",
   "settings.storageDetails": "Storage protection & data locations",
   "settings.updateAdvanced": "Advanced update details",
   "settings.accessibilityVoiceOverTitle": "VoiceOver & screen readers",
@@ -1051,5 +1051,6 @@
   "easterEgg.patientTortoiseTap3": "Three taps. Please respect tortoise processing speed.",
   "easterEgg.patientTortoiseTap4": "Four taps. A very small meeting is taking place.",
   "easterEgg.patientTortoiseTap5": "Five taps. The shell committee is almost ready.",
-  "easterEgg.patientTortoiseTap6": "Six taps. Dramatic entrance preparation underway…"
+  "easterEgg.patientTortoiseTap6": "Six taps. Dramatic entrance preparation underway…",
+  "settings.appIconSectionHelp": "Choose your app icon and find the installation steps here."
 }
