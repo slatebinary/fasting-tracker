@@ -7443,7 +7443,7 @@ layout: null
       if (candidate) return candidate.state === 'activated' && reg.active === candidate && controller === candidate;
       return !!reg.active && controller === reg.active;
     };
-    if (!updateFound && isReady()) {
+    if (!updateFound && reg.active && (!navigator.serviceWorker.controller || isReady())) {
       reg.removeEventListener('updatefound', onUpdateFound);
       return reg.active;
     }
