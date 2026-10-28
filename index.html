@@ -58,8 +58,9 @@ layout: null
       };
       const titles={en:'Fasting',bg:'Гладуване',es:'Ayuno'};
       document.getElementById('appManifest').href=manifestFor(lang,icon);
-      const fav=document.getElementById('appFavicon'); if(fav) fav.href=`icons/${icon}/favicon-32.png`;
-      const touch=document.getElementById('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/apple-touch-icon.png`;
+      const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon);
+      const fav=document.getElementById('appFavicon'); if(fav) fav.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'favicon-32.png'}`;
+      const touch=document.getElementById('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'apple-touch-icon.png'}`;
       document.getElementById('appleAppTitle').content=titles[lang];
     } catch {}
   })();
@@ -587,6 +588,7 @@ layout: null
     .settingsSubgroup { margin:10px 0; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 92%, var(--bg)); overflow:hidden; }
     .settingsSubgroup > summary { list-style:none; cursor:pointer; padding:12px 14px; font-weight:700; }
     .settingsSubgroup[open] > summary { border-bottom:1px solid var(--border); }
+    .iconInstallationGroup[open] > summary { border-bottom:0; }
     .settingsSubgroup > .card, .settingsSubgroup > .row { margin:0; border:0; border-radius:0; box-shadow:none; }
     .settingsSubgroup.iconInstallationGroup { margin:8px 0 18px; border:0; border-radius:0; background:transparent; overflow:visible; box-shadow:none; }
     .iconInstallationGroup > summary { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 13px; }
