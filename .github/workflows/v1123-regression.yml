@@ -90,7 +90,7 @@ jobs:
           assert all(path.is_file() for path in tracked), 'A tracked file is missing'
           assert not any('_site' in path.parts or '__pycache__' in path.parts or path.suffix == '.pyc' for path in tracked)
           release_version = json.loads(Path('version.json').read_text())['version']
-archive = Path(f'/tmp/fasting-tracker-v{release_version}.zip')
+          archive = Path(f'/tmp/fasting-tracker-v{release_version}.zip')
           with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
               for path in tracked:
                   z.write(path, path.as_posix())
