@@ -36,9 +36,9 @@ assert.deepEqual(changelogSections.map(x=>x[1]),['en','bg','es'],'Changelog must
 for(let i=0;i<changelogSections.length;i++){
   const start=changelogSections[i].index, end=i+1<changelogSections.length?changelogSections[i+1].index:changelog.length;
   const section=changelog.slice(start,end);
-  assert.match(section,/<article class="version"><h2>v1\\.15\\.9<\\/h2>/,'v1.15.9 must be available in '+changelogSections[i][1]);
-  assert.equal((section.match(/<article\\b/g)||[]).length,(section.match(/<\\/article>/g)||[]).length,'Changelog article markup must be balanced in '+changelogSections[i][1]);
-  assert.match(section,/<h2>v1\\.15\\.5<\\/h2>/,'v1.15.5 must have a proper release card in '+changelogSections[i][1]);
+  assert.match(section,/<article class="version"><h2>v1\.15\.9<\/h2>/,'v1.15.9 must be available in '+changelogSections[i][1]);
+  assert.equal((section.match(/<article\b/g)||[]).length,(section.match(/<\/article>/g)||[]).length,'Changelog article markup must be balanced in '+changelogSections[i][1]);
+  assert.match(section,/<h2>v1\.15\.5<\/h2>/,'v1.15.5 must have a proper release card in '+changelogSections[i][1]);
 }
 assert.match(changelog,/v1\.8\.0/,'historical changelog should include the earliest documented release');
 assert.match(changelog,/history\.back\(\)/,'changelog should return to the prior app instance when possible');
