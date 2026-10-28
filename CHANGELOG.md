@@ -1,5 +1,12 @@
 # Fasting Tracker changelog
 
+## v1.16.0 — 28 October 2026
+- Add selectable grayscale, high-contrast, and colour-vision-friendly Home Screen icon themes.
+- Make icon choices available in Settings and onboarding, with English, Bulgarian and Spanish labels.
+- Add separate localized PWA manifests and integrity-covered PNG assets for all three accessible icon themes.
+- Preserve existing icon choices and all fasting, weight, active-fast and backup data.
+
+
 ## v1.15.4 — 28 October 2026
 - Distinguish cumulative target-fast milestones from consecutive target-fast streak achievements at 5, 25 and 50.
 - Clarify cumulative versus consecutive achievement rules in English, Bulgarian and Spanish.
