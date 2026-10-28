@@ -1044,5 +1044,12 @@
   "actionFeedback.noDataChanged": "Тази неуспешна проверка не е променила данни.",
   "actionFeedback.deviceChecksFailed": "Неуспешни проверки на устройството. Прегледайте диагностиката и опитайте отново.",
   "easterEgg.patientTortoiseTrigger": "Покажи малка изненада",
-  "easterEgg.patientTortoiseMessage": "Steady is a pace, too."
+  "easterEgg.patientTortoiseMessage": "Steady is a pace, too.",
+  "easterEgg.patientTortoiseProgress": "Докосване {count}/7",
+  "easterEgg.patientTortoiseTap1": "Едно докосване. Костенурката забеляза.",
+  "easterEgg.patientTortoiseTap2": "Две докосвания. Обмисля молбата ви.",
+  "easterEgg.patientTortoiseTap3": "Три докосвания. Моля, уважавайте скоростта на костенурката.",
+  "easterEgg.patientTortoiseTap4": "Четири докосвания. Провежда се много малко съвещание.",
+  "easterEgg.patientTortoiseTap5": "Пет докосвания. Комитетът на черупката почти е готов.",
+  "easterEgg.patientTortoiseTap6": "Шест докосвания. Подготвя се драматично появяване…"
 }

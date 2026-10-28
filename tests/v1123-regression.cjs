@@ -19,6 +19,13 @@ for(const p of ['index.html',...docs,'changelog.html','version.json','i18n/en.js
 assert.match(index,/window\.addEventListener\('pageshow'/);
 assert.match(index,/if \(!event\.persisted \|\| !uiReady\) return;/);
 assert.match(index,/data-i18n="public\.changelogLink" href="changelog\.html\?return=settings"/);
+assert.match(index,/id="patientTortoiseProgress"[^>]*role="status"[^>]*aria-live="polite"/,'Easter egg tap feedback must be announced accessibly');
+assert.match(index,/patientTortoiseTapCount < 7/,'Easter egg must provide six intermediate tap states');
+assert.match(index,/patientTortoiseTap' \+ patientTortoiseTapCount/,'Each intermediate tap must select its localized message');
+assert.match(index,/prefers-reduced-motion: no-preference[^}]*patientTortoise\.isRevealed/,'Reveal animation must be disabled when reduced motion is preferred');
+for (const key of ['patientTortoiseProgress','patientTortoiseTap1','patientTortoiseTap2','patientTortoiseTap3','patientTortoiseTap4','patientTortoiseTap5','patientTortoiseTap6']) {
+  for (const lang of ['en','bg','es']) assert.ok(fs.readFileSync('i18n/'+lang+'.json','utf8').includes('easterEgg.'+key), 'Missing localized Easter egg string '+lang+': '+key);
+}
 assert.match(index,/id="settingsUpdatesCard"/);
 assert.equal((index.match(/data-i18n="public\.changelogLink"/g)||[]).length,1,'Changelog link should appear exactly once');
 const changelog=fs.readFileSync('changelog.html','utf8');

@@ -1044,5 +1044,12 @@
   "actionFeedback.noDataChanged": "No data was changed by this failed check.",
   "actionFeedback.deviceChecksFailed": "Device checks failed unexpectedly. Review diagnostics and try again.",
   "easterEgg.patientTortoiseTrigger": "Reveal a small surprise",
-  "easterEgg.patientTortoiseMessage": "Steady is a pace, too."
+  "easterEgg.patientTortoiseMessage": "Steady is a pace, too.",
+  "easterEgg.patientTortoiseProgress": "Tap {count}/7",
+  "easterEgg.patientTortoiseTap1": "One tap. The tortoise has noticed.",
+  "easterEgg.patientTortoiseTap2": "Two taps. It is considering your request.",
+  "easterEgg.patientTortoiseTap3": "Three taps. Please respect tortoise processing speed.",
+  "easterEgg.patientTortoiseTap4": "Four taps. A very small meeting is taking place.",
+  "easterEgg.patientTortoiseTap5": "Five taps. The shell committee is almost ready.",
+  "easterEgg.patientTortoiseTap6": "Six taps. Dramatic entrance preparation underway…"
 }
