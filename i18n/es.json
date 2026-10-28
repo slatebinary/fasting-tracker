@@ -1022,5 +1022,8 @@
   "game.streak25": "Racha de 25",
   "game.streak25d": "Completa 25 ayunos que alcancen su objetivo seguidos",
   "game.streak50": "Racha de 50",
-  "game.streak50d": "Completa 50 ayunos que alcancen su objetivo seguidos"
+  "game.streak50d": "Completa 50 ayunos que alcancen su objetivo seguidos",
+  "icon.grayscale": "Escala de grises",
+  "icon.highcontrast": "Alto contraste",
+  "icon.colorblind": "Para deficiencia de visión cromática"
 }
