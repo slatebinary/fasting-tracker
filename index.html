@@ -58,8 +58,9 @@ layout: null
       };
       const titles={en:'Fasting',bg:'Гладуване',es:'Ayuno'};
       document.getElementById('appManifest').href=manifestFor(lang,icon);
-      const fav=document.getElementById('appFavicon'); if(fav) fav.href=`icons/${icon}/favicon-32.png`;
-      const touch=document.getElementById('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/apple-touch-icon.png`;
+      const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon);
+      const fav=document.getElementById('appFavicon'); if(fav) fav.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'favicon-32.png'}`;
+      const touch=document.getElementById('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'apple-touch-icon.png'}`;
       document.getElementById('appleAppTitle').content=titles[lang];
     } catch {}
   })();
@@ -587,22 +588,23 @@ layout: null
     .settingsSubgroup { margin:10px 0; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 92%, var(--bg)); overflow:hidden; }
     .settingsSubgroup > summary { list-style:none; cursor:pointer; padding:12px 14px; font-weight:700; }
     .settingsSubgroup[open] > summary { border-bottom:1px solid var(--border); }
+    .iconInstallationGroup[open] > summary { border-bottom:0; }
     .settingsSubgroup > .card, .settingsSubgroup > .row { margin:0; border:0; border-radius:0; box-shadow:none; }
-    .settingsSubgroup.iconInstallationGroup { margin:14px 0; border:2px solid var(--accent); border-inline-start-width:5px; background:color-mix(in srgb, var(--accent) 5%, var(--card)); }
+    .settingsSubgroup.iconInstallationGroup { margin:8px 0 18px; border:0; border-radius:0; background:transparent; overflow:visible; box-shadow:none; }
     .iconInstallationGroup > summary { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 13px; }
-    .iconInstallationGroup > summary:focus-visible { outline:3px solid var(--accent); outline-offset:-4px; }
+    .iconInstallationGroup > summary:focus-visible { outline:3px solid var(--text); outline-offset:2px; border-radius:8px; }
     .settingsIconSectionLead { display:flex; align-items:center; gap:12px; min-width:0; }
-    .settingsIconSectionSymbol { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border:2px solid var(--accent); border-radius:12px; color:var(--accent); background:var(--card); font-size:25px; font-weight:800; line-height:1; }
+    .settingsIconSectionSymbol { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border:0; border-radius:0; color:var(--text); background:transparent; font-size:30px; font-weight:800; line-height:1; }
     .settingsIconSectionCopy { display:flex; flex-direction:column; gap:4px; min-width:0; }
     .iconInstallationGroup .settingsIconSectionCopy > strong { font-size:1.08rem; line-height:1.25; }
     .iconInstallationGroup .settingsIconSectionCopy > .small { color:var(--text); line-height:1.35; font-weight:500; }
-    .iconInstallationGroup .settingsGroupChevron { color:var(--accent); font-size:1.7rem; }
-    html[data-theme="grayscale"] .settingsSubgroup.iconInstallationGroup { background:#fff; border-color:#000; }
-    html[data-theme="grayscale"] .settingsIconSectionSymbol { color:#000; border-color:#000; }
-    html[data-theme="high-contrast-light"] .settingsSubgroup.iconInstallationGroup { background:#fff; border-color:#000; }
-    html[data-theme="high-contrast-light"] .settingsIconSectionSymbol { color:#000; border-color:#000; }
-    html[data-theme="high-contrast-dark"] .settingsSubgroup.iconInstallationGroup { background:#000; border-color:#fff; }
-    html[data-theme="high-contrast-dark"] .settingsIconSectionSymbol { color:#fff; border-color:#fff; }
+    .iconInstallationGroup .settingsGroupChevron { color:var(--muted); font-size:1.7rem; }
+
+
+
+
+
+
     @media (max-width:380px) { .iconInstallationGroup > summary { padding:12px 9px; gap:8px; } .settingsIconSectionLead { gap:9px; } .settingsIconSectionSymbol { flex-basis:36px; width:36px; height:36px; font-size:22px; } }
     .settingsCompactCard { box-shadow:none; }
     #settings .healthNotice { margin-top:0; }
@@ -965,7 +967,23 @@ layout: null
     <div class="small settingsSearchStatus" id="settingsSearchStatus" role="status" aria-live="polite"></div>
     <details class="settingsGroup" id="settingsGroupGeneral" data-settings-group="settingsGroupGeneral" open>
       <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.general">General</strong><span class="small" data-i18n="settings.group.generalHelp">Language, appearance, fasting target and achievements</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
-      <div class="settingsGroupBody"><div class="card"><div class="row" style="margin-top:12px">
+      <div class="settingsGroupBody"><div class="card">
+<details class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▦</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
+<div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
+<div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
+          <button aria-checked="false" class="iconChoice" data-icon-choice="grayscale" role="radio" type="button"><img alt="" src="icons/grayscale/icon-192.png"/><span data-i18n="icon.grayscale">Grayscale</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="highcontrast" role="radio" type="button"><img alt="" src="icons/highcontrast/icon-192.png"/><span data-i18n="icon.highcontrast">High contrast</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="colorblind" role="radio" type="button"><img alt="" src="icons/colorblind/icon-192.png"/><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="moon" role="radio" type="button"><img alt="" src="icons/moon/icon-192.png"/><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="hourglass" role="radio" type="button"><img alt="" src="icons/hourglass/icon-192.png"/><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="timer" role="radio" type="button"><img alt="" src="icons/timer/icon-192.png"/><span data-i18n="icon.timer">F timer</span></button>
+        </div>
+<div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
+<div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
+<div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button class="secondary" data-i18n="settings.appIconPrepare" id="prepareIconChangeBtn" type="button">Back up &amp; prepare icon change</button><div class="reinstallLinkTools" hidden="" id="reinstallLinkTools"><label class="small" data-i18n="iconChange.linkLabel" for="reinstallLinkInput">Reinstall link</label><div class="reinstallLinkRow"><input aria-label="Reinstall link" autocomplete="off" data-i18n-aria="iconChange.linkLabel" id="reinstallLinkInput" readonly="" type="text"/><button class="secondary" data-i18n="iconChange.copyLink" id="copyReinstallLinkBtn" type="button">Copy reinstall link</button></div><div aria-live="polite" class="small" id="reinstallLinkStatus"></div></div></div>
+</div></details>
+<div class="row" style="margin-top:12px">
 <div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup, basic preferences and notifications.</div></div>
 <button class="secondary" data-i18n="setup.open" id="setupGuideBtn">Setup guide</button>
 </div>
@@ -996,21 +1014,7 @@ layout: null
     <select id="timeZoneSelect" aria-label="Matching locations" data-i18n-aria="settings.timeZoneResultsLabel"><option value="system"></option></select>
     <div id="timeZoneSearchStatus" class="small" role="status" aria-live="polite"></div>
   </div>
-</div><details class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▣</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
-<div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
-<div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
-<button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="moon" role="radio" type="button"><img alt="" src="icons/moon/icon-192.png"/><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="hourglass" role="radio" type="button"><img alt="" src="icons/hourglass/icon-192.png"/><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="timer" role="radio" type="button"><img alt="" src="icons/timer/icon-192.png"/><span data-i18n="icon.timer">F timer</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="grayscale" role="radio" type="button"><img alt="" src="icons/grayscale/icon-192.png"/><span data-i18n="icon.grayscale">Grayscale</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="highcontrast" role="radio" type="button"><img alt="" src="icons/highcontrast/icon-192.png"/><span data-i18n="icon.highcontrast">High contrast</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="colorblind" role="radio" type="button"><img alt="" src="icons/colorblind/icon-192.png"/><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
 </div>
-<div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
-<div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
-<div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button class="secondary" data-i18n="settings.appIconPrepare" id="prepareIconChangeBtn" type="button">Back up &amp; prepare icon change</button><div class="reinstallLinkTools" hidden="" id="reinstallLinkTools"><label class="small" data-i18n="iconChange.linkLabel" for="reinstallLinkInput">Reinstall link</label><div class="reinstallLinkRow"><input aria-label="Reinstall link" autocomplete="off" data-i18n-aria="iconChange.linkLabel" id="reinstallLinkInput" readonly="" type="text"/><button class="secondary" data-i18n="iconChange.copyLink" id="copyReinstallLinkBtn" type="button">Copy reinstall link</button></div><div aria-live="polite" class="small" id="reinstallLinkStatus"></div></div></div>
-</div></details>
 
 <div class="row">
 <div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.</div></div>
@@ -1260,13 +1264,13 @@ layout: null
         <strong data-i18n="setup.iconTitle">Choose the Home Screen icon first</strong>
         <div class="small" data-i18n="setup.iconHelp">On iPhone/iPad the installed icon is chosen at installation. Changing it later can require a safe backup and reinstall.</div>
         <div class="iconChoiceGrid" role="radiogroup" aria-label="App icon" data-i18n-aria="settings.appIcon">
+          <button type="button" class="iconChoice" data-icon-choice="grayscale" role="radio" aria-checked="false"><img src="icons/grayscale/icon-192.png" alt=""><span data-i18n="icon.grayscale">Grayscale</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="highcontrast" role="radio" aria-checked="false"><img src="icons/highcontrast/icon-192.png" alt=""><span data-i18n="icon.highcontrast">High contrast</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="colorblind" role="radio" aria-checked="false"><img src="icons/colorblind/icon-192.png" alt=""><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
           <button type="button" class="iconChoice" data-icon-choice="plate" role="radio" aria-checked="false"><img src="icons/plate/icon-192.png" alt=""><span data-i18n="icon.plate">Plate &amp; clock</span></button>
           <button type="button" class="iconChoice" data-icon-choice="moon" role="radio" aria-checked="false"><img src="icons/moon/icon-192.png" alt=""><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
           <button type="button" class="iconChoice" data-icon-choice="hourglass" role="radio" aria-checked="false"><img src="icons/hourglass/icon-192.png" alt=""><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
           <button type="button" class="iconChoice" data-icon-choice="timer" role="radio" aria-checked="false"><img src="icons/timer/icon-192.png" alt=""><span data-i18n="icon.timer">F timer</span></button>
-<button type="button" class="iconChoice" data-icon-choice="grayscale" role="radio" aria-checked="false"><img src="icons/grayscale/icon-192.png" alt=""><span data-i18n="icon.grayscale">Grayscale</span></button>
-<button type="button" class="iconChoice" data-icon-choice="highcontrast" role="radio" aria-checked="false"><img src="icons/highcontrast/icon-192.png" alt=""><span data-i18n="icon.highcontrast">High contrast</span></button>
-<button type="button" class="iconChoice" data-icon-choice="colorblind" role="radio" aria-checked="false"><img src="icons/colorblind/icon-192.png" alt=""><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
         </div>
       </div>
       <div class="setupStatus" id="setupInstallStatus"></div>

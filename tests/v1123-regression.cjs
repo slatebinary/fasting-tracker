@@ -175,13 +175,34 @@ for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18
 console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multilingual document');
 
 
-// Settings discoverability: app icon subsection has a prominent heading and search opens it.
-assert.ok(index.includes('class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open'), 'App icon subsection must be visible by default and visually emphasized');
-assert.ok(index.includes('settingsIconSectionSymbol" aria-hidden="true"'), 'App icon subsection must have a non-colour visual marker');
-assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon subsection must explain its contents');
+// Settings discoverability: no heavy blue outline; the icon choices are immediately visible.
+const iconSectionIndex=index.indexOf('id="settingsIconDetails"');
+const setupGuideIndex=index.indexOf('id="setupGuideBtn"');
+assert.ok(iconSectionIndex>=0 && setupGuideIndex>iconSectionIndex, 'App icon section must appear before the setup guide and other General settings');
+assert.ok(index.includes('class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open'), 'App icon section must be open by default');
+assert.ok(/\.settingsSubgroup\.iconInstallationGroup\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section must not have a prominent border');
+assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section symbol must not have a border');
+assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
 assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
+assert.ok(index.includes("const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon)"), 'Accessible icon themes must use available assets for browser and Apple Home Screen icons');
+const iconGrids=[...index.matchAll(/<div\b[^>]*class="iconChoiceGrid"[^>]*>([\s\S]*?)<\/div>/g)];
+assert.strictEqual(iconGrids.length,2,'Settings and onboarding must both show icon choices');
+const expectedIconOrder=['grayscale','highcontrast','colorblind','plate','moon','hourglass','timer'];
+for (const [i,grid] of iconGrids.entries()) {
+  const choices=[...grid[1].matchAll(/data-icon-choice="([^"]+)"/g)].map(m=>m[1]);
+  assert.deepStrictEqual(choices,expectedIconOrder, 'Accessible icons must appear first in icon grid '+(i+1));
+}
+const releaseMetadata=JSON.parse(fs.readFileSync('version.json','utf8'));
+for (const theme of ['grayscale','highcontrast','colorblind']) {
+  for (const size of ['192','512']) {
+    const path='icons/'+theme+'/icon-'+size+'.png';
+    assert.ok(fs.existsSync(path), 'Missing accessible app icon asset: '+path);
+    assert.ok(releaseMetadata.shell.includes('./'+path), 'Accessible icon must be included in release shell: '+path);
+    assert.ok(Object.prototype.hasOwnProperty.call(releaseMetadata.hashes,'./'+path), 'Accessible icon must have an integrity hash: '+path);
+  }
+}
 for (const lang of ['en','bg','es']) {
   const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8'));
   assert.ok(dict['settings.appIconDetails'] && dict['settings.appIconSectionHelp'], lang+': missing prominent app icon section labels');
 }
-console.log('PASS: app icon section visibility, translated helper text and Settings search expansion');
+console.log('PASS: app icon section placement, neutral styling, accessible icon order/assets and Settings search expansion');
