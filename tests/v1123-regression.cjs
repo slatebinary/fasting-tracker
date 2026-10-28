@@ -167,7 +167,7 @@ console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multi
 
 
 // Settings discoverability: app icon subsection has a prominent heading and search opens it.
-assert.ok(index.includes('class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails"'), 'App icon subsection must be visually emphasized');
+assert.ok(index.includes('class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open'), 'App icon subsection must be visible by default and visually emphasized');
 assert.ok(index.includes('settingsIconSectionSymbol" aria-hidden="true"'), 'App icon subsection must have a non-colour visual marker');
 assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon subsection must explain its contents');
 assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
