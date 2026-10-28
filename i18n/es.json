@@ -936,7 +936,7 @@
   "settings.group.advancedHelp": "Integridad, almacenamiento, pruebas y herramientas de reparación",
   "settings.group.help": "Acerca de y ayuda",
   "settings.group.helpHelp": "Instalación, privacidad, seguridad y soporte",
-  "settings.appIconDetails": "Icono de la aplicación e instalación",
+  "settings.appIconDetails": "Iconos de la app e instalación",
   "settings.storageDetails": "Protección del almacenamiento y ubicación de los datos",
   "settings.updateAdvanced": "Detalles avanzados de actualización",
   "settings.accessibilityVoiceOverTitle": "VoiceOver y lectores de pantalla",
@@ -1051,5 +1051,6 @@
   "easterEgg.patientTortoiseTap3": "Tres toques. Respeta la velocidad de procesamiento de una tortuga.",
   "easterEgg.patientTortoiseTap4": "Cuatro toques. Se está celebrando una reunión diminuta.",
   "easterEgg.patientTortoiseTap5": "Cinco toques. El comité del caparazón casi está listo.",
-  "easterEgg.patientTortoiseTap6": "Seis toques. Preparando una entrada dramática…"
+  "easterEgg.patientTortoiseTap6": "Seis toques. Preparando una entrada dramática…",
+  "settings.appIconSectionHelp": "Elige el icono de la app y consulta aquí los pasos de instalación."
 }
