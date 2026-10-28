@@ -184,7 +184,8 @@ assert.ok(/\.settingsSubgroup\.iconInstallationGroup\s*\{[^}]*border:\s*0(?:;|\s
 assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section symbol must not have a border');
 assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
 assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
-const iconGrids=[...index.matchAll(/<div\\b[^>]*class="iconChoiceGrid"[^>]*>([\\s\\S]*?)<\\/div>/g)];
+assert.ok(index.includes("const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon)"), 'Accessible icon themes must use available assets for browser and Apple Home Screen icons');
+const iconGrids=[...index.matchAll(/<div\b[^>]*class="iconChoiceGrid"[^>]*>([\s\S]*?)<\/div>/g)];
 assert.strictEqual(iconGrids.length,2,'Settings and onboarding must both show icon choices');
 const expectedIconOrder=['grayscale','highcontrast','colorblind','plate','moon','hourglass','timer'];
 for (const [i,grid] of iconGrids.entries()) {
