@@ -1042,5 +1042,7 @@
   "actionFeedback.integrityRunning": "Comprobando la integridad de los datos…",
   "actionFeedback.integrityFailed": "Falló la comprobación de integridad. No se modificaron datos. Exporta los diagnósticos e inténtalo de nuevo.",
   "actionFeedback.noDataChanged": "Esta comprobación fallida no modificó ningún dato.",
-  "actionFeedback.deviceChecksFailed": "Fallaron las comprobaciones del dispositivo. Revisa los diagnósticos e inténtalo de nuevo."
+  "actionFeedback.deviceChecksFailed": "Fallaron las comprobaciones del dispositivo. Revisa los diagnósticos e inténtalo de nuevo.",
+  "easterEgg.patientTortoiseTrigger": "Mostrar una pequeña sorpresa",
+  "easterEgg.patientTortoiseMessage": "Steady is a pace, too."
 }
