@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.15.9" />
+  <meta name="ft-app-version" content="1.16.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -50,7 +50,7 @@ layout: null
       const systemBase=primarySystemTag.split(/[-_]/,1)[0];
       const systemLang=allowed.includes(systemBase)?systemBase:'en';
       const lang=allowed.includes(q)?q:(allowed.includes(pref)?pref:systemLang);
-      const iconAllowed=['plate','moon','hourglass','timer'];
+      const iconAllowed=['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'];
       const icon=iconAllowed.includes(qi)?qi:(iconAllowed.includes(storedData&&storedData.iconChoice)?storedData.iconChoice:'plate');
       const manifestFor=(lng,ico)=>{
         if(ico==='plate') return lng==='bg'?'manifest-bg.webmanifest':lng==='es'?'manifest-es.webmanifest':'manifest.webmanifest';
@@ -1003,6 +1003,9 @@ layout: null
 <button aria-checked="false" class="iconChoice" data-icon-choice="moon" role="radio" type="button"><img alt="" src="icons/moon/icon-192.png"/><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
 <button aria-checked="false" class="iconChoice" data-icon-choice="hourglass" role="radio" type="button"><img alt="" src="icons/hourglass/icon-192.png"/><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
 <button aria-checked="false" class="iconChoice" data-icon-choice="timer" role="radio" type="button"><img alt="" src="icons/timer/icon-192.png"/><span data-i18n="icon.timer">F timer</span></button>
+<button aria-checked="false" class="iconChoice" data-icon-choice="grayscale" role="radio" type="button"><img alt="" src="icons/grayscale/icon-192.png"/><span data-i18n="icon.grayscale">Grayscale</span></button>
+<button aria-checked="false" class="iconChoice" data-icon-choice="highcontrast" role="radio" type="button"><img alt="" src="icons/highcontrast/icon-192.png"/><span data-i18n="icon.highcontrast">High contrast</span></button>
+<button aria-checked="false" class="iconChoice" data-icon-choice="colorblind" role="radio" type="button"><img alt="" src="icons/colorblind/icon-192.png"/><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
 </div>
 <div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
 <div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
@@ -1261,6 +1264,9 @@ layout: null
           <button type="button" class="iconChoice" data-icon-choice="moon" role="radio" aria-checked="false"><img src="icons/moon/icon-192.png" alt=""><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
           <button type="button" class="iconChoice" data-icon-choice="hourglass" role="radio" aria-checked="false"><img src="icons/hourglass/icon-192.png" alt=""><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
           <button type="button" class="iconChoice" data-icon-choice="timer" role="radio" aria-checked="false"><img src="icons/timer/icon-192.png" alt=""><span data-i18n="icon.timer">F timer</span></button>
+<button type="button" class="iconChoice" data-icon-choice="grayscale" role="radio" aria-checked="false"><img src="icons/grayscale/icon-192.png" alt=""><span data-i18n="icon.grayscale">Grayscale</span></button>
+<button type="button" class="iconChoice" data-icon-choice="highcontrast" role="radio" aria-checked="false"><img src="icons/highcontrast/icon-192.png" alt=""><span data-i18n="icon.highcontrast">High contrast</span></button>
+<button type="button" class="iconChoice" data-icon-choice="colorblind" role="radio" aria-checked="false"><img src="icons/colorblind/icon-192.png" alt=""><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
         </div>
       </div>
       <div class="setupStatus" id="setupInstallStatus"></div>
@@ -1707,7 +1713,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.15.9';
+  const APP_VERSION = '1.16.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1759,7 +1765,7 @@ layout: null
   const hadKnownInstallAtBoot = typeof initialAppMeta.lastAppVersion === 'string' && initialAppMeta.lastAppVersion.length > 0;
   let emergencyBoot = initialUrlParams.get('ft_recovery') === '1';
   let urlLangOverride = SUPPORTED_LANGUAGES.includes(initialUrlParams.get('lang')) ? initialUrlParams.get('lang') : null;
-  let urlIconOverride = ['plate','moon','hourglass','timer'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
+  let urlIconOverride = ['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
   let data = cloneDefault();
   let recoveryMode = null;
   let backupMeta = loadBackupMeta();
@@ -1901,14 +1907,14 @@ layout: null
   }
   function normalizeLanguage(value) { return value === 'system' || SUPPORTED_LANGUAGES.includes(value) ? value : 'system'; }
   function normalizeAppearance(value) { return ['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(value) ? value : 'system'; }
-  function normalizeIconChoice(value) { return ['plate','moon','hourglass','timer'].includes(value) ? value : 'plate'; }
+  function normalizeIconChoice(value) { return ['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(value) ? value : 'plate'; }
   function manifestFor(lang, icon) {
     icon = normalizeIconChoice(icon);
     lang = SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en';
     const suffix = LANGUAGE_META[lang].manifestSuffix;
     return icon === 'plate' ? `manifest${suffix}.webmanifest` : `manifest-${icon}${suffix}.webmanifest`;
   }
-  function applyIconChoice() { const icon=normalizeIconChoice(urlIconOverride || data?.iconChoice); const lang=uiLanguage(); const manifest=el('appManifest'); if(manifest) manifest.href=manifestFor(lang,icon); const fav=el('appFavicon'); if(fav) fav.href=`icons/${icon}/favicon-32.png`; const touch=el('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/apple-touch-icon.png`; document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn=>{ const active=btn.dataset.iconChoice===icon; btn.classList.toggle('active',active); btn.setAttribute('aria-checked',active?'true':'false'); }); }
+  function applyIconChoice() { const icon=normalizeIconChoice(urlIconOverride || data?.iconChoice); const lang=uiLanguage(); const manifest=el('appManifest'); if(manifest) manifest.href=manifestFor(lang,icon); const accessibleIcon=['grayscale','highcontrast','colorblind'].includes(icon); const fav=el('appFavicon'); if(fav) fav.href=accessibleIcon ? `icons/${icon}/icon-192.png` : `icons/${icon}/favicon-32.png`; const touch=el('appleTouchIcon'); if(touch) touch.href=accessibleIcon ? `icons/${icon}/icon-192.png` : `icons/${icon}/apple-touch-icon.png`; document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn=>{ const active=btn.dataset.iconChoice===icon; btn.classList.toggle('active',active); btn.setAttribute('aria-checked',active?'true':'false'); }); }
   function uiLanguage() {
     if (urlLangOverride) return urlLangOverride;
     const pref = normalizeLanguage(data?.language || 'system');
@@ -3388,7 +3394,7 @@ layout: null
     if (!['kg','lb'].includes(rawData.weightUnit)) throw new Error('invalid weight unit');
     if (rawData.language != null && typeof rawData.language !== 'string') throw new Error('invalid language');
     if (!['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(rawData.appearance)) throw new Error('invalid appearance');
-    if (rawData.iconChoice != null && !['plate','moon','hourglass','timer'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
+    if (rawData.iconChoice != null && !['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
     if (typeof rawData.gamificationEnabled !== 'boolean') throw new Error('invalid gamification setting');
     const notificationPreferences = rawData.notificationPreferences;
     if (!notificationPreferences || typeof notificationPreferences !== 'object' || Array.isArray(notificationPreferences) ||

@@ -64,7 +64,7 @@
   "settings.appearanceLight": "Светъл",
   "settings.appearanceDark": "Тъмен",
   "settings.appIcon": "Икона на приложението",
-  "settings.appIconHelp": "Изберете иконата за следващото инсталиране на Fasting Tracker. Промяната тук не заменя иконата на вече инсталирано приложение.",
+  "settings.appIconHelp": "Изберете иконата, която ще се използва при инсталиране на Fasting Tracker на iPhone/iPad или Android. Достъпните варианти включват сива скала, висок контраст и палитра, съобразена с нарушенията на цветното зрение; символът на часовника и контрастът не разчитат на червено и зелено.",
   "settings.appIconIOSHeading": "iPhone / iPad",
   "settings.appIconIOSHelp": "Изберете иконата в Safari преди Add to Home Screen. Инсталирано уеб приложение на началния екран не може да смени иконата си на място.",
   "settings.appIconAndroidHeading": "Android",
@@ -1052,5 +1052,8 @@
   "easterEgg.patientTortoiseTap4": "Четири докосвания. Провежда се много малко съвещание.",
   "easterEgg.patientTortoiseTap5": "Пет докосвания. Комитетът на черупката почти е готов.",
   "easterEgg.patientTortoiseTap6": "Шест докосвания. Подготвя се драматично появяване…",
-  "settings.appIconSectionHelp": "Изберете икона и намерете тук стъпките за инсталиране."
+  "settings.appIconSectionHelp": "Изберете икона и намерете тук стъпките за инсталиране.",
+  "icon.grayscale": "Сива скала",
+  "icon.highcontrast": "Висок контраст",
+  "icon.colorblind": "Подходяща за нарушения на цветното зрение"
 }
