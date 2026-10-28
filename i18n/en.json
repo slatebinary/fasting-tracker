@@ -1022,5 +1022,8 @@
   "game.streak25": "Streak of 25",
   "game.streak25d": "Complete 25 target fasts in a row",
   "game.streak50": "Streak of 50",
-  "game.streak50d": "Complete 50 target fasts in a row"
+  "game.streak50d": "Complete 50 target fasts in a row",
+  "icon.grayscale": "Grayscale",
+  "icon.highcontrast": "High contrast",
+  "icon.colorblind": "Colour-vision friendly"
 }
