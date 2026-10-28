@@ -936,7 +936,7 @@
   "settings.group.advancedHelp": "Цялост, съхранение, тестове и инструменти за поправка",
   "settings.group.help": "За приложението и помощ",
   "settings.group.helpHelp": "Инсталиране, поверителност, безопасност и поддръжка",
-  "settings.appIconDetails": "Икона на приложението и инсталиране",
+  "settings.appIconDetails": "Икони на приложението и инсталиране",
   "settings.storageDetails": "Защита на хранилището и местоположение на данните",
   "settings.updateAdvanced": "Разширени подробности за актуализациите",
   "settings.accessibilityVoiceOverTitle": "VoiceOver и екранни четци",
@@ -1051,5 +1051,6 @@
   "easterEgg.patientTortoiseTap3": "Три докосвания. Моля, уважавайте скоростта на костенурката.",
   "easterEgg.patientTortoiseTap4": "Четири докосвания. Провежда се много малко съвещание.",
   "easterEgg.patientTortoiseTap5": "Пет докосвания. Комитетът на черупката почти е готов.",
-  "easterEgg.patientTortoiseTap6": "Шест докосвания. Подготвя се драматично появяване…"
+  "easterEgg.patientTortoiseTap6": "Шест докосвания. Подготвя се драматично появяване…",
+  "settings.appIconSectionHelp": "Изберете икона и намерете тук стъпките за инсталиране."
 }
