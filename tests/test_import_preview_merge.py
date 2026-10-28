@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory() as td:
         page.on('pageerror',lambda exc:errors.append(str(exc)))
         page.on('dialog',lambda d:(alerts.append(d.message),d.accept()))
         page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",local)
-        page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.15.1'",timeout=20000)
+        page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.15.2'",timeout=20000)
         page.locator('#importFile').set_input_files(str(pth))
         page.wait_for_function("!document.querySelector('#importPreviewModal').hidden")
         counts=page.locator('#importPreviewCounts').inner_text(); meta=page.locator('#importPreviewMeta').inner_text(); rng=page.locator('#importPreviewRange').inner_text()
