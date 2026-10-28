@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """v1.12.8: on narrow iPhones, the Daily/Weekly chooser stays inside onboarding."""
 
+import json
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import STORAGE_SHIM, build_data, inlined_html
 from playwright.sync_api import sync_playwright
 
@@ -24,7 +27,7 @@ with sync_playwright() as pw:
           localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.8'}));
         }''', DATA)
         page.set_content(HTML, wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.15.3'",timeout=15000)
+        page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=15000)
         for lang in ('en','bg','es'):
             page.evaluate('''lang => {
               const select=document.querySelector('#languageSelect');
