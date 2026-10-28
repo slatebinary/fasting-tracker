@@ -1,5 +1,11 @@
 # Fasting Tracker changelog
 
+## v1.15.6 — 28 October 2026
+- Added visible, accessible running/success/warning/failure feedback to integrity checks, recovery snapshots, cache repair, local benchmark, device checks, and statistics/chart recalculation.
+- Hardened diagnostic actions so errors restore button availability and do not silently disappear.
+- No fasting, weight, active-fast, or backup data changes.
+
+
 ## v1.15.5 — 28 October 2026
 - Improved Color-Friendly bottom navigation contrast, icon visibility, active-tab indication, and keyboard focus.
 - No fasting, weight, active-fast, or backup data changes.
