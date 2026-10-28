@@ -478,6 +478,28 @@ for lang in ("en", "bg", "es"):
     for key in ("game.streak5","game.streak5d","game.streak25","game.streak25d","game.streak50","game.streak50d"):
         ok(key in dictionary, f"{lang} consecutive-fast achievement translation missing: {key}")
 
+# v1.16.0: accessible icon themes must be complete and localized.
+accessible_icon_themes = ("grayscale", "highcontrast", "colorblind")
+release_info = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))
+for theme in accessible_icon_themes:
+    ok(f'data-icon-choice="{theme}"' in index, f"{theme} icon choice missing from Settings/onboarding")
+    for size in (192, 512):
+        asset = f"./icons/{theme}/icon-{size}.png"
+        ok(asset in release_info["shell"], f"{theme} {size}px icon must be covered by release integrity")
+        ok((ROOT / "icons" / theme / f"icon-{size}.png").is_file(), f"{theme} {size}px icon asset missing")
+    for lang in ("en", "bg", "es"):
+        dictionary = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
+        ok(f"icon.{theme}" in dictionary, f"{lang} accessible icon label missing: {theme}")
+        manifest_name = f"manifest-{theme}" + ("" if lang == "en" else f"-{lang}") + ".webmanifest"
+        manifest_path = ROOT / manifest_name
+        ok(f"./{manifest_name}" in release_info["shell"], f"{manifest_name} must be covered by release integrity")
+        ok(manifest_path.is_file(), f"{manifest_name} missing")
+        if manifest_path.is_file():
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+            icon_sources = {entry["src"] for entry in manifest_data.get("icons", [])}
+            ok(f"./icons/{theme}/icon-192.png" in icon_sources and f"./icons/{theme}/icon-512.png" in icon_sources, f"{manifest_name} does not reference its theme's icon assets")
+            ok(any(entry.get("purpose") == "maskable" for entry in manifest_data.get("icons", [])), f"{manifest_name} lacks a maskable icon entry")
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)
