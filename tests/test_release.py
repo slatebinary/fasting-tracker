@@ -51,22 +51,27 @@ for item in ver.get('shell',[]):
     p=source_path(item); ok(p.is_file(),f'missing shell asset {item}')
     if p.is_file(): ok(hashlib.sha256(canonical_bytes(p)).hexdigest()==ver.get('hashes',{}).get(item),f'hash mismatch {item}')
 ok(set(ver.get('hashes',{}))==set(ver.get('shell',[])),'hash map must exactly match shell')
-# Simulate GitHub Pages rendering and the service worker's HTML normalization.
+# Simulate the actual Pages artifact path: prepare_pages.py copies the HTML
+# into _site and deploy-pages uploads it directly, so Jekyll does not process
+# the front matter or Liquid placeholders. This was the missing regression case.
 site_url='https://example.github.io'
 site_base=f'{site_url}/fasting-tracker'
-repo_url='https://github.com/example/fasting-tracker'
 for item in ver.get('shell',[]):
     p=source_path(item)
     if p.suffix.lower()!='.html':
         continue
     src=p.read_text()
-    rendered=fm.sub('',src,count=1).replace('{{ site.github.url }}',site_url).replace('{{ site.github.repository_url }}',repo_url)
-    # Match sw.js: normalize both project-scoped URLs and the root origin
-    # that GitHub Pages emits for {{ site.github.url }}.
-    normalized=rendered.replace('\r\n','\n').replace('\r','\n').replace(site_base,'__SITE_URL__').replace(site_url,'__SITE_URL__')
+    # Actual static artifact: the source still contains front matter and Liquid.
+    normalized=src.replace('\r\n','\n').replace('\r','\n')
+    normalized=fm.sub('',normalized,count=1)
+    normalized=normalized.replace('{{ site.github.url }}','__SITE_URL__').replace('{{ site.github.repository_url }}','__REPO_URL__')
+    # Also handle rendered URLs if the hosting path changes in a future deployment.
+    normalized=normalized.replace(site_base,'__SITE_URL__').replace(site_url,'__SITE_URL__')
     normalized=re.sub(r'https://github\.com/[^/"\'<>\s]+/[^/"\'<>\s]+','__REPO_URL__',normalized)
     ok(hashlib.sha256(normalized.encode()).hexdigest()==ver['hashes'][item],f'GitHub Pages normalized hash mismatch {item}')
 ok('responseDigestHex' in sw and 'integrity check failed' in sw,'service worker integrity verification missing')
+ok("replace(/^---\\n[\\s\\S]*?\\n---\\n/, '')" in sw, 'service worker must strip static-artifact front matter before hashing HTML')
+ok(".replace(/{{ site\\.github\\.url }}/g, '__SITE_URL__')" in sw and ".replace(/{{ site\\.github\\.repository_url }}/g, '__REPO_URL__')" in sw, 'service worker must canonicalize literal Liquid placeholders in static Pages artifacts')
 ok("url.searchParams.has('__ft_probe')" in sw,'live entry deployment probe must bypass the active cache')
 for rel in ['js/release-health.js','js/fasting-visuals.js','js/platform-diagnostics.js']:
     ok((ROOT/rel).is_file(),f'missing modular helper {rel}')
