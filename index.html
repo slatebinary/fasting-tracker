@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.15.1" />
+  <meta name="ft-app-version" content="1.15.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -116,10 +116,14 @@ layout: null
       --tab: rgba(28,28,30,.94);
     }
     /* Accessibility palettes; status must remain understandable without colour alone. */
-    html[data-theme="grayscale"] { color-scheme: light; --bg:#f2f2f2; --card:#fff; --text:#000; --muted:#333; --line:#555; --accent:#111; --good:#111; --danger:#000; --tab:rgba(255,255,255,.98); }
-    html[data-theme="high-contrast-light"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#000; --accent:#0037b3; --good:#005a00; --danger:#b00020; --tab:#fff; }
-    html[data-theme="high-contrast-dark"] { color-scheme: dark; --bg:#000; --card:#000; --text:#fff; --muted:#f0f0f0; --line:#fff; --accent:#80dfff; --good:#a8ff9e; --danger:#ff9eaa; --tab:#000; }
-    html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f5f5f7; --card:#fff; --text:#111114; --muted:#444; --line:#777; --accent:#0072b2; --good:#009e73; --danger:#d55e00; --tab:rgba(250,250,252,.98); }
+    html[data-theme="grayscale"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#555; --accent:#000; --good:#000; --danger:#000; --tab:#f0f0f0; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="high-contrast-light"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#000; --accent:#0037b3; --good:#005a00; --danger:#b00020; --tab:#fff; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="high-contrast-dark"] { color-scheme: dark; --bg:#000; --card:#000; --text:#fff; --muted:#f0f0f0; --line:#fff; --accent:#80dfff; --good:#a8ff9e; --danger:#ff9eaa; --tab:#000; --primary-button-text:#000; --danger-button-text:#000; }
+    html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#007f5f; --danger:#c44e00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#000; }
+    .primary { color:var(--primary-button-text, #fff); }
+    .stop { color:var(--danger-button-text, #fff); }
+    html[data-theme="high-contrast-light"] button, html[data-theme="high-contrast-dark"] button { font-weight:700; }
+    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
     body { padding: env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom)); }
@@ -871,7 +875,7 @@ layout: null
         <div class="metric"><div class="value" id="gWeightStreak">0</div><div class="label" data-i18n="game.weightStreak">Weekly weigh-in streak</div></div>
       </div>
       <div class="small" style="margin-top:12px" data-i18n="game.rule">10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. Excused unavoidable interruptions are neutral for the target streak and earn no target XP. No extra XP is awarded for fasting past the target.</div>
-      <div class="badgeGrid" id="achievementBadges"></div>
+      <details class="scienceSources gameLevelGuide" style="margin-top:12px"><summary data-i18n="game.levelsExplainTitle">How levels work</summary><p class="small" style="margin-top:8px" data-i18n="game.levelsExplain">Levels measure consistency XP, not fasting duration. Earn 10 XP for each completed fast that meets your chosen target and 2 XP for each distinct day you log weight. Fasting beyond your target gives no extra XP.</p><ul class="small"><li data-i18n="game.levelsThresholds">Level 1: 0–49 XP. Level 2: 50–149 XP (100 more XP). Level 3: 150–349 XP (200 more XP). Level 4: 350+ XP.</li><li data-i18n="game.levelsPurpose">Later levels require more accumulated XP, so they mark sustained habits over time. Levels offer milestones and motivation only; they unlock no features and are not health scores or a reason to fast longer.</li></ul></details><div class="badgeGrid" id="achievementBadges"></div>
     </div>
   </section>
 
@@ -1617,7 +1621,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.15.1';
+  const APP_VERSION = '1.15.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
