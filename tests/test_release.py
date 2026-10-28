@@ -490,8 +490,8 @@ for theme in accessible_icon_themes:
         ok(icon_path.is_file(), f"{theme} {size}px icon asset missing")
         if icon_path.is_file():
             icon_bytes = icon_path.read_bytes()
-            ok(icon_bytes.startswith(b"\\x89PNG\\r\\n\\x1a\\n"), f"{theme} {size}px icon is not a PNG")
-            if icon_bytes.startswith(b"\\x89PNG\\r\\n\\x1a\\n") and len(icon_bytes) >= 24:
+            ok(icon_bytes.startswith(b"\x89PNG\r\n\x1a\n"), f"{theme} {size}px icon is not a PNG")
+            if icon_bytes.startswith(b"\x89PNG\r\n\x1a\n") and len(icon_bytes) >= 24:
                 dimensions = struct.unpack(">II", icon_bytes[16:24])
                 ok(dimensions == (size, size), f"{theme} icon dimensions should be {size}x{size}, got {dimensions}")
     for lang in ("en", "bg", "es"):
