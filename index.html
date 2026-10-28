@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.15.0" />
+  <meta name="ft-app-version" content="1.15.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1617,7 +1617,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.15.0';
+  const APP_VERSION = '1.15.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -7411,10 +7411,75 @@ layout: null
     }
   }
 
-  async function requestShellRefresh(version) {
+  async function getCurrentServiceWorkerController() {
     if (!('serviceWorker' in navigator)) throw new Error('service worker unavailable');
     const reg = await navigator.serviceWorker.ready;
-    const controller = navigator.serviceWorker.controller || reg.active;
+    let candidate = null;
+    let updateFound = false;
+    const promote = worker => {
+      if (!worker) return;
+      const skip = () => {
+        if (worker.state === 'installed') {
+          try { worker.postMessage({type:'SKIP_WAITING'}); } catch {}
+        }
+      };
+      skip();
+      worker.addEventListener?.('statechange', skip);
+    };
+    const onUpdateFound = () => {
+      updateFound = true;
+      candidate = reg.installing || candidate;
+      promote(candidate);
+    };
+    reg.addEventListener('updatefound', onUpdateFound);
+    try { await reg.update(); } catch {}
+    if (reg.installing || reg.waiting) {
+      updateFound = true;
+      candidate = reg.installing || reg.waiting;
+      promote(candidate);
+    }
+    const isReady = () => {
+      const controller = navigator.serviceWorker.controller;
+      if (candidate) return candidate.state === 'activated' && reg.active === candidate && controller === candidate;
+      return !!reg.active && controller === reg.active;
+    };
+    if (!updateFound && isReady()) {
+      reg.removeEventListener('updatefound', onUpdateFound);
+      return reg.active;
+    }
+    try {
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const finish = error => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          navigator.serviceWorker.removeEventListener('controllerchange', check);
+          candidate?.removeEventListener?.('statechange', check);
+          reg.removeEventListener('updatefound', onUpdateFound);
+          if (error) reject(error); else resolve();
+        };
+        const check = () => {
+          if (candidate?.state === 'redundant') {
+            finish(new Error('new service worker failed to activate'));
+            return;
+          }
+          if (isReady()) finish();
+        };
+        const timer = setTimeout(() => finish(new Error('service worker controller update timed out')), 20000);
+        navigator.serviceWorker.addEventListener('controllerchange', check);
+        candidate?.addEventListener?.('statechange', check);
+        check();
+      });
+    } catch (error) {
+      reg.removeEventListener('updatefound', onUpdateFound);
+      throw error;
+    }
+    return navigator.serviceWorker.controller || reg.active;
+  }
+
+  async function requestShellRefresh(version) {
+    const controller = await getCurrentServiceWorkerController();
     if (!controller) throw new Error('service worker not controlling this page');
     return new Promise((resolve, reject) => {
       const channel = new MessageChannel();
