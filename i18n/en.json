@@ -1041,5 +1041,6 @@
   "actionFeedback.recalculateFailed": "Recalculation failed. Check diagnostics; the data was not intentionally changed.",
   "actionFeedback.integrityRunning": "Checking data integrity…",
   "actionFeedback.integrityFailed": "Data integrity check failed. No data was changed. Export diagnostics and try again.",
-  "actionFeedback.noDataChanged": "No data was changed by this failed check."
+  "actionFeedback.noDataChanged": "No data was changed by this failed check.",
+  "actionFeedback.deviceChecksFailed": "Device checks failed unexpectedly. Review diagnostics and try again."
 }
