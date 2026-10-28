@@ -179,10 +179,13 @@ console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multi
 const iconSectionIndex=index.indexOf('id="settingsIconDetails"');
 const setupGuideIndex=index.indexOf('id="setupGuideBtn"');
 assert.ok(iconSectionIndex>=0 && setupGuideIndex>iconSectionIndex, 'App icon section must appear before the setup guide and other General settings');
-assert.ok(index.includes('class="settingsSubgroup iconInstallationGroup" id="settingsIconDetails" open'), 'App icon section must be open by default');
-assert.ok(/\.settingsSubgroup\.iconInstallationGroup\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section must not have a prominent border');
+assert.ok(index.includes('class="settingsGroup iconInstallationGroup" id="settingsIconDetails" data-settings-group="settingsIconDetails" open'), 'App icon section must be a top-level Settings group and open by default');
+assert.ok(/\.settingsGroup\.iconInstallationGroup\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section must not have a prominent border');
 assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section symbol must not have a border');
 assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
+assert.ok(/\.iconChoice\.active\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'Selected icon must not use a prominent border');
+assert.ok(index.includes('.iconChoice.active span::before { content:"✓ ";'), 'Selected icon must have a non-colour-only check-mark indicator');
+assert.ok(index.includes("group.id==='settingsGroupGeneral'||group.id==='settingsIconDetails'"), 'Icon section must default open independently of General Settings');
 assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
 assert.ok(index.includes("const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon)"), 'Accessible icon themes must use available assets for browser and Apple Home Screen icons');
 const iconGrids=[...index.matchAll(/<div\b[^>]*class="iconChoiceGrid"[^>]*>([\s\S]*?)<\/div>/g)];

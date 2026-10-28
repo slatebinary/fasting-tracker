@@ -1,5 +1,11 @@
 # Fasting Tracker changelog
 
+## v1.16.2 — 28 October 2026
+- Moved app icon selection out of General Settings into its own top-level, initially expanded section so accessible icon themes are easier to find.
+- Removed the blue selection border; the selected icon is indicated by a check mark and a subtle background instead.
+- No fasting, weight, active-fast, or backup data changes.
+
+
 ## v1.16.1 — 28 October 2026
 - Removed the heavy blue outline from the app-icon section and moved it to the top of General Settings.
 - Put grayscale, high-contrast, and colour-vision-friendly icon choices first in Settings and onboarding.
