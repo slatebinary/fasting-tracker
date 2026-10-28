@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: global IANA zone selection, DST gaps/folds, and true elapsed durations."""
-import sys
+import sys, json
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
@@ -14,7 +16,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.15.3'}));}",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     try:
-        page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.15.3'",timeout=20000)
+        page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
     except Exception:
         print('FAIL: app boot did not reach the version label; page errors:',errors)
         print('FAIL: version label text:',page.locator('#appVersionLabel').text_content())

@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.15.3" />
+  <meta name="ft-app-version" content="1.15.4" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1637,7 +1637,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.15.3';
+  const APP_VERSION = '1.15.4';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4791,6 +4791,7 @@ layout: null
 
   function achievementDefinitions() {
     const wins = successfulFastCount();
+    const consecutiveWins = currentStreak();
     const weightStreak = weightWeekStreak();
     const backupFresh = !!validDate(backupMeta.lastExternalBackupAt) && !backupIsDue();
     return [
@@ -4799,6 +4800,9 @@ layout: null
       { icon: '10', title: t('game.ach10'), detail: t('game.ach10d'), unlocked: wins >= 10 },
       { icon: '25', title: t('game.ach25'), detail: t('game.ach25d'), unlocked: wins >= 25 },
       { icon: '50', title: t('game.ach50'), detail: t('game.ach50d'), unlocked: wins >= 50 },
+      { icon: '5↻', title: t('game.streak5'), detail: t('game.streak5d'), unlocked: consecutiveWins >= 5 },
+      { icon: '25↻', title: t('game.streak25'), detail: t('game.streak25d'), unlocked: consecutiveWins >= 25 },
+      { icon: '50↻', title: t('game.streak50'), detail: t('game.streak50d'), unlocked: consecutiveWins >= 50 },
       { icon: '↗', title: t('game.comeback'), detail: t('game.comebackd'), unlocked: hasComebackAchievement() },
       { icon: '⚖', title: t('game.weightHabit'), detail: t('game.weightHabitd'), unlocked: weightStreak >= 4 },
       { icon: '⇩', title: t('game.backupKeeper'), detail: t('game.backupKeeperd'), unlocked: backupFresh }

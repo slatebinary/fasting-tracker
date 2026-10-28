@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Browser-confirm two separate prompts for single and bulk irreversible purges."""
+import json
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import STORAGE_SHIM, build_data, inlined_html
 from playwright.sync_api import sync_playwright
 
@@ -20,7 +23,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM)
     page.evaluate('d=>{__seedFastingDbV2(d,[]);localStorage.setItem("fastingTracker.appMeta",JSON.stringify({lastAppVersion:"1.12.4"}));}',seed)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.15.3'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
     page.locator('[data-screen="history"]').click()
     page.wait_for_function("!document.querySelector('#deletedFastsCard').hidden")
     fast_purge=page.locator('#deletedFastsList button.dangerText')

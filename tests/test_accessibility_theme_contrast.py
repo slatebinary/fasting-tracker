@@ -7,9 +7,9 @@ root = Path(__file__).resolve().parents[1]
 html = (root / "index.html").read_text(encoding="utf-8")
 version = json.loads((root / "version.json").read_text(encoding="utf-8"))["version"]
 
-assert version == "1.15.3", "release version must match this accessibility fix"
-assert '<meta name="ft-app-version" content="1.15.3"' in html
-assert "const APP_VERSION = '1.15.3';" in html
+assert tuple(int(part) for part in version.split(".")) >= (1, 15, 3), "release must retain the accessibility fix"
+assert f'<meta name="ft-app-version" content="{version}"' in html
+assert f"const APP_VERSION = '{version}';" in html
 
 # These rules deliberately override widget-level colors that previously won the cascade.
 required_rules = [

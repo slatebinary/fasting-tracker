@@ -2,9 +2,11 @@
 """Browser regression of fasting-header manual JSON backup freshness indicator."""
 import json
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from browser_perf_common import STORAGE_SHIM, build_data, inlined_html
 from playwright.sync_api import sync_playwright
 
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 HTML = inlined_html()
 DATA = build_data(1)
 
@@ -16,7 +18,7 @@ def boot(page, backup_meta=None):
       if (arg.meta) localStorage.setItem('fastingTracker.backupMeta', JSON.stringify(arg.meta));
     }""", {'data':DATA, 'meta':backup_meta})
     page.set_content(HTML, wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.15.3'", timeout=30000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'", timeout=30000)
     page.wait_for_function("document.querySelector('#fastingBackupStatusBtn')?.dataset.state!=='empty'", timeout=30000)
 
 def status(page, expected):
@@ -122,7 +124,7 @@ with sync_playwright() as p:
       localStorage.setItem('fastingTracker.backupMeta',JSON.stringify(arg.meta));
     }""", {'data':snapshot,'meta':old})
     page2.set_content(HTML,wait_until='domcontentloaded')
-    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.15.3'",timeout=30000)
+    page2.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=30000)
     status(page2,'aged')
     assert not errors2, errors2[:5]
     browser.close()

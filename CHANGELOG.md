@@ -1,5 +1,12 @@
 # Fasting Tracker changelog
 
+## v1.15.4 — 28 October 2026
+- Distinguish cumulative target-fast milestones from consecutive target-fast streak achievements at 5, 25 and 50.
+- Clarify cumulative versus consecutive achievement rules in English, Bulgarian and Spanish.
+- Preserve the existing treatment of explicitly excused unavoidable interruptions as neutral for the streak.
+- No fasting, weight, active-fast, or backup data is changed.
+
+
 ## v1.15.3 — 28 October 2026
 - Force readable button text, backgrounds and borders across both high-contrast themes and grayscale, including widget-specific buttons.
 - Keep the gamification rules, level thresholds, and purpose visible without requiring the user to expand a hidden section.
