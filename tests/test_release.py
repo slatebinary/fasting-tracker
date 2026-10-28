@@ -503,6 +503,13 @@ for lang in ("en", "bg", "es"):
     for key in ("game.streak5","game.streak5d","game.streak25","game.streak25d","game.streak50","game.streak50d"):
         ok(key in dictionary, f"{lang} consecutive-fast achievement translation missing: {key}")
 
+# Patient Tortoise Easter egg must be accessible, local-only, dismissible, and motion-aware.
+ok('id="patientTortoise"' in index and 'id="patientTortoiseDismiss"' in index, 'Patient Tortoise surprise and dismiss control missing')
+ok("patientTortoiseTapCount < 7" in index and "patientTortoiseTapCount = 0" in index, 'Patient Tortoise must require seven activations and reset after reveal')
+ok('prefers-reduced-motion: no-preference' in index and '@keyframes tortoiseNod' in index, 'Patient Tortoise motion must only run when reduced motion is not requested')
+ok('easterEgg.patientTortoiseMessage' in en_source and en_source['easterEgg.patientTortoiseMessage']=='Steady is a pace, too.', 'Patient Tortoise message missing or changed')
+ok('easterEgg.patientTortoiseTrigger' in index and "patientTortoiseTrigger.addEventListener('keydown'" in index, 'Patient Tortoise trigger must be keyboard-accessible')
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)
