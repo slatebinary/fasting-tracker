@@ -21,7 +21,7 @@ assert.match(index,/if \(!event\.persisted \|\| !uiReady\) return;/);
 assert.match(index,/data-i18n="public\.changelogLink" href="changelog\.html\?return=settings"/);
 assert.match(index,/id="patientTortoiseProgress"[^>]*role="status"[^>]*aria-live="polite"/,'Easter egg tap feedback must be announced accessibly');
 assert.match(index,/patientTortoiseTapCount < 7/,'Easter egg must provide six intermediate tap states');
-assert.match(index,/patientTortoiseTap' \+ patientTortoiseTapCount/,'Each intermediate tap must select its localized message');
+assert.match(index,/patientTortoiseTapMessageKeys = \['easterEgg\.patientTortoiseTap1','easterEgg\.patientTortoiseTap2','easterEgg\.patientTortoiseTap3','easterEgg\.patientTortoiseTap4','easterEgg\.patientTortoiseTap5','easterEgg\.patientTortoiseTap6'\]/,'Each intermediate tap must select an explicit localized message key');
 assert.match(index,/patientTortoise\.isRevealed \{ animation:tortoiseArrive/,'Reveal animation should be present');
 assert.match(index,/prefers-reduced-motion: reduce/,'Animations must respect reduced-motion preferences');
 for (const key of ['patientTortoiseProgress','patientTortoiseTap1','patientTortoiseTap2','patientTortoiseTap3','patientTortoiseTap4','patientTortoiseTap5','patientTortoiseTap6']) {
