@@ -262,13 +262,13 @@
     "game.ach1": "First target",
     "game.ach1d": "Complete 1 fast that reaches its target",
     "game.ach5": "Building rhythm",
-    "game.ach5d": "Complete 5 target fasts",
+    "game.ach5d": "Cumulative: complete 5 target fasts in total",
     "game.ach10": "Consistency 10",
     "game.ach10d": "Complete 10 target fasts",
     "game.ach25": "Consistency 25",
-    "game.ach25d": "Complete 25 target fasts",
+    "game.ach25d": "Cumulative: complete 25 target fasts in total",
     "game.ach50": "Consistency 50",
-    "game.ach50d": "Complete 50 target fasts",
+    "game.ach50d": "Cumulative: complete 50 target fasts in total",
     "game.comeback": "Comeback",
     "game.comebackd": "Reach your target after a missed target",
     "game.weightHabit": "Weight habit",
@@ -1020,6 +1020,12 @@
     "game.levelsExplainTitle": "How levels work",
     "game.levelsExplain": "Levels measure consistency XP, not fasting duration. Earn 10 XP for each completed fast that meets your chosen target and 2 XP for each distinct day you log weight. Fasting beyond your target gives no extra XP.",
     "game.levelsThresholds": "Level 1: 0–49 XP. Level 2: 50–149 XP (100 more XP). Level 3: 150–349 XP (200 more XP). Level 4: 350+ XP.",
-    "game.levelsPurpose": "Later levels require more accumulated XP, so they mark sustained habits over time. Levels offer milestones and motivation only; they unlock no features and are not health scores or a reason to fast longer."
+    "game.levelsPurpose": "Later levels require more accumulated XP, so they mark sustained habits over time. Levels offer milestones and motivation only; they unlock no features and are not health scores or a reason to fast longer.",
+    "game.streak5": "Streak of 5",
+    "game.streak5d": "Complete 5 target fasts in a row",
+    "game.streak25": "Streak of 25",
+    "game.streak25d": "Complete 25 target fasts in a row",
+    "game.streak50": "Streak of 50",
+    "game.streak50d": "Complete 50 target fasts in a row"
   }
 }
