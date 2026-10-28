@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.15.2" />
+  <meta name="ft-app-version" content="1.15.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -123,7 +123,22 @@ layout: null
     .primary { color:var(--primary-button-text, #fff); }
     .stop { color:var(--danger-button-text, #fff); }
     html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop, html[data-theme="colorblind"] .stop { color:#000; }
-    html[data-theme="high-contrast-light"] button, html[data-theme="high-contrast-dark"] button { font-weight:700; }
+    /* Force accessible button pairs after widget styles, which previously overrode theme colors. */
+    html[data-theme="high-contrast-light"] button:not(.primary):not(.stop):not(.dangerText) { background:#fff !important; color:#000 !important; border:2px solid #000 !important; font-weight:700; }
+    html[data-theme="high-contrast-light"] button.secondary { background:#e6e6e6 !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="high-contrast-light"] button.primary { background:#0037b3 !important; color:#fff !important; border:2px solid #0037b3 !important; }
+    html[data-theme="high-contrast-light"] button.stop { background:#b00020 !important; color:#fff !important; border:2px solid #b00020 !important; }
+    html[data-theme="high-contrast-light"] button.dangerText { background:transparent !important; color:#8b0018 !important; border:2px solid #8b0018 !important; }
+    html[data-theme="high-contrast-dark"] button:not(.primary):not(.stop):not(.dangerText) { background:#000 !important; color:#fff !important; border:2px solid #fff !important; font-weight:700; }
+    html[data-theme="high-contrast-dark"] button.secondary { background:#222 !important; color:#fff !important; border:2px solid #fff !important; }
+    html[data-theme="high-contrast-dark"] button.primary { background:#80dfff !important; color:#000 !important; border:2px solid #80dfff !important; }
+    html[data-theme="high-contrast-dark"] button.stop { background:#ff9eaa !important; color:#000 !important; border:2px solid #ff9eaa !important; }
+    html[data-theme="high-contrast-dark"] button.dangerText { background:transparent !important; color:#ff9eaa !important; border:2px solid #ff9eaa !important; }
+    html[data-theme="grayscale"] button:not(.primary):not(.stop):not(.dangerText) { background:#fff !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="grayscale"] button.secondary { background:#e6e6e6 !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="grayscale"] button.primary, html[data-theme="grayscale"] button.stop { background:#000 !important; color:#fff !important; border:2px solid #000 !important; }
+    html[data-theme="grayscale"] button.dangerText { background:transparent !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
     html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
@@ -876,7 +891,7 @@ layout: null
         <div class="metric"><div class="value" id="gWeightStreak">0</div><div class="label" data-i18n="game.weightStreak">Weekly weigh-in streak</div></div>
       </div>
       <div class="small" style="margin-top:12px" data-i18n="game.rule">10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. Excused unavoidable interruptions are neutral for the target streak and earn no target XP. No extra XP is awarded for fasting past the target.</div>
-      <details class="scienceSources gameLevelGuide" style="margin-top:12px"><summary data-i18n="game.levelsExplainTitle">How levels work</summary><p class="small" style="margin-top:8px" data-i18n="game.levelsExplain">Levels measure consistency XP, not fasting duration. Earn 10 XP for each completed fast that meets your chosen target and 2 XP for each distinct day you log weight. Fasting beyond your target gives no extra XP.</p><ul class="small"><li data-i18n="game.levelsThresholds">Level 1: 0–49 XP. Level 2: 50–149 XP (100 more XP). Level 3: 150–349 XP (200 more XP). Level 4: 350+ XP.</li><li data-i18n="game.levelsPurpose">Later levels require more accumulated XP, so they mark sustained habits over time. Levels offer milestones and motivation only; they unlock no features and are not health scores or a reason to fast longer.</li></ul></details><div class="badgeGrid" id="achievementBadges"></div>
+      <div class="scienceSources gameLevelGuide" style="margin-top:12px;padding:12px;border:2px solid var(--line);border-radius:12px"><h3 data-i18n="game.levelsExplainTitle" style="margin:0 0 8px">How levels work</h3><p class="small" style="margin-top:8px" data-i18n="game.levelsExplain">Levels measure consistency XP, not fasting duration. Earn 10 XP for each completed fast that meets your chosen target and 2 XP for each distinct day you log weight. Fasting beyond your target gives no extra XP.</p><ul class="small"><li data-i18n="game.levelsThresholds">Level 1: 0–49 XP. Level 2: 50–149 XP (100 more XP). Level 3: 150–349 XP (200 more XP). Level 4: 350+ XP.</li><li data-i18n="game.levelsPurpose">Later levels require more accumulated XP, so they mark sustained habits over time. Levels offer milestones and motivation only; they unlock no features and are not health scores or a reason to fast longer.</li></ul></div><div class="badgeGrid" id="achievementBadges"></div>
     </div>
   </section>
 
@@ -1622,7 +1637,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.15.2';
+  const APP_VERSION = '1.15.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
