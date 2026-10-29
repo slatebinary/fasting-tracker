@@ -534,7 +534,7 @@ ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-acti
 ok("if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}" in index, 'touch chart gesture must retain pointer tracking during a drag')
 ok('start.scrollLeft+dx*1.8' in index, 'dragging left must pan the chart left toward older values with responsive movement')
 ok('if(event.cancelable)event.preventDefault();' in index and 'handleWeightChartScroll();' in index, 'horizontal drag must avoid text selection and refresh the selected measurement')
-ok("const centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index, 'chart pan must update the selected value at the visible chart centre')
+ok("centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index, 'chart pan must update the selected value at the visible chart centre')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
 for lang in ('en','bg','es'):
     section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
