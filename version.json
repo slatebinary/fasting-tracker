@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.16.4",
+  "version": "1.16.5",
   "released": "2026-10-29",
-  "notes": "Keep App icons & installation expanded despite stale saved Settings state so accessible icon choices remain visible.",
+  "notes": "Replace broken accessible icon PNGs with validated images and verify PNG chunk CRCs in release tests.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -89,7 +89,7 @@
   "hashes": {
     "./": "a8b239735a63471c7b19419c23f1a6f7b8d66bc06484986cd994bb3ec5706f23",
     "./index.html": "a8b239735a63471c7b19419c23f1a6f7b8d66bc06484986cd994bb3ec5706f23",
-    "./changelog.html": "927c33e58b09e740512235f92a73a4e1507b380183828505c51bdc49f1fcb919",
+    "./changelog.html": "ee0f5a2e3305d845ea94f4c315f51a8c268367000b44af12bb9b55d6233dd515",
     "./i18n/en.js": "711df8b252fb9a2b03808f7c9488da20b89b104b2eee414b958d2994d71a076e",
     "./i18n/bg.js": "f9d6da45354ab7b21f00ed73e212b1bc3a917e5af63a3f8ee813713a7b38b82f",
     "./i18n/es.js": "0e1548b7780022e07398745da2cb056c404702e8bb3ff0ca588f30ce2f02ff3f",
@@ -161,9 +161,9 @@
     "./manifest-colorblind-es.webmanifest": "9ff5c5d12acafd0b9229228553310a9b1bdfc41cef95f9f7f36b06575600b0fb",
     "./icons/grayscale/icon-192.png": "292638ce5dff7379fbd07f36eb436ac284c9e7b87488dbe8eb4dada7c7a68ee9",
     "./icons/grayscale/icon-512.png": "90b071b11046f318a22e9abac938a7dfcbf6e6d7fbc67ca07aede55d7e6456d7",
-    "./icons/highcontrast/icon-192.png": "05b2c1f6f45edbe576fc1f2242ffd906af546891b8039320b8b61d9b4b3a645b",
-    "./icons/highcontrast/icon-512.png": "44c2f6e7bb1e60d019806917461534bd302886beb59c61e95297584fd1a2cfb8",
-    "./icons/colorblind/icon-192.png": "22c881e4cc3f54bea188e4a2268afc3e4c96f5f407b749a2e507eca03a4b129f",
-    "./icons/colorblind/icon-512.png": "c81b4e78debc9482e84a07920c1d9b842705771f05b4eacd97503ee2de8268e9"
+    "./icons/highcontrast/icon-192.png": "adbfb74e2429de9edf895823593d6044e2056e80da78ef7eb0302edca71fd12d",
+    "./icons/highcontrast/icon-512.png": "9523bd745b39a528baa854f13e9743b6c54d6ce310e540ffb4d50fe5913f8e80",
+    "./icons/colorblind/icon-192.png": "73b5a3ecaa90a784441dbd15322957446aecf910d7f1312777682a8af2f9afd8",
+    "./icons/colorblind/icon-512.png": "e21ab0a100c3569b7572dc9c22ca974448624077a5330de889f590be1140b855"
   }
 }
