@@ -534,7 +534,7 @@ ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section
 
 # Weight history navigation uses explicit controls and native horizontal swipes.
 ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:crosshair; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must permit native horizontal and vertical gestures without text selection')
-ok("setPointerCapture(event.pointerId)" not in index[index.indexOf('function beginWeightChartPointer'):index.indexOf('function handleWeightChartScroll')] and "event.preventDefault()" not in index[index.indexOf('function beginWeightChartPointer'):index.indexOf('function handleWeightChartScroll')], 'weight chart must leave horizontal gesture handling to native scrolling')
+ok("setPointerCapture(event.pointerId)" not in index[index.find('function beginWeightChartPointer'):index.find('function handleWeightChartScroll')] and "event.preventDefault()" not in index[index.find('function beginWeightChartPointer'):index.find('function handleWeightChartScroll')], 'weight chart must leave horizontal gesture handling to native scrolling')
 ok('function shiftWeightChartViewport(direction)' in index and 'touch-action:pan-x pan-y' in index, 'older/newer navigation and native horizontal swipes must be supported')
 ok('id="weightChartOlderBtn"' in index and 'id="weightChartNewerBtn"' in index and "el('weightChartRange').addEventListener('input'" in index, 'weight history must have explicit Older/Newer and range controls')
 ok('function syncWeightChartNavigator()' in index and 'function shiftWeightChartViewport(direction)' in index, 'weight history navigation controls must stay synchronized with chart position')
