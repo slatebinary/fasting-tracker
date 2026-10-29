@@ -66,7 +66,7 @@ assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,to
 assert.match(index,/const details=keys\.map\(key=>/);
 assert.doesNotMatch(index,/keys\.slice\(0,3\)/);
 assert.match(index,/id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open/);
-assert.match(index,/<details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open>/,'Accessible icon section must use a fresh state key so an older collapsed preference cannot hide it after update');
+assert.match(index,/<details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open>/,'Accessible icon section must be expanded in markup');
 for (const icon of ['grayscale','highcontrast','colorblind']) {
   assert.match(index,new RegExp('data-icon-choice="'+icon+'"[^>]*><img[^>]*src="icons/'+icon+'/icon-192\\.png"'),'Missing visible icon choice: '+icon);
   assert.ok(fs.existsSync('icons/'+icon+'/icon-192.png'),'Missing icon image asset: '+icon);
@@ -191,7 +191,8 @@ assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index)
 assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
 assert.ok(/\.iconChoice\.active\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'Selected icon must not use a prominent border');
 assert.ok(index.includes('.iconChoice.active span::before { content:"✓ ";'), 'Selected icon must have a non-colour-only check-mark indicator');
-assert.ok(index.includes("group.id==='settingsGroupGeneral'||group.id==='settingsGroupAppIcons'"), 'Icon section must default open independently of General Settings');
+assert.ok(index.includes("group.open=group.id==='settingsGroupAppIcons'?true:"), 'Icon section must override stale saved collapsed state and always restore open');
+assert.ok(index.includes("if (group.id==='settingsGroupAppIcons' && !group.open)"), 'Icon section must reopen if a stale or manual toggle tries to hide the choices');
 assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
 assert.ok(index.includes("const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon)"), 'Accessible icon themes must use available assets for browser and Apple Home Screen icons');
 const iconGrids=[...index.matchAll(/<div\b[^>]*class="iconChoiceGrid"[^>]*>([\s\S]*?)<\/div>/g)];
