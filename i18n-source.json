@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 34,
-  "appVersion": "1.17.4",
+  "sourceRevision": 35,
+  "appVersion": "1.17.5",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -190,7 +190,7 @@
     "weight.toTarget": "Difference to target",
     "weight.targetHelp": "Optional. Leave blank if you only want to track the trend.",
     "weight.trend": "Weight trend",
-    "weight.chartHelp": "Daily shows individual measurements. Week, Month, Quarter, 6 months and Year show one average point per calendar period. Tap a point for its exact value and time/period. Scroll left for older data; the chart opens at the newest values. All individual entries remain available below.",
+    "weight.chartHelp": "Daily shows individual measurements. Other views show one average point per calendar period. Tap a point for its value and time/period. Swipe horizontally or use the history navigator to browse older and newer data. All individual entries remain available below.",
     "weight.dateTime": "Date & time",
     "weight.empty": "No weight entries yet. Tap Add weight to record your first measurement.",
     "weight.addChart": "Add weight entries to see your trend.",
@@ -1059,6 +1059,10 @@
     "settings.appIconSectionHelp": "Choose your app icon and find the installation steps here.",
     "icon.grayscale": "Grayscale",
     "icon.highcontrast": "High contrast",
-    "icon.colorblind": "Colour-vision friendly"
+    "icon.colorblind": "Colour-vision friendly",
+    "a11y.weightChartNavigator": "Weight history navigation",
+    "a11y.weightChartOlder": "Older",
+    "a11y.weightChartNewer": "Newer",
+    "a11y.weightChartRange": "Browse weight history, oldest on the left and newest on the right"
   }
 }

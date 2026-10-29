@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.4" />
+  <meta name="ft-app-version" content="1.17.5" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -442,10 +442,10 @@ layout: null
     .stopUndoBar .stopUndoText { color:var(--text); font-weight:650; line-height:1.3; }
     .stopUndoCountdown { flex:0 0 auto; min-width:42px; text-align:center; font-variant-numeric:tabular-nums; font-weight:750; color:var(--text); border:1px solid color-mix(in srgb, white 65%, var(--line)); border-radius:999px; padding:7px 9px; }
     .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
-    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:crosshair; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
     .weightChartShell { display:grid; grid-template-columns:46px minmax(0,1fr); align-items:start; width:100%; margin-top:4px; }
     .weightChartYAxis { width:46px; height:240px; display:block; pointer-events:none; }
-    .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-y; -webkit-user-select:none; user-select:none; }
+    .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; -webkit-user-select:none; user-select:none; }
     .chartDataList { margin-top:10px; border-top:1px solid var(--line); padding-top:8px; }
     .chartDataList ul { margin:6px 0 0; padding-left:20px; }
     .statsRangeBar { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin:-4px 0 14px; }
@@ -459,6 +459,10 @@ layout: null
     .srOnly { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
     @media (max-width:520px) { .statsRangeBar { align-items:stretch; } .statsRangeBar label, .statsRangeSummary { flex:1 1 100%; } }
     .weightChartTrack { position:relative; min-width:100%; height:240px; }
+    .weightChartNavigator { display:grid; grid-template-columns:auto minmax(60px,1fr) auto; align-items:center; gap:8px; margin:10px 0 4px; }
+    .weightChartNavigator button { min-height:42px; padding:9px 12px; white-space:nowrap; }
+    .weightChartNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
+    .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
     .weightPeriodSwitcher { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:4px 2px 8px; margin:2px -2px 10px; touch-action:pan-x; }
     .weightPeriodSwitcher::-webkit-scrollbar { display:none; }
@@ -855,7 +859,12 @@ layout: null
           </div>
         </div>
       </div>
-      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Daily shows individual measurements. Other views show one average point per calendar period. Tap a point for its value and time/period. Scroll left for older data; the chart opens at the newest values. All individual entries remain available below.</div>
+      <div class="weightChartNavigator" role="group" aria-label="Weight history navigation" data-i18n-aria="a11y.weightChartNavigator">
+        <button id="weightChartOlderBtn" class="secondary" type="button" data-i18n="a11y.weightChartOlder">Older</button>
+        <input id="weightChartRange" type="range" min="0" max="0" step="1" value="0" aria-label="Browse weight history, oldest on the left and newest on the right" data-i18n-aria="a11y.weightChartRange" />
+        <button id="weightChartNewerBtn" class="secondary" type="button" data-i18n="a11y.weightChartNewer">Newer</button>
+      </div>
+      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Daily shows individual measurements. Other views show one average point per calendar period. Tap a point for its value and time/period. Swipe horizontally or use the history navigator to browse older and newer data. All individual entries remain available below.</div>
       <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
       <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
       <div id="weightChartData" class="chartDataList small" hidden></div>
@@ -1773,7 +1782,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.4';
+  const APP_VERSION = '1.17.5';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6496,7 +6505,7 @@ layout: null
       track.style.width='100%'; weightChartSelectedId=null;
       if(detail){detail.hidden=true;detail.textContent='';}
       drawWeightChartYAxis(0,1);
-      ctx.fillStyle=muted;ctx.font='13px -apple-system';ctx.textAlign='center';ctx.fillText(t('weight.addChart'),viewportW/2,cssH/2);ctx.textAlign='start';return;
+      ctx.fillStyle=muted;ctx.font='13px -apple-system';ctx.textAlign='center';ctx.fillText(t('weight.addChart'),viewportW/2,cssH/2);ctx.textAlign='start';syncWeightChartNavigator();return;
     }
 
     const dataBuckets=weightPeriodMode==='daily'?buckets:buckets.filter(b=>b.count>0);
@@ -6590,6 +6599,7 @@ layout: null
     const axisPlan=FTVisuals.axisLabelPlan(visibleAxisItems,{positions:visibleAxisPositions,measureText:text=>ctx.measureText(String(text)).width,maxLabels:Math.max(2,Math.floor(viewportW/62)),minGap:7});
     for(const tick of axisPlan){const text=String(tick.text),tw=ctx.measureText(text).width,x=Math.max(4+tw/2,Math.min(viewportW-4-tw/2,tick.x));ctx.fillText(text,x,cssH-10);}
     ctx.textAlign='start';
+    syncWeightChartNavigator();
   }
 
   function weightChartPointAt(clientX,clientY){
@@ -6608,63 +6618,61 @@ layout: null
     if(weightPeriodMode==='daily')return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
     return buckets.length<=5?Math.max(1,plotW/Math.max(1,buckets.length-1)):68;
   }
-  function keepWeightPointVisible(index){
-    const scroller=el('weightChartScroller');if(!scroller||!weightChartBuckets.length)return;
-    const spacing=weightChartPointSpacing(),x=16+index*spacing,left=scroller.scrollLeft,right=left+scroller.clientWidth;
-    if(x<left+28)scroller.scrollLeft=Math.max(0,x-scroller.clientWidth*.25);
-    else if(x>right-28)scroller.scrollLeft=Math.min(scroller.scrollWidth-scroller.clientWidth,x-scroller.clientWidth*.75);
+  function syncWeightChartNavigator(){
+    const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
+    if(!slider||!older||!newer||!scroller)return;
+    const buckets=weightChartBuckets;
+    slider.max=String(Math.max(0,buckets.length-1));
+    const selectedIndex=buckets.findIndex(b=>b.key===weightChartSelectedId);
+    slider.value=String(Math.max(0,selectedIndex));
+    slider.disabled=buckets.filter(b=>b.count>0).length<2;
+    const maxScroll=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
+    older.disabled=maxScroll<=2||scroller.scrollLeft<=2;
+    newer.disabled=maxScroll<=2||scroller.scrollLeft>=maxScroll-2;
+    const bucket=buckets[selectedIndex];
+    slider.setAttribute('aria-valuetext',bucket&&bucket.count ? weightBucketLongLabel(bucket)+' — '+formatWeight(bucket.averageKg,data.weightUnit) : '');
+  }
+  function nearestWeightBucketIndex(index){
+    const buckets=weightChartBuckets;
+    index=Math.max(0,Math.min(buckets.length-1,Math.round(Number(index)||0)));
+    if(buckets[index]?.count)return index;
+    for(let distance=1;distance<buckets.length;distance++){
+      if(buckets[index-distance]?.count)return index-distance;
+      if(buckets[index+distance]?.count)return index+distance;
+    }
+    return -1;
+  }
+  function navigateWeightChartToIndex(index){
+    const scroller=el('weightChartScroller'),buckets=weightChartBuckets;
+    if(!scroller||!buckets.length)return;
+    const targetIndex=nearestWeightBucketIndex(index);
+    if(targetIndex<0)return;
+    weightChartSelectedId=buckets[targetIndex].key;
+    const spacing=weightChartPointSpacing(),pointX=16+targetIndex*spacing;
+    scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,pointX-scroller.clientWidth/2));
+    drawWeightChart();
+    renderWeightChartData();
+    syncWeightChartNavigator();
+  }
+  function shiftWeightChartViewport(direction){
+    const scroller=el('weightChartScroller');if(!scroller)return;
+    const amount=Math.max(120,Math.round(scroller.clientWidth*.78));
+    scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,scroller.scrollLeft+direction*amount));
+    handleWeightChartScroll();
   }
   function beginWeightChartPointer(event){
     if(event.button!=null&&event.button!==0)return;
-    const point=selectWeightChartPointAtX(event.clientX)||weightChartHitPoints.find(p=>p.id===weightChartSelectedId)||null;
-    const anchorIndex=point?weightChartBuckets.findIndex(b=>b.key===point.id):-1;
-    weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0,scrubbing:false,pointerType:event.pointerType,anchorIndex,lastIndex:anchorIndex};
-    if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}
-  }
-  function moveWeightChartPointer(event){
-    const start=weightChartPointerStart;if(!start||start.id!==event.pointerId)return;
-    const dx=event.clientX-start.x,dy=event.clientY-start.y;
-    if(Math.abs(dx)<4&&Math.abs(dy)<4)return;
-    if(start.pointerType==='touch'&&Math.abs(dx)<Math.abs(dy)*1.15)return;
-    start.scrubbing=true;
-    if(start.pointerType==='touch'&&event.cancelable)event.preventDefault();
-
-    const buckets=weightChartBuckets;
-    if(!buckets.length)return;
-    const spacing=weightChartPointSpacing();
-    // A horizontal drag selects measurements directly. It does not require
-    // the user to scroll the chart and then hunt for the selected point.
-    const step=Math.max(8,Math.min(24,spacing*.6));
-    const rawIndex=Math.max(0,Math.min(buckets.length-1,start.anchorIndex+Math.round(dx/step)));
-    let index=rawIndex;
-    if(!buckets[index]?.count){
-      let distance=Infinity;
-      for(let i=0;i<buckets.length;i++){
-        if(!buckets[i].count)continue;
-        const d=Math.abs(i-rawIndex);
-        if(d<distance){distance=d;index=i;}
-      }
-    }
-    const bucket=buckets[index];
-    if(!bucket?.count)return;
-    if(bucket.key!==weightChartSelectedId){
-      weightChartSelectedId=bucket.key;
-      keepWeightPointVisible(index);
-      drawWeightChart();
-      renderWeightChartData();
-    }
+    weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0};
   }
   function finishWeightChartPointer(event){
-    const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;
-    if(start.scrubbing){
-      if(start.pointerType!=='touch'){const point=selectWeightChartPointAtX(event.clientX);if(point){weightChartSelectedId=point.id;drawWeightChart();}}
-      try{event.currentTarget.releasePointerCapture(event.pointerId);}catch{}
-      return;
-    }
+    const start=weightChartPointerStart;weightChartPointerStart=null;
+    if(!start||start.id!==event.pointerId)return;
     if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
-    const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;weightChartSelectedId=point.id;drawWeightChart();
+    const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;
+    weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
   }
   function cancelWeightChartPointer(){weightChartPointerStart=null;}
+
   function handleWeightChartScroll(){
     if(weightChartScrollFrame)return;
     weightChartScrollFrame=requestAnimationFrame(()=>{
@@ -6677,7 +6685,7 @@ layout: null
         if(!nearest?.count){let distance=Infinity;for(let i=0;i<buckets.length;i++){if(!buckets[i].count)continue;const d=Math.abs(i-index);if(d<distance){distance=d;nearest=buckets[i];}}}
         if(nearest?.count)weightChartSelectedId=nearest.key;
       }
-      drawWeightChart();renderWeightChartData();
+      drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
     });
   }
 
@@ -8471,9 +8479,11 @@ layout: null
   ['fastMonthsChart','fastDistributionChart','fastSuccessChart','fastStartPatternChart'].forEach(id=>{el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});});
   el('fastCumulativeChart')?.addEventListener('pointerdown',beginCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointermove',moveCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointerup',finishCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointercancel',cancelCumulativePointer);el('fastCumulativeChart')?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
-  el('weightChart').addEventListener('pointermove', moveWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
+  el('weightChartRange').addEventListener('input',()=>navigateWeightChartToIndex(Number(el('weightChartRange').value)));
+  el('weightChartOlderBtn').addEventListener('click',()=>shiftWeightChartViewport(-1));
+  el('weightChartNewerBtn').addEventListener('click',()=>shiftWeightChartViewport(1));
   el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
   el('weightChart').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(!weightChartBuckets.length)return;e.preventDefault();const valid=weightChartBuckets.filter(b=>b.count>0),current=valid.findIndex(b=>b.key===weightChartSelectedId),base=current<0?(e.key==='ArrowRight'?valid.length-1:0):current,next=Math.max(0,Math.min(valid.length-1,base+(current<0?0:(e.key==='ArrowRight'?1:-1))));const bucket=valid[next];if(bucket){weightChartSelectedId=bucket.key;const visible=weightChartHitPoints.some(p=>p.id===bucket.key);if(!visible){const scroller=el('weightChartScroller');const index=weightChartBuckets.findIndex(b=>b.key===bucket.key);const spacing=weightChartPointSpacing();scroller.scrollLeft=Math.max(0,16+index*spacing-scroller.clientWidth/2);}drawWeightChart();}return;}if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
   el('statsChartDataBtn').addEventListener('click',()=>{const box=el('statsChartData'),btn=el('statsChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderStatsChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
