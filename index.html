@@ -311,12 +311,35 @@ layout: null
     .patientTortoiseProgress .tapCount { font-weight:800; white-space:nowrap; }
     @keyframes tortoiseTapPop { 0%{transform:scale(.97);opacity:.55} 65%{transform:scale(1.015)} 100%{transform:scale(1);opacity:1} }
     @media (prefers-reduced-motion: reduce) { .patientTortoiseProgress.isNew { animation:none; } }
-    .patientTortoise svg { width:58px; height:58px; flex:0 0 58px; color:var(--text); }
+    .patientTortoise .patientTortoiseArt { width:96px; height:96px; flex:0 0 96px; color:var(--text); overflow:visible; }
+    .patientTortoiseArt .tortoiseLeg, .patientTortoiseArt .tortoiseHead, .patientTortoiseArt .tortoiseBody, .patientTortoiseArt .tortoiseTail { transform-box:fill-box; transform-origin:center; }
+    .patientTortoiseArt .tortoiseGround { stroke:currentColor; stroke-width:1.8; stroke-linecap:round; opacity:.28; fill:none; }
+    .patientTortoiseArt .tortoiseShell { fill:currentColor; fill-opacity:.18; stroke:currentColor; stroke-width:2.6; stroke-linejoin:round; }
+    .patientTortoiseArt .tortoiseShellPanel { fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; opacity:.72; }
+    .patientTortoiseArt .tortoiseLimb { fill:currentColor; fill-opacity:.62; stroke:currentColor; stroke-width:2.2; stroke-linejoin:round; }
+    .patientTortoiseArt .tortoiseHeadShape { fill:currentColor; fill-opacity:.32; stroke:currentColor; stroke-width:2.5; stroke-linejoin:round; }
+    .patientTortoiseArt .tortoiseFaceLine { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; }
     .patientTortoiseMessage { font-size:17px; font-weight:750; line-height:1.35; }
     .patientTortoise button { margin-top:8px; padding:8px 12px; }
     #appVersionLabel[role="button"] { cursor:pointer; }
     #appVersionLabel[role="button"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; border-radius:4px; }
-    @media (prefers-reduced-motion: no-preference) { .patientTortoise svg { animation:tortoiseNod 1.4s ease-in-out 2; } .patientTortoise.isRevealed { animation:tortoiseArrive .55s cubic-bezier(.2,.85,.25,1.2) both; } .patientTortoise.isRevealed svg { animation:tortoiseNod .42s ease-in-out 3; } @keyframes tortoiseNod { 0%,100%{transform:rotate(0) translateY(0)} 50%{transform:rotate(-5deg) translateY(-3px)} } @keyframes tortoiseArrive { 0%{opacity:0;transform:translateY(10px) scale(.94)} 70%{opacity:1;transform:translateY(-2px) scale(1.015)} 100%{opacity:1;transform:translateY(0) scale(1)} } }
+    @media (prefers-reduced-motion: no-preference) {
+      .patientTortoiseArt { animation:tortoiseNod 1.15s ease-in-out 2; }
+      .patientTortoise.isRevealed { animation:tortoiseArrive .65s cubic-bezier(.2,.85,.25,1.2) both; }
+      .patientTortoise.isRevealed .tortoiseBody { animation:tortoiseBodyBob .34s ease-in-out 5 alternate; }
+      .patientTortoise.isRevealed .tortoiseHead { animation:tortoiseHeadPeek .56s cubic-bezier(.2,.8,.25,1.1) 2; }
+      .patientTortoise.isRevealed .tortoiseLegFront { animation:tortoiseLegStep .24s ease-in-out 5 alternate; }
+      .patientTortoise.isRevealed .tortoiseLegBack { animation:tortoiseLegStep .24s ease-in-out .12s 5 alternate-reverse; }
+      .patientTortoise.isRevealed .tortoiseTail { animation:tortoiseTailWiggle .16s ease-in-out 5 alternate; }
+      .patientTortoise.isRevealed .tortoiseGroundDash { animation:tortoiseGroundPulse .5s ease-out 3; }
+      @keyframes tortoiseNod { 0%,100%{transform:rotate(0) translateY(0)} 50%{transform:rotate(-3deg) translateY(-2px)} }
+      @keyframes tortoiseArrive { 0%{opacity:0;transform:translateY(12px) scale(.9)} 58%{opacity:1;transform:translateY(-3px) scale(1.035)} 78%{transform:translateY(1px) scale(.99)} 100%{opacity:1;transform:translateY(0) scale(1)} }
+      @keyframes tortoiseBodyBob { from{transform:translateY(0)} to{transform:translateY(-2px)} }
+      @keyframes tortoiseHeadPeek { 0%,100%{transform:translate(0,0) rotate(0)} 45%{transform:translate(3px,-2px) rotate(-4deg)} 72%{transform:translate(1px,1px) rotate(2deg)} }
+      @keyframes tortoiseLegStep { from{transform:rotate(-10deg) translateY(-1px)} to{transform:rotate(12deg) translateY(1px)} }
+      @keyframes tortoiseTailWiggle { from{transform:rotate(-8deg)} to{transform:rotate(10deg)} }
+      @keyframes tortoiseGroundPulse { 0%{opacity:.3;transform:translateX(0)} 60%{opacity:.65;transform:translateX(3px)} 100%{opacity:0;transform:translateX(7px)} }
+    }
 
     [hidden] { display: none !important; }
     .updateBanner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--accent) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
@@ -1144,7 +1167,36 @@ layout: null
 </div>
 <div id="patientTortoiseProgress" class="patientTortoiseProgress" hidden role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="patientTortoise" class="patientTortoise" hidden role="status" aria-live="polite" aria-atomic="true">
-  <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M16 31c0-11 8-19 20-19s20 8 20 19v7H16z" fill="currentColor" opacity=".16"/><path d="M16 31c0-11 8-19 20-19s20 8 20 19v7H16z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M23 23h26M20 31h32M32 13v24" stroke="currentColor" stroke-width="2" opacity=".7"/><circle cx="52" cy="36" r="7" fill="currentColor" opacity=".45" stroke="currentColor" stroke-width="2"/><circle cx="54" cy="34" r="1.4" fill="currentColor"/><path d="M20 38l-3 8m15-8v9m15-9 3 8" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 31l-5 3 6 3" fill="currentColor" opacity=".45" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+  <svg class="patientTortoiseArt" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+    <path class="tortoiseGround" d="M8 81Q48 76 88 81"/>
+    <path class="tortoiseGround" d="M15 85l-4 2m70-2 4 2"/>
+    <g class="tortoiseGroundDash" fill="currentColor" opacity=".38"><circle cx="14" cy="73" r="1.5"/><circle cx="10" cy="69" r="1"/><path d="M77 73l5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></g>
+    <ellipse cx="48" cy="80" rx="28" ry="4" fill="currentColor" opacity=".1"/>
+    <g class="tortoiseBody">
+      <g class="tortoiseLeg tortoiseLegBack">
+        <path class="tortoiseLimb" d="M25 57q-8 2-9 11l-1 5q0 3 4 3h9q4-1 4-5l-1-12z"/>
+        <path class="tortoiseLimb" d="M59 57q7 2 9 10l2 5q1 4-3 5h-8q-4-1-4-5l1-12z"/>
+      </g>
+      <g class="tortoiseTail"><path d="M22 56l-9 4 7 5" fill="currentColor" fill-opacity=".4" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></g>
+      <path d="M23 54q-2 8 4 11h38q8-4 5-12z" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+      <path class="tortoiseShell" d="M20 55c-3-5-2-16 3-24 5-9 13-13 25-13s21 5 25 14c4 8 4 17 1 23-7 5-44 5-54 0z"/>
+      <path class="tortoiseShellPanel" d="M26 34l10-9 12 1 8 9-8 10-14-1zM48 26l13-2 9 10-4 11-10-1M25 35l-3 13 12 6 12-9M36 25l-1-5m13 6 1-8m8 16 13 0M34 53l-1 4m20-4 2 4"/>
+      <path class="tortoiseShellPanel" d="M38 36l10-1 4 8-8 6-8-4z" opacity=".45"/>
+      <g class="tortoiseHead">
+        <path class="tortoiseHeadShape" d="M65 42q8-7 16-1 8 5 6 13-2 8-11 8-10 0-13-9-2-6 2-11z"/>
+        <path d="M75 48q5-4 9 0" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".4"/>
+        <circle cx="80" cy="47" r="2.2" fill="currentColor"/>
+        <circle cx="80.7" cy="46.3" r=".65" fill="var(--card, white)"/>
+        <path class="tortoiseFaceLine" d="M78 56q4 3 7-1"/>
+        <path d="M72 54q2 2 3 0" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"/>
+      </g>
+      <g class="tortoiseLeg tortoiseLegFront">
+        <path class="tortoiseLimb" d="M35 58q-7 3-8 11l-1 5q0 3 4 3h8q4-1 4-5l-1-12z"/>
+        <path class="tortoiseLimb" d="M56 58q7 2 8 10l2 5q1 4-3 5h-8q-4-1-4-5l1-12z"/>
+      </g>
+    </g>
+    <path d="M20 71l-2 3m7-1-1 2m50-4 2 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+  </svg>
   <div><div class="patientTortoiseMessage" data-i18n="easterEgg.patientTortoiseMessage">Steady is a pace, too.</div><button type="button" class="secondary" id="patientTortoiseDismiss" data-i18n="common.close">Close</button></div>
 </div>
 <div class="publicLinks" style="margin-top:8px"><a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a></div><div class="row">
