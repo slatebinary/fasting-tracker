@@ -54,7 +54,7 @@ for item in ver.get('shell',[]):
     p=source_path(item); ok(p.is_file(),f'missing shell asset {item}')
     if p.is_file(): ok(hashlib.sha256(canonical_bytes(p)).hexdigest()==ver.get('hashes',{}).get(item),f'hash mismatch {item}')
 ok(set(ver.get('hashes',{}))==set(ver.get('shell',[])),'hash map must exactly match shell')
-ok('function keepWeightPointVisible' in index and 'const step=Math.max(8,Math.min(24,spacing*.6));' in index, 'weight-chart touch browsing must directly select points at a responsive rate')
+ok('function navigateWeightChartToIndex(index)' in index and 'id="weightChartRange"' in index, 'weight-chart navigation must support direct jumps across the full history')
 ok('id="weightChartRange"' in index and 'function navigateWeightChartToIndex(index)' in index, 'weight chart must provide a full-history range navigator')
 ok('touch-action:pan-x pan-y' in index and '-webkit-user-select:none' in index, 'weight chart must support horizontal swipes, vertical page scrolling and prevent accidental text selection')
 # Simulate the actual Pages artifact path: prepare_pages.py copies the HTML
@@ -532,10 +532,10 @@ ok(bool(v168_section) and not re.search(r'[А-Яа-яЁё]',v168_section), 'v1.1
 ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section, 'v1.16.9 weight-chart touch-scroll changelog missing')
 
 
-# v1.17.3 touch-dragging pans the weight chart left toward older records at a responsive speed.
+# Weight history navigation uses explicit controls and native horizontal swipes.
 ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:crosshair; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must permit native horizontal and vertical gestures without text selection')
 ok("if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}" in index, 'touch chart gesture must retain pointer tracking during a drag')
-ok('start.anchorIndex+Math.round(dx/step)' in index, 'dragging left must directly select older values at a responsive speed')
+ok('function shiftWeightChartViewport(direction)' in index and 'touch-action:pan-x pan-y' in index, 'older/newer navigation and native horizontal swipes must be supported')
 ok('id="weightChartOlderBtn"' in index and 'id="weightChartNewerBtn"' in index and "el('weightChartRange').addEventListener('input'" in index, 'weight history must have explicit Older/Newer and range controls')
 ok('function syncWeightChartNavigator()' in index and 'function shiftWeightChartViewport(direction)' in index, 'weight history navigation controls must stay synchronized with chart position')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
