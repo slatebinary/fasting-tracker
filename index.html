@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.2" />
+  <meta name="ft-app-version" content="1.17.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -442,7 +442,7 @@ layout: null
     .stopUndoBar .stopUndoText { color:var(--text); font-weight:650; line-height:1.3; }
     .stopUndoCountdown { flex:0 0 auto; min-width:42px; text-align:center; font-variant-numeric:tabular-nums; font-weight:750; color:var(--text); border:1px solid color-mix(in srgb, white 65%, var(--line)); border-radius:999px; padding:7px 9px; }
     .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
-    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
     .weightChartShell { display:grid; grid-template-columns:46px minmax(0,1fr); align-items:start; width:100%; margin-top:4px; }
     .weightChartYAxis { width:46px; height:240px; display:block; pointer-events:none; }
     .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; }
@@ -1773,7 +1773,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.2';
+  const APP_VERSION = '1.17.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6619,40 +6619,31 @@ layout: null
     const point=selectWeightChartPointAtX(event.clientX)||weightChartHitPoints.find(p=>p.id===weightChartSelectedId)||null;
     const anchorIndex=point?weightChartBuckets.findIndex(b=>b.key===point.id):-1;
     weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0,scrubbing:false,pointerType:event.pointerType,anchorIndex,lastIndex:anchorIndex};
-    if(event.pointerType==='touch')return;
+    if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}
   }
   function moveWeightChartPointer(event){
     const start=weightChartPointerStart;if(!start||start.id!==event.pointerId)return;
+    const dx=event.clientX-start.x,dy=event.clientY-start.y;
     if(start.pointerType==='touch'){
-      if(Math.abs(event.clientX-start.x)>=4||Math.abs(event.clientY-start.y)>=4)start.scrubbing=true;
+      if(Math.abs(dx)<4&&Math.abs(dy)<4)return;
+      if(Math.abs(dx)<Math.abs(dy)*1.15)return;
+      start.scrubbing=true;
+      if(event.cancelable)event.preventDefault();
+      const scroller=el('weightChartScroller');
+      if(scroller)scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,start.scrollLeft+dx*1.8));
+      handleWeightChartScroll();
       return;
     }
-    if(Math.abs(event.clientX-start.x)<4&&Math.abs(event.clientY-start.y)<4)return;
+    if(Math.abs(dx)<4&&Math.abs(dy)<4)return;
     start.scrubbing=true;
-    let point=null;
-    if(start.pointerType==='touch'&&start.anchorIndex>=0){
-      const delta=Math.round((event.clientX-start.x)/weightChartPointSpacing());
-      const index=Math.max(0,Math.min(weightChartBuckets.length-1,start.anchorIndex+delta));
-      const bucket=weightChartBuckets[index];
-      if(bucket?.count){
-        keepWeightPointVisible(index);
-        if(bucket.key!==weightChartSelectedId){weightChartSelectedId=bucket.key;drawWeightChart();}
-        else drawWeightChart();
-      }else{
-        const valid=weightChartBuckets.map((b,i)=>({b,i})).filter(x=>x.b.count>0);
-        const nearest=valid.reduce((best,item)=>!best||Math.abs(item.i-index)<Math.abs(best.i-index)?item:best,null);
-        if(nearest){keepWeightPointVisible(nearest.i);weightChartSelectedId=nearest.b.key;drawWeightChart();}
-      }
-      return;
-    }
-    point=selectWeightChartPointAtX(event.clientX);
+    const point=selectWeightChartPointAtX(event.clientX);
     if(point&&point.id!==weightChartSelectedId){weightChartSelectedId=point.id;drawWeightChart();}
   }
   function finishWeightChartPointer(event){
     const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;
     if(start.scrubbing){
       if(start.pointerType!=='touch'){const point=selectWeightChartPointAtX(event.clientX);if(point){weightChartSelectedId=point.id;drawWeightChart();}}
-      if(start.pointerType!=='touch'){try{event.currentTarget.releasePointerCapture(event.pointerId);}catch{}}
+      try{event.currentTarget.releasePointerCapture(event.pointerId);}catch{}
       return;
     }
     if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
