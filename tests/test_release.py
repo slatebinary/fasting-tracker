@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import hashlib, json, re, struct, subprocess, sys, tempfile, xml.etree.ElementTree as ET
+import hashlib, json, re, struct, subprocess, sys, tempfile, xml.etree.ElementTree as ET, zlib
 
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
