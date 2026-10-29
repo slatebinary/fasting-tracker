@@ -72,52 +72,57 @@ with sync_playwright() as pw:
         page.close()
 print('PASS: onboarding weigh-in cadence fits 320–768px across EN/BG/ES; buttons remain tappable and accessible:',len(checked),'cases')
 
-# Regression: the prominent App icons & installation section is open by default,
-# but users can collapse/reopen it and the disclosure choice survives reloads.
-page = browser.new_page(viewport={'width':390,'height':780}, is_mobile=True, has_touch=True)
-page.evaluate(STORAGE_SHIM)
-page.evaluate('''data => {
-  __seedFastingDbV2(data, []);
-  localStorage.removeItem('fastingTracker.settingsGroups');
-  localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.16.6'}));
-}''', DATA)
-page.set_content(HTML, wait_until='domcontentloaded')
-page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)
-page.evaluate("""() => {
-  document.querySelectorAll('#settings .screen').forEach(node => node.classList.remove('active'));
-  document.querySelector('#settings').classList.add('active');
-}""")
-details = page.locator('#settingsGroupAppIcons')
-summary = page.locator('#settingsGroupAppIcons > summary')
-assert details.evaluate('(node) => node.open') is True, 'app icon section should open by default'
-summary.click()
-page.wait_for_function("document.querySelector('#settingsGroupAppIcons')?.open === false")
-page.wait_for_function("""() => {
-  const saved=JSON.parse(localStorage.getItem('fastingTracker.settingsGroups')||'{}');
-  return saved.settingsGroupAppIcons === false;
-}""")
-page.set_content(HTML, wait_until='domcontentloaded')
-page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)
-page.evaluate("""() => {
-  document.querySelectorAll('#settings .screen').forEach(node => node.classList.remove('active'));
-  document.querySelector('#settings').classList.add('active');
-}""")
-details = page.locator('#settingsGroupAppIcons')
-summary = page.locator('#settingsGroupAppIcons > summary')
-assert details.evaluate('(node) => node.open') is False, 'collapsed preference should survive reload'
-summary.click()
-page.wait_for_function("document.querySelector('#settingsGroupAppIcons')?.open === true")
-page.wait_for_function("""() => {
-  const saved=JSON.parse(localStorage.getItem('fastingTracker.settingsGroups')||'{}');
-  return saved.settingsGroupAppIcons === true;
-}""")
-page.set_content(HTML, wait_until='domcontentloaded')
-page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)
-page.evaluate("""() => {
-  document.querySelectorAll('#settings .screen').forEach(node => node.classList.remove('active'));
-  document.querySelector('#settings').classList.add('active');
-}""")
-assert page.locator('#settingsGroupAppIcons').evaluate('(node) => node.open') is True, 'expanded preference should survive reload'
-page.close()
-browser.close()
-print('PASS: App icons & installation disclosure defaults open, can fold, and persists collapsed/expanded state')
+with sync_playwright() as pw:
+    browser = pw.chromium.launch(
+        executable_path='/usr/bin/chromium', headless=True,
+        args=['--no-sandbox', '--disable-dev-shm-usage']
+    )
+    # Regression: the prominent App icons & installation section is open by default,
+    # but users can collapse/reopen it and the disclosure choice survives reloads.
+    page = browser.new_page(viewport={'width':390,'height':780}, is_mobile=True, has_touch=True)
+    page.evaluate(STORAGE_SHIM)
+    page.evaluate('''data => {
+      __seedFastingDbV2(data, []);
+      localStorage.removeItem('fastingTracker.settingsGroups');
+      localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.16.6'}));
+    }''', DATA)
+    page.set_content(HTML, wait_until='domcontentloaded')
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)
+    page.evaluate("""() => {
+      document.querySelectorAll('#settings .screen').forEach(node => node.classList.remove('active'));
+      document.querySelector('#settings').classList.add('active');
+    }""")
+    details = page.locator('#settingsGroupAppIcons')
+    summary = page.locator('#settingsGroupAppIcons > summary')
+    assert details.evaluate('(node) => node.open') is True, 'app icon section should open by default'
+    summary.click()
+    page.wait_for_function("document.querySelector('#settingsGroupAppIcons')?.open === false")
+    page.wait_for_function("""() => {
+      const saved=JSON.parse(localStorage.getItem('fastingTracker.settingsGroups')||'{}');
+      return saved.settingsGroupAppIcons === false;
+    }""")
+    page.set_content(HTML, wait_until='domcontentloaded')
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)
+    page.evaluate("""() => {
+      document.querySelectorAll('#settings .screen').forEach(node => node.classList.remove('active'));
+      document.querySelector('#settings').classList.add('active');
+    }""")
+    details = page.locator('#settingsGroupAppIcons')
+    summary = page.locator('#settingsGroupAppIcons > summary')
+    assert details.evaluate('(node) => node.open') is False, 'collapsed preference should survive reload'
+    summary.click()
+    page.wait_for_function("document.querySelector('#settingsGroupAppIcons')?.open === true")
+    page.wait_for_function("""() => {
+      const saved=JSON.parse(localStorage.getItem('fastingTracker.settingsGroups')||'{}');
+      return saved.settingsGroupAppIcons === true;
+    }""")
+    page.set_content(HTML, wait_until='domcontentloaded')
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)
+    page.evaluate("""() => {
+      document.querySelectorAll('#settings .screen').forEach(node => node.classList.remove('active'));
+      document.querySelector('#settings').classList.add('active');
+    }""")
+    assert page.locator('#settingsGroupAppIcons').evaluate('(node) => node.open') is True, 'expanded preference should survive reload'
+    page.close()
+    browser.close()
+    print('PASS: App icons & installation disclosure defaults open, can fold, and persists collapsed/expanded state')
