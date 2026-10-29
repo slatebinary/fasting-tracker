@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.16.6",
+  "version": "1.16.7",
   "released": "2026-10-29",
-  "notes": "Restore normal folding for the App icons & installation Settings section while keeping it open by default.",
+  "notes": "Upgrade Patient Tortoise with detailed artwork and a coordinated, accessible walking animation.",
   "entry": "./index.html",
   "shell": [
     "./",
