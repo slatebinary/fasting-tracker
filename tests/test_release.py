@@ -535,9 +535,9 @@ ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section
 # v1.17.3 touch-dragging pans the weight chart left toward older records at a responsive speed.
 ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must allow custom horizontal panning while preserving vertical page gestures and preventing text selection')
 ok("if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}" in index, 'touch chart gesture must retain pointer tracking during a drag')
-ok('start.scrollLeft+dx*1.8' in index, 'dragging left must pan the chart left toward older values with responsive movement')
-ok('if(event.cancelable)event.preventDefault();' in index and 'handleWeightChartScroll();' in index, 'horizontal drag must avoid text selection and refresh the selected measurement')
-ok("centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index, 'chart pan must update the selected value at the visible chart centre')
+ok('start.anchorIndex+Math.round(dx/step)' in index, 'dragging left must directly select older values at a responsive speed')
+ok('if(event.cancelable)event.preventDefault();' in index and 'keepWeightPointVisible(index);' in index and 'renderWeightChartData();' in index, 'horizontal drag must avoid text selection, keep the selected measurement visible and refresh its details')
+ok('weightChartSelectedId=bucket.key' in index and 'function keepWeightPointVisible' in index, 'direct scrubbing must synchronize the selected value and keep it visible')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
 for lang in ('en','bg','es'):
     section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
