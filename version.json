@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.5",
+  "version": "1.17.6",
   "released": "2026-10-29",
-  "notes": "Replace unreliable weight-chart dragging with native horizontal swipes, Older/Newer paging, and a full-history range navigator.",
+  "notes": "Make Older and Newer move the selected weight measurement pointer while preserving manual scrolling and full-history range navigation.",
   "entry": "./index.html",
   "shell": [
     "./",

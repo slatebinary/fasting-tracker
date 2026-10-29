@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.17.6 — 29 October 2026
+- Older and Newer now move the selected weight pointer one measurement at a time, updating the displayed value and date.
+- Manual horizontal scrolling and the full-history range slider remain available; the buttons disable at the oldest and newest measurements.
+- Works across Daily, Week, Month, Quarter, 6 months and Year views without changing saved records.
+
 ## v1.17.4 — 29 October 2026
 - Changed touch interaction to direct point scrubbing: dragging left selects older weight measurements, and dragging right selects newer measurements.
 - Automatically keeps the selected measurement visible, so browsing long histories no longer requires separate chart scrolling.

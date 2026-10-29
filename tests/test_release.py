@@ -537,7 +537,7 @@ ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-acti
 ok("setPointerCapture(event.pointerId)" not in index[index.find('function beginWeightChartPointer'):index.find('function handleWeightChartScroll')] and "event.preventDefault()" not in index[index.find('function beginWeightChartPointer'):index.find('function handleWeightChartScroll')], 'weight chart must leave horizontal gesture handling to native scrolling')
 ok('function shiftWeightChartViewport(direction)' in index and 'touch-action:pan-x pan-y' in index, 'older/newer navigation and native horizontal swipes must be supported')
 ok('id="weightChartOlderBtn"' in index and 'id="weightChartNewerBtn"' in index and "el('weightChartRange').addEventListener('input'" in index, 'weight history must have explicit Older/Newer and range controls')
-ok('function syncWeightChartNavigator()' in index and 'function shiftWeightChartViewport(direction)' in index, 'weight history navigation controls must stay synchronized with chart position')
+ok('function syncWeightChartNavigator()' in index and 'older.disabled=valid.length<2||selectedValidIndex===0' in index and 'newer.disabled=valid.length<2||selectedValidIndex===valid.length-1' in index, 'Older/Newer buttons must track selected-pointer boundaries rather than scroll position')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
 for lang in ('en','bg','es'):
     section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
