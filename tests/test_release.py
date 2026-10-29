@@ -519,6 +519,15 @@ ok('.patientTortoise .patientTortoiseArt { width:96px; height:96px;' in index, '
 ok('easterEgg.patientTortoiseMessage' in en_source and en_source['easterEgg.patientTortoiseMessage']=='Steady is a pace, too.', 'Patient Tortoise message missing or changed')
 ok('easterEgg.patientTortoiseTrigger' in index and "patientTortoiseTrigger.addEventListener('keydown'" in index, 'Patient Tortoise trigger must be keyboard-accessible')
 
+
+# v1.16.9 weight-chart touch-scroll and English changelog regression checks
+ok("event.pointerType==='touch'" in index and "function moveWeightChartPointer(event)" in index, 'touch movement must preserve native horizontal scrolling in Daily weight statistics')
+changelog_html=(ROOT/'changelog.html').read_text(encoding='utf-8')
+en_section=changelog_html.split('<section data-lang="en">',1)[1].split('</section>',1)[0]
+v168_section=en_section.split('<h2>v1.16.8</h2>',1)[1].split('</article>',1)[0] if '<h2>v1.16.8</h2>' in en_section else ''
+ok(bool(v168_section) and not re.search(r'[А-Яа-яЁё]',v168_section), 'v1.16.8 changelog in the English section must be English')
+ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section, 'v1.16.9 weight-chart touch-scroll changelog missing')
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)
