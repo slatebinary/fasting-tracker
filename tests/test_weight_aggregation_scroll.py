@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Regression: Daily preserves raw points; aggregate modes bucket by period and all scroll newest-first."""
-import sys, datetime
+import sys, datetime, json
+from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
 
+release_version=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 now=datetime.datetime.now(datetime.timezone.utc)
 base_ms=int((now+datetime.timedelta(hours=16)).timestamp()*1000)
 data=build_data(800, base=base_ms)
@@ -16,9 +18,9 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={'width':390,'height':844}); errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:releaseVersion,seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function("version => document.querySelector('#appVersionLabel')?.textContent === 'v' + version",arg=release_version,timeout=20000)
     page.locator('.tab[data-screen="weight"]').click(); page.wait_for_timeout(150)
 
     counts={}
