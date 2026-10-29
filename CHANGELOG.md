@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.16.6 — 29 October 2026
+- Restored normal folding for “App icons & installation”: the section opens by default for discoverability but can now be collapsed and reopened by the user.
+- Honour saved Settings disclosure preferences; searching for an icon still opens the matching section temporarily.
+- No fasting, weight, active-fast, or backup data changes.
+
 ## v1.16.3 — 29 October 2026
 - Fixed a saved Settings disclosure-state collision that could keep the app-icon section closed after updating, hiding the accessible icon choices.
 - Kept the blue selection border removed; the selected icon remains identified by a check mark and a subtle background.
