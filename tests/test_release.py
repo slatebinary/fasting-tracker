@@ -45,6 +45,8 @@ ok(bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}',str(ver.get('released','')))),'release
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
 ok('./js/time-zone-locations.js' in ver.get('shell',[]) and 'id="timeZoneSearch"' in index, 'searchable time-zone picker bundle/markup missing')
+ok("group.open=group.id==='settingsGroupAppIcons'?true:" in index, 'app icon section must ignore stale saved collapsed state')
+ok("if (group.id==='settingsGroupAppIcons' && !group.open)" in index, 'app icon section must reopen if a toggle hides its choices')
 ok('settings.timeZoneSearchPlaceholder' in en_source and 'settings.timeZoneNoResults' in en_source, 'time-zone search localization missing')
 ok('.weightTargetRow' in index and 'white-space:nowrap' in index and 'id="weightTargetUnit"' in index, 'narrow-screen weight-unit layout protections missing')
 for item in ver.get('shell',[]):
