@@ -529,18 +529,17 @@ ok(bool(v168_section) and not re.search(r'[А-Яа-яЁё]',v168_section), 'v1.1
 ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section, 'v1.16.9 weight-chart touch-scroll changelog missing')
 
 
-# v1.17.2 weight-chart touch gestures must use native horizontal scrolling and update the selected value.
-ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must allow native horizontal and vertical touch scrolling without text selection')
-ok("if(event.pointerType==='touch')return;" in index, 'touch pointerdown must not capture the gesture or block native chart scrolling')
-ok("if(start.pointerType==='touch'){" in index and "start.scrubbing=true;\n      return;" in index, 'touch movement must be left to native scrolling rather than slow point-by-point scrubbing')
-ok("centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index and "weightChartSelectedId=nearest.key;" in index, 'horizontal scrolling must update the selected weight value to the visible chart center')
-ok('keepWeightPointVisible(index)' in index, 'non-touch pointer scrubbing must keep the selected point visible')
+# v1.17.3 touch-dragging pans the weight chart left toward older records at a responsive speed.
+ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must allow custom horizontal panning while preserving vertical page gestures and preventing text selection')
+ok("if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}" in index, 'touch chart gesture must retain pointer tracking during a drag')
+ok('start.scrollLeft+dx*1.8' in index, 'dragging left must pan the chart left toward older values with responsive movement')
+ok('if(event.cancelable)event.preventDefault();' in index and 'handleWeightChartScroll();' in index, 'horizontal drag must avoid text selection and refresh the selected measurement')
+ok("const centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index, 'chart pan must update the selected value at the visible chart centre')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
 for lang in ('en','bg','es'):
     section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
-    ok('<h2>v1.17.0</h2>' in section, f'v1.17.0 changelog missing for {lang}')
-    ok('<h2>v1.17.1</h2>' in section, f'v1.17.1 changelog missing for {lang}')
-    ok('<h2>v1.17.2</h2>' in section, f'v1.17.2 changelog missing for {lang}')
+    for release in ('1.17.0','1.17.1','1.17.2','1.17.3'):
+        ok(f'<h2>v{release}</h2>' in section, f'v{release} changelog missing for {lang}')
 
 if errors:
     print('FAIL')
