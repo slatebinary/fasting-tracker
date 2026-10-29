@@ -1,5 +1,11 @@
 # Fasting Tracker changelog
 
+## v1.16.9 — 29 October 2026
+- Fixed touch interaction in Daily weight statistics so horizontal swipes scroll through older measurements instead of being treated as chart-point scrubbing.
+- Kept tap-to-select and mouse/pen drag browsing, plus left/right keyboard navigation.
+- Corrected the v1.16.8 English changelog entry, which was mistakenly displayed in Bulgarian.
+- No fasting, weight, active-fast or backup records are changed by this update.
+
 ## v1.16.8 — 29 October 2026
 - Replaced the Calendar heatmap’s “Less” and “More” labels with numeric fasting-hour ranges on each colour swatch.
 - Added drag-to-browse and left/right keyboard navigation for individual measurements in Daily weight statistics; selected points show the weight and its date/time.
