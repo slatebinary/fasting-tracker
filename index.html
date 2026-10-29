@@ -7888,6 +7888,13 @@ layout: null
   function initSettingsDisclosure() {
     restoreSettingsGroupState();
     settingsGroups().forEach(group=>group.addEventListener('toggle',()=>{
+      // Keep app-icon choices visible even if an older release saved this
+      // section as collapsed.
+      if (group.id==='settingsGroupAppIcons' && !group.open) {
+        settingsGroupToggleSuppressed=true;
+        group.open=true;
+        settingsGroupToggleSuppressed=false;
+      }
       saveSettingsGroupState();
       if (group.id==='settingsGroupAdvanced' && group.open) renderStorageHealth();
       if (group.id==='settingsGroupData' && group.open) queueStorageProtectionRefresh();
