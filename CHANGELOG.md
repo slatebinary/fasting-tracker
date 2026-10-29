@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.16.8 — 29 October 2026
+- Replaced the Calendar heatmap’s “Less” and “More” labels with numeric fasting-hour ranges on each colour swatch.
+- Added drag-to-browse and left/right keyboard navigation for individual measurements in Daily weight statistics; selected points show the weight and its date/time.
+- Preserved full weight history, existing aggregate periods, and all fasting, weight, active-fast, and backup records.
+
 ## v1.16.7 — 29 October 2026
 - Upgraded the Patient Tortoise surprise from a static, nodding icon to a detailed layered illustration with a segmented shell, expressive face, moving legs and tail, body bounce, and a small ground-motion accent.
 - Added a short coordinated walk-in animation and arrival bounce while retaining current-colour contrast, keyboard access, dismissal, and reduced-motion support.

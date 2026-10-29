@@ -452,6 +452,7 @@ ok('id="statsVizGroupSwitcher"' in index and 'id="statsVizSelect"' in index and 
 ok('function renderFastCalendar()' in index and 'function drawFastTrendChart()' in index and 'function drawFastWeeksChart()' in index, 'statistics visualization renderers missing')
 ok("el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer)" in index and "el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer)" in index, 'trend/week chart interactions missing')
 ok("el('calendarPrevBtn').addEventListener('click'" in index and "el('calendarNextBtn').addEventListener('click'" in index, 'calendar month navigation missing')
+ok('calendarNumericLegend' in index and all(label in index for label in ['0h','1–5h','6–11h','12–17h','18h+']) and 'data-i18n="stats.less"' not in index[index.find('id="statsCalendarView"'):index.find('id="statsTrendView"')], 'calendar heatmap must show numeric fasting-hour ranges instead of Less/More')
 
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
@@ -647,6 +648,8 @@ ok('id="weightChartScroller"' in index and 'id="weightChartTrack"' in index and 
 ok('function buildWeightAggregateBuckets(' in index and 'function weightBucketKeyForDay(' in index, 'calendar-period weight aggregation is missing')
 ok('weightChartScrollToLatestPending = true' in index and 'scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth)' in index, 'weight chart newest-first positioning is missing')
 ok('function handleWeightChartScroll()' in index and "addEventListener('scroll', handleWeightChartScroll" in index, 'historical weight chart scrolling is missing')
+ok('function selectWeightChartPointAtX(' in index and 'function moveWeightChartPointer(' in index and "addEventListener('pointermove', moveWeightChartPointer)" in index, 'daily weight chart drag-to-browse interaction is missing')
+ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "weightPeriodMode!=='daily'" in index, 'daily weight chart keyboard point navigation is missing')
 ok('weight.aggregatePointDetail' in en_source and 'weight.weekOf' in en_source, 'aggregate weight point localization is missing')
 ok((ROOT/'tests'/'test_weight_aggregation_scroll.py').is_file(), 'weight aggregation/scroll browser regression test missing')
 ok("let weightPeriodMode = 'daily'" in index and 'weight.periodDaily' in en_source, 'Daily weight-chart mode/default is missing')

@@ -78,6 +78,7 @@ jobs:
           python3 tests/test_setup_notification_layout.py
           python3 tests/test_dst_timezone.py
           python3 tests/test_weight_unit_layout.py
+          python3 tests/test_weight_aggregation_scroll.py
       - name: Check application JavaScript and document navigation
         run: node tests/v1123-regression.cjs
       - name: Verify release archive

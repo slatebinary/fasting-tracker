@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.16.7" />
+  <meta name="ft-app-version" content="1.16.8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -208,7 +208,9 @@ layout: null
     .calendarDay.selected { outline:3px solid #fff; outline-offset:-3px; box-shadow:0 0 0 1px rgba(0,0,0,.50),0 0 0 4px #fff; position:relative; z-index:1; }
     .calendarDay:disabled { cursor:default; }
     .vizLegend { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; margin-top:9px; flex-wrap:wrap; }
-    .legendSwatch { width:14px; height:10px; border-radius:3px; border:1px solid var(--line); }
+    .legendSwatch { min-width:34px; height:22px; padding:0 4px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; border-radius:5px; border:1px solid var(--line); background:var(--card); color:var(--text); font-size:9px; font-weight:750; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .calendarNumericLegend { gap:5px; }
+    .calendarNumericLegend .legendSwatch.l1, .calendarNumericLegend .legendSwatch.l2, .calendarNumericLegend .legendSwatch.l3, .calendarNumericLegend .legendSwatch.l4 { color:var(--text); }
     .legendSwatch.l1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
     .legendSwatch.l2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
     .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
@@ -937,7 +939,7 @@ layout: null
         </div>
         <div class="calendarWeekdays" id="calendarWeekdays"></div>
         <div class="fastCalendar" id="fastCalendar"></div>
-        <div class="vizLegend"><span data-i18n="stats.less">Less</span><span class="legendSwatch"></span><span class="legendSwatch l1"></span><span class="legendSwatch l2"></span><span class="legendSwatch l3"></span><span class="legendSwatch l4"></span><span data-i18n="stats.more">More</span></div>
+        <div class="vizLegend calendarNumericLegend" role="img" aria-label="Fasting hours per day: 0 hours, 1 to 5 hours, 6 to 11 hours, 12 to 17 hours, 18 hours or more"><span class="legendSwatch" aria-hidden="true">0h</span><span class="legendSwatch l1" aria-hidden="true">1–5h</span><span class="legendSwatch l2" aria-hidden="true">6–11h</span><span class="legendSwatch l3" aria-hidden="true">12–17h</span><span class="legendSwatch l4" aria-hidden="true">18h+</span></div>
       </div>
       <div class="statsVizView" id="statsTrendView" hidden>
         <canvas id="fastTrendChart" width="660" height="260" role="img" tabindex="0" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
@@ -1771,7 +1773,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.16.7';
+  const APP_VERSION = '1.16.8';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6595,8 +6597,15 @@ layout: null
     for(const point of weightChartHitPoints){const distance=Math.hypot(x-point.x,y-point.y);if(distance<bestDistance){best=point;bestDistance=distance;}}
     return bestDistance<=28?best:null;
   }
-  function beginWeightChartPointer(event){if(event.button!=null&&event.button!==0)return;weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0};}
-  function finishWeightChartPointer(event){const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;const scroller=el('weightChartScroller');if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((scroller?.scrollLeft||0)-start.scrollLeft)>8)return;const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;weightChartSelectedId=point.id;drawWeightChart();}
+  function selectWeightChartPointAtX(clientX){
+    const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;
+    const x=clientX-c.getBoundingClientRect().left;let best=null,distance=Infinity;
+    for(const point of weightChartHitPoints){const d=Math.abs(x-point.x);if(d<distance){distance=d;best=point;}}
+    return best&&distance<=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5)?best:null;
+  }
+  function beginWeightChartPointer(event){if(event.button!=null&&event.button!==0)return;weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0,scrubbing:false};}
+  function moveWeightChartPointer(event){const start=weightChartPointerStart;if(!start||start.id!==event.pointerId||weightPeriodMode!=='daily')return;if(Math.abs(event.clientX-start.x)<4&&Math.abs(event.clientY-start.y)<4)return;start.scrubbing=true;const point=selectWeightChartPointAtX(event.clientX);if(point&&point.id!==weightChartSelectedId){weightChartSelectedId=point.id;drawWeightChart();}}
+  function finishWeightChartPointer(event){const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;const scroller=el('weightChartScroller');if(start.scrubbing){const point=selectWeightChartPointAtX(event.clientX);if(point){weightChartSelectedId=point.id;drawWeightChart();}return;}if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((scroller?.scrollLeft||0)-start.scrollLeft)>8)return;const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;weightChartSelectedId=point.id;drawWeightChart();}
   function cancelWeightChartPointer(){weightChartPointerStart=null;}
   function handleWeightChartScroll(){
     if(weightChartScrollFrame)return;
@@ -8393,10 +8402,11 @@ layout: null
   ['fastMonthsChart','fastDistributionChart','fastSuccessChart','fastStartPatternChart'].forEach(id=>{el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});});
   el('fastCumulativeChart')?.addEventListener('pointerdown',beginCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointermove',moveCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointerup',finishCumulativePointer);el('fastCumulativeChart')?.addEventListener('pointercancel',cancelCumulativePointer);el('fastCumulativeChart')?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
+  el('weightChart').addEventListener('pointermove', moveWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
   el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
-  el('weightChart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
+  el('weightChart').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(weightPeriodMode!=='daily'||!weightChartBuckets.length)return;e.preventDefault();const valid=weightChartBuckets.filter(b=>b.count>0),current=valid.findIndex(b=>b.key===weightChartSelectedId),base=current<0?(e.key==='ArrowRight'?valid.length-1:0):current,next=Math.max(0,Math.min(valid.length-1,base+(current<0?0:(e.key==='ArrowRight'?1:-1))));const bucket=valid[next];if(bucket){weightChartSelectedId=bucket.key;const visible=weightChartHitPoints.some(p=>p.id===bucket.key);if(!visible){const scroller=el('weightChartScroller');const index=weightChartBuckets.findIndex(b=>b.key===bucket.key);const spacing=weightChartBuckets.length<=30?Math.max(1,(scroller.clientWidth-30)/Math.max(1,weightChartBuckets.length-1)):Math.max(10,Math.min(22,(scroller.clientWidth-30)/29));scroller.scrollLeft=Math.max(0,16+index*spacing-scroller.clientWidth/2);}drawWeightChart();}return;}if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
   el('statsChartDataBtn').addEventListener('click',()=>{const box=el('statsChartData'),btn=el('statsChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderStatsChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
   el('chart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('diagnosticExportBtn').addEventListener('click',exportDiagnostics);
