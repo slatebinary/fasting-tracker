@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.3" />
+  <meta name="ft-app-version" content="1.17.4" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -445,7 +445,7 @@ layout: null
     #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
     .weightChartShell { display:grid; grid-template-columns:46px minmax(0,1fr); align-items:start; width:100%; margin-top:4px; }
     .weightChartYAxis { width:46px; height:240px; display:block; pointer-events:none; }
-    .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; }
+    .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-y; -webkit-user-select:none; user-select:none; }
     .chartDataList { margin-top:10px; border-top:1px solid var(--line); padding-top:8px; }
     .chartDataList ul { margin:6px 0 0; padding-left:20px; }
     .statsRangeBar { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin:-4px 0 14px; }
@@ -1773,7 +1773,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.3';
+  const APP_VERSION = '1.17.4';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6624,20 +6624,35 @@ layout: null
   function moveWeightChartPointer(event){
     const start=weightChartPointerStart;if(!start||start.id!==event.pointerId)return;
     const dx=event.clientX-start.x,dy=event.clientY-start.y;
-    if(start.pointerType==='touch'){
-      if(Math.abs(dx)<4&&Math.abs(dy)<4)return;
-      if(Math.abs(dx)<Math.abs(dy)*1.15)return;
-      start.scrubbing=true;
-      if(event.cancelable)event.preventDefault();
-      const scroller=el('weightChartScroller');
-      if(scroller)scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,start.scrollLeft+dx*1.8));
-      handleWeightChartScroll();
-      return;
-    }
     if(Math.abs(dx)<4&&Math.abs(dy)<4)return;
+    if(start.pointerType==='touch'&&Math.abs(dx)<Math.abs(dy)*1.15)return;
     start.scrubbing=true;
-    const point=selectWeightChartPointAtX(event.clientX);
-    if(point&&point.id!==weightChartSelectedId){weightChartSelectedId=point.id;drawWeightChart();}
+    if(start.pointerType==='touch'&&event.cancelable)event.preventDefault();
+
+    const buckets=weightChartBuckets;
+    if(!buckets.length)return;
+    const spacing=weightChartPointSpacing();
+    // A horizontal drag selects measurements directly. It does not require
+    // the user to scroll the chart and then hunt for the selected point.
+    const step=Math.max(8,Math.min(24,spacing*.6));
+    const rawIndex=Math.max(0,Math.min(buckets.length-1,start.anchorIndex+Math.round(dx/step)));
+    let index=rawIndex;
+    if(!buckets[index]?.count){
+      let distance=Infinity;
+      for(let i=0;i<buckets.length;i++){
+        if(!buckets[i].count)continue;
+        const d=Math.abs(i-rawIndex);
+        if(d<distance){distance=d;index=i;}
+      }
+    }
+    const bucket=buckets[index];
+    if(!bucket?.count)return;
+    if(bucket.key!==weightChartSelectedId){
+      weightChartSelectedId=bucket.key;
+      keepWeightPointVisible(index);
+      drawWeightChart();
+      renderWeightChartData();
+    }
   }
   function finishWeightChartPointer(event){
     const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;
@@ -6655,7 +6670,7 @@ layout: null
     weightChartScrollFrame=requestAnimationFrame(()=>{
       weightChartScrollFrame=0;
       const scroller=el('weightChartScroller'),buckets=weightChartBuckets;
-      if(scroller&&buckets.length){
+      if(scroller&&buckets.length&&!weightChartPointerStart?.scrubbing){
         const spacing=weightChartPointSpacing(),centerX=scroller.scrollLeft+scroller.clientWidth/2;
         const index=Math.max(0,Math.min(buckets.length-1,Math.round((centerX-16)/Math.max(1,spacing))));
         let nearest=buckets[index];
