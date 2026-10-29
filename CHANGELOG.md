@@ -1,5 +1,12 @@
 # Fasting Tracker changelog
 
+## v1.16.7 — 29 October 2026
+- Upgraded the Patient Tortoise surprise from a static, nodding icon to a detailed layered illustration with a segmented shell, expressive face, moving legs and tail, body bounce, and a small ground-motion accent.
+- Added a short coordinated walk-in animation and arrival bounce while retaining current-colour contrast, keyboard access, dismissal, and reduced-motion support.
+- No fasting, weight, active-fast, or backup data changes.
+
+# Fasting Tracker changelog
+
 ## v1.16.6 — 29 October 2026
 - Restored normal folding for “App icons & installation”: the section opens by default for discoverability but can now be collapsed and reopened by the user.
 - Honour saved Settings disclosure preferences; searching for an icon still opens the matching section temporarily.
