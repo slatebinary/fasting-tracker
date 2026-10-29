@@ -54,6 +54,9 @@ for item in ver.get('shell',[]):
     p=source_path(item); ok(p.is_file(),f'missing shell asset {item}')
     if p.is_file(): ok(hashlib.sha256(canonical_bytes(p)).hexdigest()==ver.get('hashes',{}).get(item),f'hash mismatch {item}')
 ok(set(ver.get('hashes',{}))==set(ver.get('shell',[])),'hash map must exactly match shell')
+ok('function keepWeightPointVisible' in index and 'const step=Math.max(8,Math.min(24,spacing*.6));' in index, 'weight-chart touch browsing must directly select points at a responsive rate')
+ok("start.anchorIndex+Math.round(dx/step)" in index and 'weightChartSelectedId=bucket.key' in index, 'weight-chart finger dragging must select older/newer points directly')
+ok('touch-action:pan-y' in index and '-webkit-user-select:none' in index, 'weight chart must preserve vertical scrolling and prevent accidental text selection')
 # Simulate the actual Pages artifact path: prepare_pages.py copies the HTML
 # into _site and deploy-pages uploads it directly, so Jekyll does not process
 # the front matter or Liquid placeholders. This was the missing regression case.
