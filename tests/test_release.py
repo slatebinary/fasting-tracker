@@ -533,7 +533,7 @@ ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section
 ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must allow native horizontal and vertical touch scrolling without text selection')
 ok("if(event.pointerType==='touch')return;" in index, 'touch pointerdown must not capture the gesture or block native chart scrolling')
 ok("if(start.pointerType==='touch'){" in index and "start.scrubbing=true;\n      return;" in index, 'touch movement must be left to native scrolling rather than slow point-by-point scrubbing')
-ok("const centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index and "weightChartSelectedId=nearest.key;" in index, 'horizontal scrolling must update the selected weight value to the visible chart center')
+ok("centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index and "weightChartSelectedId=nearest.key;" in index, 'horizontal scrolling must update the selected weight value to the visible chart center')
 ok('keepWeightPointVisible(index)' in index, 'non-touch pointer scrubbing must keep the selected point visible')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
 for lang in ('en','bg','es'):
