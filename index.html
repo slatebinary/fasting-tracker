@@ -1925,6 +1925,7 @@ layout: null
   let weightChartSelectedId = null;
   let weightChartPointerStart = null;
   let weightChartScrollFrame = 0;
+  let weightChartProgrammaticScrollLeft = null;
   let weightChartScrollToLatestPending = true;
   let weightChartBuckets = [];
   let weightAggregateCache = new Map();
@@ -6649,7 +6650,8 @@ layout: null
     if(targetIndex<0)return;
     weightChartSelectedId=buckets[targetIndex].key;
     const spacing=weightChartPointSpacing(),pointX=16+targetIndex*spacing;
-    scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,pointX-scroller.clientWidth/2));
+    weightChartProgrammaticScrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,pointX-scroller.clientWidth/2));
+    scroller.scrollLeft=weightChartProgrammaticScrollLeft;
     drawWeightChart();
     renderWeightChartData();
     syncWeightChartNavigator();
@@ -6691,7 +6693,9 @@ layout: null
     weightChartScrollFrame=requestAnimationFrame(()=>{
       weightChartScrollFrame=0;
       const scroller=el('weightChartScroller'),buckets=weightChartBuckets;
-      if(scroller&&buckets.length&&!weightChartPointerStart?.scrubbing){
+      const programmaticScroll=scroller&&weightChartProgrammaticScrollLeft!==null&&Math.abs(scroller.scrollLeft-weightChartProgrammaticScrollLeft)<=2;
+      if(scroller&&weightChartProgrammaticScrollLeft!==null&&!programmaticScroll)weightChartProgrammaticScrollLeft=null;
+      if(scroller&&buckets.length&&!weightChartPointerStart?.scrubbing&&!programmaticScroll){
         const spacing=weightChartPointSpacing(),centerX=scroller.scrollLeft+scroller.clientWidth/2;
         const index=Math.max(0,Math.min(buckets.length-1,Math.round((centerX-16)/Math.max(1,spacing))));
         let nearest=buckets[index];
