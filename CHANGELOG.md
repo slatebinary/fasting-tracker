@@ -1,5 +1,11 @@
 # Fasting Tracker changelog
 
+## v1.17.0 — 29 October 2026
+- Enabled finger-drag scrubbing across Daily, Weekly, Monthly and other weight-chart periods; the selected weight and date/time update as you move.
+- Dragging can continue through older or newer measurements, with the chart keeping the selected point visible.
+- Enabled left/right keyboard navigation for every weight-chart period.
+- No fasting, weight, active-fast or backup records are changed by this update.
+
 ## v1.16.9 — 29 October 2026
 - Fixed touch interaction in Daily weight statistics so horizontal swipes scroll through older measurements instead of being treated as chart-point scrubbing.
 - Kept tap-to-select and mouse/pen drag browsing, plus left/right keyboard navigation.

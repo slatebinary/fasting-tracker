@@ -528,6 +528,18 @@ v168_section=en_section.split('<h2>v1.16.8</h2>',1)[1].split('</article>',1)[0] 
 ok(bool(v168_section) and not re.search(r'[А-Яа-яЁё]',v168_section), 'v1.16.8 changelog in the English section must be English')
 ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section, 'v1.16.9 weight-chart touch-scroll changelog missing')
 
+
+# v1.17.0 touch scrubbing must cover every weight-chart period and preserve safe gesture handling.
+ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; }' in index, 'weight chart must reserve horizontal touch movement for value scrubbing')
+ok("start.pointerType==='touch'&&start.anchorIndex>=0" in index, 'touch drag must select measurements by finger movement')
+ok("keepWeightPointVisible(index)" in index, 'touch scrubbing must keep older/newer selected measurements visible')
+ok("if(!weightChartBuckets.length)return;" in index, 'keyboard navigation must not be restricted to daily weight data')
+release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
+for lang in ('en','bg','es'):
+    section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
+    ok('<h2>v1.17.0</h2>' in section, f'v1.17.0 changelog missing for {lang}')
+ok('finger-drag scrubbing across Daily, Weekly, Monthly' in release_changelog, 'English v1.17.0 changelog must describe cross-period scrubbing')
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)
@@ -658,7 +670,7 @@ ok('function buildWeightAggregateBuckets(' in index and 'function weightBucketKe
 ok('weightChartScrollToLatestPending = true' in index and 'scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth)' in index, 'weight chart newest-first positioning is missing')
 ok('function handleWeightChartScroll()' in index and "addEventListener('scroll', handleWeightChartScroll" in index, 'historical weight chart scrolling is missing')
 ok('function selectWeightChartPointAtX(' in index and 'function moveWeightChartPointer(' in index and "addEventListener('pointermove', moveWeightChartPointer)" in index, 'daily weight chart drag-to-browse interaction is missing')
-ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "weightPeriodMode!=='daily'" in index, 'daily weight chart keyboard point navigation is missing')
+ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "const spacing=weightChartPointSpacing();" in index, 'weight chart keyboard point navigation across periods is missing')
 ok('weight.aggregatePointDetail' in en_source and 'weight.weekOf' in en_source, 'aggregate weight point localization is missing')
 ok((ROOT/'tests'/'test_weight_aggregation_scroll.py').is_file(), 'weight aggregation/scroll browser regression test missing')
 ok("let weightPeriodMode = 'daily'" in index and 'weight.periodDaily' in en_source, 'Daily weight-chart mode/default is missing')
