@@ -64,17 +64,36 @@ with sync_playwright() as p:
     if not previous_detail.strip() or previous_detail == latest_detail:
         print('FAIL: left/right keyboard navigation did not move between Daily weight values',latest_detail,previous_detail); sys.exit(1)
 
-    # A continuous touch drag should directly select a different historical point.
+    # The range navigator must reach old records directly without precision dragging.
     page.locator('[data-weight-period="daily"]').click(); page.wait_for_timeout(120)
-    chart = page.locator('#weightChart')
-    before_drag = page.locator('#weightChartDetail').inner_text()
-    chart.dispatch_event('pointerdown', {'pointerId': 77, 'pointerType': 'touch', 'isPrimary': True, 'button': 0, 'clientX': 190, 'clientY': 120})
-    chart.dispatch_event('pointermove', {'pointerId': 77, 'pointerType': 'touch', 'isPrimary': True, 'button': 0, 'clientX': 90, 'clientY': 120})
-    chart.dispatch_event('pointerup', {'pointerId': 77, 'pointerType': 'touch', 'isPrimary': True, 'button': 0, 'clientX': 90, 'clientY': 120})
+    slider = page.locator('#weightChartRange')
+    if not slider.is_visible() or int(slider.get_attribute('max') or '0') < 799:
+        print('FAIL: Daily range navigator does not cover the full history', slider.get_attribute('max')); sys.exit(1)
+    latest_detail = page.locator('#weightChartDetail').inner_text()
+    page.locator('#weightChartScroller').evaluate("e=>{e.scrollLeft=e.scrollWidth-e.clientWidth}")
     page.wait_for_timeout(100)
-    after_drag = page.locator('#weightChartDetail').inner_text()
-    if not after_drag.strip() or after_drag == before_drag:
-        print('FAIL: continuous touch drag did not select another historical weight value', before_drag, after_drag); sys.exit(1)
+    latest_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
+    page.locator('#weightChartOlderBtn').click(); page.wait_for_timeout(120)
+    older_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
+    if older_left >= latest_left:
+        print('FAIL: Older button did not move toward historical measurements', latest_left, older_left); sys.exit(1)
+    page.locator('#weightChartNewerBtn').click(); page.wait_for_timeout(120)
+    newer_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
+    if newer_left <= older_left:
+        print('FAIL: Newer button did not move toward recent measurements', older_left, newer_left); sys.exit(1)
+    page.locator('#weightChartRange').evaluate("(e)=>{e.value='100';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+    page.wait_for_timeout(120)
+    selected_detail = page.locator('#weightChartDetail').inner_text()
+    range_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
+    if not selected_detail.strip() or not latest_detail.strip() or range_left >= latest_left:
+        print('FAIL: range navigator did not select and reveal older measurements', latest_left, range_left, selected_detail); sys.exit(1)
+
+    # All aggregate periods expose a usable range navigator over their bucket sequence.
+    for mode in ('week','month','quarter','halfyear','year'):
+        page.locator(f'[data-weight-period="{mode}"]').click(); page.wait_for_timeout(80)
+        nav = page.locator('#weightChartRange')
+        if not nav.is_visible() or int(nav.get_attribute('max') or '0') < 1:
+            print('FAIL: range navigator is missing historical buckets for', mode); sys.exit(1)
 
     # Raw measurements are still present in the editable history list rather
     # than being replaced by aggregates.
