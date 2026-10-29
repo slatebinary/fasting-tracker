@@ -64,6 +64,18 @@ with sync_playwright() as p:
     if not previous_detail.strip() or previous_detail == latest_detail:
         print('FAIL: left/right keyboard navigation did not move between Daily weight values',latest_detail,previous_detail); sys.exit(1)
 
+    # A continuous touch drag should directly select a different historical point.
+    page.locator('[data-weight-period="daily"]').click(); page.wait_for_timeout(120)
+    chart = page.locator('#weightChart')
+    before_drag = page.locator('#weightChartDetail').inner_text()
+    chart.dispatch_event('pointerdown', {'pointerId': 77, 'pointerType': 'touch', 'isPrimary': True, 'button': 0, 'clientX': 190, 'clientY': 120})
+    chart.dispatch_event('pointermove', {'pointerId': 77, 'pointerType': 'touch', 'isPrimary': True, 'button': 0, 'clientX': 90, 'clientY': 120})
+    chart.dispatch_event('pointerup', {'pointerId': 77, 'pointerType': 'touch', 'isPrimary': True, 'button': 0, 'clientX': 90, 'clientY': 120})
+    page.wait_for_timeout(100)
+    after_drag = page.locator('#weightChartDetail').inner_text()
+    if not after_drag.strip() or after_drag == before_drag:
+        print('FAIL: continuous touch drag did not select another historical weight value', before_drag, after_drag); sys.exit(1)
+
     # Raw measurements are still present in the editable history list rather
     # than being replaced by aggregates.
     if page.locator('#weightHistoryList .historyRow').count() < 1 or page.locator('#weightHistoryList .loadMoreWrap').count() != 1:
