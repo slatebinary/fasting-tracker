@@ -66,6 +66,12 @@ assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,to
 assert.match(index,/const details=keys\.map\(key=>/);
 assert.doesNotMatch(index,/keys\.slice\(0,3\)/);
 assert.match(index,/id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open/);
+assert.match(index,/<details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open>/,'Accessible icon section must use a fresh state key so an older collapsed preference cannot hide it after update');
+for (const icon of ['grayscale','highcontrast','colorblind']) {
+  assert.match(index,new RegExp('data-icon-choice="'+icon+'"[^>]*><img[^>]*src="icons/'+icon+'/icon-192\\.png"'),'Missing visible icon choice: '+icon);
+  assert.ok(fs.existsSync('icons/'+icon+'/icon-192.png'),'Missing icon image asset: '+icon);
+}
+assert.match(index,/\.iconChoice\.active \{ border:0;/,'Selected icon must not have a blue border');
 assert.match(index,/patientTortoiseTapCount < 7/);
 assert.match(index,/prefers-reduced-motion: no-preference/);
 assert.match(index,/data-i18n="easterEgg.patientTortoiseMessage"/);
