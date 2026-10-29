@@ -191,8 +191,9 @@ assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index)
 assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
 assert.ok(/\.iconChoice\.active\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'Selected icon must not use a prominent border');
 assert.ok(index.includes('.iconChoice.active span::before { content:"✓ ";'), 'Selected icon must have a non-colour-only check-mark indicator');
-assert.ok(index.includes("group.open=group.id==='settingsGroupAppIcons'?true:"), 'Icon section must override stale saved collapsed state and always restore open');
-assert.ok(index.includes("if (group.id==='settingsGroupAppIcons' && !group.open)"), 'Icon section must reopen if a stale or manual toggle tries to hide the choices');
+assert.ok(index.includes("group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:(group.id==='settingsGroupAppIcons'||group.id==='settingsGroupGeneral');"), 'Icon section must default open but honour the saved disclosure choice');
+assert.ok(!index.includes("if (group.id==='settingsGroupAppIcons' && !group.open)"), 'Icon section must not override a user collapse action');
+assert.ok(index.includes("group.hidden=!matched; group.open=matched;"), 'Settings search must temporarily open matching groups');
 assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
 assert.ok(index.includes("const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon)"), 'Accessible icon themes must use available assets for browser and Apple Home Screen icons');
 const iconGrids=[...index.matchAll(/<div\b[^>]*class="iconChoiceGrid"[^>]*>([\s\S]*?)<\/div>/g)];
