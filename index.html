@@ -442,7 +442,7 @@ layout: null
     .stopUndoBar .stopUndoText { color:var(--text); font-weight:650; line-height:1.3; }
     .stopUndoCountdown { flex:0 0 auto; min-width:42px; text-align:center; font-variant-numeric:tabular-nums; font-weight:750; color:var(--text); border:1px solid color-mix(in srgb, white 65%, var(--line)); border-radius:999px; padding:7px 9px; }
     .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
-    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:pointer; }
+    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; }
     .weightChartShell { display:grid; grid-template-columns:46px minmax(0,1fr); align-items:start; width:100%; margin-top:4px; }
     .weightChartYAxis { width:46px; height:240px; display:block; pointer-events:none; }
     .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; }
@@ -6603,9 +6603,57 @@ layout: null
     for(const point of weightChartHitPoints){const d=Math.abs(x-point.x);if(d<distance){distance=d;best=point;}}
     return best&&distance<=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5)?best:null;
   }
-  function beginWeightChartPointer(event){if(event.button!=null&&event.button!==0)return;weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0,scrubbing:false};}
-  function moveWeightChartPointer(event){const start=weightChartPointerStart;if(!start||start.id!==event.pointerId||weightPeriodMode!=='daily'||event.pointerType==='touch')return;if(Math.abs(event.clientX-start.x)<4&&Math.abs(event.clientY-start.y)<4)return;start.scrubbing=true;const point=selectWeightChartPointAtX(event.clientX);if(point&&point.id!==weightChartSelectedId){weightChartSelectedId=point.id;drawWeightChart();}}
-  function finishWeightChartPointer(event){const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;const scroller=el('weightChartScroller');if(start.scrubbing){const point=selectWeightChartPointAtX(event.clientX);if(point){weightChartSelectedId=point.id;drawWeightChart();}return;}if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((scroller?.scrollLeft||0)-start.scrollLeft)>8)return;const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;weightChartSelectedId=point.id;drawWeightChart();}
+  function weightChartPointSpacing(){
+    const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
+    if(weightPeriodMode==='daily')return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
+    return buckets.length<=5?Math.max(1,plotW/Math.max(1,buckets.length-1)):68;
+  }
+  function keepWeightPointVisible(index){
+    const scroller=el('weightChartScroller');if(!scroller||!weightChartBuckets.length)return;
+    const spacing=weightChartPointSpacing(),x=16+index*spacing,left=scroller.scrollLeft,right=left+scroller.clientWidth;
+    if(x<left+28)scroller.scrollLeft=Math.max(0,x-scroller.clientWidth*.25);
+    else if(x>right-28)scroller.scrollLeft=Math.min(scroller.scrollWidth-scroller.clientWidth,x-scroller.clientWidth*.75);
+  }
+  function beginWeightChartPointer(event){
+    if(event.button!=null&&event.button!==0)return;
+    const point=selectWeightChartPointAtX(event.clientX)||weightChartHitPoints.find(p=>p.id===weightChartSelectedId)||null;
+    const anchorIndex=point?weightChartBuckets.findIndex(b=>b.key===point.id):-1;
+    weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0,scrubbing:false,pointerType:event.pointerType,anchorIndex,lastIndex:anchorIndex};
+    if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}
+  }
+  function moveWeightChartPointer(event){
+    const start=weightChartPointerStart;if(!start||start.id!==event.pointerId)return;
+    if(Math.abs(event.clientX-start.x)<4&&Math.abs(event.clientY-start.y)<4)return;
+    start.scrubbing=true;
+    let point=null;
+    if(start.pointerType==='touch'&&start.anchorIndex>=0){
+      const delta=Math.round((start.x-event.clientX)/weightChartPointSpacing());
+      const index=Math.max(0,Math.min(weightChartBuckets.length-1,start.anchorIndex+delta));
+      const bucket=weightChartBuckets[index];
+      if(bucket?.count){
+        keepWeightPointVisible(index);
+        if(bucket.key!==weightChartSelectedId){weightChartSelectedId=bucket.key;drawWeightChart();}
+        else drawWeightChart();
+      }else{
+        const valid=weightChartBuckets.map((b,i)=>({b,i})).filter(x=>x.b.count>0);
+        const nearest=valid.reduce((best,item)=>!best||Math.abs(item.i-index)<Math.abs(best.i-index)?item:best,null);
+        if(nearest){keepWeightPointVisible(nearest.i);weightChartSelectedId=nearest.b.key;drawWeightChart();}
+      }
+      return;
+    }
+    point=selectWeightChartPointAtX(event.clientX);
+    if(point&&point.id!==weightChartSelectedId){weightChartSelectedId=point.id;drawWeightChart();}
+  }
+  function finishWeightChartPointer(event){
+    const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;
+    if(start.scrubbing){
+      if(start.pointerType!=='touch'){const point=selectWeightChartPointAtX(event.clientX);if(point){weightChartSelectedId=point.id;drawWeightChart();}}
+      try{event.currentTarget.releasePointerCapture(event.pointerId);}catch{}
+      return;
+    }
+    if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
+    const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;weightChartSelectedId=point.id;drawWeightChart();
+  }
   function cancelWeightChartPointer(){weightChartPointerStart=null;}
   function handleWeightChartScroll(){
     if(weightChartScrollFrame)return;
@@ -8406,7 +8454,7 @@ layout: null
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
   el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
-  el('weightChart').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(weightPeriodMode!=='daily'||!weightChartBuckets.length)return;e.preventDefault();const valid=weightChartBuckets.filter(b=>b.count>0),current=valid.findIndex(b=>b.key===weightChartSelectedId),base=current<0?(e.key==='ArrowRight'?valid.length-1:0):current,next=Math.max(0,Math.min(valid.length-1,base+(current<0?0:(e.key==='ArrowRight'?1:-1))));const bucket=valid[next];if(bucket){weightChartSelectedId=bucket.key;const visible=weightChartHitPoints.some(p=>p.id===bucket.key);if(!visible){const scroller=el('weightChartScroller');const index=weightChartBuckets.findIndex(b=>b.key===bucket.key);const spacing=weightChartBuckets.length<=30?Math.max(1,(scroller.clientWidth-30)/Math.max(1,weightChartBuckets.length-1)):Math.max(10,Math.min(22,(scroller.clientWidth-30)/29));scroller.scrollLeft=Math.max(0,16+index*spacing-scroller.clientWidth/2);}drawWeightChart();}return;}if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
+  el('weightChart').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(!weightChartBuckets.length)return;e.preventDefault();const valid=weightChartBuckets.filter(b=>b.count>0),current=valid.findIndex(b=>b.key===weightChartSelectedId),base=current<0?(e.key==='ArrowRight'?valid.length-1:0):current,next=Math.max(0,Math.min(valid.length-1,base+(current<0?0:(e.key==='ArrowRight'?1:-1))));const bucket=valid[next];if(bucket){weightChartSelectedId=bucket.key;const visible=weightChartHitPoints.some(p=>p.id===bucket.key);if(!visible){const scroller=el('weightChartScroller');const index=weightChartBuckets.findIndex(b=>b.key===bucket.key);const spacing=weightChartBuckets.length<=30?Math.max(1,(scroller.clientWidth-30)/Math.max(1,weightChartBuckets.length-1)):Math.max(10,Math.min(22,(scroller.clientWidth-30)/29));scroller.scrollLeft=Math.max(0,16+index*spacing-scroller.clientWidth/2);}drawWeightChart();}return;}if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
   el('statsChartDataBtn').addEventListener('click',()=>{const box=el('statsChartData'),btn=el('statsChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderStatsChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
   el('chart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('diagnosticExportBtn').addEventListener('click',exportDiagnostics);
