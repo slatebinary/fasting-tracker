@@ -7857,9 +7857,9 @@ layout: null
     settingsGroupToggleSuppressed=true;
     settingsGroups().forEach(group=>{
       group.hidden=false;
-      // This section must stay discoverable after upgrades. Ignore any stale
-      // saved "closed" value from earlier releases.
-      group.open=group.id==='settingsGroupAppIcons'?true:(Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:group.id==='settingsGroupGeneral');
+      // Keep app icons prominent by default, but honour the user's saved
+      // disclosure choice after they collapse or reopen the section.
+      group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:(group.id==='settingsGroupAppIcons'||group.id==='settingsGroupGeneral');
     });
     settingsGroupToggleSuppressed=false;
   }
@@ -7888,13 +7888,7 @@ layout: null
   function initSettingsDisclosure() {
     restoreSettingsGroupState();
     settingsGroups().forEach(group=>group.addEventListener('toggle',()=>{
-      // Keep app-icon choices visible even if an older release saved this
-      // section as collapsed.
-      if (group.id==='settingsGroupAppIcons' && !group.open) {
-        settingsGroupToggleSuppressed=true;
-        group.open=true;
-        settingsGroupToggleSuppressed=false;
-      }
+      // Persist the user's disclosure choice, including a collapsed app-icon section.
       saveSettingsGroupState();
       if (group.id==='settingsGroupAdvanced' && group.open) renderStorageHealth();
       if (group.id==='settingsGroupData' && group.open) queueStorageProtectionRefresh();
