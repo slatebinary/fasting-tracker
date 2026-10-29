@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.5" />
+  <meta name="ft-app-version" content="1.17.6" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1782,7 +1782,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.5';
+  const APP_VERSION = '1.17.6';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6621,14 +6621,14 @@ layout: null
   function syncWeightChartNavigator(){
     const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
     if(!slider||!older||!newer||!scroller)return;
-    const buckets=weightChartBuckets;
+    const buckets=weightChartBuckets,valid=buckets.filter(b=>b.count>0);
     slider.max=String(Math.max(0,buckets.length-1));
     const selectedIndex=buckets.findIndex(b=>b.key===weightChartSelectedId);
     slider.value=String(Math.max(0,selectedIndex));
-    slider.disabled=buckets.filter(b=>b.count>0).length<2;
-    const maxScroll=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
-    older.disabled=maxScroll<=2||scroller.scrollLeft<=2;
-    newer.disabled=maxScroll<=2||scroller.scrollLeft>=maxScroll-2;
+    slider.disabled=valid.length<2;
+    const selectedValidIndex=valid.findIndex(b=>b.key===weightChartSelectedId);
+    older.disabled=valid.length<2||selectedValidIndex===0;
+    newer.disabled=valid.length<2||selectedValidIndex===valid.length-1;
     const bucket=buckets[selectedIndex];
     slider.setAttribute('aria-valuetext',bucket&&bucket.count ? weightBucketLongLabel(bucket)+' — '+formatWeight(bucket.averageKg,data.weightUnit) : '');
   }
@@ -6655,10 +6655,23 @@ layout: null
     syncWeightChartNavigator();
   }
   function shiftWeightChartViewport(direction){
-    const scroller=el('weightChartScroller');if(!scroller)return;
-    const amount=Math.max(120,Math.round(scroller.clientWidth*.78));
-    scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,scroller.scrollLeft+direction*amount));
-    handleWeightChartScroll();
+    const scroller=el('weightChartScroller'),buckets=weightChartBuckets;
+    if(!scroller||!buckets.length)return;
+    const valid=buckets.filter(b=>b.count>0);
+    if(valid.length<2)return;
+    let current=valid.findIndex(b=>b.key===weightChartSelectedId);
+    if(current<0){
+      const spacing=weightChartPointSpacing(),center=scroller.scrollLeft+scroller.clientWidth/2;
+      let bestDistance=Infinity;
+      valid.forEach((bucket,i)=>{
+        const bucketIndex=buckets.findIndex(b=>b.key===bucket.key),pointX=16+bucketIndex*spacing;
+        const distance=Math.abs(pointX-center);
+        if(distance<bestDistance){bestDistance=distance;current=i;}
+      });
+    }
+    const target=Math.max(0,Math.min(valid.length-1,current+(direction<0?-1:1)));
+    if(target===current){syncWeightChartNavigator();return;}
+    navigateWeightChartToIndex(buckets.findIndex(b=>b.key===valid[target].key));
   }
   function beginWeightChartPointer(event){
     if(event.button!=null&&event.button!==0)return;
