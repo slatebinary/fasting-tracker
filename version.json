@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.4",
+  "version": "1.17.5",
   "released": "2026-10-29",
-  "notes": "Make weight-chart finger dragging directly select historical measurements across every period.",
+  "notes": "Replace unreliable weight-chart dragging with native horizontal swipes, Older/Newer paging, and a full-history range navigator.",
   "entry": "./index.html",
   "shell": [
     "./",
