@@ -64,23 +64,32 @@ with sync_playwright() as p:
     if not previous_detail.strip() or previous_detail == latest_detail:
         print('FAIL: left/right keyboard navigation did not move between Daily weight values',latest_detail,previous_detail); sys.exit(1)
 
-    # The range navigator must reach old records directly without precision dragging.
+    # The range navigator and Older/Newer buttons must move the selected pointer,
+    # not merely page the viewport. Manual scrolling remains available independently.
     page.locator('[data-weight-period="daily"]').click(); page.wait_for_timeout(120)
     slider = page.locator('#weightChartRange')
     if not slider.is_visible() or int(slider.get_attribute('max') or '0') < 799:
         print('FAIL: Daily range navigator does not cover the full history', slider.get_attribute('max')); sys.exit(1)
+    slider.evaluate("(e)=>{e.value=e.max;e.dispatchEvent(new Event('input',{bubbles:true}))}")
+    page.wait_for_timeout(120)
     latest_detail = page.locator('#weightChartDetail').inner_text()
-    page.locator('#weightChartScroller').evaluate("e=>{e.scrollLeft=e.scrollWidth-e.clientWidth}")
-    page.wait_for_timeout(100)
     latest_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
+    if not latest_detail.strip() or page.locator('#weightChartNewerBtn').is_enabled():
+        print('FAIL: newest measurement was not selected or Newer was not disabled', latest_detail); sys.exit(1)
     page.locator('#weightChartOlderBtn').click(); page.wait_for_timeout(120)
+    older_detail = page.locator('#weightChartDetail').inner_text()
     older_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
-    if older_left >= latest_left:
-        print('FAIL: Older button did not move toward historical measurements', latest_left, older_left); sys.exit(1)
+    if older_detail == latest_detail or older_left >= latest_left:
+        print('FAIL: Older did not select and reveal the previous measurement', latest_detail, older_detail, latest_left, older_left); sys.exit(1)
     page.locator('#weightChartNewerBtn').click(); page.wait_for_timeout(120)
+    newer_detail = page.locator('#weightChartDetail').inner_text()
     newer_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
-    if newer_left <= older_left:
-        print('FAIL: Newer button did not move toward recent measurements', older_left, newer_left); sys.exit(1)
+    if newer_detail != latest_detail or newer_left <= older_left:
+        print('FAIL: Newer did not return the selected pointer to the next recent measurement', latest_detail, newer_detail, older_left, newer_left); sys.exit(1)
+    slider.evaluate("(e)=>{e.value='0';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+    page.wait_for_timeout(100)
+    if page.locator('#weightChartOlderBtn').is_enabled():
+        print('FAIL: Older must be disabled at the oldest measurement'); sys.exit(1)
     page.locator('#weightChartRange').evaluate("(e)=>{e.value='100';e.dispatchEvent(new Event('input',{bubbles:true}))}")
     page.wait_for_timeout(120)
     selected_detail = page.locator('#weightChartDetail').inner_text()
