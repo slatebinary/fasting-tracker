@@ -80,7 +80,7 @@ page.evaluate(STORAGE_SHIM)
 page.evaluate('''data => {
   __seedFastingDbV2(data, []);
   localStorage.removeItem('fastingTracker.settingsGroups');
-  localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:CURRENT_VERSION}));
+  localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.16.6'}));
 }''', DATA)
 page.set_content(HTML, wait_until='domcontentloaded')
 page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)
