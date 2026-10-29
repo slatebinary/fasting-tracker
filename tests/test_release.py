@@ -670,7 +670,7 @@ ok('function buildWeightAggregateBuckets(' in index and 'function weightBucketKe
 ok('weightChartScrollToLatestPending = true' in index and 'scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth)' in index, 'weight chart newest-first positioning is missing')
 ok('function handleWeightChartScroll()' in index and "addEventListener('scroll', handleWeightChartScroll" in index, 'historical weight chart scrolling is missing')
 ok('function selectWeightChartPointAtX(' in index and 'function moveWeightChartPointer(' in index and "addEventListener('pointermove', moveWeightChartPointer)" in index, 'daily weight chart drag-to-browse interaction is missing')
-ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "weightPeriodMode!=='daily'" in index, 'daily weight chart keyboard point navigation is missing')
+ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "const spacing=weightChartPointSpacing();" in index, 'weight chart keyboard point navigation across periods is missing')
 ok('weight.aggregatePointDetail' in en_source and 'weight.weekOf' in en_source, 'aggregate weight point localization is missing')
 ok((ROOT/'tests'/'test_weight_aggregation_scroll.py').is_file(), 'weight aggregation/scroll browser regression test missing')
 ok("let weightPeriodMode = 'daily'" in index and 'weight.periodDaily' in en_source, 'Daily weight-chart mode/default is missing')
