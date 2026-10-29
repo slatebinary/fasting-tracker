@@ -510,6 +510,11 @@ for lang in ("en", "bg", "es"):
 ok('id="patientTortoise"' in index and 'id="patientTortoiseDismiss"' in index, 'Patient Tortoise surprise and dismiss control missing')
 ok("patientTortoiseTapCount < 7" in index and "patientTortoiseTapCount = 0" in index, 'Patient Tortoise must require seven activations and reset after reveal')
 ok('prefers-reduced-motion: no-preference' in index and '@keyframes tortoiseNod' in index, 'Patient Tortoise motion must only run when reduced motion is not requested')
+ok('class="patientTortoiseArt" viewBox="0 0 96 96"' in index and 'class="tortoiseShellPanel"' in index and 'class="tortoiseHead"' in index, 'Patient Tortoise needs detailed layered SVG artwork')
+for motion in ('@keyframes tortoiseBodyBob','@keyframes tortoiseHeadPeek','@keyframes tortoiseLegStep','@keyframes tortoiseTailWiggle','@keyframes tortoiseGroundPulse'):
+    ok(motion in index, f'Patient Tortoise animation sequence missing: {motion}')
+ok('.patientTortoise.isRevealed .tortoiseLegFront' in index and '.patientTortoise.isRevealed .tortoiseLegBack' in index, 'Patient Tortoise walking legs must animate in alternating phases')
+ok('.patientTortoise .patientTortoiseArt { width:96px; height:96px;' in index, 'Patient Tortoise illustration should be larger than the old basic icon')
 ok('easterEgg.patientTortoiseMessage' in en_source and en_source['easterEgg.patientTortoiseMessage']=='Steady is a pace, too.', 'Patient Tortoise message missing or changed')
 ok('easterEgg.patientTortoiseTrigger' in index and "patientTortoiseTrigger.addEventListener('keydown'" in index, 'Patient Tortoise trigger must be keyboard-accessible')
 
