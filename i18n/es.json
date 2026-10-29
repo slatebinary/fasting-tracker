@@ -186,7 +186,7 @@
   "weight.toTarget": "Diferencia hasta el objetivo",
   "weight.targetHelp": "Opcional. Déjalo en blanco si solo quieres seguir la tendencia.",
   "weight.trend": "Tendencia del peso",
-  "weight.chartHelp": "La vista diaria muestra las mediciones individuales. Semana, Mes, Trimestre, 6 meses y Año muestran un punto promedio por cada período natural. Toca un punto para ver su valor exacto y la hora/período. Desliza a la izquierda para ver datos anteriores; el gráfico se abre en los valores más recientes. Todas las entradas individuales siguen disponibles abajo.",
+  "weight.chartHelp": "La vista diaria muestra mediciones individuales. Las demás vistas muestran un promedio por período natural. Toca un punto para ver su valor y fecha/período. Desliza horizontalmente o usa el navegador del historial para recorrer datos anteriores y recientes. Todas las entradas individuales siguen disponibles abajo.",
   "weight.dateTime": "Fecha y hora",
   "weight.empty": "Aún no hay registros de peso. Pulsa Añadir peso para guardar tu primera medición.",
   "weight.addChart": "Añade registros de peso para ver la tendencia.",
@@ -1055,5 +1055,9 @@
   "settings.appIconSectionHelp": "Elige el icono de la app y consulta aquí los pasos de instalación.",
   "icon.grayscale": "Escala de grises",
   "icon.highcontrast": "Alto contraste",
-  "icon.colorblind": "Adaptado para daltonismo"
+  "icon.colorblind": "Adaptado para daltonismo",
+  "a11y.weightChartNavigator": "Navegación del historial de peso",
+  "a11y.weightChartOlder": "Más antiguos",
+  "a11y.weightChartNewer": "Más recientes",
+  "a11y.weightChartRange": "Explorar el historial de peso: los valores más antiguos están a la izquierda y los más recientes a la derecha"
 }
