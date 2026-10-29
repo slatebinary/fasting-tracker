@@ -55,8 +55,8 @@ for item in ver.get('shell',[]):
     if p.is_file(): ok(hashlib.sha256(canonical_bytes(p)).hexdigest()==ver.get('hashes',{}).get(item),f'hash mismatch {item}')
 ok(set(ver.get('hashes',{}))==set(ver.get('shell',[])),'hash map must exactly match shell')
 ok('function keepWeightPointVisible' in index and 'const step=Math.max(8,Math.min(24,spacing*.6));' in index, 'weight-chart touch browsing must directly select points at a responsive rate')
-ok("start.anchorIndex+Math.round(dx/step)" in index and 'weightChartSelectedId=bucket.key' in index, 'weight-chart finger dragging must select older/newer points directly')
-ok('touch-action:pan-y' in index and '-webkit-user-select:none' in index, 'weight chart must preserve vertical scrolling and prevent accidental text selection')
+ok('id="weightChartRange"' in index and 'function navigateWeightChartToIndex(index)' in index, 'weight chart must provide a full-history range navigator')
+ok('touch-action:pan-x pan-y' in index and '-webkit-user-select:none' in index, 'weight chart must support horizontal swipes, vertical page scrolling and prevent accidental text selection')
 # Simulate the actual Pages artifact path: prepare_pages.py copies the HTML
 # into _site and deploy-pages uploads it directly, so Jekyll does not process
 # the front matter or Liquid placeholders. This was the missing regression case.
@@ -524,7 +524,7 @@ ok('easterEgg.patientTortoiseTrigger' in index and "patientTortoiseTrigger.addEv
 
 
 # v1.16.9 weight-chart touch-scroll and English changelog regression checks
-ok("event.pointerType==='touch'" in index and "function moveWeightChartPointer(event)" in index, 'touch movement must preserve native horizontal scrolling in Daily weight statistics')
+ok("el('weightChart').addEventListener('pointermove', moveWeightChartPointer)" not in index, 'weight chart must not intercept touch movement with custom scrubbing')
 changelog_html=(ROOT/'changelog.html').read_text(encoding='utf-8')
 en_section=changelog_html.split('<section data-lang="en">',1)[1].split('</section>',1)[0]
 v168_section=en_section.split('<h2>v1.16.8</h2>',1)[1].split('</article>',1)[0] if '<h2>v1.16.8</h2>' in en_section else ''
@@ -533,11 +533,11 @@ ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section
 
 
 # v1.17.3 touch-dragging pans the weight chart left toward older records at a responsive speed.
-ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must allow custom horizontal panning while preserving vertical page gestures and preventing text selection')
+ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:crosshair; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must permit native horizontal and vertical gestures without text selection')
 ok("if(event.pointerType==='touch'){try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}}" in index, 'touch chart gesture must retain pointer tracking during a drag')
 ok('start.anchorIndex+Math.round(dx/step)' in index, 'dragging left must directly select older values at a responsive speed')
-ok('if(event.cancelable)event.preventDefault();' in index and 'keepWeightPointVisible(index);' in index and 'renderWeightChartData();' in index, 'horizontal drag must avoid text selection, keep the selected measurement visible and refresh its details')
-ok('weightChartSelectedId=bucket.key' in index and 'function keepWeightPointVisible' in index, 'direct scrubbing must synchronize the selected value and keep it visible')
+ok('id="weightChartOlderBtn"' in index and 'id="weightChartNewerBtn"' in index and "el('weightChartRange').addEventListener('input'" in index, 'weight history must have explicit Older/Newer and range controls')
+ok('function syncWeightChartNavigator()' in index and 'function shiftWeightChartViewport(direction)' in index, 'weight history navigation controls must stay synchronized with chart position')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
 for lang in ('en','bg','es'):
     section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
@@ -673,7 +673,7 @@ ok('id="weightChartScroller"' in index and 'id="weightChartTrack"' in index and 
 ok('function buildWeightAggregateBuckets(' in index and 'function weightBucketKeyForDay(' in index, 'calendar-period weight aggregation is missing')
 ok('weightChartScrollToLatestPending = true' in index and 'scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth)' in index, 'weight chart newest-first positioning is missing')
 ok('function handleWeightChartScroll()' in index and "addEventListener('scroll', handleWeightChartScroll" in index, 'historical weight chart scrolling is missing')
-ok('function selectWeightChartPointAtX(' in index and 'function moveWeightChartPointer(' in index and "addEventListener('pointermove', moveWeightChartPointer)" in index, 'daily weight chart drag-to-browse interaction is missing')
+ok('function selectWeightChartPointAtX(' in index and "el('weightChart').addEventListener('pointerup', finishWeightChartPointer)" in index and 'function navigateWeightChartToIndex(index)' in index, 'weight chart point selection and range navigation are missing')
 ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "const spacing=weightChartPointSpacing();" in index, 'weight chart keyboard point navigation across periods is missing')
 ok('weight.aggregatePointDetail' in en_source and 'weight.weekOf' in en_source, 'aggregate weight point localization is missing')
 ok((ROOT/'tests'/'test_weight_aggregation_scroll.py').is_file(), 'weight aggregation/scroll browser regression test missing')
