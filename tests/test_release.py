@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import hashlib, json, re, struct, subprocess, sys, tempfile, xml.etree.ElementTree as ET
+import hashlib, json, re, struct, subprocess, sys, tempfile, xml.etree.ElementTree as ET, zlib
 
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
@@ -760,6 +760,39 @@ for theme in accessible_icon_themes:
             if icon_bytes.startswith(b"\x89PNG\r\n\x1a\n") and len(icon_bytes) >= 24:
                 dimensions = struct.unpack(">II", icon_bytes[16:24])
                 ok(dimensions == (size, size), f"{theme} icon dimensions should be {size}x{size}, got {dimensions}")
+                # A valid signature and IHDR are not enough: browsers reject PNGs
+                # with malformed chunks or incorrect CRCs, often showing a question mark.
+                offset = 8
+                saw_iend = False
+                idat_chunks = []
+                while offset + 12 <= len(icon_bytes):
+                    chunk_length = struct.unpack(">I", icon_bytes[offset:offset+4])[0]
+                    chunk_end = offset + 12 + chunk_length
+                    if chunk_end > len(icon_bytes):
+                        ok(False, f"{theme} icon has a truncated PNG chunk")
+                        break
+                    chunk_type = icon_bytes[offset+4:offset+8]
+                    chunk_data = icon_bytes[offset+8:offset+8+chunk_length]
+                    stored_crc = struct.unpack(">I", icon_bytes[offset+8+chunk_length:chunk_end])[0]
+                    actual_crc = zlib.crc32(chunk_type + chunk_data) & 0xffffffff
+                    ok(actual_crc == stored_crc, f"{theme} icon has an invalid PNG CRC in {chunk_type!r}")
+                    if chunk_type == b"IDAT":
+                        idat_chunks.append(chunk_data)
+                    offset = chunk_end
+                    if chunk_type == b"IEND":
+                        saw_iend = True
+                        break
+                ok(saw_iend and offset == len(icon_bytes), f"{theme} icon must end cleanly at PNG IEND")
+                try:
+                    decoded = zlib.decompress(b"".join(idat_chunks))
+                    row_bytes = (size * 4 + 7) // 8
+                    expected_bytes = (row_bytes + 1) * size
+                    ok(len(decoded) == expected_bytes, f"{theme} icon decoded pixel data length is invalid")
+                    if len(decoded) == expected_bytes:
+                        ok(all(decoded[row * (row_bytes + 1)] in (0, 1, 2, 3, 4) for row in range(size)),
+                           f"{theme} icon contains an invalid PNG scanline filter")
+                except zlib.error as exc:
+                    ok(False, f"{theme} icon has an invalid compressed image stream: {exc}")
     for lang in ("en", "bg", "es"):
         dictionary = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
         ok(f"icon.{theme}" in dictionary, f"{lang} accessible icon label missing: {theme}")
