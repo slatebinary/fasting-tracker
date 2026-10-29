@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.16.2" />
+  <meta name="ft-app-version" content="1.16.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -966,7 +966,7 @@ layout: null
       <button id="settingsSearchClearBtn" class="secondary settingsSearchClear" type="button" data-i18n="settings.searchClear" hidden>Clear</button>
     </div>
     <div class="small settingsSearchStatus" id="settingsSearchStatus" role="status" aria-live="polite"></div>
-    <details class="settingsGroup iconInstallationGroup" id="settingsIconDetails" data-settings-group="settingsIconDetails" open><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▦</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
+    <details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▦</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
 <div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
 <div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
           <button aria-checked="false" class="iconChoice" data-icon-choice="grayscale" role="radio" type="button"><img alt="" src="icons/grayscale/icon-192.png"/><span data-i18n="icon.grayscale">Grayscale</span></button>
@@ -1719,7 +1719,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.16.2';
+  const APP_VERSION = '1.16.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -7855,7 +7855,7 @@ layout: null
   function restoreSettingsGroupState() {
     const state=loadSettingsGroupState();
     settingsGroupToggleSuppressed=true;
-    settingsGroups().forEach(group=>{group.hidden=false;group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:group.id==='settingsGroupGeneral'||group.id==='settingsIconDetails';});
+    settingsGroups().forEach(group=>{group.hidden=false;group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:group.id==='settingsGroupGeneral'||group.id==='settingsGroupAppIcons';});
     settingsGroupToggleSuppressed=false;
   }
   function normalizeSettingsSearch(value) { return String(value||'').trim().toLocaleLowerCase(uiLanguage()); }

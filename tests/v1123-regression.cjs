@@ -66,6 +66,12 @@ assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,to
 assert.match(index,/const details=keys\.map\(key=>/);
 assert.doesNotMatch(index,/keys\.slice\(0,3\)/);
 assert.match(index,/id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open/);
+assert.match(index,/<details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open>/,'Accessible icon section must use a fresh state key so an older collapsed preference cannot hide it after update');
+for (const icon of ['grayscale','highcontrast','colorblind']) {
+  assert.match(index,new RegExp('data-icon-choice="'+icon+'"[^>]*><img[^>]*src="icons/'+icon+'/icon-192\\.png"'),'Missing visible icon choice: '+icon);
+  assert.ok(fs.existsSync('icons/'+icon+'/icon-192.png'),'Missing icon image asset: '+icon);
+}
+assert.match(index,/\.iconChoice\.active \{ border:0;/,'Selected icon must not have a blue border');
 assert.match(index,/patientTortoiseTapCount < 7/);
 assert.match(index,/prefers-reduced-motion: no-preference/);
 assert.match(index,/data-i18n="easterEgg.patientTortoiseMessage"/);
@@ -176,16 +182,16 @@ console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multi
 
 
 // Settings discoverability: no heavy blue outline; the icon choices are immediately visible.
-const iconSectionIndex=index.indexOf('id="settingsIconDetails"');
+const iconSectionIndex=index.indexOf('id="settingsGroupAppIcons"');
 const setupGuideIndex=index.indexOf('id="setupGuideBtn"');
 assert.ok(iconSectionIndex>=0 && setupGuideIndex>iconSectionIndex, 'App icon section must appear before the setup guide and other General settings');
-assert.ok(index.includes('class="settingsGroup iconInstallationGroup" id="settingsIconDetails" data-settings-group="settingsIconDetails" open'), 'App icon section must be a top-level Settings group and open by default');
+assert.ok(index.includes('class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open'), 'App icon section must be a top-level Settings group and open by default');
 assert.ok(/\.settingsGroup\.iconInstallationGroup\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section must not have a prominent border');
 assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section symbol must not have a border');
 assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
 assert.ok(/\.iconChoice\.active\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'Selected icon must not use a prominent border');
 assert.ok(index.includes('.iconChoice.active span::before { content:"✓ ";'), 'Selected icon must have a non-colour-only check-mark indicator');
-assert.ok(index.includes("group.id==='settingsGroupGeneral'||group.id==='settingsIconDetails'"), 'Icon section must default open independently of General Settings');
+assert.ok(index.includes("group.id==='settingsGroupGeneral'||group.id==='settingsGroupAppIcons'"), 'Icon section must default open independently of General Settings');
 assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
 assert.ok(index.includes("const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon)"), 'Accessible icon themes must use available assets for browser and Apple Home Screen icons');
 const iconGrids=[...index.matchAll(/<div\b[^>]*class="iconChoiceGrid"[^>]*>([\s\S]*?)<\/div>/g)];
