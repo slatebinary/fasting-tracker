@@ -70,7 +70,6 @@ with sync_playwright() as pw:
             checked.append((width,lang))
         assert not errors, (width,errors[:5])
         page.close()
-    browser.close()
 print('PASS: onboarding weigh-in cadence fits 320–768px across EN/BG/ES; buttons remain tappable and accessible:',len(checked),'cases')
 
 # Regression: the prominent App icons & installation section is open by default,
