@@ -1,5 +1,11 @@
 # Fasting Tracker changelog
 
+## v1.17.2 — 29 October 2026
+- Enabled native horizontal touch scrolling on the weight chart to navigate the complete history naturally.
+- Updated the selected weight value while scrolling, using the measurement nearest the chart centre.
+- Removed slow, distance-limited touch scrubbing; retained tap-to-select, mouse interaction, and keyboard navigation.
+- No fasting, weight, active-fast or backup records are changed by this update.
+
 ## v1.17.1 — 29 October 2026
 - Corrected finger-drag direction: moving left selects older weight records and moving right selects newer records.
 - Prevented chart text from being selected during touch gestures.

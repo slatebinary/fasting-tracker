@@ -529,20 +529,18 @@ ok(bool(v168_section) and not re.search(r'[А-Яа-яЁё]',v168_section), 'v1.1
 ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section, 'v1.16.9 weight-chart touch-scroll changelog missing')
 
 
-# v1.17.1 touch scrubbing must move toward older records on left-drag, suppress text selection and traverse the full history.
-ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must suppress text selection while preserving vertical page gestures')
-ok("start.pointerType==='touch'&&start.anchorIndex>=0" in index, 'touch drag must select measurements by finger movement')
-ok('const delta=Math.round((event.clientX-start.x)/weightChartPointSpacing());' in index, 'dragging left must select older weight records')
-ok("if(event.pointerType==='touch'){if(event.cancelable)event.preventDefault();" in index, 'touch gestures must prevent accidental text selection')
-ok('keepWeightPointVisible(index)' in index and 'scroller.scrollWidth-scroller.clientWidth' in index, 'older weight records must remain reachable beyond the initial chart window')
-ok("keepWeightPointVisible(index)" in index, 'touch scrubbing must keep older/newer selected measurements visible')
-ok("if(!weightChartBuckets.length)return;" in index, 'keyboard navigation must not be restricted to daily weight data')
+# v1.17.2 weight-chart touch gestures must use native horizontal scrolling and update the selected value.
+ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must allow native horizontal and vertical touch scrolling without text selection')
+ok("if(event.pointerType==='touch')return;" in index, 'touch pointerdown must not capture the gesture or block native chart scrolling')
+ok("if(start.pointerType==='touch'){" in index and "start.scrubbing=true;\n      return;" in index, 'touch movement must be left to native scrolling rather than slow point-by-point scrubbing')
+ok("centerX=scroller.scrollLeft+scroller.clientWidth/2;" in index and "weightChartSelectedId=nearest.key;" in index, 'horizontal scrolling must update the selected weight value to the visible chart center')
+ok('keepWeightPointVisible(index)' in index, 'non-touch pointer scrubbing must keep the selected point visible')
 release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
 for lang in ('en','bg','es'):
     section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
     ok('<h2>v1.17.0</h2>' in section, f'v1.17.0 changelog missing for {lang}')
     ok('<h2>v1.17.1</h2>' in section, f'v1.17.1 changelog missing for {lang}')
-ok('finger-drag scrubbing across Daily, Weekly, Monthly' in release_changelog, 'English v1.17.0 changelog must describe cross-period scrubbing')
+    ok('<h2>v1.17.2</h2>' in section, f'v1.17.2 changelog missing for {lang}')
 
 if errors:
     print('FAIL')
