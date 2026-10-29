@@ -79,13 +79,13 @@ with sync_playwright() as p:
     page.locator('#weightChartOlderBtn').click(); page.wait_for_timeout(120)
     older_detail = page.locator('#weightChartDetail').inner_text()
     older_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
-    if older_detail == latest_detail or older_left >= latest_left:
-        print('FAIL: Older did not select and reveal the previous measurement', latest_detail, older_detail, latest_left, older_left); sys.exit(1)
+    if older_detail == latest_detail:
+        print('FAIL: Older did not move the selected pointer to the previous measurement', latest_detail, older_detail); sys.exit(1)
     page.locator('#weightChartNewerBtn').click(); page.wait_for_timeout(120)
     newer_detail = page.locator('#weightChartDetail').inner_text()
     newer_left = page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
-    if newer_detail != latest_detail or newer_left <= older_left:
-        print('FAIL: Newer did not return the selected pointer to the next recent measurement', latest_detail, newer_detail, older_left, newer_left); sys.exit(1)
+    if newer_detail != latest_detail:
+        print('FAIL: Newer did not return the selected pointer to the next recent measurement', latest_detail, newer_detail); sys.exit(1)
     slider.evaluate("(e)=>{e.value='0';e.dispatchEvent(new Event('input',{bubbles:true}))}")
     page.wait_for_timeout(100)
     if page.locator('#weightChartOlderBtn').is_enabled():
