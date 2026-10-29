@@ -51,6 +51,17 @@ with sync_playwright() as p:
     if left_after > 2:
         print('FAIL: ordinary redraw snapped chart back to newest',left_after); sys.exit(1)
 
+    # Daily chart values can be browsed point-by-point with the keyboard.
+    page.locator('[data-weight-period="daily"]').click(); page.wait_for_timeout(120)
+    chart=page.locator('#weightChart'); chart.focus(); page.keyboard.press('ArrowRight'); page.wait_for_timeout(80)
+    latest_detail=page.locator('#weightChartDetail').inner_text()
+    if not latest_detail.strip():
+        print('FAIL: keyboard navigation did not reveal a selected Daily weight value'); sys.exit(1)
+    page.keyboard.press('ArrowLeft'); page.wait_for_timeout(80)
+    previous_detail=page.locator('#weightChartDetail').inner_text()
+    if not previous_detail.strip() or previous_detail == latest_detail:
+        print('FAIL: left/right keyboard navigation did not move between Daily weight values',latest_detail,previous_detail); sys.exit(1)
+
     # Raw measurements are still present in the editable history list rather
     # than being replaced by aggregates.
     if page.locator('#weightHistoryList .historyRow').count() < 1 or page.locator('#weightHistoryList .loadMoreWrap').count() != 1:
