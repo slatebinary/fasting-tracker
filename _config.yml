@@ -3,7 +3,6 @@ description: Intermittent fasting and weight tracker with multi-day fasting, sci
 lang: en
 exclude:
   - README.md
-  - FIRST-DEPLOYMENT-CHECKLIST.txt
   - RELEASE-GUIDE.txt
   - tests
   - tools
