@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.11" />
+  <meta name="ft-app-version" content="1.17.12" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1801,7 +1801,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.11';
+  const APP_VERSION = '1.17.12';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4511,8 +4511,10 @@ layout: null
         const nowMs = Date.now();
         const remainingMs = startNow.getTime() + goalMs(activeTargetHours()) - nowMs;
         const reason = normalizeStopReason(el('stopReasonSelect')?.value);
-        const previousOffer = shorterGoalState();
-        if (remainingMs >= 120000 && (!reason || reason === 'personal') && !(previousOffer?.start === data.activeStart && previousOffer.offered)) {
+        // Re-offer on every personal early-stop attempt. The shorter-goal
+        // state remains useful for the active checkpoint display, but must
+        // never suppress a later stop decision for this same fast.
+        if (remainingMs >= 120000 && (!reason || reason === 'personal')) {
           shorterGoalOfferMs = Math.floor((remainingMs / 2) / 60000) * 60000;
           if (shorterGoalOfferMs >= 60000) {
             stopModalStage = 'shorter';
