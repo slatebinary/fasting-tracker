@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.17.11 — 30 October 2026
+- Added a third choice to the early-stop encouragement: continue the current fast to its original target, continue for half the remaining time, or end the fast.
+- Choosing the original target keeps the active fast and its original target unchanged, without creating a shorter checkpoint; the offer is not repeated for that same fast.
+- Added accessible English, Bulgarian and Spanish labels and browser regression coverage. No existing fasting, weight or backup records are changed.
+
 ## v1.17.10 — 30 October 2026
 - Added an **Add** action to weigh-in reminder details. It opens the weight-entry form directly and dismisses that reminder; other notification types retain their existing Dismiss-only action.
 - Added accessible English, Bulgarian and Spanish labels and browser regression coverage.
