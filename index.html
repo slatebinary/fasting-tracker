@@ -516,6 +516,8 @@ layout: null
     .backdateConflictActions button { min-width: 0; white-space: normal; overflow-wrap: normal; word-break: normal; }
     .modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; position:sticky; bottom:-1px; z-index:2; background:var(--card); padding:10px 0 max(2px, env(safe-area-inset-bottom)); }
     .modalActions .primary { width: auto; font-size: inherit; }
+    .modalActions.shorterOfferActions { display:grid; grid-template-columns:minmax(0,1fr); gap:8px; }
+    .modalActions.shorterOfferActions button { width:100%; white-space:normal; min-height:46px; }
     .shareOptions { display:grid; gap:8px; margin:14px 0; }
     .shareOption { display:flex; align-items:flex-start; gap:10px; padding:10px 11px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
     .shareOption input { width:21px; height:21px; margin-top:1px; flex:0 0 auto; accent-color:var(--accent); }
@@ -1727,7 +1729,8 @@ layout: null
       </select>
       <div class="small stopReasonHelp" data-i18n="fasting.stopReasonHelp">Unavoidable interruptions stay factual in your statistics but are neutral for the consistency streak and receive no target-completion XP.</div>
     </div>
-    <div class="modalActions">
+    <div class="modalActions" id="stopFastModalActions">
+      <button id="continueOriginalTargetBtn" class="primary" type="button" data-i18n="fasting.shorterOfferOriginal" data-i18n-aria="fasting.shorterOfferOriginalAria" aria-label="Continue fasting to the original target" hidden>Continue to original target</button>
       <button id="keepFastingBtn" class="secondary" type="button" data-i18n="fasting.keepFasting">Keep fasting</button>
       <button id="stopAndSaveBtn" class="primary stop" type="button" data-i18n="fasting.stopAndSave">Stop &amp; save</button>
     </div>
@@ -1791,7 +1794,7 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 36;
+  const I18N_SOURCE_REVISION = 37;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
@@ -4427,6 +4430,8 @@ layout: null
     hideModal('stopFastModal');
     stopModalStage = 'confirm';
     shorterGoalOfferMs = 0;
+    el('continueOriginalTargetBtn').hidden = true;
+    el('stopFastModalActions').classList.remove('shorterOfferActions');
     el('stopFastModalTitle').textContent = t('fasting.stopModalTitle');
     el('keepFastingBtn').textContent = t('fasting.keepFasting');
     el('stopAndSaveBtn').textContent = t('fasting.stopAndSave');
@@ -4455,6 +4460,14 @@ layout: null
         saveShorterGoalState({start, checkpointAt:Date.now() + shorterGoalOfferMs, offered:true});
       }
     }
+    closeStopFastModal();
+    activateScreen('fasting');
+    requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
+  }
+
+  function keepOriginalTargetAndReturnHome() {
+    const start = data.activeStart;
+    if (start) saveShorterGoalState({start, checkpointAt:0, offered:true, choice:'original-target'});
     closeStopFastModal();
     activateScreen('fasting');
     requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
@@ -4507,6 +4520,9 @@ layout: null
             el('stopFastModalText').classList.remove('warn');
             el('stopFastModalText').textContent = t('fasting.shorterOfferText', {duration:friendlyDuration(shorterGoalOfferMs)});
             el('stopReasonGroup').hidden = true;
+            el('stopFastModalActions').classList.add('shorterOfferActions');
+            el('continueOriginalTargetBtn').hidden = false;
+            el('continueOriginalTargetBtn').textContent = t('fasting.shorterOfferOriginal');
             el('keepFastingBtn').textContent = t('fasting.shorterOfferContinue', {duration:friendlyDuration(shorterGoalOfferMs)});
             el('stopAndSaveBtn').textContent = t('fasting.shorterOfferStop');
             el('keepFastingBtn').focus();
@@ -8420,6 +8436,7 @@ layout: null
   // Modal actions use the browser's completed click activation rather than
   // the pointer-up shortcut used for ordinary controls. This avoids lost taps
   // from small finger drift and prevents touch-through when the modal closes.
+  bindReliableModalAction(el('continueOriginalTargetBtn'), keepOriginalTargetAndReturnHome);
   bindReliableModalAction(el('keepFastingBtn'), keepFastingAndReturnHome);
   bindReliableModalAction(el('stopAndSaveBtn'), confirmStopFast);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
