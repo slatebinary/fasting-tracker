@@ -22,7 +22,14 @@ def boot(page, backup_meta=None):
     page.wait_for_function("document.querySelector('#fastingBackupStatusBtn')?.dataset.state!=='empty'", timeout=30000)
 
 def status(page, expected):
-    page.wait_for_function('(x)=>document.querySelector("#fastingBackupStatusBtn")?.dataset.state===x', arg=expected, timeout=15000)
+    try:
+        page.wait_for_function('(x)=>document.querySelector("#fastingBackupStatusBtn")?.dataset.state===x', arg=expected, timeout=15000)
+    except Exception:
+        actual=page.locator('#fastingBackupStatusBtn').get_attribute('data-state') if page.locator('#fastingBackupStatusBtn').count() else 'missing'
+        active=page.locator('#toggleFast').inner_text() if page.locator('#toggleFast').count() else 'missing'
+        encouragement=page.locator('#fastingEncouragement').inner_text() if page.locator('#fastingEncouragement').count() else 'missing'
+        print(f'DEBUG backup expected={expected} actual={actual} toggle={active!r} encouragement={encouragement!r}', flush=True)
+        raise
     button=page.locator('#fastingBackupStatusBtn')
     assert button.is_visible(), f'Backup indicator hidden in {expected}'
     assert button.get_attribute('aria-label') and button.get_attribute('title'), 'Missing accessibility description'
