@@ -1059,5 +1059,16 @@
   "a11y.weightChartNavigator": "Навигация в историята на теглото",
   "a11y.weightChartOlder": "По-стари",
   "a11y.weightChartNewer": "По-нови",
-  "a11y.weightChartRange": "Преглед на историята на теглото: най-старите стойности са вляво, най-новите вдясно"
+  "a11y.weightChartRange": "Преглед на историята на теглото: най-старите стойности са вляво, най-новите вдясно",
+  "fasting.encourageEarly": "До избраната от вас цел остават {duration}. Продължете само ако се чувствате добре.",
+  "fasting.encourageMiddle": "Има напредък. До избраната от вас цел остават {duration} — продължете само ако се чувствате добре.",
+  "fasting.encourageNear": "Наближавате целта: остават {duration}. Продължете само ако се чувствате добре.",
+  "fasting.encourageAlmost": "Остават {duration} до избраната цел.",
+  "fasting.encourageComplete": "Достигнахте избраната цел. Продължаването е по избор; можете да спрете сега.",
+  "fasting.shorterOfferTitle": "По-малка следваща стъпка?",
+  "fasting.shorterOfferText": "Ако все още се чувствате добре, можете да продължите още {duration} — половината от оставащото време до първоначалната цел. Можете и да приключите гладуването сега.",
+  "fasting.shorterOfferContinue": "Продължи още {duration}",
+  "fasting.shorterOfferStop": "Приключи гладуването",
+  "fasting.shorterCheckpoint": "По-кратка стъпка: остават {duration}. Първоначалната цел остава по избор.",
+  "fasting.shorterCheckpointReached": "Изпълнихте по-кратката стъпка. Можете да спрете сега или да продължите към първоначалната цел."
 }

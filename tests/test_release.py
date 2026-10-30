@@ -351,7 +351,7 @@ ok('function createInternalSnapshotAsync(' in index and "objectStore('snapshotPa
 ok("'backup.autoSnapshotFailed'" in index and "'backup.autoSnapshotReduced'" in index, 'snapshot failure/reduced localization missing')
 ok('backupReminderTitle' in index and "banner.classList.toggle('warn', snapshotAttention)" in index, 'persistent one-tap snapshot warning banner missing')
 ok(any('One is created automatically after the first meaningful fasting or weight change.' in str(v) for v in en_source.values()), 'outdated recovery-snapshot empty-state wording remains')
-ok('v1.0.0 — FIRST DEPLOYMENT' not in (ROOT/'FIRST-DEPLOYMENT-CHECKLIST.txt').read_text(), 'deployment checklist still tied to v1.0.0')
+ok(not (ROOT/'FIRST-DEPLOYMENT-CHECKLIST.txt').exists(), 'obsolete first-deployment checklist should remain removed')
 ok('1.0.0 -> 1.0.1' not in (ROOT/'RELEASE-GUIDE.txt').read_text(), 'release guide still contains obsolete release example')
 
 

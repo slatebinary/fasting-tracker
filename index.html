@@ -156,6 +156,8 @@ layout: null
     .exactTimer { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 650; margin-bottom: 14px; }
     .goal { color: var(--muted); margin-top: 8px; }
     .progressDetail { min-height: 20px; color: var(--muted); font-size: 13px; margin: 4px 0 8px; }
+    .fastingEncouragement { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 0 0 12px; }
+    .fastingEncouragement[hidden] { display:none; }
     .targetMoment { min-height: 18px; color: var(--muted); font-size: 13px; margin: 0 0 16px; line-height: 1.35; }
     .nextFastCard { border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); }
     .nextFastCountdownValue { font-size: clamp(28px, 8vw, 42px); font-weight: 760; letter-spacing: .01em; margin: 8px 0 4px; font-variant-numeric: tabular-nums; }
@@ -705,6 +707,7 @@ layout: null
       </div>
       <div class="goal" id="goalText">—</div>
       <div class="progressDetail" id="progressDetail" data-i18n="fasting.zeroProgress">0% complete</div>
+      <div class="fastingEncouragement" id="fastingEncouragement" aria-live="off" hidden></div>
       <div class="targetMoment" id="targetMoment" hidden></div>
       <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
       <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
@@ -1786,14 +1789,14 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 34;
+  const I18N_SOURCE_REVISION = 35;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.8';
+  const APP_VERSION = '1.17.9';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1929,6 +1932,8 @@ layout: null
   let fastActionLocked = false;
   let suppressFastToggleUntil = 0;
   let pendingStopUndo = null;
+  let stopModalStage = 'confirm';
+  let shorterGoalOfferMs = 0;
   let stopUndoTimer = 0;
   let stopUndoCountdownTimer = 0;
   let stopUndoMessageTimer = 0;
@@ -4194,6 +4199,24 @@ layout: null
         ? t('fasting.targetTimePassed', {date: localDateTimeLabel(targetAt, data.activeTimeZone)})
         : t('fasting.expectedTargetTime', {date: localDateTimeLabel(targetAt, data.activeTimeZone)});
 
+      const encouragement = el('fastingEncouragement');
+      const shorterState = shorterGoalState();
+      if (shorterState?.start === data.activeStart && shorterState.checkpointAt > 0) {
+        encouragement.hidden = false;
+        encouragement.textContent = Date.now() < shorterState.checkpointAt
+          ? t('fasting.shorterCheckpoint', {duration:friendlyDuration(shorterState.checkpointAt - Date.now())})
+          : t('fasting.shorterCheckpointReached');
+      } else if (elapsed >= targetMs) {
+        encouragement.hidden = false;
+        encouragement.textContent = t('fasting.encourageComplete');
+      } else {
+        const remainingForEncouragement = targetMs - elapsed;
+        const progressForEncouragement = targetMs > 0 ? elapsed / targetMs : 0;
+        const encouragementKey = progressForEncouragement < 0.25 ? 'fasting.encourageEarly' : progressForEncouragement < 0.75 ? 'fasting.encourageMiddle' : progressForEncouragement < 0.95 ? 'fasting.encourageNear' : 'fasting.encourageAlmost';
+        encouragement.hidden = false;
+        encouragement.textContent = t(encouragementKey, {duration:friendlyDuration(remainingForEncouragement)});
+      }
+
       if (elapsed >= targetMs) {
         const beyond = elapsed - targetMs;
         progressDetail.textContent = t('fasting.targetReached', {duration: friendlyDuration(beyond)});
@@ -4217,6 +4240,8 @@ layout: null
       fastProgressTrack.setAttribute('aria-valuetext', t('fasting.zeroProgress'));
       progressDetail.textContent = t('fasting.zeroProgress');
       progressDetail.classList.remove('good');
+      el('fastingEncouragement').hidden = true;
+      el('fastingEncouragement').textContent = '';
       el('targetMoment').hidden = true;
       el('targetMoment').textContent = '';
       updateNextFastCountdown();
@@ -4348,6 +4373,7 @@ layout: null
   }
 
   function startFast() {
+    clearShorterGoalState();
     const createdAt = new Date().toISOString();
     data.activeStart = createdAt;
     data.activeGoalHours = data.goalHours;
@@ -4391,9 +4417,36 @@ layout: null
     // otherwise retarget a synthetic click after the overlay disappears.
     suppressFastToggleUntil = performance.now() + 350;
     hideModal('stopFastModal');
+    stopModalStage = 'confirm';
+    shorterGoalOfferMs = 0;
+    el('stopFastModalTitle').textContent = t('fasting.stopModalTitle');
+    el('keepFastingBtn').textContent = t('fasting.keepFasting');
+    el('stopAndSaveBtn').textContent = t('fasting.stopAndSave');
+  }
+
+  function shorterGoalState() {
+    try {
+      const value = JSON.parse(localStorage.getItem('fastingTracker.shorterGoal') || 'null');
+      if (!value || typeof value.start !== 'string' || !Number.isFinite(Number(value.checkpointAt))) return null;
+      return {start:value.start, checkpointAt:Number(value.checkpointAt), offered:value.offered === true};
+    } catch { return null; }
+  }
+
+  function saveShorterGoalState(value) {
+    try { localStorage.setItem('fastingTracker.shorterGoal', JSON.stringify(value)); } catch {}
+  }
+
+  function clearShorterGoalState() {
+    try { localStorage.removeItem('fastingTracker.shorterGoal'); } catch {}
   }
 
   function keepFastingAndReturnHome() {
+    if (stopModalStage === 'shorter') {
+      const start = data.activeStart;
+      if (start && shorterGoalOfferMs > 0) {
+        saveShorterGoalState({start, checkpointAt:Date.now() + shorterGoalOfferMs, offered:true});
+      }
+    }
     closeStopFastModal();
     activateScreen('fasting');
     requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
@@ -4413,6 +4466,11 @@ layout: null
     }
     const duration = Date.now() - start.getTime();
     if (duration <= 0) { alert(t('fasting.clockError')); return; }
+    stopModalStage = 'confirm';
+    shorterGoalOfferMs = 0;
+    el('stopFastModalTitle').textContent = t('fasting.stopModalTitle');
+    el('keepFastingBtn').textContent = t('fasting.keepFasting');
+    el('stopAndSaveBtn').textContent = t('fasting.stopAndSave');
     const text = el('stopFastModalText');
     text.classList.toggle('warn', duration < 60000);
     text.textContent = duration < 60000
@@ -4426,6 +4484,29 @@ layout: null
   }
 
   function confirmStopFast() {
+    if (stopModalStage === 'confirm') {
+      const startNow = validDate(data.activeStart);
+      if (startNow) {
+        const nowMs = Date.now();
+        const remainingMs = startNow.getTime() + goalMs(activeTargetHours()) - nowMs;
+        const reason = normalizeStopReason(el('stopReasonSelect')?.value);
+        const previousOffer = shorterGoalState();
+        if (remainingMs >= 120000 && (!reason || reason === 'personal') && !(previousOffer?.start === data.activeStart && previousOffer.offered)) {
+          shorterGoalOfferMs = Math.floor((remainingMs / 2) / 60000) * 60000;
+          if (shorterGoalOfferMs >= 60000) {
+            stopModalStage = 'shorter';
+            el('stopFastModalTitle').textContent = t('fasting.shorterOfferTitle');
+            el('stopFastModalText').classList.remove('warn');
+            el('stopFastModalText').textContent = t('fasting.shorterOfferText', {duration:friendlyDuration(shorterGoalOfferMs)});
+            el('stopReasonGroup').hidden = true;
+            el('keepFastingBtn').textContent = t('fasting.shorterOfferContinue', {duration:friendlyDuration(shorterGoalOfferMs)});
+            el('stopAndSaveBtn').textContent = t('fasting.shorterOfferStop');
+            el('keepFastingBtn').focus();
+            return;
+          }
+        }
+      }
+    }
     const start = validDate(data.activeStart);
     if (!start) { closeStopFastModal(); return; }
     const end = new Date();
