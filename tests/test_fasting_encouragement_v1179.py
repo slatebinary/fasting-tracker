@@ -66,12 +66,24 @@ with sync_playwright() as p:
     page.evaluate("() => { const x=JSON.parse(localStorage.getItem('fastingTracker.shorterGoal')); x.checkpointAt=Date.now()-1000; localStorage.setItem('fastingTracker.shorterGoal',JSON.stringify(x)); }")
     page.wait_for_function("document.querySelector('#fastingEncouragement')?.textContent.toLowerCase().includes('completed the shorter step')",timeout=5000)
 
-    # The shorter offer is one-time for this active fast; a later stop saves normally.
+    # Every later personal stop attempt must offer the choice again, even
+    # after the shorter checkpoint was accepted and then the original target
+    # was selected. The final selection can still end the fast immediately.
     page.wait_for_timeout(400)
-    page.locator('#toggleFast').click()
-    page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
-    page.locator('#stopAndSaveBtn').click()
-    page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    for attempt in range(2):
+        page.locator('#toggleFast').click()
+        page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+        page.locator('#stopAndSaveBtn').click()
+        page.locator('#continueOriginalTargetBtn').wait_for(state='visible',timeout=3000)
+        if attempt == 0:
+            page.locator('#continueOriginalTargetBtn').click()
+            page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+            page.wait_for_timeout(400)
+        else:
+            # Respect the modal action's 250 ms duplicate-click guard.
+            page.wait_for_timeout(300)
+            page.locator('#stopAndSaveBtn').click()
+            page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
 
     # A health/safety stop bypasses any extension suggestion.
@@ -104,15 +116,24 @@ with sync_playwright() as p:
     if '16' not in page3.locator('#goalText').inner_text():
         print('FAIL: original fasting target display changed after choosing to continue'); sys.exit(1)
     page3.wait_for_timeout(400)  # respect the modal touch-through suppression window
-    page3.locator('#toggleFast').click()
-    page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
-    page3.locator('#stopAndSaveBtn').click()
-    # A repeated early-stop attempt should save directly, without showing the
-    # shorter-step decision a second time.
-    page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    for attempt in range(2):
+        page3.locator('#toggleFast').click()
+        page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+        page3.locator('#stopAndSaveBtn').click()
+        page3.locator('#continueOriginalTargetBtn').wait_for(state='visible',timeout=3000)
+        if attempt == 0:
+            # Choosing the original target must not suppress the next offer.
+            page3.locator('#continueOriginalTargetBtn').click()
+            page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+            page3.wait_for_timeout(400)
+        else:
+            # Respect the modal action's 250 ms duplicate-click guard.
+            page3.wait_for_timeout(300)
+            page3.locator('#stopAndSaveBtn').click()
+            page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page3.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
 
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: encouragement, half-remaining checkpoint, one-time offer and health/safety bypass')
+print('PASS: encouragement, repeatable half-remaining offer, original-target continuation and health/safety bypass')
