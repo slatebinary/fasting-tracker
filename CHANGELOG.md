@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.17.12 — 30 October 2026
+- Show the half-remaining-time continuation offer on every attempt to stop an active fast for personal reasons, including after choosing the shorter checkpoint or continuing to the original target.
+- Keep health/safety and unavoidable stop reasons exempt from the continuation offer; preserve the existing active fast, target and checkpoint behavior.
+- Add browser regression coverage for repeated attempts. No existing fasting, weight or backup records are changed.
+
 ## v1.17.11 — 30 October 2026
 - Added a third choice to the early-stop encouragement: continue the current fast to its original target, continue for half the remaining time, or end the fast.
 - Choosing the original target keeps the active fast and its original target unchanged, without creating a shorter checkpoint; the offer is not repeated for that same fast.
