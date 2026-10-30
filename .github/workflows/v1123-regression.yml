@@ -76,6 +76,7 @@ jobs:
           python3 tests/test_permanent_purge_confirmation.py
           python3 tests/test_backup_indicator.py
           python3 tests/test_setup_notification_layout.py
+          python3 tests/test_notifications.py
           python3 tests/test_dst_timezone.py
           python3 tests/test_weight_unit_layout.py
           python3 tests/test_weight_aggregation_scroll.py
