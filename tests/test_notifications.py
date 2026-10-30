@@ -38,7 +38,7 @@ with sync_playwright() as p:
         'activeCreatedAt':start.isoformat().replace('+00:00','Z'),
         'activeModifiedAt':None,
     })
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); localStorage.setItem('fastingTracker.notificationState', JSON.stringify({weighInAnchorAt:new Date(Date.now()-8*24*3600000).toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupNotifications > summary').click()
