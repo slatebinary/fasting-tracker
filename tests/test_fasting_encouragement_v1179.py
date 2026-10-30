@@ -107,9 +107,9 @@ with sync_playwright() as p:
     page3.locator('#toggleFast').click()
     page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
     page3.locator('#stopAndSaveBtn').click()
-    if page3.locator('#continueOriginalTargetBtn').is_visible():
-        print('FAIL: the same fast received the early-stop offer more than once'); sys.exit(1)
-    page3.locator('#stopAndSaveBtn').click()
+    # A repeated early-stop attempt should save directly, without showing the
+    # shorter-step decision a second time.
+    page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page3.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
 
     if errors:
