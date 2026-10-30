@@ -50,7 +50,7 @@ with sync_playwright() as p:
     state=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.shorterGoal') || 'null')")
     if not state or state.get('start') is None or state.get('offered') is not True:
         print('FAIL: accepted shorter step was not recorded as an active checkpoint'); sys.exit(1)
-    if not (6*3600000 <= state['checkpointAt']-Date.now() <= 7*3600000):
+    if not (6*3600000 <= state['checkpointAt']-page.evaluate('Date.now()') <= 7*3600000):
         print('FAIL: checkpoint is not approximately half of the 14 hours remaining'); sys.exit(1)
     page.evaluate("() => { const x=JSON.parse(localStorage.getItem('fastingTracker.shorterGoal')); x.checkpointAt=Date.now()-1000; localStorage.setItem('fastingTracker.shorterGoal',JSON.stringify(x)); }")
     page.wait_for_function("document.querySelector('#fastingEncouragement')?.textContent.toLowerCase().includes('completed the shorter step')",timeout=5000)
