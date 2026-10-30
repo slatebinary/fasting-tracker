@@ -4491,7 +4491,7 @@ layout: null
         const remainingMs = startNow.getTime() + goalMs(activeTargetHours()) - nowMs;
         const reason = normalizeStopReason(el('stopReasonSelect')?.value);
         const previousOffer = shorterGoalState();
-        if (remainingMs >= 120000 && reason !== 'health-safety' && !(previousOffer?.start === data.activeStart && previousOffer.offered)) {
+        if (remainingMs >= 120000 && (!reason || reason === 'personal') && !(previousOffer?.start === data.activeStart && previousOffer.offered)) {
           shorterGoalOfferMs = Math.floor((remainingMs / 2) / 60000) * 60000;
           if (shorterGoalOfferMs >= 60000) {
             stopModalStage = 'shorter';
