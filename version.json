@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.11",
+  "version": "1.17.12",
   "released": "2026-10-30",
-  "notes": "Added an explicit option to continue the current fast to its original target when the shorter half-remaining checkpoint is offered.",
+  "notes": "Repeat the half-remaining-time continuation offer on every personal-reason early-stop attempt.",
   "entry": "./index.html",
   "shell": [
     "./",
