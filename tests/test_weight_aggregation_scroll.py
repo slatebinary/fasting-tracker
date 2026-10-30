@@ -115,23 +115,23 @@ with sync_playwright() as p:
         previous_index = latest_index
         for step in range(info['valid'] - 1):
             page.locator('#weightChartOlderBtn').click()
-            page.wait_for_timeout(35)
+            page.wait_for_timeout(10)
             current_index = int(nav.input_value())
             if current_index >= previous_index:
                 print('FAIL: Older did not advance toward oldest endpoint', mode, step, previous_index, current_index); sys.exit(1)
             previous_index = current_index
         if page.locator('#weightChartOlderBtn').is_enabled():
             print('FAIL: Older remained enabled at the oldest endpoint', mode, previous_index); sys.exit(1)
-        oldest_index = int(nav.input_value())
+        previous_index = int(nav.input_value())
         for step in range(info['valid'] - 1):
             page.locator('#weightChartNewerBtn').click()
-            page.wait_for_timeout(35)
+            page.wait_for_timeout(10)
             current_index = int(nav.input_value())
-            if current_index <= oldest_index and step == 0:
-                print('FAIL: Newer did not advance toward newest endpoint', mode, oldest_index, current_index); sys.exit(1)
-            oldest_index = current_index
+            if current_index <= previous_index:
+                print('FAIL: Newer did not advance toward newest endpoint', mode, step, previous_index, current_index); sys.exit(1)
+            previous_index = current_index
         if page.locator('#weightChartNewerBtn').is_enabled():
-            print('FAIL: Newer remained enabled at the newest endpoint', mode, oldest_index); sys.exit(1)
+            print('FAIL: Newer remained enabled at the newest endpoint', mode, previous_index); sys.exit(1)
 
     # Raw measurements are still present in the editable history list rather
     # than being replaced by aggregates.
