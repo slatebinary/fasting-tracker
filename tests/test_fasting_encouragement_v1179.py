@@ -80,6 +80,8 @@ with sync_playwright() as p:
             page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
             page.wait_for_timeout(400)
         else:
+            # Respect the modal action's 250 ms duplicate-click guard.
+            page.wait_for_timeout(300)
             page.locator('#stopAndSaveBtn').click()
             page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
@@ -125,6 +127,8 @@ with sync_playwright() as p:
             page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
             page3.wait_for_timeout(400)
         else:
+            # Respect the modal action's 250 ms duplicate-click guard.
+            page3.wait_for_timeout(300)
             page3.locator('#stopAndSaveBtn').click()
             page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page3.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
