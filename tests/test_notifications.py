@@ -114,6 +114,7 @@ with sync_playwright() as p:
     weigh_card.locator('.notificationDetailAddWeight').click()
     page.wait_for_function("!document.querySelector('#weightModal').hidden",timeout=3000)
     page.wait_for_function("!document.querySelector('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]')",timeout=3000)
+    page.wait_for_function("document.activeElement?.id === 'weightValueInput'",timeout=3000)
     if page.evaluate("document.activeElement?.id")!='weightValueInput':
         print('FAIL: Add action did not focus the weight-entry field'); sys.exit(1)
     if page.evaluate("document.querySelectorAll('#weightHistoryList .historyRow').length")!=weight_count:
