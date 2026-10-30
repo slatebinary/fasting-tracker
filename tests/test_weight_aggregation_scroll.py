@@ -97,12 +97,41 @@ with sync_playwright() as p:
     if not selected_detail.strip() or not latest_detail.strip() or range_left >= latest_left:
         print('FAIL: range navigator did not select and reveal older measurements', latest_left, range_left, selected_detail); sys.exit(1)
 
-    # All aggregate periods expose a usable range navigator over their bucket sequence.
-    for mode in ('week','month','quarter','halfyear','year'):
-        page.locator(f'[data-weight-period="{mode}"]').click(); page.wait_for_timeout(80)
+    # Older/Newer must traverse every valid bucket from the newest endpoint
+    # to the oldest endpoint and back, for every chart period.
+    for mode in ('daily','week','month','quarter','halfyear','year'):
+        page.locator(f'[data-weight-period="{mode}"]').click()
+        page.wait_for_function(f"document.querySelector('#weightChartScroller')?.dataset.period === '{mode}'",timeout=5000)
+        page.wait_for_timeout(100)
         nav = page.locator('#weightChartRange')
         if not nav.is_visible() or int(nav.get_attribute('max') or '0') < 1:
             print('FAIL: range navigator is missing historical buckets for', mode); sys.exit(1)
+        info = page.locator('#weightChartScroller').evaluate("e=>({valid:+e.dataset.dataPointCount,buckets:+e.dataset.bucketCount})")
+        if info['valid'] < 2:
+            print('FAIL: not enough valid buckets for endpoint traversal', mode, info); sys.exit(1)
+        latest_index = int(nav.input_value())
+        if page.locator('#weightChartNewerBtn').is_enabled():
+            print('FAIL: Newer should be disabled at the newest endpoint on period open', mode, latest_index); sys.exit(1)
+        previous_index = latest_index
+        for step in range(info['valid'] - 1):
+            page.locator('#weightChartOlderBtn').click()
+            page.wait_for_timeout(35)
+            current_index = int(nav.input_value())
+            if current_index >= previous_index:
+                print('FAIL: Older did not advance toward oldest endpoint', mode, step, previous_index, current_index); sys.exit(1)
+            previous_index = current_index
+        if page.locator('#weightChartOlderBtn').is_enabled():
+            print('FAIL: Older remained enabled at the oldest endpoint', mode, previous_index); sys.exit(1)
+        oldest_index = int(nav.input_value())
+        for step in range(info['valid'] - 1):
+            page.locator('#weightChartNewerBtn').click()
+            page.wait_for_timeout(35)
+            current_index = int(nav.input_value())
+            if current_index <= oldest_index and step == 0:
+                print('FAIL: Newer did not advance toward newest endpoint', mode, oldest_index, current_index); sys.exit(1)
+            oldest_index = current_index
+        if page.locator('#weightChartNewerBtn').is_enabled():
+            print('FAIL: Newer remained enabled at the newest endpoint', mode, oldest_index); sys.exit(1)
 
     # Raw measurements are still present in the editable history list rather
     # than being replaced by aggregates.
