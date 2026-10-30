@@ -1059,5 +1059,16 @@
   "a11y.weightChartNavigator": "Weight history navigation",
   "a11y.weightChartOlder": "Older",
   "a11y.weightChartNewer": "Newer",
-  "a11y.weightChartRange": "Browse weight history, oldest on the left and newest on the right"
+  "a11y.weightChartRange": "Browse weight history, oldest on the left and newest on the right",
+  "fasting.encourageEarly": "Your chosen target is {duration} away. Keep going only if you feel well.",
+  "fasting.encourageMiddle": "You're making progress. {duration} remain until your chosen target — continue only if you feel well.",
+  "fasting.encourageNear": "You're getting closer: {duration} left. Continue only if you feel well.",
+  "fasting.encourageAlmost": "Almost there: {duration} left to your chosen target.",
+  "fasting.encourageComplete": "You reached your chosen target. Continuing is optional; you can stop now.",
+  "fasting.shorterOfferTitle": "A smaller next step?",
+  "fasting.shorterOfferText": "If you still feel well, you could continue for another {duration} — half the time remaining to your original target. You can also end your fast now.",
+  "fasting.shorterOfferContinue": "Continue for {duration}",
+  "fasting.shorterOfferStop": "End my fast",
+  "fasting.shorterCheckpoint": "Shorter step: {duration} remaining. Your original target is still optional.",
+  "fasting.shorterCheckpointReached": "You completed the shorter step. You can stop now or continue toward your original target."
 }
