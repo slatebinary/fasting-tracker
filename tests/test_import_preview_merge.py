@@ -8,6 +8,8 @@ try:
 except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
 
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
+
 local=build_data(1)
 # Move the local record far enough into the past to avoid overlap.
 local['records'][0]['id']='local-fast'; local['records'][0]['start']='2026-01-01T18:00:00.000Z'; local['records'][0]['end']='2026-01-02T10:00:00.000Z'
@@ -25,7 +27,7 @@ with tempfile.TemporaryDirectory() as td:
         page.on('pageerror',lambda exc:errors.append(str(exc)))
         page.on('dialog',lambda d:(alerts.append(d.message),d.accept()))
         page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",local)
-        page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.7'",timeout=20000)
+        page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
         page.locator('#importFile').set_input_files(str(pth))
         page.wait_for_function("!document.querySelector('#importPreviewModal').hidden")
         counts=page.locator('#importPreviewCounts').inner_text(); meta=page.locator('#importPreviewMeta').inner_text(); rng=page.locator('#importPreviewRange').inner_text()

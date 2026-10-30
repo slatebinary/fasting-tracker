@@ -97,9 +97,18 @@ function hexFromBuffer(buffer) {
 
 function normalizeHtmlForIntegrity(text) {
   const siteBase = SCOPE_URL.href.replace(/\/$/, '');
+  const siteOrigin = SCOPE_URL.origin;
   return String(text)
     .replace(/\r\n?/g, '\n')
+    // The Pages workflow uploads a prepared static artifact, so GitHub Pages
+    // does not process Jekyll front matter or Liquid placeholders for us.
+    // Match tools/build_release.py's canonicalization before handling any
+    // already-rendered URLs that may appear in an older/alternate deployment.
+    .replace(/^---\n[\s\S]*?\n---\n/, '')
+    .replace(/{{ site\.github\.url }}/g, '__SITE_URL__')
+    .replace(/{{ site\.github\.repository_url }}/g, '__REPO_URL__')
     .split(siteBase).join('__SITE_URL__')
+    .split(siteOrigin).join('__SITE_URL__')
     .replace(/https:\/\/github\.com\/[^\/"'<>\s]+\/[^\/"'<>\s]+/g, '__REPO_URL__');
 }
 
@@ -120,7 +129,7 @@ async function fetchReleaseAsset(canonical, version, expectedHash) {
   const response = await fetchWithTimeout(new Request(url.href, { cache:'no-store', credentials:'same-origin' }), ASSET_FETCH_TIMEOUT_MS);
   if (!response.ok) throw new Error(`failed to cache ${url.pathname}`);
   const actualHash = await responseDigestHex(canonical, response);
-  if (actualHash !== expectedHash) throw new Error(`integrity check failed for ${url.pathname}`);
+  if (actualHash !== expectedHash) throw new Error(`integrity check failed for ${url.pathname} (expected ${expectedHash}, received ${actualHash})`);
   return response;
 }
 

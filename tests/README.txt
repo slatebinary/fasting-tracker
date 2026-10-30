@@ -15,3 +15,4 @@ The tests/ directory is excluded from the GitHub Pages output by _config.yml.
 - test_datetime_edges_v1111.py: leap day, midnight crossing, Europe/Sofia spring/autumn DST and 72-hour import/integrity regression.
 - test_large_text_v1111.py: 200-300% zoom/layout stress for key Settings controls and modals.
 - test_v1116_pattern_navigator.py: compact four-category Fasting Patterns navigation, grouped View selector, keyboard navigation and remembered per-category chart selection.
+- test_v1178_stats_history_navigation.py: Older/Newer buttons, full-history slider, exact one-point stepping, oldest/newest boundaries, and Calendar/category-view exclusions across chronological Statistics charts.

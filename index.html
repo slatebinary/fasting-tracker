@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.12.7" />
+  <meta name="ft-app-version" content="1.17.8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -45,12 +45,12 @@ layout: null
       const q=params.get('lang');
       const qi=params.get('icon');
       let pref=null, storedData=null;
-      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=storedData.appearance==='dark'?'#000000':'#ffffff'; } } catch {}
+      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=['dark','high-contrast-dark'].includes(storedData.appearance)?'#000000':'#ffffff'; } } catch {}
       const primarySystemTag=((Array.isArray(navigator.languages)&&navigator.languages[0])||navigator.language||'en').toLowerCase();
       const systemBase=primarySystemTag.split(/[-_]/,1)[0];
       const systemLang=allowed.includes(systemBase)?systemBase:'en';
       const lang=allowed.includes(q)?q:(allowed.includes(pref)?pref:systemLang);
-      const iconAllowed=['plate','moon','hourglass','timer'];
+      const iconAllowed=['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'];
       const icon=iconAllowed.includes(qi)?qi:(iconAllowed.includes(storedData&&storedData.iconChoice)?storedData.iconChoice:'plate');
       const manifestFor=(lng,ico)=>{
         if(ico==='plate') return lng==='bg'?'manifest-bg.webmanifest':lng==='es'?'manifest-es.webmanifest':'manifest.webmanifest';
@@ -58,8 +58,9 @@ layout: null
       };
       const titles={en:'Fasting',bg:'Гладуване',es:'Ayuno'};
       document.getElementById('appManifest').href=manifestFor(lang,icon);
-      const fav=document.getElementById('appFavicon'); if(fav) fav.href=`icons/${icon}/favicon-32.png`;
-      const touch=document.getElementById('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/apple-touch-icon.png`;
+      const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon);
+      const fav=document.getElementById('appFavicon'); if(fav) fav.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'favicon-32.png'}`;
+      const touch=document.getElementById('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'apple-touch-icon.png'}`;
       document.getElementById('appleAppTitle').content=titles[lang];
     } catch {}
   })();
@@ -115,6 +116,31 @@ layout: null
       --line: #38383a; --accent: #0a84ff; --good: #32d583; --danger: #ff453a;
       --tab: rgba(28,28,30,.94);
     }
+    /* Accessibility palettes; status must remain understandable without colour alone. */
+    html[data-theme="grayscale"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#555; --accent:#000; --good:#000; --danger:#000; --tab:#f0f0f0; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="high-contrast-light"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#000; --accent:#0037b3; --good:#005a00; --danger:#b00020; --tab:#fff; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="high-contrast-dark"] { color-scheme: dark; --bg:#000; --card:#000; --text:#fff; --muted:#f0f0f0; --line:#fff; --accent:#80dfff; --good:#a8ff9e; --danger:#ff9eaa; --tab:#000; --primary-button-text:#000; --danger-button-text:#000; }
+    html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#007f5f; --danger:#c44e00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#000; }
+    .primary { color:var(--primary-button-text, #fff); }
+    .stop { color:var(--danger-button-text, #fff); }
+    html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop, html[data-theme="colorblind"] .stop { color:#000; }
+    /* Force accessible button pairs after widget styles, which previously overrode theme colors. */
+    html[data-theme="high-contrast-light"] button:not(.primary):not(.stop):not(.dangerText):not(.secondary) { background:#fff !important; color:#000 !important; border:2px solid #000 !important; font-weight:700; }
+    html[data-theme="high-contrast-light"] button.secondary { background:#e6e6e6 !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="high-contrast-light"] button.primary { background:#0037b3 !important; color:#fff !important; border:2px solid #0037b3 !important; }
+    html[data-theme="high-contrast-light"] button.stop { background:#b00020 !important; color:#fff !important; border:2px solid #b00020 !important; }
+    html[data-theme="high-contrast-light"] button.dangerText { background:transparent !important; color:#8b0018 !important; border:2px solid #8b0018 !important; }
+    html[data-theme="high-contrast-dark"] button:not(.primary):not(.stop):not(.dangerText):not(.secondary) { background:#000 !important; color:#fff !important; border:2px solid #fff !important; font-weight:700; }
+    html[data-theme="high-contrast-dark"] button.secondary { background:#222 !important; color:#fff !important; border:2px solid #fff !important; }
+    html[data-theme="high-contrast-dark"] button.primary { background:#80dfff !important; color:#000 !important; border:2px solid #80dfff !important; }
+    html[data-theme="high-contrast-dark"] button.stop { background:#ff9eaa !important; color:#000 !important; border:2px solid #ff9eaa !important; }
+    html[data-theme="high-contrast-dark"] button.dangerText { background:transparent !important; color:#ff9eaa !important; border:2px solid #ff9eaa !important; }
+    html[data-theme="grayscale"] button:not(.primary):not(.stop):not(.dangerText):not(.secondary) { background:#fff !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="grayscale"] button.secondary { background:#e6e6e6 !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="grayscale"] button.primary, html[data-theme="grayscale"] button.stop { background:#000 !important; color:#fff !important; border:2px solid #000 !important; }
+    html[data-theme="grayscale"] button.dangerText { background:transparent !important; color:#000 !important; border:2px solid #000 !important; }
+    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
     body { padding: env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom)); }
@@ -172,6 +198,7 @@ layout: null
     .calendarWeekday { color:var(--muted); font-size:10px; text-align:center; padding:2px 0; }
     .calendarDay { min-height:54px; padding:6px 3px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--text); text-align:center; font-size:12px; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
     .calendarDay .calendarHours { font-size:9px; color:var(--muted); font-weight:600; }
+    .calendarDay .calendarClockChange { font-size:8px; line-height:1; font-weight:750; color:var(--accent); white-space:nowrap; }
     .calendarDay.level1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
     .calendarDay.level2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
     .calendarDay.level3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
@@ -181,7 +208,9 @@ layout: null
     .calendarDay.selected { outline:3px solid #fff; outline-offset:-3px; box-shadow:0 0 0 1px rgba(0,0,0,.50),0 0 0 4px #fff; position:relative; z-index:1; }
     .calendarDay:disabled { cursor:default; }
     .vizLegend { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; margin-top:9px; flex-wrap:wrap; }
-    .legendSwatch { width:14px; height:10px; border-radius:3px; border:1px solid var(--line); }
+    .legendSwatch { min-width:34px; height:22px; padding:0 4px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; border-radius:5px; border:1px solid var(--line); background:var(--card); color:var(--text); font-size:9px; font-weight:750; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .calendarNumericLegend { gap:5px; }
+    .calendarNumericLegend .legendSwatch.l1, .calendarNumericLegend .legendSwatch.l2, .calendarNumericLegend .legendSwatch.l3, .calendarNumericLegend .legendSwatch.l4 { color:var(--text); }
     .legendSwatch.l1 { background:color-mix(in srgb, var(--accent) 10%, var(--card)); }
     .legendSwatch.l2 { background:color-mix(in srgb, var(--accent) 22%, var(--card)); }
     .legendSwatch.l3 { background:color-mix(in srgb, var(--accent) 38%, var(--card)); }
@@ -205,6 +234,11 @@ layout: null
     .row strong { display: block; }
     .small { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
     .goalInputWrap { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+    .timeZoneSettings { padding:12px 0; border-bottom:1px solid var(--line); }
+    .timeZonePicker { display:grid; gap:7px; margin-top:10px; min-width:0; }
+    .timeZonePicker label { display:block; margin-top:3px; }
+    .timeZonePicker input, .timeZonePicker select { width:100%; max-width:none; min-width:0; box-sizing:border-box; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--text); font:inherit; }
+    .timeZonePicker select { white-space:normal; }
     select { max-width: 190px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
     .notificationCadenceToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); gap:2px; }
     .notificationCadenceToggle button { min-width:74px; padding:8px 11px; border-radius:9px; background:transparent; color:var(--text); font-size:13px; }
@@ -240,7 +274,75 @@ layout: null
     .tab { background: transparent; color: var(--muted); border-radius: 0; padding: 10px 4px 8px; font-size: 12px; font-weight: 600; }
     .tab .ico { display: block; font-size: 21px; line-height: 1.1; margin-bottom: 3px; }
     .tab.active { color: var(--accent); }
+
+    /* Color-Friendly navigation: strong neutral contrast and a non-colour-only active state. */
+    html[data-theme="colorblind"] nav {
+      background: #ffffff;
+      border-top: 2px solid #132238;
+      box-shadow: 0 -2px 8px rgba(19,34,56,.10);
+    }
+    html[data-theme="colorblind"] .tab {
+      color: #26384d;
+      font-weight: 750;
+    }
+    html[data-theme="colorblind"] .tab .ico {
+      color: #132238;
+      filter: grayscale(1) contrast(1.4);
+      font-weight: 800;
+    }
+    html[data-theme="colorblind"] .tab.active {
+      color: #003f73;
+      background: #dcecf8;
+      box-shadow: inset 0 -4px 0 #003f73;
+      font-weight: 800;
+    }
+    html[data-theme="colorblind"] .tab.active .ico {
+      filter: grayscale(1) contrast(1.7);
+    }
+    html[data-theme="colorblind"] .tab:focus-visible {
+      position: relative;
+      z-index: 1;
+      outline: 3px solid #003f73;
+      outline-offset: -4px;
+    }
     .notice { background: color-mix(in srgb, var(--accent) 12%, var(--card)); border-radius: 14px; padding: 12px 14px; color: var(--text); font-size: 14px; margin-bottom: 14px; line-height: 1.4; }
+    .patientTortoise { display:flex; align-items:center; gap:14px; margin:12px 0 4px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--card); }
+    .patientTortoiseProgress { margin:8px 0 0; padding:9px 11px; border:1px dashed var(--line); border-radius:12px; color:var(--text); background:var(--card); font-size:14px; line-height:1.4; }
+    .patientTortoiseProgress[hidden] { display:none !important; }
+    .patientTortoiseProgress.isNew { animation:tortoiseTapPop .24s ease-out; }
+    .patientTortoiseProgress .tapCount { font-weight:800; white-space:nowrap; }
+    @keyframes tortoiseTapPop { 0%{transform:scale(.97);opacity:.55} 65%{transform:scale(1.015)} 100%{transform:scale(1);opacity:1} }
+    @media (prefers-reduced-motion: reduce) { .patientTortoiseProgress.isNew { animation:none; } }
+    .patientTortoise .patientTortoiseArt { width:96px; height:96px; flex:0 0 96px; color:var(--text); overflow:visible; }
+    .patientTortoiseArt .tortoiseLeg, .patientTortoiseArt .tortoiseHead, .patientTortoiseArt .tortoiseBody, .patientTortoiseArt .tortoiseTail { transform-box:fill-box; transform-origin:center; }
+    .patientTortoiseArt .tortoiseGround { stroke:currentColor; stroke-width:1.8; stroke-linecap:round; opacity:.28; fill:none; }
+    .patientTortoiseArt .tortoiseShell { fill:currentColor; fill-opacity:.18; stroke:currentColor; stroke-width:2.6; stroke-linejoin:round; }
+    .patientTortoiseArt .tortoiseShellPanel { fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; opacity:.72; }
+    .patientTortoiseArt .tortoiseLimb { fill:currentColor; fill-opacity:.62; stroke:currentColor; stroke-width:2.2; stroke-linejoin:round; }
+    .patientTortoiseArt .tortoiseHeadShape { fill:currentColor; fill-opacity:.32; stroke:currentColor; stroke-width:2.5; stroke-linejoin:round; }
+    .patientTortoiseArt .tortoiseFaceLine { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; }
+    .patientTortoiseMessage { font-size:17px; font-weight:750; line-height:1.35; }
+    .patientTortoise button { margin-top:8px; padding:8px 12px; }
+    #appVersionLabel[role="button"] { cursor:pointer; }
+    #appVersionLabel[role="button"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; border-radius:4px; }
+    @media (prefers-reduced-motion: no-preference) {
+      .patientTortoiseArt { animation:tortoiseNod 1.15s ease-in-out 2; }
+      .patientTortoise.isRevealed { animation:tortoiseArrive .65s cubic-bezier(.2,.85,.25,1.2) both; }
+      .patientTortoise.isRevealed .tortoiseBody { animation:tortoiseBodyBob .34s ease-in-out 5 alternate; }
+      .patientTortoise.isRevealed .tortoiseHead { animation:tortoiseHeadPeek .56s cubic-bezier(.2,.8,.25,1.1) 2; }
+      .patientTortoise.isRevealed .tortoiseLegFront { animation:tortoiseLegStep .24s ease-in-out 5 alternate; }
+      .patientTortoise.isRevealed .tortoiseLegBack { animation:tortoiseLegStep .24s ease-in-out .12s 5 alternate-reverse; }
+      .patientTortoise.isRevealed .tortoiseTail { animation:tortoiseTailWiggle .16s ease-in-out 5 alternate; }
+      .patientTortoise.isRevealed .tortoiseGroundDash { animation:tortoiseGroundPulse .5s ease-out 3; }
+      @keyframes tortoiseNod { 0%,100%{transform:rotate(0) translateY(0)} 50%{transform:rotate(-3deg) translateY(-2px)} }
+      @keyframes tortoiseArrive { 0%{opacity:0;transform:translateY(12px) scale(.9)} 58%{opacity:1;transform:translateY(-3px) scale(1.035)} 78%{transform:translateY(1px) scale(.99)} 100%{opacity:1;transform:translateY(0) scale(1)} }
+      @keyframes tortoiseBodyBob { from{transform:translateY(0)} to{transform:translateY(-2px)} }
+      @keyframes tortoiseHeadPeek { 0%,100%{transform:translate(0,0) rotate(0)} 45%{transform:translate(3px,-2px) rotate(-4deg)} 72%{transform:translate(1px,1px) rotate(2deg)} }
+      @keyframes tortoiseLegStep { from{transform:rotate(-10deg) translateY(-1px)} to{transform:rotate(12deg) translateY(1px)} }
+      @keyframes tortoiseTailWiggle { from{transform:rotate(-8deg)} to{transform:rotate(10deg)} }
+      @keyframes tortoiseGroundPulse { 0%{opacity:.3;transform:translateX(0)} 60%{opacity:.65;transform:translateX(3px)} 100%{opacity:0;transform:translateX(7px)} }
+    }
+
     [hidden] { display: none !important; }
     .updateBanner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--accent) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
     .updateBanner strong { display: block; }
@@ -320,10 +422,11 @@ layout: null
     .historyActions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 5px; }
     .historyActions button { padding: 7px 9px; font-size: 13px; }
     .iconChoiceGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:14px; }
-    .iconChoice { padding:8px; background:var(--bg); color:var(--text); border:2px solid transparent; white-space:normal !important; min-width:0; text-align:center; }
+    .iconChoice { padding:8px; background:var(--bg); color:var(--text); border:0; white-space:normal !important; min-width:0; text-align:center; }
     .iconChoice img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:22%; margin-bottom:7px; }
     .iconChoice span { display:block; font-size:12px; line-height:1.25; }
-    .iconChoice.active { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--bg)); }
+    .iconChoice.active { border:0; background:color-mix(in srgb, var(--accent) 10%, var(--bg)); font-weight:700; }
+    .iconChoice.active span::before { content:"✓ "; font-weight:800; }
     button, select, .small, .metric .label, .notice { word-break: normal; overflow-wrap: normal; }
     button { max-width: 100%; }
     html[dir="rtl"] .scienceLead, html[dir="rtl"] .row, html[dir="rtl"] .sectionHeader, html[dir="rtl"] .snapshotItem { direction: rtl; }
@@ -339,16 +442,22 @@ layout: null
     .stopUndoBar .stopUndoText { color:var(--text); font-weight:650; line-height:1.3; }
     .stopUndoCountdown { flex:0 0 auto; min-width:42px; text-align:center; font-variant-numeric:tabular-nums; font-weight:750; color:var(--text); border:1px solid color-mix(in srgb, white 65%, var(--line)); border-radius:999px; padding:7px 9px; }
     .stopUndoBar button { flex:0 0 auto; padding:10px 14px; background:white; color:#111; }
-    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:pointer; }
+    #weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:crosshair; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
     .weightChartShell { display:grid; grid-template-columns:46px minmax(0,1fr); align-items:start; width:100%; margin-top:4px; }
     .weightChartYAxis { width:46px; height:240px; display:block; pointer-events:none; }
-    .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; }
+    .weightChartScroller { min-width:0; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-inline:contain; scrollbar-width:thin; touch-action:pan-x pan-y; -webkit-user-select:none; user-select:none; }
     .chartDataList { margin-top:10px; border-top:1px solid var(--line); padding-top:8px; }
     .chartDataList ul { margin:6px 0 0; padding-left:20px; }
     .statsRangeBar { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin:-4px 0 14px; }
     .statsRangeBar label { display:grid; gap:5px; min-width:160px; }
     .statsRangeBar select { min-height:44px; max-width:100%; }
     .statsRangeSummary { flex:1 1 200px; padding-bottom:9px; }
+    .statsHistoryNavigator { display:grid; grid-template-columns:auto minmax(60px,1fr) auto; align-items:center; gap:8px; margin:-4px 0 12px; }
+    .statsHistoryNavigator[hidden] { display:none !important; }
+    .statsHistoryNavigator button { min-height:42px; padding:9px 12px; white-space:nowrap; }
+    .statsHistoryNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
+    .statsHistoryNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+    @media (max-width:360px) { .statsHistoryNavigator { grid-template-columns:auto minmax(40px,1fr) auto; gap:5px; } .statsHistoryNavigator button { padding:8px 9px; } }
     .monthlyComparison { margin-top:8px; }
     .drilldownList { max-height:min(55vh,460px); overflow:auto; margin-top:10px; }
     .drilldownList .row { align-items:flex-start; }
@@ -356,6 +465,10 @@ layout: null
     .srOnly { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
     @media (max-width:520px) { .statsRangeBar { align-items:stretch; } .statsRangeBar label, .statsRangeSummary { flex:1 1 100%; } }
     .weightChartTrack { position:relative; min-width:100%; height:240px; }
+    .weightChartNavigator { display:grid; grid-template-columns:auto minmax(60px,1fr) auto; align-items:center; gap:8px; margin:10px 0 4px; }
+    .weightChartNavigator button { min-height:42px; padding:9px 12px; white-space:nowrap; }
+    .weightChartNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
+    .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
     .weightPeriodSwitcher { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:4px 2px 8px; margin:2px -2px 10px; touch-action:pan-x; }
     .weightPeriodSwitcher::-webkit-scrollbar { display:none; }
@@ -381,8 +494,8 @@ layout: null
     .setupBasicsGrid { display:grid; gap:14px; margin-top:12px; }
     .setupBasicsGrid label { display:block; font-weight:650; margin-bottom:6px; }
     .setupBasicsGrid input[type="text"] { width:100%; padding:12px; border-radius:11px; border:1px solid var(--line); background:var(--bg); color:var(--text); font:inherit; }
-    .setupUnitToggle { display:inline-flex; padding:3px; border-radius:12px; background:var(--line); }
-    .setupUnitToggle button { min-width:64px; padding:8px 12px; border-radius:9px; background:transparent; color:var(--text); }
+    .setupUnitToggle { display:inline-flex; flex:0 0 auto; white-space:nowrap; padding:3px; border-radius:12px; background:var(--line); }
+    .setupUnitToggle button { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; min-width:64px; padding:8px 12px; border-radius:9px; background:transparent; color:var(--text); white-space:nowrap; }
     .setupUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .setupInlineToggle { display:flex; align-items:center; gap:9px; font-weight:650; }
     .setupInlineToggle input { width:22px; height:22px; accent-color:var(--accent); }
@@ -416,14 +529,18 @@ layout: null
     .loadMoreWrap { display: flex; justify-content: center; padding: 14px 0 2px; }
     .loadMoreWrap button { min-width: 180px; }
     .achievementBadge[aria-label] { position: relative; }
-    .weightTop { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    .weightUnitToggle { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--line); }
-    .weightUnitToggle button { padding: 7px 12px; border-radius: 9px; background: transparent; color: var(--text); font-size: 13px; }
-    .weightUnitToggle button.active { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .weightTop { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px; }
+    .weightUnitToggle { display:inline-flex; flex:0 0 auto; white-space:nowrap; padding:3px; border-radius:12px; background:var(--line); }
+    .weightUnitToggle button { flex:0 0 auto; min-width:42px; padding:7px 12px; border-radius:9px; background:transparent; color:var(--text); font-size:13px; white-space:nowrap; }
+    .weightUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .weightValue { font-variant-numeric: tabular-nums; }
     .weightHistory { margin-top: 14px; }
-    .weightTargetWrap { display:flex; align-items:center; gap:7px; }
-    .weightTargetWrap input { width: 112px; }
+    .weightTargetRow { flex-wrap:wrap; align-items:center; }
+    .weightTargetRow > div:first-child { flex:1 1 160px; min-width:0; }
+    .weightTargetWrap { display:flex; align-items:center; gap:7px; flex:0 0 auto; min-width:max-content; }
+    .weightTargetWrap input { width:112px; min-width:112px; flex:0 0 112px; box-sizing:border-box; }
+    #weightTargetUnit, #weightModalUnit { display:inline-block; flex:0 0 auto; white-space:nowrap; }
+    #weightValueInput { width:100%; min-width:0; box-sizing:border-box; }
     .weightChartWrap { position: relative; }
 
     .scienceCard { overflow: hidden; }
@@ -507,7 +624,24 @@ layout: null
     .settingsSubgroup { margin:10px 0; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 92%, var(--bg)); overflow:hidden; }
     .settingsSubgroup > summary { list-style:none; cursor:pointer; padding:12px 14px; font-weight:700; }
     .settingsSubgroup[open] > summary { border-bottom:1px solid var(--border); }
+    .iconInstallationGroup[open] > summary { border-bottom:0; }
     .settingsSubgroup > .card, .settingsSubgroup > .row { margin:0; border:0; border-radius:0; box-shadow:none; }
+    .settingsGroup.iconInstallationGroup { margin:8px 0 18px; border:0; border-radius:0; background:transparent; overflow:visible; box-shadow:none; }
+    .iconInstallationGroup > summary { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 13px; }
+    .iconInstallationGroup > summary:focus-visible { outline:3px solid var(--text); outline-offset:2px; border-radius:8px; }
+    .settingsIconSectionLead { display:flex; align-items:center; gap:12px; min-width:0; }
+    .settingsIconSectionSymbol { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border:0; border-radius:0; color:var(--text); background:transparent; font-size:30px; font-weight:800; line-height:1; }
+    .settingsIconSectionCopy { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .iconInstallationGroup .settingsIconSectionCopy > strong { font-size:1.08rem; line-height:1.25; }
+    .iconInstallationGroup .settingsIconSectionCopy > .small { color:var(--text); line-height:1.35; font-weight:500; }
+    .iconInstallationGroup .settingsGroupChevron { color:var(--muted); font-size:1.7rem; }
+
+
+
+
+
+
+    @media (max-width:380px) { .iconInstallationGroup > summary { padding:12px 9px; gap:8px; } .settingsIconSectionLead { gap:9px; } .settingsIconSectionSymbol { flex-basis:36px; width:36px; height:36px; font-size:22px; } }
     .settingsCompactCard { box-shadow:none; }
     #settings .healthNotice { margin-top:0; }
     #settings .settingsGroup[hidden] { display:none; }
@@ -696,7 +830,7 @@ layout: null
       <div class="metric"><div class="value weightValue" id="wToTarget">—</div><div class="label" data-i18n="weight.toTarget">Difference to target</div></div>
     </div>
     <div class="card" style="margin-top:14px">
-      <div class="row">
+      <div class="row weightTargetRow">
         <div><strong data-i18n="weight.target">Target weight</strong><div class="small" data-i18n="weight.targetHelp">Optional. Leave blank if you only want to track the trend.</div></div>
         <div class="weightTargetWrap"><input id="weightTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Target weight" data-i18n-aria="weight.target"><span id="weightTargetUnit">kg</span></div>
       </div>
@@ -731,7 +865,12 @@ layout: null
           </div>
         </div>
       </div>
-      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Daily shows individual measurements. Other views show one average point per calendar period. Tap a point for its value and time/period. Scroll left for older data; the chart opens at the newest values. All individual entries remain available below.</div>
+      <div class="weightChartNavigator" role="group" aria-label="Weight history navigation" data-i18n-aria="a11y.weightChartNavigator">
+        <button id="weightChartOlderBtn" class="secondary" type="button" data-i18n="a11y.weightChartOlder">Older</button>
+        <input id="weightChartRange" type="range" min="0" max="0" step="1" value="0" aria-label="Browse weight history, oldest on the left and newest on the right" data-i18n-aria="a11y.weightChartRange" />
+        <button id="weightChartNewerBtn" class="secondary" type="button" data-i18n="a11y.weightChartNewer">Newer</button>
+      </div>
+      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Daily shows individual measurements. Other views show one average point per calendar period. Tap a point for its value and time/period. Swipe horizontally or use the history navigator to browse older and newer data. All individual entries remain available below.</div>
       <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
       <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
       <div id="weightChartData" class="chartDataList small" hidden></div>
@@ -797,12 +936,17 @@ layout: null
         </select></label>
         <div class="small statsRangeSummary" id="statsRangeSummary"></div>
       </div>
+      <div class="statsHistoryNavigator" id="statsHistoryNavigator" role="group" aria-label="Statistics history navigation" data-i18n-aria="a11y.weightChartNavigator" hidden>
+        <button id="statsHistoryOlderBtn" class="secondary" type="button" data-i18n="a11y.weightChartOlder">Older</button>
+        <input id="statsHistoryRange" type="range" min="0" max="0" step="1" value="0" aria-label="Browse statistics history, oldest on the left and newest on the right" data-i18n-aria="a11y.weightChartRange" />
+        <button id="statsHistoryNewerBtn" class="secondary" type="button" data-i18n="a11y.weightChartNewer">Newer</button>
+      </div>
       <div id="statsSelectionLive" class="srOnly" role="status" aria-live="polite" aria-atomic="true"></div>
       <div class="statsVizView" id="statsTimelineView">
         <div class="timelineShell">
           <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
           <div class="timelineScroller" id="timelineScroller">
-            <canvas id="chart" width="700" height="310" role="img" tabindex="0" aria-describedby="statsVizHelp" aria-label="Fasting timeline for the last 14 days" data-i18n-aria="a11y.fastChart"></canvas>
+            <canvas id="chart" width="700" height="310" role="img" tabindex="0" aria-describedby="statsVizHelp" aria-label="Fasting timeline for all recorded fastings" data-i18n-aria="a11y.fastChart"></canvas>
           </div>
           <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
         </div>
@@ -815,7 +959,7 @@ layout: null
         </div>
         <div class="calendarWeekdays" id="calendarWeekdays"></div>
         <div class="fastCalendar" id="fastCalendar"></div>
-        <div class="vizLegend"><span data-i18n="stats.less">Less</span><span class="legendSwatch"></span><span class="legendSwatch l1"></span><span class="legendSwatch l2"></span><span class="legendSwatch l3"></span><span class="legendSwatch l4"></span><span data-i18n="stats.more">More</span></div>
+        <div class="vizLegend calendarNumericLegend" role="img" aria-label="Fasting hours per day: 0 hours, 1 to 5 hours, 6 to 11 hours, 12 to 17 hours, 18 hours or more"><span class="legendSwatch" aria-hidden="true">0h</span><span class="legendSwatch l1" aria-hidden="true">1–5h</span><span class="legendSwatch l2" aria-hidden="true">6–11h</span><span class="legendSwatch l3" aria-hidden="true">12–17h</span><span class="legendSwatch l4" aria-hidden="true">18h+</span></div>
       </div>
       <div class="statsVizView" id="statsTrendView" hidden>
         <canvas id="fastTrendChart" width="660" height="260" role="img" tabindex="0" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
@@ -856,7 +1000,7 @@ layout: null
         <div class="metric"><div class="value" id="gWeightStreak">0</div><div class="label" data-i18n="game.weightStreak">Weekly weigh-in streak</div></div>
       </div>
       <div class="small" style="margin-top:12px" data-i18n="game.rule">10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. Excused unavoidable interruptions are neutral for the target streak and earn no target XP. No extra XP is awarded for fasting past the target.</div>
-      <div class="badgeGrid" id="achievementBadges"></div>
+      <div class="scienceSources gameLevelGuide" style="margin-top:12px;padding:12px;border:2px solid var(--line);border-radius:12px"><h3 data-i18n="game.levelsExplainTitle" style="margin:0 0 8px">How levels work</h3><p class="small" style="margin-top:8px" data-i18n="game.levelsExplain">Levels measure consistency XP, not fasting duration. Earn 10 XP for each completed fast that meets your chosen target and 2 XP for each distinct day you log weight. Fasting beyond your target gives no extra XP.</p><ul class="small"><li data-i18n="game.levelsThresholds">Level 1: 0–49 XP. Level 2: 50–149 XP (100 more XP). Level 3: 150–349 XP (200 more XP). Level 4: 350+ XP.</li><li data-i18n="game.levelsPurpose">Later levels require more accumulated XP, so they mark sustained habits over time. Levels offer milestones and motivation only; they unlock no features and are not health scores or a reason to fast longer.</li></ul></div><div class="badgeGrid" id="achievementBadges"></div>
     </div>
   </section>
 
@@ -867,9 +1011,26 @@ layout: null
       <button id="settingsSearchClearBtn" class="secondary settingsSearchClear" type="button" data-i18n="settings.searchClear" hidden>Clear</button>
     </div>
     <div class="small settingsSearchStatus" id="settingsSearchStatus" role="status" aria-live="polite"></div>
-    <details class="settingsGroup" id="settingsGroupGeneral" data-settings-group="settingsGroupGeneral" open>
+    <details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▦</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
+<div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
+<div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
+          <button aria-checked="false" class="iconChoice" data-icon-choice="grayscale" role="radio" type="button"><img alt="" src="icons/grayscale/icon-192.png"/><span data-i18n="icon.grayscale">Grayscale</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="highcontrast" role="radio" type="button"><img alt="" src="icons/highcontrast/icon-192.png"/><span data-i18n="icon.highcontrast">High contrast</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="colorblind" role="radio" type="button"><img alt="" src="icons/colorblind/icon-192.png"/><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="moon" role="radio" type="button"><img alt="" src="icons/moon/icon-192.png"/><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="hourglass" role="radio" type="button"><img alt="" src="icons/hourglass/icon-192.png"/><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="timer" role="radio" type="button"><img alt="" src="icons/timer/icon-192.png"/><span data-i18n="icon.timer">F timer</span></button>
+        </div>
+<div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
+<div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
+<div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button class="secondary" data-i18n="settings.appIconPrepare" id="prepareIconChangeBtn" type="button">Back up &amp; prepare icon change</button><div class="reinstallLinkTools" hidden="" id="reinstallLinkTools"><label class="small" data-i18n="iconChange.linkLabel" for="reinstallLinkInput">Reinstall link</label><div class="reinstallLinkRow"><input aria-label="Reinstall link" autocomplete="off" data-i18n-aria="iconChange.linkLabel" id="reinstallLinkInput" readonly="" type="text"/><button class="secondary" data-i18n="iconChange.copyLink" id="copyReinstallLinkBtn" type="button">Copy reinstall link</button></div><div aria-live="polite" class="small" id="reinstallLinkStatus"></div></div></div>
+</div></details>
+<details class="settingsGroup" id="settingsGroupGeneral" data-settings-group="settingsGroupGeneral" open>
       <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.general">General</strong><span class="small" data-i18n="settings.group.generalHelp">Language, appearance, fasting target and achievements</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
-      <div class="settingsGroupBody"><div class="card"><div class="row" style="margin-top:12px">
+      <div class="settingsGroupBody"><div class="card">
+
+<div class="row" style="margin-top:12px">
 <div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup, basic preferences and notifications.</div></div>
 <button class="secondary" data-i18n="setup.open" id="setupGuideBtn">Setup guide</button>
 </div>
@@ -885,19 +1046,22 @@ layout: null
 <option data-i18n="settings.appearanceSystem" value="system">System</option>
 <option data-i18n="settings.appearanceLight" value="light">Light</option>
 <option data-i18n="settings.appearanceDark" value="dark">Dark</option>
+<option data-i18n="settings.appearanceGrayscale" value="grayscale">Grayscale</option>
+<option data-i18n="settings.appearanceHighContrastLight" value="high-contrast-light">High contrast (light)</option>
+<option data-i18n="settings.appearanceHighContrastDark" value="high-contrast-dark">High contrast (dark)</option>
+<option data-i18n="settings.appearanceColorblind" value="colorblind">Colour-vision friendly</option>
 </select>
-</div><details class="settingsSubgroup" id="settingsIconDetails"><summary data-i18n="settings.appIconDetails">App icon &amp; installation</summary><div class="row" style="display:block">
-<div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
-<div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
-<button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="moon" role="radio" type="button"><img alt="" src="icons/moon/icon-192.png"/><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="hourglass" role="radio" type="button"><img alt="" src="icons/hourglass/icon-192.png"/><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
-<button aria-checked="false" class="iconChoice" data-icon-choice="timer" role="radio" type="button"><img alt="" src="icons/timer/icon-192.png"/><span data-i18n="icon.timer">F timer</span></button>
 </div>
-<div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
-<div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
-<div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button class="secondary" data-i18n="settings.appIconPrepare" id="prepareIconChangeBtn" type="button">Back up &amp; prepare icon change</button><div class="reinstallLinkTools" hidden="" id="reinstallLinkTools"><label class="small" data-i18n="iconChange.linkLabel" for="reinstallLinkInput">Reinstall link</label><div class="reinstallLinkRow"><input aria-label="Reinstall link" autocomplete="off" data-i18n-aria="iconChange.linkLabel" id="reinstallLinkInput" readonly="" type="text"/><button class="secondary" data-i18n="iconChange.copyLink" id="copyReinstallLinkBtn" type="button">Copy reinstall link</button></div><div aria-live="polite" class="small" id="reinstallLinkStatus"></div></div></div>
-</div></details>
+<div class="timeZoneSettings">
+  <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
+  <div class="timeZonePicker">
+    <label for="timeZoneSearch" class="small" data-i18n="settings.timeZoneSearchLabel">Find a time zone</label>
+    <input id="timeZoneSearch" type="search" autocomplete="off" data-i18n-placeholder="settings.timeZoneSearchPlaceholder" placeholder="City, country, continent, or time-zone name" aria-label="Find a time zone" data-i18n-aria="settings.timeZoneSearchLabel">
+    <label for="timeZoneSelect" class="small" data-i18n="settings.timeZoneResultsLabel">Matching locations</label>
+    <select id="timeZoneSelect" aria-label="Matching locations" data-i18n-aria="settings.timeZoneResultsLabel"><option value="system"></option></select>
+    <div id="timeZoneSearchStatus" class="small" role="status" aria-live="polite"></div>
+  </div>
+</div>
 
 <div class="row">
 <div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.</div></div>
@@ -1017,14 +1181,49 @@ layout: null
 </div>
     </details></div>
     </details>
-    <details class="settingsGroup" id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates">
+    <details class="settingsGroup" id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open>
       <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.updates">Updates</strong><span class="small" data-i18n="settings.group.updatesHelp">Installed version and update checks</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
       <div class="settingsGroupBody"><div class="card settingsCompactCard" id="settingsUpdatesCard"><div class="row" style="margin-top:10px">
 <div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
-<div class="duration" id="appVersionLabel">—</div>
-</div><div class="row">
+<div class="duration" id="appVersionLabel" tabindex="0" role="button" aria-label="Reveal a small surprise">—</div>
+</div>
+<div id="patientTortoiseProgress" class="patientTortoiseProgress" hidden role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="patientTortoise" class="patientTortoise" hidden role="status" aria-live="polite" aria-atomic="true">
+  <svg class="patientTortoiseArt" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+    <path class="tortoiseGround" d="M8 81Q48 76 88 81"/>
+    <path class="tortoiseGround" d="M15 85l-4 2m70-2 4 2"/>
+    <g class="tortoiseGroundDash" fill="currentColor" opacity=".38"><circle cx="14" cy="73" r="1.5"/><circle cx="10" cy="69" r="1"/><path d="M77 73l5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></g>
+    <ellipse cx="48" cy="80" rx="28" ry="4" fill="currentColor" opacity=".1"/>
+    <g class="tortoiseBody">
+      <g class="tortoiseLeg tortoiseLegBack">
+        <path class="tortoiseLimb" d="M25 57q-8 2-9 11l-1 5q0 3 4 3h9q4-1 4-5l-1-12z"/>
+        <path class="tortoiseLimb" d="M59 57q7 2 9 10l2 5q1 4-3 5h-8q-4-1-4-5l1-12z"/>
+      </g>
+      <g class="tortoiseTail"><path d="M22 56l-9 4 7 5" fill="currentColor" fill-opacity=".4" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></g>
+      <path d="M23 54q-2 8 4 11h38q8-4 5-12z" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+      <path class="tortoiseShell" d="M20 55c-3-5-2-16 3-24 5-9 13-13 25-13s21 5 25 14c4 8 4 17 1 23-7 5-44 5-54 0z"/>
+      <path class="tortoiseShellPanel" d="M26 34l10-9 12 1 8 9-8 10-14-1zM48 26l13-2 9 10-4 11-10-1M25 35l-3 13 12 6 12-9M36 25l-1-5m13 6 1-8m8 16 13 0M34 53l-1 4m20-4 2 4"/>
+      <path class="tortoiseShellPanel" d="M38 36l10-1 4 8-8 6-8-4z" opacity=".45"/>
+      <g class="tortoiseHead">
+        <path class="tortoiseHeadShape" d="M65 42q8-7 16-1 8 5 6 13-2 8-11 8-10 0-13-9-2-6 2-11z"/>
+        <path d="M75 48q5-4 9 0" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".4"/>
+        <circle cx="80" cy="47" r="2.2" fill="currentColor"/>
+        <circle cx="80.7" cy="46.3" r=".65" fill="var(--card, white)"/>
+        <path class="tortoiseFaceLine" d="M78 56q4 3 7-1"/>
+        <path d="M72 54q2 2 3 0" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"/>
+      </g>
+      <g class="tortoiseLeg tortoiseLegFront">
+        <path class="tortoiseLimb" d="M35 58q-7 3-8 11l-1 5q0 3 4 3h8q4-1 4-5l-1-12z"/>
+        <path class="tortoiseLimb" d="M56 58q7 2 8 10l2 5q1 4-3 5h-8q-4-1-4-5l1-12z"/>
+      </g>
+    </g>
+    <path d="M20 71l-2 3m7-1-1 2m50-4 2 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+  </svg>
+  <div><div class="patientTortoiseMessage" data-i18n="easterEgg.patientTortoiseMessage">Steady is a pace, too.</div><button type="button" class="secondary" id="patientTortoiseDismiss" data-i18n="common.close">Close</button></div>
+</div>
+<div class="publicLinks" style="margin-top:8px"><a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a></div><div class="row">
 <div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
-<button class="secondary" data-i18n="update.check" id="updateBtn">Check</button>
+<button class="secondary" data-i18n="update.check" id="updateBtn">Check for new version</button>
 </div></div>
     <details class="settingsSubgroup" id="settingsUpdateAdvanced">
       <summary data-i18n="settings.updateAdvanced">Advanced update details</summary>
@@ -1074,6 +1273,7 @@ layout: null
 <button class="secondary" data-i18n="derived.rebuild" id="rebuildDerivedBtn" type="button">Recalculate statistics &amp; charts</button>
 <button class="dangerText" data-i18n="deleted.empty" id="emptyDeletedBtn" type="button">Empty Recently Deleted</button>
 </div>
+<div aria-atomic="true" aria-live="polite" class="small" id="diagnosticActionFeedback" role="status" style="margin-top:8px;padding:8px 10px;border-left:4px solid transparent" hidden></div>
 </div></div>
     </details>
     <details class="settingsGroup" id="settingsGroupHelp" data-settings-group="settingsGroupHelp">
@@ -1140,6 +1340,9 @@ layout: null
         <strong data-i18n="setup.iconTitle">Choose the Home Screen icon first</strong>
         <div class="small" data-i18n="setup.iconHelp">On iPhone/iPad the installed icon is chosen at installation. Changing it later can require a safe backup and reinstall.</div>
         <div class="iconChoiceGrid" role="radiogroup" aria-label="App icon" data-i18n-aria="settings.appIcon">
+          <button type="button" class="iconChoice" data-icon-choice="grayscale" role="radio" aria-checked="false"><img src="icons/grayscale/icon-192.png" alt=""><span data-i18n="icon.grayscale">Grayscale</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="highcontrast" role="radio" aria-checked="false"><img src="icons/highcontrast/icon-192.png" alt=""><span data-i18n="icon.highcontrast">High contrast</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="colorblind" role="radio" aria-checked="false"><img src="icons/colorblind/icon-192.png" alt=""><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
           <button type="button" class="iconChoice" data-icon-choice="plate" role="radio" aria-checked="false"><img src="icons/plate/icon-192.png" alt=""><span data-i18n="icon.plate">Plate &amp; clock</span></button>
           <button type="button" class="iconChoice" data-icon-choice="moon" role="radio" aria-checked="false"><img src="icons/moon/icon-192.png" alt=""><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
           <button type="button" class="iconChoice" data-icon-choice="hourglass" role="radio" aria-checked="false"><img src="icons/hourglass/icon-192.png" alt=""><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
@@ -1427,6 +1630,7 @@ layout: null
     <h2 id="manualSnapshotTitle" data-i18n="backup.manualTitle">Create recovery snapshot</h2>
     <div class="formGroup"><label for="manualSnapshotLabel" data-i18n="backup.manualLabel">Optional label</label><input id="manualSnapshotLabel" type="text" maxlength="80" autocomplete="off" placeholder="" data-i18n-placeholder="backup.manualPlaceholder"></div>
     <div class="small" data-i18n="backup.manualHelp">A short label can help you recognize this recovery point later.</div>
+    <div aria-atomic="true" aria-live="polite" class="small" id="manualSnapshotFeedback" role="status" style="margin-top:8px;padding:8px 10px;border-left:4px solid transparent" hidden></div>
     <div class="modalActions"><button id="manualSnapshotCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="manualSnapshotSaveBtn" class="primary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button></div>
   </div>
 </div>
@@ -1436,7 +1640,8 @@ layout: null
     <h2 id="integrityModalTitle" data-i18n="integrity.title">Data integrity check</h2>
     <div id="integritySummary" class="small"></div>
     <ul id="integrityIssueList" class="integrityList small"></ul>
-    <div class="modalActions"><button id="integrityCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+    <div id="integrityCopyStatus" class="small" role="status" aria-live="polite"></div>
+    <div class="modalActions"><button id="integrityCopyBtn" class="secondary" type="button" data-i18n="integrity.copy">Copy report</button><button id="integrityCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
   </div>
 </div>
 
@@ -1444,6 +1649,7 @@ layout: null
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="deviceCheckModalTitle">
     <h2 id="deviceCheckModalTitle" data-i18n="deviceChecks.title">Device compatibility checks</h2>
     <div class="small" data-i18n="deviceChecks.help">These checks run only on this device and do not upload your data.</div>
+    <div aria-atomic="true" aria-live="polite" class="small" id="deviceCheckSummary" role="status" style="margin-top:8px"></div>
     <ul id="deviceCheckList" class="small" style="padding-left:22px"></ul>
     <div class="modalActions"><button id="deviceCheckCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
   </div>
@@ -1548,6 +1754,7 @@ layout: null
 <script src="js/fasting-visuals.js"></script>
 <script src="js/fasting-analytics.js"></script>
 <script src="js/platform-diagnostics.js"></script>
+<script src="js/time-zone-locations.js"></script>
 <script>
 (async () => {
   'use strict';
@@ -1573,18 +1780,20 @@ layout: null
   const NOTIFICATION_DETAIL_LIMIT = 5;
   const NOTIFICATION_DETAIL_TTL_MS = 14 * 24 * 60 * 60 * 1000;
   const DATA_VERSION = 1;
+  // Bump when the daily-total cache calculation or storage semantics change.
+  const DAILY_TOTALS_ALGORITHM_VERSION = 2;
   const BACKUP_FORMAT = 'fasting-tracker-backup';
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 29;
+  const I18N_SOURCE_REVISION = 34;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.12.7';
+  const APP_VERSION = '1.17.8';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1621,6 +1830,11 @@ layout: null
   const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false }, language: 'system', appearance: 'system', iconChoice: 'plate' };
   const timeZoneValidityCache = new Map();
   const numberSymbolsCache = new Map();
+  let preferredTimeZone = null;
+  try {
+    const savedPreferences = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+    if (savedPreferences && savedPreferences.timeZone && savedPreferences.timeZone !== 'system') preferredTimeZone = String(savedPreferences.timeZone);
+  } catch {}
   const zonedFormatterCache = new Map();
   // Initialize URL-dependent UI state and a safe default data object before loading
   // persisted data. Legacy-number normalization may ask currentLocale() ->
@@ -1631,7 +1845,7 @@ layout: null
   const hadKnownInstallAtBoot = typeof initialAppMeta.lastAppVersion === 'string' && initialAppMeta.lastAppVersion.length > 0;
   let emergencyBoot = initialUrlParams.get('ft_recovery') === '1';
   let urlLangOverride = SUPPORTED_LANGUAGES.includes(initialUrlParams.get('lang')) ? initialUrlParams.get('lang') : null;
-  let urlIconOverride = ['plate','moon','hourglass','timer'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
+  let urlIconOverride = ['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(initialUrlParams.get('icon')) ? initialUrlParams.get('icon') : null;
   let data = cloneDefault();
   let recoveryMode = null;
   let backupMeta = loadBackupMeta();
@@ -1722,6 +1936,7 @@ layout: null
   let weightChartSelectedId = null;
   let weightChartPointerStart = null;
   let weightChartScrollFrame = 0;
+  let weightChartProgrammaticScrollLeft = null;
   let weightChartScrollToLatestPending = true;
   let weightChartBuckets = [];
   let weightAggregateCache = new Map();
@@ -1772,15 +1987,15 @@ layout: null
     return SUPPORTED_LANGUAGES.includes(base) ? base : 'en';
   }
   function normalizeLanguage(value) { return value === 'system' || SUPPORTED_LANGUAGES.includes(value) ? value : 'system'; }
-  function normalizeAppearance(value) { return ['system','light','dark'].includes(value) ? value : 'system'; }
-  function normalizeIconChoice(value) { return ['plate','moon','hourglass','timer'].includes(value) ? value : 'plate'; }
+  function normalizeAppearance(value) { return ['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(value) ? value : 'system'; }
+  function normalizeIconChoice(value) { return ['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(value) ? value : 'plate'; }
   function manifestFor(lang, icon) {
     icon = normalizeIconChoice(icon);
     lang = SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en';
     const suffix = LANGUAGE_META[lang].manifestSuffix;
     return icon === 'plate' ? `manifest${suffix}.webmanifest` : `manifest-${icon}${suffix}.webmanifest`;
   }
-  function applyIconChoice() { const icon=normalizeIconChoice(urlIconOverride || data?.iconChoice); const lang=uiLanguage(); const manifest=el('appManifest'); if(manifest) manifest.href=manifestFor(lang,icon); const fav=el('appFavicon'); if(fav) fav.href=`icons/${icon}/favicon-32.png`; const touch=el('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/apple-touch-icon.png`; document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn=>{ const active=btn.dataset.iconChoice===icon; btn.classList.toggle('active',active); btn.setAttribute('aria-checked',active?'true':'false'); }); }
+  function applyIconChoice() { const icon=normalizeIconChoice(urlIconOverride || data?.iconChoice); const lang=uiLanguage(); const manifest=el('appManifest'); if(manifest) manifest.href=manifestFor(lang,icon); const accessibleIcon=['grayscale','highcontrast','colorblind'].includes(icon); const fav=el('appFavicon'); if(fav) fav.href=accessibleIcon ? `icons/${icon}/icon-192.png` : `icons/${icon}/favicon-32.png`; const touch=el('appleTouchIcon'); if(touch) touch.href=accessibleIcon ? `icons/${icon}/icon-192.png` : `icons/${icon}/apple-touch-icon.png`; document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn=>{ const active=btn.dataset.iconChoice===icon; btn.classList.toggle('active',active); btn.setAttribute('aria-checked',active?'true':'false'); }); }
   function uiLanguage() {
     if (urlLangOverride) return urlLangOverride;
     const pref = normalizeLanguage(data?.language || 'system');
@@ -1830,6 +2045,35 @@ layout: null
     }
     sel.value = selected;
   }
+  const timeZoneLocationRecords = Array.isArray(window.FT_TIME_ZONE_LOCATIONS) ? window.FT_TIME_ZONE_LOCATIONS : [];
+  const timeZoneLocationById = (() => { const map=new Map(); for(const r of timeZoneLocationRecords){map.set(r.z,r);for(const alias of r.g||[])map.set(alias,r);}return map; })();
+  const timeZonePopularChoices = ['Europe/Sofia','America/New_York','Europe/London','Asia/Tokyo','Australia/Sydney','Asia/Dubai','America/Sao_Paulo','Asia/Kolkata','Africa/Johannesburg','UTC'];
+  function normalizeTimeZoneSearch(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/_/g,' ').toLocaleLowerCase().replace(/\s+/g,' ').trim();}
+  function localizedTimeZoneContinent(r){const n={en:{AF:'Africa',AS:'Asia',EU:'Europe',NA:'North America',SA:'South America',OC:'Oceania',AN:'Antarctica'},bg:{AF:'Африка',AS:'Азия',EU:'Европа',NA:'Северна Америка',SA:'Южна Америка',OC:'Океания',AN:'Антарктида'},es:{AF:'África',AS:'Asia',EU:'Europa',NA:'América del Norte',SA:'América del Sur',OC:'Oceanía',AN:'Antártida'}};return n[uiLanguage()]?.[r?.ccn]||r?.ct||'';}
+  function timeZoneLocationInfo(zone){
+    const r=timeZoneLocationById.get(zone);if(!r){const label=String(zone).replace(/_/g,' ');return {label,search:label};}
+    const city=r.ci?.[0]||r.z.split('/').pop().replace(/_/g,' ');let country=r.c||'';
+    try{if(r.cc&&typeof Intl.DisplayNames==='function')country=new Intl.DisplayNames([uiLanguage()],{type:'region'}).of(r.cc)||country;}catch{}
+    const zoneLabel=r.z.replace(/_/g,' ');
+    return {label:zone==='UTC'?'UTC':`${city}, ${country} — ${zoneLabel}`,search:[zone,zoneLabel,...(r.g||[]),r.c,country,r.ct,localizedTimeZoneContinent(r),...(r.ci||[]),r.a].join(' ')};
+  }
+  function renderTimeZoneOptions(){
+    const sel=document.getElementById('timeZoneSelect');if(!sel)return;
+    const selected=preferredTimeZone&&isValidTimeZone(preferredTimeZone)?preferredTimeZone:'system',deviceZone=deviceTimeZone();
+    const query=normalizeTimeZoneSearch(document.getElementById('timeZoneSearch')?.value||'');let zones=[];
+    try{if(typeof Intl.supportedValuesOf==='function')zones=Intl.supportedValuesOf('timeZone');}catch{}
+    zones=[...new Set([...zones,...timeZoneLocationRecords.map(r=>r.z),'UTC',deviceZone,...(selected!=='system'?[selected]:[])])].filter(isValidTimeZone);
+    let matches=query?zones.filter(z=>normalizeTimeZoneSearch(timeZoneLocationInfo(z).search).includes(query)):timeZonePopularChoices.filter(z=>zones.includes(z));
+    if(query)matches.sort((a,b)=>timeZoneLocationInfo(a).label.localeCompare(timeZoneLocationInfo(b).label,uiLanguage()));
+    const total=matches.length,shown=matches.slice(0,15);sel.replaceChildren();
+    const sys=document.createElement('option');sys.value='system';sys.textContent=t('settings.timeZoneSystem')+' ('+deviceZone.replace(/_/g,' ')+')';sel.append(sys);
+    if(query){const prompt=document.createElement('option');prompt.value='';prompt.disabled=true;prompt.textContent=({en:'Choose a matching time zone…',bg:'Изберете часова зона от резултатите…',es:'Elige una zona horaria de los resultados…'})[uiLanguage()]||'Choose a matching time zone…';sel.append(prompt);}
+    if(selected!=='system'&&!shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=t('settings.timeZoneCurrent')+': '+timeZoneLocationInfo(selected).label;sel.append(cur);}
+    for(const z of shown){if(z===selected)continue;const o=document.createElement('option');o.value=z;o.textContent=timeZoneLocationInfo(z).label;sel.append(o);}
+    if(selected!=='system'&&shown.includes(selected)){const cur=document.createElement('option');cur.value=selected;cur.textContent=timeZoneLocationInfo(selected).label;sel.insertBefore(cur,sel.children[query?2:1]||null);}
+    sel.value=query?'':selected;if(!query&&sel.value!==selected)sel.value='system';
+    const status=document.getElementById('timeZoneSearchStatus');if(status){if(query&&total===0)status.textContent=t('settings.timeZoneNoResults');else if(query)status.textContent=t('settings.timeZoneResultsCount',{shown:shown.length,total});else status.textContent=t('settings.timeZoneBrowseHelp');}
+  }
   function applyLanguage() {
     const lang = uiLanguage();
     const meta = LANGUAGE_META[lang] || LANGUAGE_META.en;
@@ -1843,6 +2087,7 @@ layout: null
     document.querySelectorAll('[data-i18n-label]').forEach(node => { node.label = t(node.dataset.i18nLabel); });
     syncStatsVizNavigator();
     renderLanguageOptions();
+    renderTimeZoneOptions();
     applyIconChoice();
     const appleTitle = document.getElementById('appleAppTitle');
     if (appleTitle) appleTitle.content = meta.appTitle;
@@ -1856,8 +2101,8 @@ layout: null
 
   function effectiveAppearance() {
     const pref = normalizeAppearance(data?.appearance || 'system');
-    if (pref !== 'system') return pref;
-    return systemThemeQuery.matches ? 'dark' : 'light';
+    if (pref === 'system') return systemThemeQuery.matches ? 'dark' : 'light';
+    return pref === 'dark' || pref === 'high-contrast-dark' ? 'dark' : 'light';
   }
   function applyAppearance() {
     const pref = normalizeAppearance(data?.appearance || 'system');
@@ -1927,7 +2172,11 @@ layout: null
     const d = new Date(value);
     return Number.isFinite(d.getTime()) ? d : null;
   }
+  function deviceTimeZone() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
+  }
   function currentTimeZone() {
+    if (typeof preferredTimeZone !== 'undefined' && preferredTimeZone && isValidTimeZone(preferredTimeZone)) return preferredTimeZone;
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
   }
   function isValidTimeZone(value) {
@@ -2341,23 +2590,10 @@ layout: null
   }
 
   function updateStoredDayTotalsIncrementally() {
-    const nextMap = new Map(data.records.map(r => [r.id, r]));
-    // Remove deleted or changed old contributions.
-    for (const [id, oldRecord] of dayTotalsRecordMap) {
-      const next = nextMap.get(id);
-      if (next && canonicalRecordFingerprint(next) === canonicalRecordFingerprint(oldRecord)) continue;
-      for (const [key, ms] of recordDayContribution(oldRecord)) {
-        const value = (storedDayTotalsMap.get(key)||0) - ms;
-        if (value > 0.5) storedDayTotalsMap.set(key, value); else storedDayTotalsMap.delete(key);
-      }
-    }
-    // Add new or changed contributions.
-    for (const [id, next] of nextMap) {
-      const oldRecord = dayTotalsRecordMap.get(id);
-      if (oldRecord && canonicalRecordFingerprint(next) === canonicalRecordFingerprint(oldRecord)) continue;
-      for (const [key, ms] of recordDayContribution(next)) storedDayTotalsMap.set(key, (storedDayTotalsMap.get(key)||0) + ms);
-    }
-    dayTotalsRecordMap = nextMap;
+    // Daily totals are derived data. Recompute from authoritative fasting records
+    // rather than accumulating add/subtract deltas, which can drift over time.
+    storedDayTotalsMap = buildStoredDayTotals(data.records);
+    dayTotalsRecordMap = recordMap(data.records);
   }
 
   function persistSmallPreferences() {
@@ -2367,13 +2603,14 @@ layout: null
         appearance: normalizeAppearance(data.appearance),
         iconChoice: normalizeIconChoice(data.iconChoice),
         weightUnit: normalizeWeightUnit(data.weightUnit),
+        timeZone: preferredTimeZone && isValidTimeZone(preferredTimeZone) ? preferredTimeZone : 'system',
         gamificationEnabled: data.gamificationEnabled !== false
       }));
     } catch {}
   }
 
   async function persistDailyTotals(revision = data.revision) {
-    await idbPut('state', {key:'dailyTotals', revision, entries:[...storedDayTotalsMap.entries()]});
+    await idbPut('state', {key:'dailyTotals', revision, algorithmVersion:DAILY_TOTALS_ALGORITHM_VERSION, entries:[...storedDayTotalsMap.entries()]});
   }
 
   async function persistPrimaryNow(snapshotData = data, options = {}) {
@@ -2501,7 +2738,7 @@ layout: null
       snapshotCache = pruneSnapshots((await idbGetAll('snapshotMeta')).map(normalizeSnapshot).filter(Boolean));
 
       const daily = await idbGet('state', 'dailyTotals');
-      if (daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)) storedDayTotalsMap = new Map(daily.entries);
+      if (daily && Number(daily.revision) === Number(data.revision) && Number(daily.algorithmVersion) === DAILY_TOTALS_ALGORITHM_VERSION && Array.isArray(daily.entries)) storedDayTotalsMap = new Map(daily.entries);
       else {
         storedDayTotalsMap = buildStoredDayTotals(data.records);
         await persistDailyTotals(data.revision);
@@ -2859,7 +3096,20 @@ layout: null
     }
   }
 
-  function failPendingMigration(toVersion, reason='update-failed') { const meta=readAppMeta(),pending=meta.pendingMigration; if(pending&&pending.to===String(toVersion)){meta.lastMigration={...pending,status:'failed',reason,completedAt:new Date().toISOString()};delete meta.pendingMigration;writeAppMeta(meta);} }
+  function safeUpdateErrorMessage(error) {
+    const message=String(error?.message||error||'unknown update error')
+      .replace(/https?:\/\/[^\s"'<>]+/gi,'[url]')
+      .replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').trim().slice(0,180);
+    return message||'unknown update error';
+  }
+
+  function failPendingMigration(toVersion, reason='update-failed', error=null) {
+    const meta=readAppMeta(),pending=meta.pendingMigration;
+    if(pending&&pending.to===String(toVersion)){
+      meta.lastMigration={...pending,status:'failed',reason:String(reason||'update-failed').slice(0,60),error:error?safeUpdateErrorMessage(error):null,completedAt:new Date().toISOString()};
+      delete meta.pendingMigration;writeAppMeta(meta);
+    }
+  }
 
   function migrationStatusMeta() { const meta=readAppMeta(); return {pending:meta.pendingMigration||null,last:meta.lastMigration||null}; }
 
@@ -3224,8 +3474,8 @@ layout: null
     if (!Number.isFinite(parseLocalizedNumber(rawData.goalHours)) || parseLocalizedNumber(rawData.goalHours) <= 0 || parseLocalizedNumber(rawData.goalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid default goal');
     if (!['kg','lb'].includes(rawData.weightUnit)) throw new Error('invalid weight unit');
     if (rawData.language != null && typeof rawData.language !== 'string') throw new Error('invalid language');
-    if (!['system','light','dark'].includes(rawData.appearance)) throw new Error('invalid appearance');
-    if (rawData.iconChoice != null && !['plate','moon','hourglass','timer'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
+    if (!['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(rawData.appearance)) throw new Error('invalid appearance');
+    if (rawData.iconChoice != null && !['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
     if (typeof rawData.gamificationEnabled !== 'boolean') throw new Error('invalid gamification setting');
     const notificationPreferences = rawData.notificationPreferences;
     if (!notificationPreferences || typeof notificationPreferences !== 'object' || Array.isArray(notificationPreferences) ||
@@ -3484,7 +3734,7 @@ layout: null
     const days = Math.floor(totalMin / 1440);
     const hours = Math.floor((totalMin % 1440) / 60);
     const minutes = totalMin % 60;
-    if (days > 0) return `${formatNumber(days)}${t('unit.d')} ${formatNumber(hours)}${t('unit.h')}`;
+    if (days > 0) return `${formatNumber(days)}${t('unit.d')} ${formatNumber(hours)}${t('unit.h')} ${formatNumber(minutes)}${t('unit.m')}`;
     if (hours > 0) return `${formatNumber(hours)}${t('unit.h')} ${formatNumber(minutes)}${t('unit.m')}`;
     return `${formatNumber(minutes)}${t('unit.m')}`;
   }
@@ -3552,7 +3802,7 @@ layout: null
     let lo=ms, hi=ms+30*3600000;
     while (dayKey(hi,tz)===key && hi-ms<72*3600000) hi+=12*3600000;
     if (dayKey(hi,tz)===key) return hi;
-    while (hi-lo>1000) { const mid=Math.floor((lo+hi)/2); if (dayKey(mid,tz)===key) lo=mid; else hi=mid; }
+    while (hi-lo>1) { const mid=Math.floor((lo+hi)/2); if (dayKey(mid,tz)===key) lo=mid; else hi=mid; }
     return hi;
   }
   function addIntervalToDayMap(map, startLike, endLike, timeZone) {
@@ -4698,6 +4948,7 @@ layout: null
 
   function achievementDefinitions() {
     const wins = successfulFastCount();
+    const consecutiveWins = currentStreak();
     const weightStreak = weightWeekStreak();
     const backupFresh = !!validDate(backupMeta.lastExternalBackupAt) && !backupIsDue();
     return [
@@ -4706,6 +4957,9 @@ layout: null
       { icon: '10', title: t('game.ach10'), detail: t('game.ach10d'), unlocked: wins >= 10 },
       { icon: '25', title: t('game.ach25'), detail: t('game.ach25d'), unlocked: wins >= 25 },
       { icon: '50', title: t('game.ach50'), detail: t('game.ach50d'), unlocked: wins >= 50 },
+      { icon: '5↻', title: t('game.streak5'), detail: t('game.streak5d'), unlocked: consecutiveWins >= 5 },
+      { icon: '25↻', title: t('game.streak25'), detail: t('game.streak25d'), unlocked: consecutiveWins >= 25 },
+      { icon: '50↻', title: t('game.streak50'), detail: t('game.streak50d'), unlocked: consecutiveWins >= 50 },
       { icon: '↗', title: t('game.comeback'), detail: t('game.comebackd'), unlocked: hasComebackAchievement() },
       { icon: '⚖', title: t('game.weightHabit'), detail: t('game.weightHabitd'), unlocked: weightStreak >= 4 },
       { icon: '⇩', title: t('game.backupKeeper'), detail: t('game.backupKeeperd'), unlocked: backupFresh }
@@ -4854,12 +5108,30 @@ layout: null
     return map;
   }
 
-  function buildInteractiveChartDays(dayCount = 14, timeZone = currentTimeZone()) {
+  function buildInteractiveChartDays(dayCount = null, timeZone = currentTimeZone()) {
     const tz = normalizeTimeZone(timeZone);
     const newestAnchor = new Date(); newestAnchor.setHours(12,0,0,0);
+    if (!Number.isInteger(dayCount) || dayCount < 1) {
+      let oldestMs = newestAnchor.getTime();
+      for (const record of data.records) {
+        const startMs = Date.parse(record.start);
+        if (Number.isFinite(startMs) && startMs < oldestMs) oldestMs = startMs;
+      }
+      if (data.activeStart) {
+        const activeStartMs = Date.parse(data.activeStart);
+        if (Number.isFinite(activeStartMs) && activeStartMs < oldestMs) oldestMs = activeStartMs;
+      }
+      const oldestKeyParts = dayKey(oldestMs,tz).split('-').map(Number);
+      const newestKeyParts = dayKey(newestAnchor.getTime(),tz).split('-').map(Number);
+      const oldestDayOrdinal = Date.UTC(oldestKeyParts[0],oldestKeyParts[1]-1,oldestKeyParts[2]);
+      const newestDayOrdinal = Date.UTC(newestKeyParts[0],newestKeyParts[1]-1,newestKeyParts[2]);
+      dayCount = Math.max(14, Math.floor((newestDayOrdinal - oldestDayOrdinal) / 86400000) + 1);
+    }
+    dayCount = Math.min(dayCount, 100000);
     const oldestAnchor = new Date(newestAnchor); oldestAnchor.setDate(oldestAnchor.getDate() - dayCount - 1);
     const intervals = allFastingIntervals(oldestAnchor.getTime(), newestAnchor.getTime() + 2*86400000);
     const days = [];
+    let intervalCursor = 0;
     for (let i = dayCount - 1; i >= 0; i--) {
       const anchor = new Date();
       anchor.setHours(12, 0, 0, 0);
@@ -4873,8 +5145,9 @@ layout: null
       let cursor = startMs;
       let fastCount = 0;
       let totalFastMs = 0;
-      for (const interval of intervals) {
-        if (interval.end <= startMs) continue;
+      while (intervalCursor < intervals.length && intervals[intervalCursor].end <= startMs) intervalCursor++;
+      for (let intervalIndex = intervalCursor; intervalIndex < intervals.length; intervalIndex++) {
+        const interval = intervals[intervalIndex];
         if (interval.start >= endMs) break;
         const segStart = Math.max(startMs, interval.start);
         const segEnd = Math.min(endMs, interval.end);
@@ -4923,10 +5196,11 @@ layout: null
     return days;
   }
 
-  function chartTimeWithinDayLabel(ms, dayEndMs, timeZone) {
+  function chartTimeWithinDayLabel(ms, dayEndMs, timeZone, includeSeconds = false) {
     if (Math.abs(ms - dayEndMs) < 1000) return '23:59';
     const parts = zonedParts(ms, timeZone);
-    return `${pad(parts.hour)}:${pad(parts.minute)}`;
+    const base = `${pad(parts.hour)}:${pad(parts.minute)}`;
+    return includeSeconds ? `${base}:${pad(parts.second)}` : base;
   }
 
   function chartSelectionDetail(days) {
@@ -4941,13 +5215,18 @@ layout: null
     }
     const segment = day.segments[chartSelectedTarget.segmentIndex];
     if (!segment) return null;
-    const start = chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone);
+    // Minute-only labels can make an exact 18m interval look like 08:30–08:49
+    // while its duration displays 18m. For gaps, expose seconds whenever either
+    // boundary is not aligned to a whole minute so the range explains the duration.
+    const showGapSeconds = segment.type === 'gap' &&
+      (segment.start % 60000 !== 0 || segment.end % 60000 !== 0);
+    const start = chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone, showGapSeconds);
     // The internal interval still ends at exact midnight. Calling that boundary
     // "end of day" keeps the displayed range consistent with the true 24-hour
     // duration while the axis itself can remain labelled 23:59.
     const end = Math.abs(segment.end - day.endMs) < 1000
       ? t('stats.endOfDay')
-      : chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone);
+      : chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone, showGapSeconds);
     if (segment.type === 'fast') {
       const segmentDuration = Math.max(0, segment.end - segment.start);
       const sourceDuration = Math.max(0, (segment.sourceEnd ?? segment.end) - (segment.sourceStart ?? segment.start));
@@ -5072,19 +5351,26 @@ layout: null
   }
 
   function drawChart(daysOverride = null) {
-    const c = el('chart'), ctx = c.getContext('2d');
-    const ratio = window.devicePixelRatio || 1;
-    const cssW = c.clientWidth || 700, cssH = c.clientHeight || 310;
+    const c = el('chart');
+    const days = Array.isArray(daysOverride) && daysOverride.length ? daysOverride : buildInteractiveChartDays();
+    // Keep canvas dimensions under browser limits while retaining every day.
+    // Longer histories compress gradually instead of truncating older records.
+    const maxTimelineWidth = 9000;
+    const timelineWidth = Math.max(700, Math.min(maxTimelineWidth, days.length * 42));
+    c.style.width = `${timelineWidth}px`;
+    c.style.minWidth = `${timelineWidth}px`;
+    const cssW = c.clientWidth || timelineWidth, cssH = c.clientHeight || 310;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
     c.width = Math.floor(cssW * ratio); c.height = Math.floor(cssH * ratio);
+    const ctx = c.getContext('2d');
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
     c.style.touchAction = 'pan-x';
 
-    const days = Array.isArray(daysOverride) && daysOverride.length ? daysOverride : buildInteractiveChartDays(14);
     const top = 18, bottom = 38, left = 6, right = 6;
     const w = cssW - left - right, h = cssH - top - bottom;
-    const gap = 8, bw = (w - gap * 13) / 14;
-    const slot = bw + gap;
+    const slot = w / Math.max(1, days.length);
+    const gap = Math.min(8, slot * 0.18), bw = Math.max(0.01, slot - gap);
     timelineChartDays = days;
     timelineChartGeometry = { top, bottom, left, right, w, h, gap, bw, slot, cssW, cssH };
     const style = getComputedStyle(document.documentElement);
@@ -5109,6 +5395,29 @@ layout: null
       const y = top + h * frac;
       ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(cssW - right, y); ctx.stroke();
     });
+
+    // Group the visible day columns by calendar month. Boundary rules are
+    // always drawn, even when the history is too long to fit every label.
+    const timelineMonthGroups = [];
+    days.forEach((day, index) => {
+      const dp = zonedParts(day.startMs, day.timeZone);
+      const key = `${dp.year}-${String(dp.month).padStart(2, '0')}`;
+      const last = timelineMonthGroups[timelineMonthGroups.length - 1];
+      if (!last || last.key !== key) timelineMonthGroups.push({key, year:dp.year, month:dp.month, startIndex:index, endIndex:index});
+      else last.endIndex = index;
+    });
+    ctx.save();
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = .58;
+    timelineMonthGroups.slice(1).forEach(group => {
+      const x = left + group.startIndex * slot;
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, cssH - 27);
+      ctx.stroke();
+    });
+    ctx.restore();
 
     days.forEach((day, i) => {
       const x0 = left + i * (bw + gap);
@@ -5170,10 +5479,49 @@ layout: null
       });
 
       const dp = zonedParts(day.startMs, day.timeZone);
+      const clockInfo=dayClockChangeInfo(day);
+      if(clockInfo&&slot>=18){
+        const clockLabel=clockInfo.label.replace(/^(Day|Offset)\s+/,'');
+        ctx.save();ctx.font='8px -apple-system';ctx.textAlign='center';
+        const clockWidth=Math.min(bw,Math.max(18,ctx.measureText(clockLabel).width+5));
+        ctx.fillStyle=card;ctx.fillRect(x0+bw/2-clockWidth/2,top+2,clockWidth,10);
+        ctx.fillStyle=accent;ctx.fillText(clockLabel,x0+bw/2,top+10);ctx.restore();
+      }
       ctx.fillStyle = muted; ctx.font = '11px -apple-system'; ctx.textAlign = 'center';
-      ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
+      if (slot >= 18) {
+        ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
+      } else if (slot < 3 && dp.day === 1 && dp.month === 1) {
+        ctx.fillText(String(dp.year), x0 + bw / 2, cssH - 11);
+      }
+    });
+
+    // Month labels occupy their own subtle row beneath the day numbers.
+    // Skip labels that would collide at very long history spans; month-boundary
+    // separators above remain visible for every month.
+    ctx.font = '10px -apple-system';
+    ctx.fillStyle = muted;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    let lastMonthLabelRight = -Infinity;
+    timelineMonthGroups.forEach(group => {
+      const startX = left + group.startIndex * slot;
+      const endX = left + (group.endIndex + 1) * slot;
+      const centerX = (startX + endX) / 2;
+      const date = new Date(Date.UTC(group.year, group.month - 1, 1, 12));
+      const options = group.month === 1
+        ? {month:'short',year:'2-digit',timeZone:'UTC'}
+        : {month:'short',timeZone:'UTC'};
+      const label = date.toLocaleDateString(currentLocale(), options);
+      const labelWidth = ctx.measureText(label).width;
+      const fitsMonth = endX - startX >= labelWidth + 6;
+      const fitsGap = centerX - labelWidth / 2 >= lastMonthLabelRight + 5;
+      if (fitsMonth && fitsGap && centerX >= left && centerX <= cssW - right) {
+        ctx.fillText(label, centerX, cssH - 24);
+        lastMonthLabelRight = centerX + labelWidth / 2;
+      }
     });
     ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
     renderChartDetail(days);
     scrollTimelineToLatest();
   }
@@ -5185,6 +5533,58 @@ layout: null
   function chartRangeRecords(mode=statsVizMode){return FTAnalytics.filterRecords(data.records,chartRange(mode));}
   function chartRangeLabel(range){return t(`stats.range.${range}`);}
   function updateStatsRangeControl(){const bar=el('statsRangeBar'),sel=el('statsRangeSelect'),summary=el('statsRangeSummary');const enabled=RANGE_MODES.has(statsVizMode);if(bar)bar.hidden=!enabled;if(!enabled)return;if(sel)sel.value=chartRange(statsVizMode);if(summary){const n=chartRangeRecords(statsVizMode).length;summary.textContent=t('stats.rangeSummary',{range:chartRangeLabel(chartRange(statsVizMode)),n});}}
+  const STATS_HISTORY_NAV_MODES=new Set(['timeline','trend','weeks','months','success','cumulative']);
+  function statsHistoryNavigationItems(mode=statsVizMode){
+    if(mode==='timeline')return timelineChartDays;
+    if(mode==='trend')return buildTrendDays();
+    if(mode==='weeks')return buildWeeklySummaries();
+    if(mode==='months')return buildMonthSummaries('months');
+    if(mode==='success')return buildTargetSuccessSummaries();
+    if(mode==='cumulative')return buildCumulativeDays();
+    return [];
+  }
+  function statsHistorySelectedKey(mode=statsVizMode){
+    if(mode==='timeline')return chartSelectedTarget?.dayKey||null;
+    if(mode==='trend')return trendSelectedDayKey;
+    if(mode==='weeks')return weekSelectedKey;
+    if(mode==='cumulative')return cumulativeSelectedDayKey;
+    if(mode==='months'||mode==='success')return genericChartSelectedKey;
+    return null;
+  }
+  function syncStatsHistoryNavigator(){
+    const wrap=el('statsHistoryNavigator'),slider=el('statsHistoryRange'),older=el('statsHistoryOlderBtn'),newer=el('statsHistoryNewerBtn');
+    if(!wrap||!slider||!older||!newer)return;
+    const applicable=STATS_HISTORY_NAV_MODES.has(statsVizMode),items=applicable?statsHistoryNavigationItems():[];
+    wrap.hidden=!applicable||items.length<2;
+    if(wrap.hidden)return;
+    const selectedKey=statsHistorySelectedKey(),selected=items.findIndex(item=>item.key===selectedKey),index=selected<0?items.length-1:selected;
+    slider.min='0';slider.max=String(items.length-1);slider.step='1';slider.value=String(index);slider.disabled=items.length<2;
+    older.disabled=index<=0;newer.disabled=index>=items.length-1;
+    const item=items[index];slider.setAttribute('aria-valuetext',item?.label||item?.key||'');
+  }
+  function selectStatsHistoryIndex(rawIndex){
+    const mode=statsVizMode,items=statsHistoryNavigationItems(mode);if(!STATS_HISTORY_NAV_MODES.has(mode)||items.length<2)return;
+    const index=Math.max(0,Math.min(items.length-1,Math.round(Number(rawIndex)||0))),item=items[index];if(!item)return;
+    statsDetailOverride=null;
+    if(mode==='timeline'){
+      chartSelectedTarget={kind:'day',dayKey:item.key};drawChart(timelineChartDays);
+      const scroller=el('timelineScroller'),g=timelineChartGeometry;
+      if(scroller&&g){const x=g.left+index*g.slot+g.slot/2;scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,x-scroller.clientWidth/2));}
+      statsDetailOverride=chartSelectionDetail(timelineChartDays);
+    }else if(mode==='trend'){
+      trendSelectedDayKey=item.key;statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailTrend',{duration:compactDuration(item.totalFastMs||0),avg7:formatNumber(item.avg7||0,0,1),avg30:formatNumber(item.avg30||0,0,1)}),records:recordsOverlappingDay(item)};drawFastTrendChart();
+    }else if(mode==='weeks'){
+      weekSelectedKey=item.key;const tz=currentTimeZone(),start=zonedLocalToDate(`${item.key}T00:00`,tz);let endMs=start?.getTime()||NaN;if(Number.isFinite(endMs))for(let i=0;i<7;i++)endMs=nextZonedDayBoundary(endMs,tz);statsDetailOverride={dayKey:item.key,title:t('stats.weekOf',{date:item.label}),text:t('stats.detailWeek',{duration:compactDuration(item.totalFastMs||0),days:formatNumber(item.daysWithFast||0)}),records:start&&Number.isFinite(endMs)?recordsOverlappingRange(start.getTime(),endMs):[]};drawFastWeeksChart();
+    }else if(mode==='months'){
+      genericChartSelectedKey=item.key;const source=chartRangeRecords('months');statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailMonth',{duration:compactDuration(item.totalMs||0),count:formatNumber(item.count||0)}),records:recordsContributingMonth(item.key,source)};drawFastMonthsChart();
+    }else if(mode==='success'){
+      genericChartSelectedKey=item.key;const source=chartRangeRecords('success');statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailSuccess',{rate:formatNumber(item.successRate||0,0,0),reached:formatNumber(item.reached||0),count:formatNumber(item.count||0)}),records:recordsEndingInMonth(item.key,source)};drawFastSuccessChart();
+    }else if(mode==='cumulative'){
+      cumulativeSelectedDayKey=item.key;const first=items[0];statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailCumulative',{hours:formatNumber(item.cumulativeHours||0,0,1),today:formatNumber((item.totalFastMs||0)/3600000,0,1)}),records:first?recordsOverlappingRange(first.startMs,item.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();
+    }
+    renderChartDetailForMode();if(el('statsChartData')&&!el('statsChartData').hidden)renderStatsChartData();syncStatsHistoryNavigator();
+  }
+  function shiftStatsHistory(direction){const items=statsHistoryNavigationItems();if(items.length<2)return;const selected=items.findIndex(item=>item.key===statsHistorySelectedKey()),current=selected<0?items.length-1:selected;selectStatsHistoryIndex(current+(direction<0?-1:1));}
   function changeStatsRange(range){if(!RANGE_MODES.has(statsVizMode)||!['7d','30d','90d','6m','1y','all'].includes(range))return;chartRanges[statsVizMode]=range;saveChartRanges();trendChartDaysCache=null;monthSummariesCache=null;durationDistributionCache=null;targetSuccessCache=null;startPatternCache=null;cumulativeDaysCache=null;statsVizRendered.delete(statsVizMode);statsDetailOverride=null;genericChartSelectedKey=null;trendSelectedDayKey=null;cumulativeSelectedDayKey=null;statsDrilldownRecordIds=[];renderChartDetailForMode();updateStatsRangeControl();scheduleStatsVizRender(statsVizMode);}
   function announceStatsSelection(detail){const live=el('statsSelectionLive');if(live&&detail)live.textContent=`${detail.title||''}. ${detail.text||''}`.trim();}
   function setStatsDrilldown(records=[]){statsDrilldownRecordIds=[...new Set((records||[]).map(r=>r&&r.id).filter(Boolean))];const btn=el('statsDrilldownBtn');if(btn)btn.hidden=!statsDrilldownRecordIds.length;}
@@ -5211,10 +5611,12 @@ layout: null
     let detail = statsDetailOverride;
     if (!detail && statsVizMode === 'timeline' && days) detail = chartSelectionDetail(days);
     title.textContent = detail?.title || t('stats.chartDetailDefaultTitle');
-    text.textContent = detail?.text || t('stats.chartDetailDefaultText');
-    if(detail){announceStatsSelection(detail);setStatsDrilldown(detail.records||[]);}else setStatsDrilldown([]);
+    const clockNote=detail?clockChangeNoteForDetail(detail,statsVizMode):'';
+    text.textContent = [detail?.text,clockNote].filter(Boolean).join(' ');
+    if(detail){announceStatsSelection({...detail,text:text.textContent});setStatsDrilldown(detail.records||[]);}else setStatsDrilldown([]);
     const help = el('statsVizHelp'); if (help) help.textContent = t(defaultStatsHelpKey());
     updateStatsRangeControl();
+    syncStatsHistoryNavigator();
   }
 
   function statsVizGroupForMode(mode) {
@@ -5382,6 +5784,58 @@ layout: null
     const d = new Date(); d.setHours(12,0,0,0); d.setDate(1); d.setMonth(d.getMonth() + offset); return d;
   }
 
+  function formatClockChangeDuration(minutes) {
+    const total=Math.abs(Math.round(Number(minutes)||0)),hours=Math.floor(total/60),mins=total%60;
+    return [hours?hours+'h':'',mins?mins+'m':''].filter(Boolean).join(' ')||'0m';
+  }
+  // A local calendar day is not always 24 elapsed hours. Compare its actual
+  // boundaries and its UTC offsets so unusual non-hour transitions are handled.
+  function dayClockChangeInfo(day) {
+    if(!day||!Number.isFinite(day.startMs)||!Number.isFinite(day.endMs)||day.endMs<=day.startMs)return null;
+    const tz=normalizeTimeZone(day.timeZone||currentTimeZone()),elapsed=day.endMs-day.startMs;
+    const dayDelta=Math.round((elapsed-86400000)/60000);
+    const startOffset=timeZoneOffsetMs(day.startMs+1000,tz),endOffset=timeZoneOffsetMs(day.endMs-1000,tz);
+    const offsetDelta=Math.round((endOffset-startOffset)/60000);
+    if(Math.abs(dayDelta)<1&&Math.abs(offsetDelta)<1)return null;
+    const isDayLengthChange=Math.abs(dayDelta)>=1,delta=isDayLengthChange?dayDelta:offsetDelta;
+    const sign=delta>0?'+':'−',duration=formatClockChangeDuration(delta),change=sign+duration;
+    const label=t(isDayLengthChange?'stats.clockDayChangeLabel':'stats.clockOffsetChangeLabel',{sign,duration});
+    const description=t(isDayLengthChange?'stats.clockDayChangeHelp':'stats.clockOffsetChangeHelp',{
+      date:day.label||localDateLabel(day.startMs,tz),dayLength:totalHoursDuration(elapsed),change,zone:tz
+    });
+    return {label,description,deltaMinutes:delta,dayDeltaMinutes:dayDelta,offsetDeltaMinutes:offsetDelta};
+  }
+  function clockChangeSummaryForRange(startMs,endMs,timeZone=currentTimeZone()) {
+    const tz=normalizeTimeZone(timeZone),changes=[];let cursor=startMs,guard=0;
+    while(Number.isFinite(cursor)&&cursor<endMs&&guard++<400) {
+      const key=dayKey(cursor,tz),localStart=zonedLocalToDate(`${key}T00:00`,tz),dayStart=localStart?localStart.getTime():cursor;
+      const dayEnd=Math.min(endMs,Math.max(dayStart+1,nextZonedDayBoundary(dayStart,tz)));
+      const info=dayClockChangeInfo({key,startMs:dayStart,endMs:Math.max(dayStart+1,nextZonedDayBoundary(dayStart,tz)),timeZone:tz,label:localDateLabel(dayStart,tz)});
+      if(info)changes.push(`${localDateLabel(dayStart,tz)} (${info.label})`);
+      cursor=Math.max(dayEnd,cursor+1);
+    }
+    return changes.length?t('stats.clockPeriodChangeList',{changes:changes.join(', ')}):'';
+  }
+  function clockChangeNoteForDetail(detail,mode) {
+    const key=String(detail?.dayKey||''),tz=currentTimeZone();
+    if(mode==='weeks'&&/^\d{4}-\d{2}-\d{2}$/.test(key)) {
+      const start=zonedLocalToDate(`${key}T00:00`,tz);if(!start)return '';
+      let end=start.getTime();for(let i=0;i<7;i++)end=nextZonedDayBoundary(end,tz);
+      return clockChangeSummaryForRange(start.getTime(),end,tz);
+    }
+    if(mode==='months'&&/^\d{4}-\d{2}$/.test(key)) {
+      const [year,month]=key.split('-').map(Number),nextYear=month===12?year+1:year,nextMonth=month===12?1:month+1;
+      const start=zonedLocalToDate(`${key}-01T00:00`,tz),end=zonedLocalToDate(`${nextYear}-${String(nextMonth).padStart(2,'0')}-01T00:00`,tz);
+      return start&&end?clockChangeSummaryForRange(start.getTime(),end.getTime(),tz):'';
+    }
+    if(['calendar','timeline','trend','cumulative'].includes(mode)&&/^\d{4}-\d{2}-\d{2}$/.test(key)) {
+      const start=zonedLocalToDate(`${key}T00:00`,tz);if(!start)return '';
+      const startMs=start.getTime(),endMs=nextZonedDayBoundary(startMs,tz);
+      return dayClockChangeInfo({key,startMs,endMs,timeZone:tz,label:localDateLabel(startMs,tz)})?.description||'';
+    }
+    return '';
+  }
+
   function chartDayForAnchor(anchor, timeZone = currentTimeZone(), summaries = currentZoneDaySummaries(timeZone)) {
     const tz = normalizeTimeZone(timeZone), key = dayKey(anchor, tz);
     const start = zonedLocalToDate(`${key}T00:00`, tz);
@@ -5435,10 +5889,12 @@ layout: null
       if (statsDetailOverride?.dayKey===day.key) btn.classList.add('selected');
       btn.disabled=future; btn.dataset.dayKey=day.key;
       const n=document.createElement('span'); n.textContent=formatNumber(d.getDate());
-      const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? compactDuration(day.totalFastMs) : '—';
+      const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? totalHoursDuration(day.totalFastMs) : '—';
+      const clockInfo=dayClockChangeInfo(day);
       btn.append(n,h);
-      btn.setAttribute('aria-label',`${day.label}: ${compactDuration(day.totalFastMs)}`);
-      const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:compactDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
+      if(clockInfo){const clock=document.createElement('span');clock.className='calendarClockChange';clock.textContent=clockInfo.label.replace(/^(Day|Offset)\s+/,'');clock.setAttribute('aria-hidden','true');btn.append(clock);btn.title=clockInfo.description;}
+      btn.setAttribute('aria-label',`${day.label}: ${totalHoursDuration(day.totalFastMs)}${clockInfo?'; '+clockInfo.description:''}`);
+      const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:totalHoursDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
       btn.addEventListener('pointerdown',event=>{ selectCalendarDay(); if(event.cancelable) event.preventDefault(); });
       btn.addEventListener('click',event=>{ if(event.detail===0) selectCalendarDay(); });
       grid.append(btn);
@@ -6114,7 +6570,7 @@ layout: null
       track.style.width='100%'; weightChartSelectedId=null;
       if(detail){detail.hidden=true;detail.textContent='';}
       drawWeightChartYAxis(0,1);
-      ctx.fillStyle=muted;ctx.font='13px -apple-system';ctx.textAlign='center';ctx.fillText(t('weight.addChart'),viewportW/2,cssH/2);ctx.textAlign='start';return;
+      ctx.fillStyle=muted;ctx.font='13px -apple-system';ctx.textAlign='center';ctx.fillText(t('weight.addChart'),viewportW/2,cssH/2);ctx.textAlign='start';syncWeightChartNavigator();return;
     }
 
     const dataBuckets=weightPeriodMode==='daily'?buckets:buckets.filter(b=>b.count>0);
@@ -6148,7 +6604,7 @@ layout: null
     scroller.dataset.period = weightPeriodMode;
     scroller.dataset.bucketCount = String(buckets.length);
     scroller.dataset.dataPointCount = String(dataBuckets.length);
-    if(weightChartScrollToLatestPending){scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth);weightChartScrollToLatestPending=false;}
+    if(weightChartScrollToLatestPending){scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth);weightChartProgrammaticScrollLeft=scroller.scrollLeft;for(let i=buckets.length-1;i>=0;i--){if(buckets[i].count>0){weightChartSelectedId=buckets[i].key;break;}}weightChartScrollToLatestPending=false;}
     const scrollX=scroller.scrollLeft;
     const yFor=v=>top+h-((v-minV)/span)*h;
     const absoluteX=i=>left+(buckets.length===1?plotW/2:i*pointSpacing);
@@ -6208,6 +6664,7 @@ layout: null
     const axisPlan=FTVisuals.axisLabelPlan(visibleAxisItems,{positions:visibleAxisPositions,measureText:text=>ctx.measureText(String(text)).width,maxLabels:Math.max(2,Math.floor(viewportW/62)),minGap:7});
     for(const tick of axisPlan){const text=String(tick.text),tw=ctx.measureText(text).width,x=Math.max(4+tw/2,Math.min(viewportW-4-tw/2,tick.x));ctx.fillText(text,x,cssH-10);}
     ctx.textAlign='start';
+    syncWeightChartNavigator();
   }
 
   function weightChartPointAt(clientX,clientY){
@@ -6215,12 +6672,102 @@ layout: null
     for(const point of weightChartHitPoints){const distance=Math.hypot(x-point.x,y-point.y);if(distance<bestDistance){best=point;bestDistance=distance;}}
     return bestDistance<=28?best:null;
   }
-  function beginWeightChartPointer(event){if(event.button!=null&&event.button!==0)return;weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0};}
-  function finishWeightChartPointer(event){const start=weightChartPointerStart;weightChartPointerStart=null;if(!start||start.id!==event.pointerId)return;const scroller=el('weightChartScroller');if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((scroller?.scrollLeft||0)-start.scrollLeft)>8)return;const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;weightChartSelectedId=point.id;drawWeightChart();}
+  function selectWeightChartPointAtX(clientX){
+    const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;
+    const x=clientX-c.getBoundingClientRect().left;let best=null,distance=Infinity;
+    for(const point of weightChartHitPoints){const d=Math.abs(x-point.x);if(d<distance){distance=d;best=point;}}
+    return best&&distance<=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5)?best:null;
+  }
+  function weightChartPointSpacing(){
+    const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
+    if(weightPeriodMode==='daily')return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
+    return buckets.length<=5?Math.max(1,plotW/Math.max(1,buckets.length-1)):68;
+  }
+  function syncWeightChartNavigator(){
+    const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
+    if(!slider||!older||!newer||!scroller)return;
+    const buckets=weightChartBuckets,valid=buckets.filter(b=>b.count>0);
+    slider.max=String(Math.max(0,buckets.length-1));
+    const selectedIndex=buckets.findIndex(b=>b.key===weightChartSelectedId);
+    slider.value=String(Math.max(0,selectedIndex));
+    slider.disabled=valid.length<2;
+    const selectedValidIndex=valid.findIndex(b=>b.key===weightChartSelectedId);
+    older.disabled=valid.length<2||selectedValidIndex===0;
+    newer.disabled=valid.length<2||selectedValidIndex===valid.length-1;
+    const bucket=buckets[selectedIndex];
+    slider.setAttribute('aria-valuetext',bucket&&bucket.count ? weightBucketLongLabel(bucket)+' — '+formatWeight(bucket.averageKg,data.weightUnit) : '');
+  }
+  function nearestWeightBucketIndex(index){
+    const buckets=weightChartBuckets;
+    index=Math.max(0,Math.min(buckets.length-1,Math.round(Number(index)||0)));
+    if(buckets[index]?.count)return index;
+    for(let distance=1;distance<buckets.length;distance++){
+      if(buckets[index-distance]?.count)return index-distance;
+      if(buckets[index+distance]?.count)return index+distance;
+    }
+    return -1;
+  }
+  function navigateWeightChartToIndex(index){
+    const scroller=el('weightChartScroller'),buckets=weightChartBuckets;
+    if(!scroller||!buckets.length)return;
+    const targetIndex=nearestWeightBucketIndex(index);
+    if(targetIndex<0)return;
+    weightChartSelectedId=buckets[targetIndex].key;
+    const spacing=weightChartPointSpacing(),pointX=16+targetIndex*spacing;
+    weightChartProgrammaticScrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,pointX-scroller.clientWidth/2));
+    scroller.scrollLeft=weightChartProgrammaticScrollLeft;
+    drawWeightChart();
+    renderWeightChartData();
+    syncWeightChartNavigator();
+  }
+  function shiftWeightChartViewport(direction){
+    const scroller=el('weightChartScroller'),buckets=weightChartBuckets;
+    if(!scroller||!buckets.length)return;
+    const valid=buckets.filter(b=>b.count>0);
+    if(valid.length<2)return;
+    let current=valid.findIndex(b=>b.key===weightChartSelectedId);
+    if(current<0){
+      const spacing=weightChartPointSpacing(),center=scroller.scrollLeft+scroller.clientWidth/2;
+      let bestDistance=Infinity;
+      valid.forEach((bucket,i)=>{
+        const bucketIndex=buckets.findIndex(b=>b.key===bucket.key),pointX=16+bucketIndex*spacing;
+        const distance=Math.abs(pointX-center);
+        if(distance<bestDistance){bestDistance=distance;current=i;}
+      });
+    }
+    const target=Math.max(0,Math.min(valid.length-1,current+(direction<0?-1:1)));
+    if(target===current){syncWeightChartNavigator();return;}
+    navigateWeightChartToIndex(buckets.findIndex(b=>b.key===valid[target].key));
+  }
+  function beginWeightChartPointer(event){
+    if(event.button!=null&&event.button!==0)return;
+    weightChartPointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,scrollLeft:el('weightChartScroller')?.scrollLeft||0};
+  }
+  function finishWeightChartPointer(event){
+    const start=weightChartPointerStart;weightChartPointerStart=null;
+    if(!start||start.id!==event.pointerId)return;
+    if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
+    const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;
+    weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
+  }
   function cancelWeightChartPointer(){weightChartPointerStart=null;}
+
   function handleWeightChartScroll(){
     if(weightChartScrollFrame)return;
-    weightChartScrollFrame=requestAnimationFrame(()=>{weightChartScrollFrame=0;drawWeightChart();renderWeightChartData();});
+    weightChartScrollFrame=requestAnimationFrame(()=>{
+      weightChartScrollFrame=0;
+      const scroller=el('weightChartScroller'),buckets=weightChartBuckets;
+      const programmaticScroll=scroller&&weightChartProgrammaticScrollLeft!==null&&Math.abs(scroller.scrollLeft-weightChartProgrammaticScrollLeft)<=2;
+      if(scroller&&weightChartProgrammaticScrollLeft!==null&&!programmaticScroll)weightChartProgrammaticScrollLeft=null;
+      if(scroller&&buckets.length&&!weightChartPointerStart?.scrubbing&&!programmaticScroll){
+        const spacing=weightChartPointSpacing(),centerX=scroller.scrollLeft+scroller.clientWidth/2;
+        const index=Math.max(0,Math.min(buckets.length-1,Math.round((centerX-16)/Math.max(1,spacing))));
+        let nearest=buckets[index];
+        if(!nearest?.count){let distance=Infinity;for(let i=0;i<buckets.length;i++){if(!buckets[i].count)continue;const d=Math.abs(i-index);if(d<distance){distance=d;nearest=buckets[i];}}}
+        if(nearest?.count)weightChartSelectedId=nearest.key;
+      }
+      drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
+    });
   }
 
   function renderWeightChartData() {
@@ -6235,14 +6782,14 @@ layout: null
   }
   function renderStatsChartData(){
     const box=el('statsChartData'); if(!box||box.hidden)return; box.replaceChildren(); const ul=document.createElement('ul');
-    if(statsVizMode==='timeline'){for(const d of [...timelineChartDays].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}`;ul.append(li);}}
-    else if(statsVizMode==='trend'){for(const d of [...buildTrendDays()].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.hours||0,0,1)} ${t('unit.h')} • 7d ${formatNumber(d.avg7||0,0,1)} • 30d ${formatNumber(d.avg30||0,0,1)}`;ul.append(li);}}
+    if(statsVizMode==='timeline'){for(const d of [...timelineChartDays].reverse()){const li=document.createElement('li');const clockNote=clockChangeNoteForDetail({dayKey:d.key},'timeline');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}${clockNote?' • '+clockNote:''}`;ul.append(li);}}
+    else if(statsVizMode==='trend'){for(const d of [...buildTrendDays()].reverse()){const li=document.createElement('li');const clockNote=clockChangeNoteForDetail({dayKey:d.key},'trend');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.hours||0,0,1)} ${t('unit.h')} • 7d ${formatNumber(d.avg7||0,0,1)} • 30d ${formatNumber(d.avg30||0,0,1)}${clockNote?' • '+clockNote:''}`;ul.append(li);}}
     else if(statsVizMode==='weeks'){for(const w of [...(weeklySummariesCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${w.label||w.key||''} — ${formatNumber((w.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
     else if(statsVizMode==='months'){for(const x of [...buildMonthSummaries()].reverse()){const li=document.createElement('li');li.textContent=`${x.label} — ${formatNumber(x.hours,0,1)} ${t('unit.h')} • ${x.count}`;ul.append(li);}}
     else if(statsVizMode==='success'){for(const x of [...buildTargetSuccessSummaries()].reverse()){const li=document.createElement('li');li.textContent=`${x.label} — ${formatNumber(x.successRate,0,0)}% • ${x.reached}/${x.count}`;ul.append(li);}}
     else if(statsVizMode==='distribution'){for(const x of buildDurationDistribution()){const li=document.createElement('li');li.textContent=`${x.label} — ${x.count}`;ul.append(li);}}
     else if(statsVizMode==='startpattern'){for(const x of buildStartPattern()){const li=document.createElement('li');li.textContent=`${x.label} — ${x.count}`;ul.append(li);}}
-    else if(statsVizMode==='cumulative'){for(const d of [...buildCumulativeDays()].reverse()){const li=document.createElement('li');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.cumulativeHours||0,0,1)} ${t('unit.h')}`;ul.append(li);}}
+    else if(statsVizMode==='cumulative'){for(const d of [...buildCumulativeDays()].reverse()){const li=document.createElement('li');const clockNote=clockChangeNoteForDetail({dayKey:d.key},'cumulative');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.cumulativeHours||0,0,1)} ${t('unit.h')}${clockNote?' • '+clockNote:''}`;ul.append(li);}}
     else { const month=el('calendarMonthTitle')?.textContent||''; const li=document.createElement('li'); li.textContent=t('a11y.calendarDataHint',{month}); ul.append(li); }
     if(!ul.children.length){const li=document.createElement('li');li.textContent=t('a11y.noChartData');ul.append(li);} box.append(ul);
   }
@@ -6427,16 +6974,46 @@ layout: null
     btn.disabled = snapshots.length === 0;
   }
 
+  let diagnosticFeedbackTimer = null;
+  let diagnosticFeedbackSequence = 0;
+  function announceDiagnosticAction(message,state='info') {
+    const palette={success:['#17663b','#e8f5ec'],warning:['#805400','#fff4d6'],error:['#9b1c1c','#fdeaea'],info:['#31506d','#edf4fa']};
+    const colors=palette[state]||palette.info;
+    const sequence=++diagnosticFeedbackSequence;
+    if(diagnosticFeedbackTimer!==null)clearTimeout(diagnosticFeedbackTimer);
+    for(const id of ['diagnosticActionFeedback','manualSnapshotFeedback']){
+      const node=el(id);if(!node)continue;
+      node.hidden=false;node.textContent=message;node.dataset.state=state;
+      node.setAttribute('role',state==='error'?'alert':'status');
+      node.setAttribute('aria-live',state==='error'?'assertive':'polite');
+      node.style.borderLeftColor=colors[0];node.style.color=colors[0];node.style.backgroundColor=colors[1];
+    }
+    const summary=el('deviceCheckSummary');
+    if(summary&&!el('deviceCheckModal')?.hidden){summary.hidden=false;summary.textContent=message;summary.dataset.state=state;}
+    // Keep feedback long enough to read, then clear it so stale results do not remain on screen.
+    diagnosticFeedbackTimer=setTimeout(()=>{
+      if(sequence!==diagnosticFeedbackSequence)return;
+      for(const id of ['diagnosticActionFeedback','manualSnapshotFeedback']){
+        const node=el(id);if(!node)continue;
+        node.textContent='';node.hidden=true;node.removeAttribute('data-state');
+      }
+      const currentSummary=el('deviceCheckSummary');
+      if(currentSummary){currentSummary.textContent='';currentSummary.hidden=true;currentSummary.removeAttribute('data-state');}
+      diagnosticFeedbackTimer=null;
+    },8000);
+  }
+
   async function createManualRecoverySnapshot(label = '') {
     const meta = await createInternalSnapshotAsync('manual recovery point', APP_VERSION, label);
-    if (!meta) { alert(t('backup.snapshotFailed')); return false; }
+    if (!meta) { alert(t('backup.snapshotFailed')); announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error'); return false; }
     renderSnapshotStatus(); renderStorageHealth();
     if (!el('snapshotModal')?.hidden) openSnapshotModal();
+    announceDiagnosticAction(t('actionFeedback.snapshotCreated'),'success');
     return true;
   }
 
-  function openManualSnapshotModal(){const input=el('manualSnapshotLabel');if(input)input.value='';showModal('manualSnapshotModal','manualSnapshotLabel');}
-  async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;try{if(!(await allowStorageIntensiveOperation()))return;const ok=await createManualRecoverySnapshot(input?.value||'');if(ok)hideModal('manualSnapshotModal');}finally{if(btn)btn.disabled=false;}}
+  function openManualSnapshotModal(){const input=el('manualSnapshotLabel');if(input)input.value='';announceDiagnosticAction(t('actionFeedback.snapshotFormOpened'),'info');showModal('manualSnapshotModal','manualSnapshotLabel');}
+  async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.snapshotRunning'),'info');try{if(!(await allowStorageIntensiveOperation())){announceDiagnosticAction(t('actionFeedback.cancelled'),'warning');return;}const ok=await createManualRecoverySnapshot(input?.value||'');if(ok){hideModal('manualSnapshotModal');alert(t('actionFeedback.snapshotCreated'));}}catch(err){noteDiagnosticError('snapshot.manual');announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');alert(t('backup.snapshotFailed'));}finally{if(btn)btn.disabled=false;}}
 
   function markExternalBackupNow(exportedData = data) {
     backupSuccessVisibleUntil = Date.now() + 7000;
@@ -6604,6 +7181,7 @@ layout: null
     const btn=el('performanceTestBtn'),status=el('healthPerformance');
     if(btn){btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent=t('performance.running');}
     if(status)status.textContent=t('performance.runningStatus');
+    announceDiagnosticAction(t('actionFeedback.benchmarkRunning'),'info');
     await new Promise(r=>setTimeout(r,0));
     try{
       const p=globalThis.performance?.now?()=>performance.now():()=>Date.now();
@@ -6612,29 +7190,53 @@ layout: null
       JSON.stringify({records:data.records,weights:data.weights,deletedFasts:data.deletedFasts,deletedWeights:data.deletedWeights});const t3=p();
       const result={at:new Date().toISOString(),records:data.records.length,weights:data.weights.length,sortMs:+(t1-t0).toFixed(2),totalsMs:+(t2-t1).toFixed(2),serializeMs:+(t3-t2).toFixed(2),totalMs:+(t3-t0).toFixed(2)};
       savePerformanceMeta(result);renderBenchmarkResult(result);
+      announceDiagnosticAction(t('actionFeedback.benchmarkComplete',{total:formatNumber(result.totalMs,0,2)}),'success');
       // Refresh slower storage/service-worker diagnostics only after the benchmark result is visible.
       setTimeout(()=>{renderStorageHealth().catch(()=>{});},0);
       return result;
     }catch(err){
-      noteDiagnosticError('performance.benchmark');if(status)status.textContent=t('performance.failed');return null;
+      noteDiagnosticError('performance.benchmark');if(status)status.textContent=t('performance.failed');announceDiagnosticAction(t('actionFeedback.benchmarkFailed'),'error');return null;
     }finally{
       if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=t('performance.run');}
     }
   }
   async function queryServiceWorkerHealth(){if(!('serviceWorker'in navigator))return {supported:false};try{const reg=await navigator.serviceWorker.getRegistration();const worker=navigator.serviceWorker.controller||reg?.active;if(!worker)return {supported:true,registered:!!reg,controlled:false};return await new Promise(resolve=>{const ch=new MessageChannel(),timer=setTimeout(()=>resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,timeout:true}),4000);ch.port1.onmessage=e=>{clearTimeout(timer);resolve({supported:true,registered:true,controlled:!!navigator.serviceWorker.controller,...(e.data||{})});};worker.postMessage({type:'CHECK_HEALTH',protocolVersion:UPDATE_PROTOCOL_VERSION},[ch.port2]);});}catch(err){return {supported:true,error:String(err?.message||err)};}}
-  async function repairAppCache(){if(!confirm(t('cache.repairConfirm')))return false;const btn=el('repairCacheBtn');if(btn)btn.disabled=true;try{const info=await fetchLiveReleaseStatus();if(info&&!info.consistency.ok){alert(t('update.deploymentIncomplete'));return false;}if(info?.metadataVersion&&compareVersions(info.metadataVersion,APP_VERSION)>0){latestVersion=info.metadataVersion;alert(t('cache.updateInstead',{version:info.metadataVersion}));setUpdateUI('available');return false;}await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();renderStorageHealth();alert(t('cache.repaired'));return true;}catch(err){noteDiagnosticError('cache.repair');alert(t('cache.repairFailed'));return false;}finally{if(btn)btn.disabled=false;}}
+  async function repairAppCache(){
+    const btn=el('repairCacheBtn');
+    if(!confirm(t('cache.repairConfirm'))){announceDiagnosticAction(t('actionFeedback.cancelled'),'warning');return false;}
+    if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.cacheRunning'),'info');
+    try{
+      const info=await fetchLiveReleaseStatus();
+      if(info&&!info.consistency.ok){alert(t('update.deploymentIncomplete'));announceDiagnosticAction(t('actionFeedback.cacheBlocked'),'warning');return false;}
+      if(info?.metadataVersion&&compareVersions(info.metadataVersion,APP_VERSION)>0){latestVersion=info.metadataVersion;alert(t('cache.updateInstead',{version:info.metadataVersion}));setUpdateUI('available');announceDiagnosticAction(t('actionFeedback.cacheUpdateRequired',{version:info.metadataVersion}),'warning');return false;}
+      await requestShellRefresh(APP_VERSION);lastServiceWorkerHealth=await queryServiceWorkerHealth();await renderStorageHealth();alert(t('cache.repaired'));announceDiagnosticAction(t('cache.repaired'),'success');return true;
+    }catch(err){noteDiagnosticError('cache.repair');alert(t('cache.repairFailed'));announceDiagnosticAction(t('cache.repairFailed'),'error');return false;}
+    finally{if(btn)btn.disabled=false;}
+  }
 
 
   function deletedAuditApproxBytes(){try{return new Blob([JSON.stringify({fasts:data.deletedFasts,weights:data.deletedWeights})]).size;}catch{return 0;}}
   function renderDeploymentStatus(){const status=el('healthDeploymentStatus'),versions=el('healthDeploymentVersions');if(!status||!versions)return;status.textContent=deploymentConsistencyState==='ok'?t('deployment.ok'):deploymentConsistencyState==='mismatch'?t('deployment.mismatch'):t('deployment.unknown');versions.textContent=t('deployment.versions',{installed:APP_VERSION,metadata:liveMetadataVersion||'—',entry:liveEntryVersion||'—',worker:lastServiceWorkerHealth?.activeVersion||'—',checked:lastUpdateCheckAt?localDateTimeLabel(lastUpdateCheckAt):t('common.never')});}
   async function runDeviceChecks(){
-    const btn=el('deviceChecksBtn');if(btn)btn.disabled=true;const checks=[];const add=(key,ok,detail='')=>checks.push({key,ok,detail});
-    try{const key='device-check';await idbPut('state',{key,data:{at:new Date().toISOString()}});const row=await idbGet('state',key);await idbDelete('state',key);add('indexeddb',!!row);}catch(e){add('indexeddb',false);noteDiagnosticError('device.indexeddb');}
-    try{const persistent=await navigator.storage?.persisted?.();add('storage',persistent===true,persistent===true?'persistent':persistent===false?'not-persistent':'unknown');}catch{add('storage',false,'unavailable');}
-    try{const sw=await queryServiceWorkerHealth();add('serviceworker',!!(sw?.supported&&sw?.controlled&&sw?.cacheComplete!==false),sw?.activeVersion||'');}catch{add('serviceworker',false);}
-    const caps=FTPlatform.shareCapabilities();add('files',caps.fileShare||caps.downloads,caps.fileShare?'file-share':caps.downloads?'download':'unsupported');
-    add('notifications','Notification'in window,notificationPermissionState());add('standalone',isStandaloneApp(),installStateCode());
-    const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}if(btn)btn.disabled=false;showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+    const btn=el('deviceChecksBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.deviceChecksRunning'),'info');
+    const checks=[];const add=(key,ok,detail='')=>checks.push({key,ok,detail});
+    try{
+      try{const key='device-check';await idbPut('state',{key,data:{at:new Date().toISOString()}});const row=await idbGet('state',key);await idbDelete('state',key);add('indexeddb',!!row);}catch(e){add('indexeddb',false);noteDiagnosticError('device.indexeddb');}
+      try{const persistent=await navigator.storage?.persisted?.();add('storage',persistent===true,persistent===true?'persistent':persistent===false?'not-persistent':'unknown');}catch{add('storage',false,'unavailable');}
+      try{const sw=await queryServiceWorkerHealth();add('serviceworker',!!(sw?.supported&&sw?.controlled&&sw?.cacheComplete!==false),sw?.activeVersion||'');}catch{add('serviceworker',false);}
+      try{const caps=FTPlatform.shareCapabilities();add('files',caps.fileShare||caps.downloads,caps.fileShare?'file-share':caps.downloads?'download':'unsupported');}catch{add('files',false,'unavailable');}
+      add('notifications','Notification'in window,notificationPermissionState());add('standalone',isStandaloneApp(),installStateCode());
+      const keyMap={indexeddb:'deviceChecks.indexeddb',storage:'deviceChecks.storage',serviceworker:'deviceChecks.serviceworker',files:'deviceChecks.files',notifications:'deviceChecks.notifications',standalone:'deviceChecks.standalone'};
+      const list=el('deviceCheckList');list.replaceChildren();for(const c of checks){const li=document.createElement('li');li.textContent=`${c.ok?'✓':'⚠'} ${t(keyMap[c.key]||'deviceChecks.title')}${c.detail?` — ${c.detail}`:''}`;list.append(li);}
+      const passed=checks.filter(c=>c.ok).length,warning=checks.length-passed;
+      const summary=t('actionFeedback.deviceChecksComplete',{passed,total:checks.length,warning});announceDiagnosticAction(summary,warning?'warning':'success');
+      const summaryNode=el('deviceCheckSummary');if(summaryNode)summaryNode.textContent=summary;
+      showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+    }catch(err){
+      noteDiagnosticError('device.checks');announceDiagnosticAction(t('actionFeedback.deviceChecksFailed'),'error');
+      const summary=el('deviceCheckSummary');if(summary)summary.textContent=t('actionFeedback.deviceChecksFailed');
+      showModal('deviceCheckModal','deviceCheckCloseBtn');return checks;
+    }finally{if(btn)btn.disabled=false;}
   }
   async function emptyRecentlyDeleted(){
     const total=data.deletedFasts.length+data.deletedWeights.length;if(!total){alert(t('deleted.none'));return false;}
@@ -6642,7 +7244,16 @@ layout: null
     if(backupFreshnessState().state!=='current'&&confirm(t('deleted.backupFirst'))){const ok=await exportBackup();if(!ok)return false;}
     const oldF=data.deletedFasts.slice(),oldW=data.deletedWeights.slice();data.deletedFasts=[];data.deletedWeights=[];if(!save({invalidateDerived:false,dirtyViews:['history','weight','settings']})){data.deletedFasts=oldF;data.deletedWeights=oldW;renderAll();return false;}renderAll();return true;
   }
-  async function rebuildDerivedData(){const btn=el('rebuildDerivedBtn');if(btn)btn.disabled=true;try{storedDayTotalsMap=buildStoredDayTotals(data.records);dayTotalsRecordMap=recordMap(data.records);await persistDailyTotals(data.revision);invalidateDerivedCaches();markViewsDirty();renderAll();const issues=await collectIntegrityIssues();lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};if(lastIntegrityCheck.ok){markLastKnownGood('rebuild-derived');alert(t('derived.rebuilt'));return true;}alert(t('derived.failed'));return false;}catch(err){noteDiagnosticError('derived.rebuild');alert(t('derived.failed'));return false;}finally{if(btn)btn.disabled=false;}}
+  async function rebuildDerivedData(){
+    const btn=el('rebuildDerivedBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.recalculateRunning'),'info');
+    try{
+      storedDayTotalsMap=buildStoredDayTotals(data.records);dayTotalsRecordMap=recordMap(data.records);await persistDailyTotals(data.revision);invalidateDerivedCaches();markViewsDirty();renderAll();
+      const issues=await collectIntegrityIssues();lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};
+      if(lastIntegrityCheck.ok){markLastKnownGood('rebuild-derived');alert(t('derived.rebuilt'));announceDiagnosticAction(t('derived.rebuilt'),'success');return true;}
+      alert(t('derived.failed'));announceDiagnosticAction(t('actionFeedback.recalculateWarning',{n:issues.length}),'warning');return false;
+    }catch(err){noteDiagnosticError('derived.rebuild');alert(t('derived.failed'));announceDiagnosticAction(t('actionFeedback.recalculateFailed'),'error');return false;}
+    finally{if(btn)btn.disabled=false;}
+  }
 
   async function renderStorageHealth() {
     const rc=el('healthRecordCount'); if(!rc)return;
@@ -6666,12 +7277,28 @@ layout: null
     el('healthIntegrityStatus').textContent=lastIntegrityCheck?(lastIntegrityCheck.ok?t('integrity.lastOk',{date:localDateTimeLabel(lastIntegrityCheck.at)}):t('integrity.lastIssues',{n:lastIntegrityCheck.issues.length,date:localDateTimeLabel(lastIntegrityCheck.at)})):t('integrity.notChecked');
   }
 
-  function addIntegrityIssue(issues, code, detail='') { issues.push({code,detail:String(detail||'').slice(0,160)}); }
+  function addIntegrityIssue(issues, code, detail='') { const text=String(detail||''); issues.push({code,detail:code==='daily-totals-mismatch'?text:text.slice(0,160)}); }
 
   function mapsApproximatelyEqual(a,b,tolerance=2) {
     const keys=new Set([...a.keys(),...b.keys()]);
     for(const key of keys) if(Math.abs((a.get(key)||0)-(b.get(key)||0))>tolerance) return false;
     return true;
+  }
+
+  function describeDailyTotalsMismatch(recalculated,cached,tolerance=2) {
+    const keys=[...new Set([...recalculated.keys(),...cached.keys()])]
+      .filter(key=>Math.abs((recalculated.get(key)||0)-(cached.get(key)||0))>tolerance)
+      .sort();
+    if(!keys.length)return '';
+    const details=keys.map(key=>{
+      const recordMs=recalculated.get(key)||0;
+      const cachedMs=cached.get(key)||0;
+      const expected=(recordMs/3600000).toFixed(5);
+      const found=(cachedMs/3600000).toFixed(5);
+      const deltaSeconds=((cachedMs-recordMs)/1000).toFixed(3);
+      return `${key}: records ${expected}h, cached ${found}h (cached − records: ${deltaSeconds}s)`;
+    });
+    return `Dates (${keys.length}): ${details.join('; ')}`;
   }
 
   async function collectStartupIntegrityIssues() {
@@ -6707,7 +7334,7 @@ layout: null
     const sorted=[...data.records].sort((a,b)=>String(a.start).localeCompare(String(b.start)));
     for(let i=1;i<sorted.length;i++){if(new Date(sorted[i].start)<new Date(sorted[i-1].end)){addIntegrityIssue(issues,'overlapping-fasts');break;}}
     if(data.activeStart){const a=new Date(data.activeStart).getTime();if(sorted.some(r=>a<new Date(r.end).getTime()&&Date.now()>new Date(r.start).getTime()))addIntegrityIssue(issues,'active-fast-overlap');}
-    const recalculated=buildStoredDayTotals(data.records); if(!mapsApproximatelyEqual(recalculated,storedDayTotalsMap))addIntegrityIssue(issues,'daily-totals-mismatch');
+    const recalculated=buildStoredDayTotals(data.records); if(!mapsApproximatelyEqual(recalculated,storedDayTotalsMap))addIntegrityIssue(issues,'daily-totals-mismatch',describeDailyTotalsMismatch(recalculated,storedDayTotalsMap));
     try {
       const [metas,payloads]=await Promise.all([idbGetAll('snapshotMeta'),idbGetAll('snapshotPayload')]);
       const metaIds=new Set(metas.map(x=>x.id)),payloadIds=new Set(payloads.map(x=>x.id));
@@ -6732,14 +7359,42 @@ layout: null
 
   async function runDataIntegrityCheck() {
     const btn=el('integrityCheckBtn'); if(btn)btn.disabled=true;
+    announceDiagnosticAction(t('actionFeedback.integrityRunning'),'info');
+    try {
     const issues=await collectIntegrityIssues();
     lastIntegrityCheck={ok:issues.length===0,issues,at:new Date().toISOString()};if(lastIntegrityCheck.ok)markLastKnownGood('integrity-check');
     const summary=el('integritySummary'),list=el('integrityIssueList'); list.replaceChildren();
     summary.textContent=issues.length?t('integrity.issuesFound',{n:issues.length}):t('integrity.ok');
+    el('integrityCopyStatus').textContent='';
     if(!issues.length){const li=document.createElement('li');li.textContent=t('integrity.noProblems');list.append(li);}
-    else for(const issue of issues){const li=document.createElement('li');li.textContent=integrityIssueLabel(issue);list.append(li);}
-    if(btn)btn.disabled=false; renderStorageHealth(); showModal('integrityModal','integrityCloseBtn');
+    else for(const issue of issues){const li=document.createElement('li');li.textContent=integrityIssueLabel(issue)+(issue.detail?' — '+issue.detail:'');list.append(li);}
+    announceDiagnosticAction(issues.length?t('integrity.issuesFound',{n:issues.length}):t('integrity.ok'),issues.length?'warning':'success');
+    if(btn)btn.disabled=false; await renderStorageHealth(); showModal('integrityModal','integrityCloseBtn');
     return lastIntegrityCheck;
+    } catch(err) {
+      noteDiagnosticError('integrity.check');
+      announceDiagnosticAction(t('actionFeedback.integrityFailed'),'error');
+      const summary=el('integritySummary'),list=el('integrityIssueList');
+      if(summary)summary.textContent=t('actionFeedback.integrityFailed');
+      if(list){list.replaceChildren();const li=document.createElement('li');li.textContent=t('actionFeedback.noDataChanged');list.append(li);}
+      showModal('integrityModal','integrityCloseBtn');
+      return null;
+    } finally { if(btn)btn.disabled=false; }
+  }
+
+  async function copyIntegrityReport(){
+    const status=el('integrityCopyStatus');
+    const report=[t('integrity.title'),lastIntegrityCheck?.ok?t('integrity.ok'):t('integrity.issuesFound',{n:lastIntegrityCheck?.issues?.length||0})];
+    for(const issue of (lastIntegrityCheck?.issues||[])) report.push(integrityIssueLabel(issue)+(issue.detail?' — '+issue.detail:''));
+    const text=report.join('\n');
+    let copied=false;
+    try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);copied=true;}}catch{}
+    if(!copied){
+      let area=null;
+      try{area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.append(area);area.focus();area.select();copied=!!document.execCommand('copy');}
+      catch{}finally{area?.remove();}
+    }
+    status.textContent=copied?t('integrity.copied'):t('integrity.copyFailed');
   }
 
   async function exportDiagnostics(){
@@ -6750,8 +7405,8 @@ layout: null
       format:'fasting-tracker-diagnostics', appVersion:APP_VERSION, updateProtocolVersion:UPDATE_PROTOCOL_VERSION, exportedAt:new Date().toISOString(),
       environment:{userAgent:navigator.userAgent||'',language:navigator.language||'',standalone:isStandaloneApp(),installState:installStateCode(),online:navigator.onLine!==false,notificationPermission:notificationPermissionState(),notificationState:notificationDiagnosticState(),persistentStorage:persistent,storageEstimate:estimate?{usage:estimate.usage,quota:estimate.quota}:null,storagePressure:storagePressureFromEstimate(estimate),serviceWorker:swInfo,serviceWorkerHealth:lastServiceWorkerHealth,deployment:{state:deploymentConsistencyState,metadataVersion:liveMetadataVersion,entryVersion:liveEntryVersion,lastCheckedAt:lastUpdateCheckAt}},
       database:{schemaVersion:IDB_VERSION,dataVersion:DATA_VERSION,storageGeneration:STORAGE_GENERATION,minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION,supportedBackupVersions:[BACKUP_MIN_VERSION,BACKUP_VERSION],lastSuccessfulSaveAt:lastSuccessfulIdbSaveAt,revision:data.revision,activeFasts:data.activeStart?1:0,fastingRecords:data.records.length,excusedStops:data.records.filter(isExcusedStop).length,fastEditAuditEntries:[...data.records,...data.deletedFasts].reduce((n,r)=>n+(Array.isArray(r.editHistory)?r.editHistory.length:0),0),deletedFastAuditRecords:data.deletedFasts.length,weightRecords:data.weights.length,deletedWeightAuditRecords:data.deletedWeights.length,recoverySnapshots:ss.count,recoverySnapshotStoredBytes:ss.storedBytes,snapshotProtection:snapshotProtectionState.status,lastExternalBackupAt:backupMeta.lastExternalBackupAt||null,backupFreshness:backupFreshnessState().state,lastExternalBackupRevision:backupMeta.lastExternalBackupRevision||0},
-      migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,completedAt:migration.last.completedAt}:null,storage:readAppMeta().lastStorageMigration||null},
-      integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code)}:null,
+      migration:{pending:migration.pending?{from:migration.pending.from,to:migration.pending.to,startedAt:migration.pending.startedAt}:null,last:migration.last?{from:migration.last.from,to:migration.last.to,status:migration.last.status,reason:migration.last.reason||null,error:migration.last.error||null,completedAt:migration.last.completedAt}:null,storage:readAppMeta().lastStorageMigration||null},
+      integrity:lastIntegrityCheck?{ok:lastIntegrityCheck.ok,checkedAt:lastIntegrityCheck.at,issueCodes:lastIntegrityCheck.issues.map(x=>x.code),issueDetails:lastIntegrityCheck.issues.map(x=>({code:x.code,detail:x.detail||''}))}:null,
       recoveryMode:recoveryMode?String(recoveryMode.reason||recoveryMode):null,
       performance:loadPerformanceMeta(),
       recentErrorCodes:diagnosticErrors.slice(-20)
@@ -7157,10 +7812,75 @@ layout: null
     }
   }
 
-  async function requestShellRefresh(version) {
+  async function getCurrentServiceWorkerController() {
     if (!('serviceWorker' in navigator)) throw new Error('service worker unavailable');
     const reg = await navigator.serviceWorker.ready;
-    const controller = navigator.serviceWorker.controller || reg.active;
+    let candidate = null;
+    let updateFound = false;
+    const promote = worker => {
+      if (!worker) return;
+      const skip = () => {
+        if (worker.state === 'installed') {
+          try { worker.postMessage({type:'SKIP_WAITING'}); } catch {}
+        }
+      };
+      skip();
+      worker.addEventListener?.('statechange', skip);
+    };
+    const onUpdateFound = () => {
+      updateFound = true;
+      candidate = reg.installing || candidate;
+      promote(candidate);
+    };
+    reg.addEventListener('updatefound', onUpdateFound);
+    try { await reg.update(); } catch {}
+    if (reg.installing || reg.waiting) {
+      updateFound = true;
+      candidate = reg.installing || reg.waiting;
+      promote(candidate);
+    }
+    const isReady = () => {
+      const controller = navigator.serviceWorker.controller;
+      if (candidate) return candidate.state === 'activated' && reg.active === candidate && controller === candidate;
+      return !!reg.active && controller === reg.active;
+    };
+    if (!updateFound && reg.active && (!navigator.serviceWorker.controller || isReady())) {
+      reg.removeEventListener('updatefound', onUpdateFound);
+      return reg.active;
+    }
+    try {
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const finish = error => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          navigator.serviceWorker.removeEventListener('controllerchange', check);
+          candidate?.removeEventListener?.('statechange', check);
+          reg.removeEventListener('updatefound', onUpdateFound);
+          if (error) reject(error); else resolve();
+        };
+        const check = () => {
+          if (candidate?.state === 'redundant') {
+            finish(new Error('new service worker failed to activate'));
+            return;
+          }
+          if (isReady()) finish();
+        };
+        const timer = setTimeout(() => finish(new Error('service worker controller update timed out')), 20000);
+        navigator.serviceWorker.addEventListener('controllerchange', check);
+        candidate?.addEventListener?.('statechange', check);
+        check();
+      });
+    } catch (error) {
+      reg.removeEventListener('updatefound', onUpdateFound);
+      throw error;
+    }
+    return navigator.serviceWorker.controller || reg.active;
+  }
+
+  async function requestShellRefresh(version) {
+    const controller = await getCurrentServiceWorkerController();
     if (!controller) throw new Error('service worker not controlling this page');
     return new Promise((resolve, reject) => {
       const channel = new MessageChannel();
@@ -7187,7 +7907,7 @@ layout: null
       window.location.reload();
     } catch (err) {
       noteDiagnosticError('update.stage');
-      failPendingMigration(latestVersion, 'update-stage-failed');
+      failPendingMigration(latestVersion, 'update-stage-failed', err);
       updateInProgress = false; setUpdateUI('offline', t('update.failedInstall'));
     }
   }
@@ -7354,7 +8074,12 @@ layout: null
   function restoreSettingsGroupState() {
     const state=loadSettingsGroupState();
     settingsGroupToggleSuppressed=true;
-    settingsGroups().forEach(group=>{group.hidden=false;group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:group.id==='settingsGroupGeneral';});
+    settingsGroups().forEach(group=>{
+      group.hidden=false;
+      // Keep app icons prominent by default, but honour the user's saved
+      // disclosure choice after they collapse or reopen the section.
+      group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:(group.id==='settingsGroupAppIcons'||group.id==='settingsGroupGeneral');
+    });
     settingsGroupToggleSuppressed=false;
   }
   function normalizeSettingsSearch(value) { return String(value||'').trim().toLocaleLowerCase(uiLanguage()); }
@@ -7370,6 +8095,9 @@ layout: null
       const hay=normalizeSettingsSearch(group.textContent);
       const matched=hay.includes(query);
       group.hidden=!matched; group.open=matched; if(matched)matches++;
+      if (matched) group.querySelectorAll('.settingsSubgroup').forEach(subgroup=>{
+        if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true;
+      });
     });
     settingsGroupToggleSuppressed=false;
     status.textContent=matches?t('settings.searchResults',{n:matches}):t('settings.searchNoResults');
@@ -7379,6 +8107,7 @@ layout: null
   function initSettingsDisclosure() {
     restoreSettingsGroupState();
     settingsGroups().forEach(group=>group.addEventListener('toggle',()=>{
+      // Persist the user's disclosure choice, including a collapsed app-icon section.
       saveSettingsGroupState();
       if (group.id==='settingsGroupAdvanced' && group.open) renderStorageHealth();
       if (group.id==='settingsGroupData' && group.open) queueStorageProtectionRefresh();
@@ -7488,6 +8217,19 @@ layout: null
     if (el('stats').classList.contains('active')) renderStatsVisualizations();
     if (el('weight').classList.contains('active')) drawWeightChart();
   });
+  el('timeZoneSearch').addEventListener('input', renderTimeZoneOptions);
+  el('timeZoneSelect').addEventListener('change', () => {
+    const value = el('timeZoneSelect').value;
+    preferredTimeZone = value === 'system' ? null : (isValidTimeZone(value) ? value : null);
+    // Daily totals are derived by local calendar day. Rebuild them when the
+    // selected zone changes, rather than compare new-zone records with a stale map.
+    updateStoredDayTotalsIncrementally();
+    persistSmallPreferences();
+    invalidateDerivedCaches();
+    markViewsDirty();
+    renderAll();
+    persistDailyTotals(data.revision).catch(() => noteDiagnosticError('daily_totals_persist_failed'));
+  });
   document.querySelectorAll('.iconChoice[data-icon-choice]').forEach(btn => btn.addEventListener('click', () => {
     urlIconOverride = null;
     try { const u=new URL(location.href); u.searchParams.delete('icon'); history.replaceState(null,'',u); } catch {}
@@ -7530,7 +8272,7 @@ layout: null
   el('notificationCycleToggle').addEventListener('change', () => saveNotificationOption('cycleComplete', el('notificationCycleToggle').checked));
   el('notificationTestBtn').addEventListener('click', sendTestNotification);
 
-  const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html']);
+  const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html','changelog.html']);
   function rememberDocumentReturn(event) {
     const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
     if (!anchor) return;
@@ -7820,15 +8562,27 @@ layout: null
   el('weightChart').addEventListener('pointerdown', beginWeightChartPointer);
   el('weightChart').addEventListener('pointerup', finishWeightChartPointer);
   el('weightChart').addEventListener('pointercancel', cancelWeightChartPointer);
+  el('weightChartRange').addEventListener('input',()=>navigateWeightChartToIndex(Number(el('weightChartRange').value)));
+  el('weightChartOlderBtn').addEventListener('click',()=>shiftWeightChartViewport(-1));
+  el('weightChartNewerBtn').addEventListener('click',()=>shiftWeightChartViewport(1));
   el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
-  el('weightChart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
+  el('weightChart').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(!weightChartBuckets.length)return;e.preventDefault();const valid=weightChartBuckets.filter(b=>b.count>0),current=valid.findIndex(b=>b.key===weightChartSelectedId),base=current<0?(e.key==='ArrowRight'?valid.length-1:0):current,next=Math.max(0,Math.min(valid.length-1,base+(current<0?0:(e.key==='ArrowRight'?1:-1))));const bucket=valid[next];if(bucket){weightChartSelectedId=bucket.key;const visible=weightChartHitPoints.some(p=>p.id===bucket.key);if(!visible){const scroller=el('weightChartScroller');const index=weightChartBuckets.findIndex(b=>b.key===bucket.key);const spacing=weightChartPointSpacing();scroller.scrollLeft=Math.max(0,16+index*spacing-scroller.clientWidth/2);}drawWeightChart();}return;}if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
+  el('statsHistoryOlderBtn')?.addEventListener('click',()=>shiftStatsHistory(-1));
+  el('statsHistoryNewerBtn')?.addEventListener('click',()=>shiftStatsHistory(1));
+  el('statsHistoryRange')?.addEventListener('input',()=>selectStatsHistoryIndex(Number(el('statsHistoryRange').value)));
   el('statsChartDataBtn').addEventListener('click',()=>{const box=el('statsChartData'),btn=el('statsChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderStatsChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
   el('chart').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el('statsChartDataBtn').click();if(!el('statsChartData').hidden)el('statsChartData').focus();}});
   el('diagnosticExportBtn').addEventListener('click',exportDiagnostics);
   el('integrityCheckBtn').addEventListener('click',runDataIntegrityCheck);
+  el('integrityCopyBtn').addEventListener('click',copyIntegrityReport);
   el('integrityCloseBtn').addEventListener('click',()=>hideModal('integrityModal'));
   el('createSnapshotBtn').addEventListener('click',openManualSnapshotModal);
-  el('snapshotCreateNowBtn').addEventListener('click',openManualSnapshotModal);
+  el('snapshotCreateNowBtn').addEventListener('click',async()=>{
+    const btn=el('snapshotCreateNowBtn');if(btn)btn.disabled=true;
+    try{announceDiagnosticAction(t('actionFeedback.snapshotRunning'),'info');const ok=await createManualRecoverySnapshot();if(ok)alert(t('actionFeedback.snapshotCreated'));else announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');}
+    catch(err){noteDiagnosticError('snapshot.manual-now');announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');alert(t('backup.snapshotFailed'));}
+    finally{if(btn)btn.disabled=false;}
+  });
   el('manualSnapshotCancelBtn').addEventListener('click',()=>hideModal('manualSnapshotModal'));
   el('manualSnapshotSaveBtn').addEventListener('click',saveManualSnapshotFromModal);
   el('manualSnapshotModal').addEventListener('click',e=>{if(e.target===el('manualSnapshotModal'))hideModal('manualSnapshotModal');});
@@ -7922,6 +8676,43 @@ layout: null
   }
 
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
+  const patientTortoiseTrigger = el('appVersionLabel');
+  let patientTortoiseTapCount = 0;
+  const patientTortoiseProgress = el('patientTortoiseProgress');
+  const patientTortoiseTapMessageKeys = ['easterEgg.patientTortoiseTap1','easterEgg.patientTortoiseTap2','easterEgg.patientTortoiseTap3','easterEgg.patientTortoiseTap4','easterEgg.patientTortoiseTap5','easterEgg.patientTortoiseTap6'];
+  const revealPatientTortoise = () => {
+    patientTortoiseTapCount += 1;
+    if (patientTortoiseTapCount < 7) {
+      patientTortoiseProgress.textContent = '';
+      const count = document.createElement('span');
+      count.className = 'tapCount';
+      count.textContent = t('easterEgg.patientTortoiseProgress').replace('{count}', String(patientTortoiseTapCount));
+      patientTortoiseProgress.append(count, document.createTextNode(' ' + t(patientTortoiseTapMessageKeys[patientTortoiseTapCount - 1])));
+      patientTortoiseProgress.hidden = false;
+      patientTortoiseProgress.classList.remove('isNew');
+      void patientTortoiseProgress.offsetWidth;
+      patientTortoiseProgress.classList.add('isNew');
+      return;
+    }
+    patientTortoiseTapCount = 0;
+    patientTortoiseProgress.hidden = true;
+    patientTortoiseProgress.textContent = '';
+    const surprise = el('patientTortoise');
+    surprise.hidden = false;
+    surprise.classList.remove('isRevealed');
+    void surprise.offsetWidth;
+    surprise.classList.add('isRevealed');
+    el('patientTortoiseDismiss').focus();
+  };
+  patientTortoiseTrigger.setAttribute('aria-label', t('easterEgg.patientTortoiseTrigger'));
+  patientTortoiseTrigger.addEventListener('click', revealPatientTortoise);
+  patientTortoiseTrigger.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); revealPatientTortoise(); }
+  });
+  el('patientTortoiseDismiss').addEventListener('click', () => {
+    el('patientTortoise').hidden = true;
+    patientTortoiseTrigger.focus();
+  });
   el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;
   uiReady = true;
   persistUrlLanguageOverride();

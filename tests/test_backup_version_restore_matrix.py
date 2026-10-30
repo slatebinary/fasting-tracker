@@ -6,6 +6,7 @@ from playwright.sync_api import sync_playwright
 from browser_perf_common import inlined_html, STORAGE_SHIM, build_data
 
 VERSION='1.12.3'
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 
 def stable(v):
     return json.dumps(v,sort_keys=True,separators=(',',':'),ensure_ascii=False)
@@ -56,7 +57,7 @@ def main():
             page.evaluate(STORAGE_SHIM)
             page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",current)
             page.set_content(inlined_html(),wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.7'",timeout=20000)
+            page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
             page.locator('#importFile').set_input_files(str(f))
             page.wait_for_function("!document.querySelector('#importPreviewModal').hidden",timeout=10000)
             meta=page.locator('#importPreviewMeta').inner_text().lower()

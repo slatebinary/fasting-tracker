@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import hashlib, json, re, subprocess, sys, tempfile, xml.etree.ElementTree as ET
+import hashlib, json, re, struct, subprocess, sys, tempfile, xml.etree.ElementTree as ET, zlib
 
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
@@ -32,29 +32,79 @@ en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
 ok(bool(re.fullmatch(r'\d+\.\d+\.\d+',str(ver.get('version','')))),'version must be semantic X.Y.Z')
+ok("const DAILY_TOTALS_ALGORITHM_VERSION = 2;" in index, 'daily-total cache algorithm version missing')
+ok("Number(daily.algorithmVersion) === DAILY_TOTALS_ALGORITHM_VERSION" in index, 'daily-total cache must be rebuilt when its algorithm version is stale')
+ok("algorithmVersion:DAILY_TOTALS_ALGORITHM_VERSION" in index, 'daily-total cache writes must persist the algorithm version')
+ok("storedDayTotalsMap = buildStoredDayTotals(data.records);" in index and "dayTotalsRecordMap = recordMap(data.records);" in index, 'daily-total updates must rebuild from authoritative fasting records')
 expected_version=ver.get('version')
 ok(f'<meta name="ft-app-version" content="{expected_version}"' in index,'index meta version mismatch')
 ok(f"const APP_VERSION = '{expected_version}';" in index,'APP_VERSION mismatch')
+ok("function addIntegrityIssue(issues, code, detail='') { const text=String(detail||''); issues.push({code,detail:code==='daily-totals-mismatch'?text:text.slice(0,160)}); }" in index, 'daily-total integrity details must not be truncated')
+ok("const details=keys.map(key=>" in index and "return `Dates (${keys.length}): ${details.join('; ')}`;" in index, 'daily-total mismatch report must include every mismatched date')
 ok(bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}',str(ver.get('released','')))),'release date must be ISO YYYY-MM-DD')
 ok(ver.get('integrityAlgorithm')=='SHA-256','missing SHA-256 integrity metadata')
 ok(ver.get('htmlNormalization')=='github-pages-v1','wrong HTML integrity normalization')
+ok('./js/time-zone-locations.js' in ver.get('shell',[]) and 'id="timeZoneSearch"' in index, 'searchable time-zone picker bundle/markup missing')
+ok("group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:(group.id==='settingsGroupAppIcons'||group.id==='settingsGroupGeneral');" in index, 'app icon section must default open but honour a saved disclosure choice')
+ok("if (group.id==='settingsGroupAppIcons' && !group.open)" not in index, 'app icon section must not force itself open after the user collapses it')
+ok("Persist the user's disclosure choice, including a collapsed app-icon section." in index, 'app icon disclosure choice must be persisted')
+ok('settings.timeZoneSearchPlaceholder' in en_source and 'settings.timeZoneNoResults' in en_source, 'time-zone search localization missing')
+ok('.weightTargetRow' in index and 'white-space:nowrap' in index and 'id="weightTargetUnit"' in index, 'narrow-screen weight-unit layout protections missing')
 for item in ver.get('shell',[]):
     p=source_path(item); ok(p.is_file(),f'missing shell asset {item}')
     if p.is_file(): ok(hashlib.sha256(canonical_bytes(p)).hexdigest()==ver.get('hashes',{}).get(item),f'hash mismatch {item}')
 ok(set(ver.get('hashes',{}))==set(ver.get('shell',[])),'hash map must exactly match shell')
-# Simulate GitHub Pages rendering and the service worker's HTML normalization.
-site_url='https://example.github.io/fasting-tracker'
-repo_url='https://github.com/example/fasting-tracker'
+ok('function navigateWeightChartToIndex(index)' in index and 'id="weightChartRange"' in index, 'weight-chart navigation must support direct jumps across the full history')
+ok('id="weightChartRange"' in index and 'function navigateWeightChartToIndex(index)' in index, 'weight chart must provide a full-history range navigator')
+ok('touch-action:pan-x pan-y' in index and '-webkit-user-select:none' in index, 'weight chart must support horizontal swipes, vertical page scrolling and prevent accidental text selection')
+# Simulate the actual Pages artifact path: prepare_pages.py copies the HTML
+# into _site and deploy-pages uploads it directly, so Jekyll does not process
+# the front matter or Liquid placeholders. This was the missing regression case.
+site_url='https://example.github.io'
+site_base=f'{site_url}/fasting-tracker'
 for item in ver.get('shell',[]):
     p=source_path(item)
     if p.suffix.lower()!='.html':
         continue
     src=p.read_text()
-    rendered=fm.sub('',src,count=1).replace('{{ site.github.url }}',site_url).replace('{{ site.github.repository_url }}',repo_url)
-    normalized=rendered.replace('\r\n','\n').replace('\r','\n').replace(site_url,'__SITE_URL__')
+    # Actual static artifact: the source still contains front matter and Liquid.
+    normalized=src.replace('\r\n','\n').replace('\r','\n')
+    normalized=fm.sub('',normalized,count=1)
+    normalized=normalized.replace('{{ site.github.url }}','__SITE_URL__').replace('{{ site.github.repository_url }}','__REPO_URL__')
+    # Also handle rendered URLs if the hosting path changes in a future deployment.
+    normalized=normalized.replace(site_base,'__SITE_URL__').replace(site_url,'__SITE_URL__')
     normalized=re.sub(r'https://github\.com/[^/"\'<>\s]+/[^/"\'<>\s]+','__REPO_URL__',normalized)
     ok(hashlib.sha256(normalized.encode()).hexdigest()==ver['hashes'][item],f'GitHub Pages normalized hash mismatch {item}')
 ok('responseDigestHex' in sw and 'integrity check failed' in sw,'service worker integrity verification missing')
+# Color-Friendly navigation must keep text readable and active/focus states non-colour-only.
+def rgb(hex_color):
+    value=hex_color.lstrip('#')
+    return tuple(int(value[i:i+2],16)/255 for i in (0,2,4))
+def luminance(hex_color):
+    channels=rgb(hex_color)
+    linear=[c/12.92 if c<=0.04045 else ((c+0.055)/1.055)**2.4 for c in channels]
+    return 0.2126*linear[0]+0.7152*linear[1]+0.0722*linear[2]
+def contrast_ratio(foreground,background):
+    a,b=sorted((luminance(foreground),luminance(background)),reverse=True)
+    return (a+0.05)/(b+0.05)
+ok('html[data-theme="colorblind"] nav' in index and 'background: #ffffff' in index,'Color-Friendly navigation must use a stable light background')
+ok('html[data-theme="colorblind"] .tab .ico' in index and 'filter: grayscale(1) contrast(1.4)' in index,'Color-Friendly navigation icons must have stronger neutral contrast')
+ok('html[data-theme="colorblind"] .tab.active' in index and 'box-shadow: inset 0 -4px 0 #003f73' in index,'active navigation tab must have a non-colour-only indicator')
+ok('html[data-theme="colorblind"] .tab:focus-visible' in index and 'outline: 3px solid #003f73' in index,'Color-Friendly navigation keyboard focus must be visible')
+ok(contrast_ratio('#26384d','#ffffff')>=4.5,'Color-Friendly inactive navigation labels must meet WCAG AA text contrast')
+ok(contrast_ratio('#003f73','#dcecf8')>=4.5,'Color-Friendly active navigation labels must meet WCAG AA text contrast')
+ok("function announceDiagnosticAction(message,state='info')" in index, 'diagnostic actions need a shared visible feedback announcer')
+ok("actionFeedback.integrityRunning" in index and "actionFeedback.integrityFailed" in index and "finally { if(btn)btn.disabled=false; }" in index, 'integrity check must report running/failure and always re-enable its button')
+ok("actionFeedback.snapshotCreated" in index and "snapshotCreateNowBtn').addEventListener('click',async()" in index, 'manual snapshot action must report completion and create a snapshot from the explicit action')
+ok("actionFeedback.cacheRunning" in index and "actionFeedback.cacheBlocked" in index and "actionFeedback.cacheUpdateRequired" in index, 'cache repair must report progress and blocked/update-required states')
+ok("actionFeedback.benchmarkRunning" in index and "actionFeedback.benchmarkComplete" in index and "actionFeedback.benchmarkFailed" in index, 'benchmark must report running, success and failure')
+ok("actionFeedback.deviceChecksComplete" in index and "actionFeedback.deviceChecksFailed" in index and "deviceCheckSummary" in index and "finally{if(btn)btn.disabled=false;}" in index, 'device checks must report a summary and re-enable the button on every path')
+ok("actionFeedback.recalculateRunning" in index and "actionFeedback.recalculateWarning" in index and "actionFeedback.recalculateFailed" in index, 'statistics/chart recalculation must report progress, warnings and failures')
+ok("manualSnapshotFeedback" in index and "diagnosticActionFeedback" in index, 'feedback must remain visible in both the settings panel and snapshot dialog')
+ok('async function getCurrentServiceWorkerController()' in index and 'await reg.update()' in index and 'service worker controller update timed out' in index, 'update must wait for the newest active service worker before staging a release')
+ok('const controller = await getCurrentServiceWorkerController();' in index, 'release staging must not message a stale page controller')
+ok("replace(/^---\\n[\\s\\S]*?\\n---\\n/, '')" in sw, 'service worker must strip static-artifact front matter before hashing HTML')
+ok(".replace(/{{ site\\.github\\.url }}/g, '__SITE_URL__')" in sw and ".replace(/{{ site\\.github\\.repository_url }}/g, '__REPO_URL__')" in sw, 'service worker must canonicalize literal Liquid placeholders in static Pages artifacts')
 ok("url.searchParams.has('__ft_probe')" in sw,'live entry deployment probe must bypass the active cache')
 for rel in ['js/release-health.js','js/fasting-visuals.js','js/platform-diagnostics.js']:
     ok((ROOT/rel).is_file(),f'missing modular helper {rel}')
@@ -198,7 +248,37 @@ assert(zonedLocalToDate('2026-10-25T03:30','Europe/Sofia')===null,'autumn DST am
 assert(compareVersions('1.0.1','1.0.0')>0,'version compare upgrade');
 assert(compareVersions('1.0.0','1.0.0')===0,'version compare equal');
 const m=new Map();addIntervalToDayMap(m,'2026-09-01T00:00:00Z','2026-09-03T00:00:00Z','UTC');
-console.log([...m.entries()]); assert(Math.abs((m.get('2026-09-01')||0)-86400000)<2000 && Math.abs((m.get('2026-09-02')||0)-86400000)<2000,'multi-day allocation');
+console.log([...m.entries()]); assert((m.get('2026-09-01')||0)===86400000 && (m.get('2026-09-02')||0)===86400000,'each complete UTC calendar day must equal exactly 24 hours (no 23h 59m undercount)');
+const exact=new Map(); addIntervalToDayMap(exact,'2026-10-19T00:00:00.000Z','2026-10-22T00:00:00.000Z','UTC');
+for (const key of ['2026-10-19','2026-10-20','2026-10-21']) assert(exact.get(key)===86400000,`complete day ${key} must be exactly 24 hours`);
+const partial=new Map(); addIntervalToDayMap(partial,'2026-10-19T12:00:00.000Z','2026-10-20T12:00:00.000Z','UTC');
+assert(partial.get('2026-10-19')===43200000 && partial.get('2026-10-20')===43200000,'fast spanning midnight must allocate 12h to each date');
+const springStart=zonedLocalToDate('2026-03-29T00:00','Europe/Sofia');
+const springEnd=zonedLocalToDate('2026-03-30T00:00','Europe/Sofia');
+const spring=new Map(); addIntervalToDayMap(spring,springStart.toISOString(),springEnd.toISOString(),'Europe/Sofia');
+assert(spring.get('2026-03-29')===23*3600000,'Sofia spring DST day must total 23 elapsed hours, not be forced to 24');
+const autumnStart=zonedLocalToDate('2026-10-25T00:00','Europe/Sofia');
+const autumnEnd=zonedLocalToDate('2026-10-26T00:00','Europe/Sofia');
+const autumn=new Map(); addIntervalToDayMap(autumn,autumnStart.toISOString(),autumnEnd.toISOString(),'Europe/Sofia');
+assert(autumn.get('2026-10-25')===25*3600000,'Sofia autumn DST day must total 25 elapsed hours, not be forced to 24');
+for (const [zone,date,expected,label] of [
+  ['America/New_York','2026-03-08',23,'New York spring DST'],
+  ['America/New_York','2026-11-01',25,'New York autumn DST'],
+  ['Europe/London','2026-03-29',23,'London spring DST'],
+  ['Europe/London','2026-10-25',25,'London autumn DST'],
+  ['Australia/Sydney','2026-10-04',23,'Sydney spring DST'],
+  ['Australia/Sydney','2026-04-05',25,'Sydney autumn DST'],
+  ['Pacific/Auckland','2026-09-27',23,'Auckland spring DST'],
+  ['Pacific/Auckland','2026-04-05',25,'Auckland autumn DST'],
+  ['Australia/Lord_Howe','2026-10-04',23.5,'Lord Howe 30-minute spring DST'],
+  ['Australia/Lord_Howe','2026-04-05',24.5,'Lord Howe 30-minute autumn DST']
+]) {
+  const next = new Date(Date.parse(date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
+  const start = zonedLocalToDate(date+'T00:00',zone);
+  const end = zonedLocalToDate(next+'T00:00',zone);
+  const day = new Map(); addIntervalToDayMap(day,start.toISOString(),end.toISOString(),zone);
+  assert(day.get(date)===expected*3600000, `${label} (${zone}, ${date}) must be ${expected} elapsed hours, got ${day.get(date)/3600000}`);
+}
 console.log('algorithm regression tests passed');
 '''
     with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f:
@@ -375,6 +455,7 @@ ok('id="statsVizGroupSwitcher"' in index and 'id="statsVizSelect"' in index and 
 ok('function renderFastCalendar()' in index and 'function drawFastTrendChart()' in index and 'function drawFastWeeksChart()' in index, 'statistics visualization renderers missing')
 ok("el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer)" in index and "el('fastWeeksChart').addEventListener('pointerdown', handleWeeksPointer)" in index, 'trend/week chart interactions missing')
 ok("el('calendarPrevBtn').addEventListener('click'" in index and "el('calendarNextBtn').addEventListener('click'" in index, 'calendar month navigation missing')
+ok('calendarNumericLegend' in index and all(label in index for label in ['0h','1–5h','6–11h','12–17h','18h+']) and 'data-i18n="stats.less"' not in index[index.find('id="statsCalendarView"'):index.find('id="statsTrendView"')], 'calendar heatmap must show numeric fasting-hour ranges instead of Less/More')
 
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
@@ -420,6 +501,49 @@ console.log('compatibility repair regression tests passed');
 except Exception as e:
     errors.append('could not build compatibility repair tests: '+str(e))
 
+# v1.15.4: cumulative achievements remain separate from consecutive target-fast streaks.
+ok("const consecutiveWins = currentStreak();" in index, "consecutive-fast achievement streak source missing")
+ok("unlocked: wins >= 5" in index and "unlocked: wins >= 25" in index and "unlocked: wins >= 50" in index, "cumulative achievement milestones must remain cumulative")
+ok("unlocked: consecutiveWins >= 5" in index and "unlocked: consecutiveWins >= 25" in index and "unlocked: consecutiveWins >= 50" in index, "consecutive-fast achievement milestones missing")
+for lang in ("en", "bg", "es"):
+    dictionary=json.loads((ROOT/"i18n"/f"{lang}.json").read_text(encoding="utf-8"))
+    for key in ("game.streak5","game.streak5d","game.streak25","game.streak25d","game.streak50","game.streak50d"):
+        ok(key in dictionary, f"{lang} consecutive-fast achievement translation missing: {key}")
+
+# Patient Tortoise Easter egg must be accessible, local-only, dismissible, and motion-aware.
+ok('id="patientTortoise"' in index and 'id="patientTortoiseDismiss"' in index, 'Patient Tortoise surprise and dismiss control missing')
+ok("patientTortoiseTapCount < 7" in index and "patientTortoiseTapCount = 0" in index, 'Patient Tortoise must require seven activations and reset after reveal')
+ok('prefers-reduced-motion: no-preference' in index and '@keyframes tortoiseNod' in index, 'Patient Tortoise motion must only run when reduced motion is not requested')
+ok('class="patientTortoiseArt" viewBox="0 0 96 96"' in index and 'class="tortoiseShellPanel"' in index and 'class="tortoiseHead"' in index, 'Patient Tortoise needs detailed layered SVG artwork')
+for motion in ('@keyframes tortoiseBodyBob','@keyframes tortoiseHeadPeek','@keyframes tortoiseLegStep','@keyframes tortoiseTailWiggle','@keyframes tortoiseGroundPulse'):
+    ok(motion in index, f'Patient Tortoise animation sequence missing: {motion}')
+ok('.patientTortoise.isRevealed .tortoiseLegFront' in index and '.patientTortoise.isRevealed .tortoiseLegBack' in index, 'Patient Tortoise walking legs must animate in alternating phases')
+ok('.patientTortoise .patientTortoiseArt { width:96px; height:96px;' in index, 'Patient Tortoise illustration should be larger than the old basic icon')
+ok('easterEgg.patientTortoiseMessage' in en_source and en_source['easterEgg.patientTortoiseMessage']=='Steady is a pace, too.', 'Patient Tortoise message missing or changed')
+ok('easterEgg.patientTortoiseTrigger' in index and "patientTortoiseTrigger.addEventListener('keydown'" in index, 'Patient Tortoise trigger must be keyboard-accessible')
+
+
+# v1.16.9 weight-chart touch-scroll and English changelog regression checks
+ok("el('weightChart').addEventListener('pointermove', moveWeightChartPointer)" not in index, 'weight chart must not intercept touch movement with custom scrubbing')
+changelog_html=(ROOT/'changelog.html').read_text(encoding='utf-8')
+en_section=changelog_html.split('<section data-lang="en">',1)[1].split('</section>',1)[0]
+v168_section=en_section.split('<h2>v1.16.8</h2>',1)[1].split('</article>',1)[0] if '<h2>v1.16.8</h2>' in en_section else ''
+ok(bool(v168_section) and not re.search(r'[А-Яа-яЁё]',v168_section), 'v1.16.8 changelog in the English section must be English')
+ok('<h2>v1.16.9</h2>' in en_section and 'horizontal swipes scroll' in en_section, 'v1.16.9 weight-chart touch-scroll changelog missing')
+
+
+# Weight history navigation uses explicit controls and native horizontal swipes.
+ok('#weightChart { position:sticky; left:0; width:auto; height:240px; touch-action:pan-x pan-y; cursor:crosshair; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }' in index, 'weight chart must permit native horizontal and vertical gestures without text selection')
+ok("setPointerCapture(event.pointerId)" not in index[index.find('function beginWeightChartPointer'):index.find('function handleWeightChartScroll')] and "event.preventDefault()" not in index[index.find('function beginWeightChartPointer'):index.find('function handleWeightChartScroll')], 'weight chart must leave horizontal gesture handling to native scrolling')
+ok('function shiftWeightChartViewport(direction)' in index and 'touch-action:pan-x pan-y' in index, 'older/newer navigation and native horizontal swipes must be supported')
+ok('id="weightChartOlderBtn"' in index and 'id="weightChartNewerBtn"' in index and "el('weightChartRange').addEventListener('input'" in index, 'weight history must have explicit Older/Newer and range controls')
+ok('function syncWeightChartNavigator()' in index and 'older.disabled=valid.length<2||selectedValidIndex===0' in index and 'newer.disabled=valid.length<2||selectedValidIndex===valid.length-1' in index, 'Older/Newer buttons must track selected-pointer boundaries rather than scroll position')
+release_changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
+for lang in ('en','bg','es'):
+    section=release_changelog.split(f'<section data-lang="{lang}">',1)[1].split('</section>',1)[0]
+    for release in ('1.17.0','1.17.1','1.17.2','1.17.3'):
+        ok(f'<h2>v{release}</h2>' in section, f'v{release} changelog missing for {lang}')
+
 if errors:
     print('FAIL')
     for e in errors: print(' -',e)
@@ -430,7 +554,7 @@ if errors:
 ok('.vizGroupSwitcher { display:grid; grid-template-columns:repeat(4,minmax(0,1fr))' in index and '@media (max-width:430px) { .vizGroupSwitcher { grid-template-columns:repeat(2,minmax(0,1fr)); }' in index, 'grouped statistics navigator is not compact/responsive')
 ok('.vizGroupSwitcher button { min-height:44px' in index, 'statistics group controls do not keep compact touch targets')
 ok('.timelineScroller #chart { min-width:700px; width:100%; height:310px; touch-action:pan-x; }' in index, 'timeline CSS height must match its 310px chart geometry')
-ok('const cssW = c.clientWidth || 700, cssH = c.clientHeight || 310;' in index, 'timeline must use measured CSS height for proportional drawing/hit-testing')
+ok('cssH = c.clientHeight || 310' in index, 'timeline must use measured CSS height for proportional drawing/hit-testing')
 ok('padding:13px 4px 33px' in index, 'dual time axes are not aligned with the timeline plot area')
 ok("el('chart').addEventListener('pointerdown', beginTimelinePointer);" in index, 'timeline lacks Pointer Events input')
 ok("el('chart').addEventListener('pointerup', finishTimelinePointer);" in index, 'timeline lacks prompt pointer-up selection')
@@ -549,6 +673,8 @@ ok('id="weightChartScroller"' in index and 'id="weightChartTrack"' in index and 
 ok('function buildWeightAggregateBuckets(' in index and 'function weightBucketKeyForDay(' in index, 'calendar-period weight aggregation is missing')
 ok('weightChartScrollToLatestPending = true' in index and 'scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth)' in index, 'weight chart newest-first positioning is missing')
 ok('function handleWeightChartScroll()' in index and "addEventListener('scroll', handleWeightChartScroll" in index, 'historical weight chart scrolling is missing')
+ok('function selectWeightChartPointAtX(' in index and "el('weightChart').addEventListener('pointerup', finishWeightChartPointer)" in index and 'function navigateWeightChartToIndex(index)' in index, 'weight chart point selection and range navigation are missing')
+ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "const spacing=weightChartPointSpacing();" in index, 'weight chart keyboard point navigation across periods is missing')
 ok('weight.aggregatePointDetail' in en_source and 'weight.weekOf' in en_source, 'aggregate weight point localization is missing')
 ok((ROOT/'tests'/'test_weight_aggregation_scroll.py').is_file(), 'weight aggregation/scroll browser regression test missing')
 ok("let weightPeriodMode = 'daily'" in index and 'weight.periodDaily' in en_source, 'Daily weight-chart mode/default is missing')
@@ -617,6 +743,11 @@ ok("self.addEventListener('notificationclick'" in (ROOT/'sw.js').read_text(), 's
 ok('Notifications</h2>' in privacy_text and 'Известия</h2>' in privacy_text and 'Notificaciones</h2>' in privacy_text, 'localized notification privacy disclosure missing')
 ok((ROOT/'tests'/'test_notifications.py').is_file(), 'notification browser regression test missing')
 
+# Non-fasting gap detail must expose sub-minute boundaries when needed.
+ok('includeSeconds = false' in index and 'return includeSeconds ?' in index, 'chart time labels must support optional seconds')
+ok("const showGapSeconds = segment.type === 'gap'" in index and 'segment.start % 60000 !== 0 || segment.end % 60000 !== 0' in index, 'non-fasting gap details must reveal sub-minute boundaries')
+ok('chartTimeWithinDayLabel(segment.start, day.endMs, day.timeZone, showGapSeconds)' in index and 'chartTimeWithinDayLabel(segment.end, day.endMs, day.timeZone, showGapSeconds)' in index, 'gap boundary formatting must use the precision decision for both ends')
+
 # v1.12.2 notification onboarding regression checks
 ok('id="setupStepNotifications" data-setup-step="5"' in index and 'id="setupStepReady" data-setup-step="6"' in index, 'notification onboarding step/order missing')
 ok('id="setupEnableNotificationsBtn"' in index and 'id="setupSkipNotificationsBtn"' in index, 'notification onboarding explicit actions missing')
@@ -632,6 +763,82 @@ ok('function renderWeighCadenceButtons(' in index and 'function setSettingsWeigh
 ok("renderWeighCadenceButtons('notification', prefs.weighInCadence)" in index, 'Settings cadence control is not rendered from saved preference')
 ok("renderWeighCadenceButtons('setupNotification', prefs.weighInCadence)" in index, 'onboarding cadence control is not rendered from saved preference')
 ok("disabled=!prefs.weighIn" not in index and "disabled = !prefs.weighIn" not in index, 'cadence must remain selectable while weigh-in reminder is off')
+
+# v1.15.7 diagnostic feedback must be temporary and replace stale messages.
+ok('let diagnosticFeedbackTimer = null;' in index and 'let diagnosticFeedbackSequence = 0;' in index, 'diagnostic feedback dismissal state missing')
+ok('clearTimeout(diagnosticFeedbackTimer)' in index and '},8000);' in index, 'diagnostic feedback must auto-dismiss after eight seconds')
+ok("node.textContent='';node.hidden=true;node.removeAttribute('data-state');" in index, 'diagnostic feedback banner must clear and hide after dismissal')
+ok("currentSummary.textContent='';currentSummary.hidden=true;" in index, 'device-check summary must also clear after dismissal')
+
+# v1.15.0 accessibility palettes and timezone-derived cache regression checks
+ok("high-contrast-light" in index and "high-contrast-dark" in index and "grayscale" in index and "colorblind" in index, "accessibility appearance palettes missing")
+ok('settings.appearanceGrayscale' in index and 'settings.appearanceHighContrastLight' in index and 'settings.appearanceHighContrastDark' in index and 'settings.appearanceColorblind' in index, "accessibility appearance options are not localized")
+tz_start=index.find("el('timeZoneSelect').addEventListener('change'")
+tz_end=index.find("});",tz_start)
+tz_handler=index[tz_start:tz_end+3] if tz_start>=0 and tz_end>=0 else ""
+ok("updateStoredDayTotalsIncrementally()" in tz_handler and "persistDailyTotals(data.revision)" in tz_handler, "time-zone changes must rebuild and persist derived daily totals")
+
+# v1.16.0: accessible icon themes must be complete and localized.
+accessible_icon_themes = ("grayscale", "highcontrast", "colorblind")
+release_info = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))
+for theme in accessible_icon_themes:
+    ok(f'data-icon-choice="{theme}"' in index, f"{theme} icon choice missing from Settings/onboarding")
+    for size in (192, 512):
+        asset = f"./icons/{theme}/icon-{size}.png"
+        ok(asset in release_info["shell"], f"{theme} {size}px icon must be covered by release integrity")
+        icon_path = ROOT / "icons" / theme / f"icon-{size}.png"
+        ok(icon_path.is_file(), f"{theme} {size}px icon asset missing")
+        if icon_path.is_file():
+            icon_bytes = icon_path.read_bytes()
+            ok(icon_bytes.startswith(b"\x89PNG\r\n\x1a\n"), f"{theme} {size}px icon is not a PNG")
+            if icon_bytes.startswith(b"\x89PNG\r\n\x1a\n") and len(icon_bytes) >= 24:
+                dimensions = struct.unpack(">II", icon_bytes[16:24])
+                ok(dimensions == (size, size), f"{theme} icon dimensions should be {size}x{size}, got {dimensions}")
+                # A valid signature and IHDR are not enough: browsers reject PNGs
+                # with malformed chunks or incorrect CRCs, often showing a question mark.
+                offset = 8
+                saw_iend = False
+                idat_chunks = []
+                while offset + 12 <= len(icon_bytes):
+                    chunk_length = struct.unpack(">I", icon_bytes[offset:offset+4])[0]
+                    chunk_end = offset + 12 + chunk_length
+                    if chunk_end > len(icon_bytes):
+                        ok(False, f"{theme} icon has a truncated PNG chunk")
+                        break
+                    chunk_type = icon_bytes[offset+4:offset+8]
+                    chunk_data = icon_bytes[offset+8:offset+8+chunk_length]
+                    stored_crc = struct.unpack(">I", icon_bytes[offset+8+chunk_length:chunk_end])[0]
+                    actual_crc = zlib.crc32(chunk_type + chunk_data) & 0xffffffff
+                    ok(actual_crc == stored_crc, f"{theme} icon has an invalid PNG CRC in {chunk_type!r}")
+                    if chunk_type == b"IDAT":
+                        idat_chunks.append(chunk_data)
+                    offset = chunk_end
+                    if chunk_type == b"IEND":
+                        saw_iend = True
+                        break
+                ok(saw_iend and offset == len(icon_bytes), f"{theme} icon must end cleanly at PNG IEND")
+                try:
+                    decoded = zlib.decompress(b"".join(idat_chunks))
+                    row_bytes = (size * 4 + 7) // 8
+                    expected_bytes = (row_bytes + 1) * size
+                    ok(len(decoded) == expected_bytes, f"{theme} icon decoded pixel data length is invalid")
+                    if len(decoded) == expected_bytes:
+                        ok(all(decoded[row * (row_bytes + 1)] in (0, 1, 2, 3, 4) for row in range(size)),
+                           f"{theme} icon contains an invalid PNG scanline filter")
+                except zlib.error as exc:
+                    ok(False, f"{theme} icon has an invalid compressed image stream: {exc}")
+    for lang in ("en", "bg", "es"):
+        dictionary = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
+        ok(f"icon.{theme}" in dictionary, f"{lang} accessible icon label missing: {theme}")
+        manifest_name = f"manifest-{theme}" + ("" if lang == "en" else f"-{lang}") + ".webmanifest"
+        manifest_path = ROOT / manifest_name
+        ok(f"./{manifest_name}" in release_info["shell"], f"{manifest_name} must be covered by release integrity")
+        ok(manifest_path.is_file(), f"{manifest_name} missing")
+        if manifest_path.is_file():
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+            icon_sources = {entry["src"] for entry in manifest_data.get("icons", [])}
+            ok(f"./icons/{theme}/icon-192.png" in icon_sources and f"./icons/{theme}/icon-512.png" in icon_sources, f"{manifest_name} does not reference its theme's icon assets")
+            ok(any(entry.get("purpose") == "maskable" for entry in manifest_data.get("icons", [])), f"{manifest_name} lacks a maskable icon entry")
 
 if errors:
     print('FAIL')

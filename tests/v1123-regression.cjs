@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const docs = ['about.html','privacy.html','branding.html','license.html'];
+const docs = ['about.html','privacy.html','branding.html','license.html','changelog.html'];
 const index = fs.readFileSync('index.html','utf8');
 const jsBlocks = html => [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 function checkSyntax(path) {
@@ -15,17 +15,75 @@ function checkSyntax(path) {
   } else if(path.endsWith('.json')) JSON.parse(text);
   else new vm.Script(text,{filename:path});
 }
-for(const p of ['index.html',...docs,'version.json','i18n/en.js','i18n/bg.js','i18n/es.js'])checkSyntax(p);
+for(const p of ['index.html',...docs,'changelog.html','version.json','i18n/en.js','i18n/bg.js','i18n/es.js'])checkSyntax(p);
 assert.match(index,/window\.addEventListener\('pageshow'/);
 assert.match(index,/if \(!event\.persisted \|\| !uiReady\) return;/);
+assert.match(index,/data-i18n="public\.changelogLink" href="changelog\.html\?return=settings"/);
+assert.match(index,/id="patientTortoiseProgress"[^>]*role="status"[^>]*aria-live="polite"/,'Easter egg tap feedback must be announced accessibly');
+assert.match(index,/patientTortoiseTapCount < 7/,'Easter egg must provide six intermediate tap states');
+assert.match(index,/patientTortoiseTapMessageKeys = \['easterEgg\.patientTortoiseTap1','easterEgg\.patientTortoiseTap2','easterEgg\.patientTortoiseTap3','easterEgg\.patientTortoiseTap4','easterEgg\.patientTortoiseTap5','easterEgg\.patientTortoiseTap6'\]/,'Each intermediate tap must select an explicit localized message key');
+assert.match(index,/patientTortoise\.isRevealed \{ animation:tortoiseArrive/,'Reveal animation should be present');
+assert.match(index,/prefers-reduced-motion: reduce/,'Animations must respect reduced-motion preferences');
+assert.doesNotMatch(index,/localStorage\.(?:getItem|setItem)\([^)]*patientTortoise/i,'Easter egg tap progress must not be persisted');
+for (const key of ['patientTortoiseProgress','patientTortoiseTap1','patientTortoiseTap2','patientTortoiseTap3','patientTortoiseTap4','patientTortoiseTap5','patientTortoiseTap6']) {
+  for (const lang of ['en','bg','es']) assert.ok(fs.readFileSync('i18n/'+lang+'.json','utf8').includes('easterEgg.'+key), 'Missing localized Easter egg string '+lang+': '+key);
+}
+assert.match(index,/id="settingsUpdatesCard"/);
+assert.equal((index.match(/data-i18n="public\.changelogLink"/g)||[]).length,1,'Changelog link should appear exactly once');
+const changelog=fs.readFileSync('changelog.html','utf8');
+const changelogSections=[...changelog.matchAll(/<section data-lang="([^"]+)">/g)];
+assert.deepEqual(changelogSections.map(x=>x[1]),['en','bg','es'],'Changelog must have one section per supported language');
+for(let i=0;i<changelogSections.length;i++){
+  const start=changelogSections[i].index, end=i+1<changelogSections.length?changelogSections[i+1].index:changelog.length;
+  const section=changelog.slice(start,end);
+  assert.match(section,/<article class="version"><h2>v1\.15\.9<\/h2>/,'v1.15.9 must be available in '+changelogSections[i][1]);
+  assert.equal((section.match(/<article\b/g)||[]).length,(section.match(/<\/article>/g)||[]).length,'Changelog article markup must be balanced in '+changelogSections[i][1]);
+  assert.match(section,/<h2>v1\.15\.5<\/h2>/,'v1.15.5 must have a proper release card in '+changelogSections[i][1]);
+}
+assert.match(changelog,/v1\.8\.0/,'historical changelog should include the earliest documented release');
+assert.match(changelog,/history\.back\(\)/,'changelog should return to the prior app instance when possible');
+assert.match(changelog,/fastingTracker\.documentReturnUrl/,'changelog should use the established session return URL');
+assert.match(changelog,/const fromApp=!!exactReturn/,'changelog should restore the prior app instance when possible');
+
 assert.match(index,/persistedRecordMap\.size > 0 && snapshotData\.records\.length === 0/);
 assert.match(index,/persistedWeightMap\.size > 0 && snapshotData\.weights\.length === 0/);
 assert.match(index,/snapshotData\.deletedFasts\.length <= persistedDeletedFastMap\.size/);
 assert.match(index,/snapshotData\.deletedWeights\.length <= persistedDeletedWeightMap\.size/);
 assert.match(index,/readableBackupView/);
 assert.match(index,/v\$\{APP_VERSION\}/);
-assert.match(index,/const APP_VERSION\s*=\s*['"]1\.12\.7['"]/);
-assert.equal(JSON.parse(fs.readFileSync('version.json','utf8')).version,'1.12.7');
+const releaseVersion = JSON.parse(fs.readFileSync('version.json','utf8')).version;
+assert.ok(index.includes(`const APP_VERSION = '${releaseVersion}';`));
+assert.match(index,/function buildInteractiveChartDays\(dayCount = null/);
+assert.match(index,/buildInteractiveChartDays\(\)/);
+assert.match(index,/const maxTimelineWidth = 9000/);
+assert.match(index,/dayKey\(oldestMs,tz\)/);
+assert.match(index,/Fasting timeline for all recorded fastings/);
+assert.match(releaseVersion,/^\d+\.\d+\.\d+$/);
+assert.match(index,/function safeUpdateErrorMessage\(error\)/);
+assert.match(index,/failPendingMigration\(latestVersion, 'update-stage-failed', err\)/);
+assert.match(index,/error:migration\.last\.error\|\|null/);
+assert.match(index,/function describeDailyTotalsMismatch\(recalculated,cached,tolerance=2\)/);
+assert.match(index,/const details=keys\.map\(key=>/);
+assert.doesNotMatch(index,/keys\.slice\(0,3\)/);
+assert.match(index,/id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open/);
+assert.match(index,/<details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open>/,'Accessible icon section must be expanded in markup');
+for (const icon of ['grayscale','highcontrast','colorblind']) {
+  assert.match(index,new RegExp('data-icon-choice="'+icon+'"[^>]*><img[^>]*src="icons/'+icon+'/icon-192\\.png"'),'Missing visible icon choice: '+icon);
+  assert.ok(fs.existsSync('icons/'+icon+'/icon-192.png'),'Missing icon image asset: '+icon);
+}
+assert.match(index,/\.iconChoice\.active \{ border:0;/,'Selected icon must not have a blue border');
+assert.match(index,/patientTortoiseTapCount < 7/);
+assert.match(index,/prefers-reduced-motion: no-preference/);
+assert.match(index,/data-i18n="easterEgg.patientTortoiseMessage"/);
+assert.match(index,/patientTortoiseTrigger.addEventListener\('keydown'/);
+assert.match(index,/id="updateBtn"[^>]*>Check for new version</);
+assert.match(index,/id="integrityCopyBtn"/);
+assert.match(index,/async function copyIntegrityReport\(\)/);
+assert.match(index,/el\('integrityCopyBtn'\)\.addEventListener\('click',copyIntegrityReport\)/);
+assert.match(index,/cached − records/);
+assert.match(index,/describeDailyTotalsMismatch\(recalculated,storedDayTotalsMap\)/);
+assert.match(index,/issueDetails:lastIntegrityCheck\.issues\.map\(x=>\(\{code:x\.code,detail:x\.detail\|\|''\}\)\)/);
+assert.match(index,/integrityIssueLabel\(issue\)\+\(issue\.detail\?' — '\+issue\.detail:''\)/);
 for(const p of docs){
   const html=fs.readFileSync(p,'utf8');
   assert.match(html,/history\.back\(\)/);
@@ -60,7 +118,7 @@ for (const [key,file] of [['public.license','license.html'],['public.branding','
   }
 }
 
-// v1.12.7 irreversible deletion guard: two prompts and typed acknowledgment.
+// v1.12.8 irreversible deletion guard: two prompts and typed acknowledgment.
 assert.match(index, /confirm\(t\('history\.deletedPermanentConfirm'\)\) \|\| !confirm\(t\('history\.deletedPermanentFinalConfirm'\)\)/);
 assert.match(index, /confirm\(t\('weight\.deletePermanentFinalConfirm'\)\)/);
 assert.match(index, /confirm\(t\('bulk\.purgeFinalConfirm'/);
@@ -75,7 +133,7 @@ for(const lang of ['en','bg','es']) {
     assert.ok(dict[key] && dict[key] !== key, lang+': missing '+key);
   }
 }
-console.log('PASS: v1.12.7 two-stage deletion and backup acknowledgment source checks');
+console.log('PASS: v1.12.8 two-stage deletion and backup acknowledgment source checks');
 
 // Accessible manual-backup status is tied to the JSON export and data-only fingerprint.
 assert.match(index,/id="fastingBackupStatusBtn"[^>]*data-state="empty"/);
@@ -95,17 +153,67 @@ for (const lang of ['en','bg','es']) {
 }
 console.log('PASS: manual backup color-coded status, export action and translated accessible states');
 
-// v1.12.7: the section header is a dedicated row; backup attention appears below.
+// v1.12.8: the section header is a dedicated row; backup attention appears below.
 assert.match(index, /<div class="sectionHeader fastingSectionHeader"><h1[^>]*>Fasting<\/h1><button id="shareProgressBtn"/);
 assert.match(index, /<div id="fastingBackupRow" class="fastingBackupRow" hidden>/);
 assert.match(index, /const visible = state === 'stale' \|\| state === 'never' \|\| state === 'aged'/);
 assert.match(index, /Date\.now\(\) < backupSuccessVisibleUntil/);
 assert.match(index, /row\.hidden = !visible/);
 assert.match(index, /banner\.hidden = !snapshotAttention/);
-console.log('PASS: v1.12.7 consistent fasting header and attention-only backup action');
+console.log('PASS: v1.12.8 consistent fasting header and attention-only backup action');
 
-// v1.12.7: Daily/Weekly onboarding cadence stays within mobile modal widths.
+// v1.12.8: Daily/Weekly onboarding cadence stays within mobile modal widths.
 assert.match(index, /class="row setupNotificationWeighRow"/);
 assert.match(index, /\.setupNotificationWeighRow \.notificationCadenceToggle/);
 assert.match(index, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 console.log('PASS: narrow-screen onboarding notification cadence layout source');
+
+
+// v1.14.1: the read-only changelog is linked from Settings and available in all supported languages.
+assert.ok(/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersion));
+assert.ok(index.includes(`<meta name="ft-app-version" content="${releaseVersion}"`));
+assert.ok(index.includes('data-i18n="public.changelogLink" href="changelog.html?return=settings"'));
+assert.ok(index.includes("APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html','changelog.html'])"));
+const changelogHtml=fs.readFileSync('changelog.html','utf8');
+for(const lang of ['en','bg','es']) assert.match(changelogHtml,new RegExp('data-lang="'+lang+'"'));
+assert.match(changelogHtml,/read-only|solo lectura|само за четене/i);
+for(const lang of ['en','bg','es']) { const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8')); assert.ok(dict['public.changelogLink'],lang+' missing public.changelogLink'); }
+console.log('PASS: v1.14.1 changelog link, localized labels, and read-only multilingual document');
+
+
+// Settings discoverability: no heavy blue outline; the icon choices are immediately visible.
+const iconSectionIndex=index.indexOf('id="settingsGroupAppIcons"');
+const setupGuideIndex=index.indexOf('id="setupGuideBtn"');
+assert.ok(iconSectionIndex>=0 && setupGuideIndex>iconSectionIndex, 'App icon section must appear before the setup guide and other General settings');
+assert.ok(index.includes('class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open'), 'App icon section must be a top-level Settings group and open by default');
+assert.ok(/\.settingsGroup\.iconInstallationGroup\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section must not have a prominent border');
+assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section symbol must not have a border');
+assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
+assert.ok(/\.iconChoice\.active\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'Selected icon must not use a prominent border');
+assert.ok(index.includes('.iconChoice.active span::before { content:"✓ ";'), 'Selected icon must have a non-colour-only check-mark indicator');
+assert.ok(index.includes("group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:(group.id==='settingsGroupAppIcons'||group.id==='settingsGroupGeneral');"), 'Icon section must default open but honour the saved disclosure choice');
+assert.ok(!index.includes("if (group.id==='settingsGroupAppIcons' && !group.open)"), 'Icon section must not override a user collapse action');
+assert.ok(index.includes("group.hidden=!matched; group.open=matched;"), 'Settings search must temporarily open matching groups');
+assert.ok(index.includes('if (normalizeSettingsSearch(subgroup.textContent).includes(query)) subgroup.open=true'), 'Settings search must open a matching nested subsection');
+assert.ok(index.includes("const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon)"), 'Accessible icon themes must use available assets for browser and Apple Home Screen icons');
+const iconGrids=[...index.matchAll(/<div\b[^>]*class="iconChoiceGrid"[^>]*>([\s\S]*?)<\/div>/g)];
+assert.strictEqual(iconGrids.length,2,'Settings and onboarding must both show icon choices');
+const expectedIconOrder=['grayscale','highcontrast','colorblind','plate','moon','hourglass','timer'];
+for (const [i,grid] of iconGrids.entries()) {
+  const choices=[...grid[1].matchAll(/data-icon-choice="([^"]+)"/g)].map(m=>m[1]);
+  assert.deepStrictEqual(choices,expectedIconOrder, 'Accessible icons must appear first in icon grid '+(i+1));
+}
+const releaseMetadata=JSON.parse(fs.readFileSync('version.json','utf8'));
+for (const theme of ['grayscale','highcontrast','colorblind']) {
+  for (const size of ['192','512']) {
+    const path='icons/'+theme+'/icon-'+size+'.png';
+    assert.ok(fs.existsSync(path), 'Missing accessible app icon asset: '+path);
+    assert.ok(releaseMetadata.shell.includes('./'+path), 'Accessible icon must be included in release shell: '+path);
+    assert.ok(Object.prototype.hasOwnProperty.call(releaseMetadata.hashes,'./'+path), 'Accessible icon must have an integrity hash: '+path);
+  }
+}
+for (const lang of ['en','bg','es']) {
+  const dict=JSON.parse(fs.readFileSync('i18n/'+lang+'.json','utf8'));
+  assert.ok(dict['settings.appIconDetails'] && dict['settings.appIconSectionHelp'], lang+': missing prominent app icon section labels');
+}
+console.log('PASS: app icon section placement, neutral styling, accessible icon order/assets and Settings search expansion');
