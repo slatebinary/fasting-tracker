@@ -1072,5 +1072,7 @@
   "fasting.shorterCheckpoint": "По-кратка стъпка: остават {duration}. Първоначалната цел остава по избор.",
   "fasting.shorterCheckpointReached": "Изпълнихте по-кратката стъпка. Можете да спрете сега или да продължите към първоначалната цел.",
   "notifications.addWeightAction": "Добави",
-  "notifications.addWeightAria": "Добави запис за тегло и затвори това напомняне."
+  "notifications.addWeightAria": "Добави запис за тегло и затвори това напомняне.",
+  "fasting.shorterOfferOriginal": "Продължи до първоначалната цел",
+  "fasting.shorterOfferOriginalAria": "Продължете текущото гладуване до първоначално зададената цел."
 }
