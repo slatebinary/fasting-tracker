@@ -660,8 +660,10 @@ layout: null
     .notificationDetailTitle { font-weight:800; line-height:1.25; overflow-wrap:anywhere; }
     .notificationDetailTime { color:var(--muted); margin-top:2px; }
     .notificationDetailBody { margin-top:8px; line-height:1.45; overflow-wrap:anywhere; }
+    .notificationDetailActions { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex:0 0 auto; flex-wrap:wrap; }
+    .notificationDetailActions button { min-height:40px; padding:9px 12px; white-space:nowrap; }
     .notificationDetailDismiss { flex:0 0 auto; white-space:nowrap; }
-    @media (max-width: 420px) { .notificationDetailHeader { gap:8px; } .notificationDetailDismiss { padding-inline:10px; } }
+    @media (max-width: 420px) { .notificationDetailHeader { gap:8px; } .notificationDetailActions { gap:5px; } .notificationDetailActions button { padding-inline:9px; } }
     @media (prefers-reduced-motion: reduce) { .settingsGroupChevron { transition:none; } }
 </style>
 </head>
@@ -1789,7 +1791,7 @@ layout: null
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 35;
+  const I18N_SOURCE_REVISION = 36;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
@@ -3234,8 +3236,14 @@ layout: null
       const title=document.createElement('div'); title.className='notificationDetailTitle'; title.textContent=copy.title;
       const time=document.createElement('div'); time.className='small notificationDetailTime'; time.textContent=t('notifications.detailsReceived',{date:localDateTimeLabel(item.createdAt)});
       heading.append(title,time);
+      const actions=document.createElement('div'); actions.className='notificationDetailActions';
+      if (item.kind === 'weigh-in') {
+        const add=document.createElement('button'); add.type='button'; add.className='primary notificationDetailAddWeight'; add.textContent=t('notifications.addWeightAction'); add.setAttribute('aria-label',t('notifications.addWeightAria')); add.addEventListener('click',()=>{ openWeightModal(); dismissNotificationDetail(item.id); });
+        actions.append(add);
+      }
       const dismiss=document.createElement('button'); dismiss.type='button'; dismiss.className='secondary notificationDetailDismiss'; dismiss.textContent=t('common.dismiss'); dismiss.setAttribute('aria-label',t('notifications.detailsDismissAria',{title:copy.title})); dismiss.addEventListener('click',()=>dismissNotificationDetail(item.id));
-      header.append(heading,dismiss);
+      actions.append(dismiss);
+      header.append(heading,actions);
       const body=document.createElement('div'); body.className='notificationDetailBody'; body.textContent=copy.body;
       card.append(header,body); stack.append(card);
     }
