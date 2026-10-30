@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 34,
-  "appVersion": "1.17.6",
+  "sourceRevision": 35,
+  "appVersion": "1.17.7",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
