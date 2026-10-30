@@ -6540,7 +6540,7 @@ layout: null
     scroller.dataset.period = weightPeriodMode;
     scroller.dataset.bucketCount = String(buckets.length);
     scroller.dataset.dataPointCount = String(dataBuckets.length);
-    if(weightChartScrollToLatestPending){scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth);weightChartScrollToLatestPending=false;}
+    if(weightChartScrollToLatestPending){scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth);for(let i=buckets.length-1;i>=0;i--){if(buckets[i].count>0){weightChartSelectedId=buckets[i].key;break;}}weightChartScrollToLatestPending=false;}
     const scrollX=scroller.scrollLeft;
     const yFor=v=>top+h-((v-minV)/span)*h;
     const absoluteX=i=>left+(buckets.length===1?plotW/2:i*pointSpacing);
