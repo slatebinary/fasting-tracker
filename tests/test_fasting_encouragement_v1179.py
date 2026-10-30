@@ -41,11 +41,19 @@ with sync_playwright() as p:
     page.locator('#toggleFast').click()
     page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
     page.locator('#stopAndSaveBtn').click()
+    if 'continue to your original target' not in page.locator('#stopFastModalText').inner_text().lower():
+        print('FAIL: shorter-step prompt does not encourage continuing to the original target'); sys.exit(1)
     if 'half the time remaining' not in page.locator('#stopFastModalText').inner_text().lower():
         print('FAIL: shorter-step offer does not explain the half-remaining calculation'); sys.exit(1)
     continue_label=page.locator('#keepFastingBtn').inner_text().lower()
     if 'continue for' not in continue_label:
         print('FAIL: shorter-step acceptance button does not show the proposed duration'); sys.exit(1)
+    if not page.locator('#continueOriginalTargetBtn').is_visible():
+        print('FAIL: shorter-step offer omits the original-target choice'); sys.exit(1)
+    if 'original target' not in page.locator('#continueOriginalTargetBtn').inner_text().lower():
+        print('FAIL: original-target choice is not clearly labelled'); sys.exit(1)
+    if page.evaluate("document.activeElement?.id") != 'continueOriginalTargetBtn':
+        print('FAIL: focus does not default to continuing to the original target'); sys.exit(1)
     page.locator('#keepFastingBtn').click()
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     if 'Stop' not in page.locator('#toggleFast').inner_text():
@@ -76,6 +84,34 @@ with sync_playwright() as p:
     page2.locator('#stopAndSaveBtn').click()
     page2.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page2.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Start')",timeout=5000)
+    # Choosing the original target must be an explicit third option. It keeps
+    # the active fast running, leaves its target unchanged and does not create
+    # a half-time checkpoint or repeat the offer for this same fast.
+    page3=browser.new_page(viewport={'width':390,'height':844})
+    page3.on('pageerror',lambda exc:errors.append(str(exc)))
+    seed_active(page3)
+    page3.locator('#toggleFast').click()
+    page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page3.locator('#stopAndSaveBtn').click()
+    page3.locator('#continueOriginalTargetBtn').wait_for(state='visible',timeout=3000)
+    page3.locator('#continueOriginalTargetBtn').click()
+    page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    if 'Stop' not in page3.locator('#toggleFast').inner_text():
+        print('FAIL: original-target choice ended the active fast'); sys.exit(1)
+    original_state=page3.evaluate("JSON.parse(localStorage.getItem('fastingTracker.shorterGoal') || 'null')")
+    if not original_state or original_state.get('offered') is not True or original_state.get('checkpointAt') != 0:
+        print('FAIL: original-target choice was not recorded without a shorter checkpoint'); sys.exit(1)
+    if '16' not in page3.locator('#goalText').inner_text():
+        print('FAIL: original fasting target display changed after choosing to continue'); sys.exit(1)
+    page3.wait_for_timeout(400)  # respect the modal touch-through suppression window
+    page3.locator('#toggleFast').click()
+    page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page3.locator('#stopAndSaveBtn').click()
+    # A repeated early-stop attempt should save directly, without showing the
+    # shorter-step decision a second time.
+    page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    page3.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
+
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
