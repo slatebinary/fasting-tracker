@@ -41,6 +41,8 @@ with sync_playwright() as p:
     page.locator('#toggleFast').click()
     page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
     page.locator('#stopAndSaveBtn').click()
+    if 'continue to your original target' not in page.locator('#stopFastModalText').inner_text().lower():
+        print('FAIL: shorter-step prompt does not encourage continuing to the original target'); sys.exit(1)
     if 'half the time remaining' not in page.locator('#stopFastModalText').inner_text().lower():
         print('FAIL: shorter-step offer does not explain the half-remaining calculation'); sys.exit(1)
     continue_label=page.locator('#keepFastingBtn').inner_text().lower()
