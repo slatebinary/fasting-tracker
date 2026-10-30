@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 36,
-  "appVersion": "1.17.10",
+  "sourceRevision": 37,
+  "appVersion": "1.17.11",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1076,6 +1076,8 @@
     "fasting.shorterCheckpoint": "Shorter step: {duration} remaining. Your original target is still optional.",
     "fasting.shorterCheckpointReached": "You completed the shorter step. You can stop now or continue toward your original target.",
     "notifications.addWeightAction": "Add",
-    "notifications.addWeightAria": "Add a weight entry and dismiss this reminder."
+    "notifications.addWeightAria": "Add a weight entry and dismiss this reminder.",
+    "fasting.shorterOfferOriginal": "Continue to original target",
+    "fasting.shorterOfferOriginalAria": "Keep the current fast running until the original fasting target."
   }
 }
