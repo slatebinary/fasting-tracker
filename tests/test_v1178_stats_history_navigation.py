@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """v1.17.9 chronological Statistics history navigation regression."""
-import sys
+import sys, json
+from pathlib import Path
 from browser_perf_common import STORAGE_SHIM, inlined_html, build_data
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
 
-VERSION='1.17.9'
+VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 data=build_data(240)
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])

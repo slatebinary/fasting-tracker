@@ -1070,5 +1070,7 @@
   "fasting.shorterOfferContinue": "Continuar {duration}",
   "fasting.shorterOfferStop": "Terminar mi ayuno",
   "fasting.shorterCheckpoint": "Paso más corto: quedan {duration}. Tu objetivo original sigue siendo opcional.",
-  "fasting.shorterCheckpointReached": "Has completado el paso más corto. Puedes parar ahora o continuar hacia tu objetivo original."
+  "fasting.shorterCheckpointReached": "Has completado el paso más corto. Puedes parar ahora o continuar hacia tu objetivo original.",
+  "notifications.addWeightAction": "Añadir",
+  "notifications.addWeightAria": "Añade un registro de peso y cierra este recordatorio."
 }

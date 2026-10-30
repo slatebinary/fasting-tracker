@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Regression: opt-in notification preferences, permission request and deduped target/safety alerts."""
-import sys
+import sys, json
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
+APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
+
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -35,9 +38,9 @@ with sync_playwright() as p:
         'activeCreatedAt':start.isoformat().replace('+00:00','Z'),
         'activeModifiedAt':None,
     })
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); localStorage.setItem('fastingTracker.notificationState', JSON.stringify({weighInAnchorAt:new Date(Date.now()-8*24*3600000).toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupNotifications > summary').click()
     page.wait_for_function("document.querySelector('#notificationsCard') && !document.querySelector('#notificationsCard').hidden",timeout=5000)
 
@@ -96,6 +99,29 @@ with sync_playwright() as p:
         print('FAIL: test notification content unexpected:',test); sys.exit(1)
 
 
+    # A due weigh-in reminder offers a direct Add action. Activating it opens
+    # the weight form and dismisses only that reminder detail.
+    page.locator('#notificationWeighToggle').click()
+    page.locator('#notificationMasterToggle').click()  # off
+    page.locator('#notificationMasterToggle').click()  # on; rechecks due weigh-in
+    page.wait_for_function("document.querySelectorAll('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]').length === 1",timeout=5000)
+    weigh_card=page.locator('#notificationDetailStack [data-notification-detail-id^="fasting-weigh-"]')
+    if weigh_card.locator('.notificationDetailAddWeight').count()!=1 or weigh_card.locator('.notificationDetailDismiss').count()!=1:
+        print('FAIL: weigh-in reminder must offer both Add and Dismiss'); sys.exit(1)
+    if page.locator('#notificationDetailStack [data-notification-detail-id^="fasting-target-"] .notificationDetailAddWeight').count():
+        print('FAIL: Add weight action must be limited to weigh-in reminders'); sys.exit(1)
+    weight_count=page.evaluate("document.querySelectorAll('#weightHistoryList .historyRow').length")
+    weigh_card.locator('.notificationDetailAddWeight').click()
+    page.wait_for_function("!document.querySelector('#weightModal').hidden",timeout=3000)
+    page.wait_for_function("!document.querySelector('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]')",timeout=3000)
+    page.wait_for_function("document.activeElement?.id === 'weightValueInput'",timeout=3000)
+    if page.evaluate("document.activeElement?.id")!='weightValueInput':
+        print('FAIL: Add action did not focus the weight-entry field'); sys.exit(1)
+    if page.evaluate("document.querySelectorAll('#weightHistoryList .historyRow').length")!=weight_count:
+        print('FAIL: opening the Add form changed weight history before Save'); sys.exit(1)
+    page.keyboard.press('Escape')
+    page.wait_for_function("document.querySelector('#weightModal').hidden",timeout=3000)
+
     denied=browser.new_page(viewport={'width':390,'height':844})
     denied.evaluate(STORAGE_SHIM)
     denied.evaluate("""() => {
@@ -107,7 +133,7 @@ with sync_playwright() as p:
     denied_data=build_data(1)
     denied.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2'})); }", denied_data)
     denied.set_content(inlined_html(),wait_until='domcontentloaded')
-    denied.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    denied.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
     denied.locator('.tab[data-screen="settings"]').click(); denied.locator('#settingsGroupNotifications > summary').click()
     denied.wait_for_function("!document.querySelector('#notificationBlockedHelp')?.hidden",timeout=5000)
     help_text=denied.locator('#notificationBlockedHelp').inner_text()

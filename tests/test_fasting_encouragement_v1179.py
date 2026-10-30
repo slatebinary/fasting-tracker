@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Regression: time-left encouragement, half-remaining checkpoint and safety bypass."""
-import sys
+import sys, json
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
+
+APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 
 def seed_active(page, reason='personal'):
     data=build_data(3)
@@ -19,7 +22,7 @@ def seed_active(page, reason='personal'):
     page.evaluate(STORAGE_SHIM)
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.17.9',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.17.9'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
     page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
     return data
 

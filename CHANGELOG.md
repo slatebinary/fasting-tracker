@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.17.10 — 30 October 2026
+- Added an **Add** action to weigh-in reminder details. It opens the weight-entry form directly and dismisses that reminder; other notification types retain their existing Dismiss-only action.
+- Added accessible English, Bulgarian and Spanish labels and browser regression coverage.
+- No existing fasting, weight, active-fast or backup records are changed.
+
 ## v1.17.9 — 30 October 2026
 - Added concise, non-coercive fasting encouragement that shows the actual time remaining to the user's chosen target, with wording that makes continuing conditional on feeling well.
 - When a user chooses to stop before the target, offers one optional shorter step equal to half the remaining time, calculated at the moment of the decision; accepting it creates a visible checkpoint without changing the original target.

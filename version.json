@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.9",
+  "version": "1.17.10",
   "released": "2026-10-30",
-  "notes": "Added supportive, time-remaining encouragement and an optional half-remaining-time checkpoint when ending a fast before its target; health/safety and unavoidable stops bypass the offer.",
+  "notes": "Added an Add action to weigh-in reminder details; it opens the weight-entry form directly and dismisses that reminder.",
   "entry": "./index.html",
   "shell": [
     "./",

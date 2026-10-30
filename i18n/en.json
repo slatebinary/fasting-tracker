@@ -1070,5 +1070,7 @@
   "fasting.shorterOfferContinue": "Continue for {duration}",
   "fasting.shorterOfferStop": "End my fast",
   "fasting.shorterCheckpoint": "Shorter step: {duration} remaining. Your original target is still optional.",
-  "fasting.shorterCheckpointReached": "You completed the shorter step. You can stop now or continue toward your original target."
+  "fasting.shorterCheckpointReached": "You completed the shorter step. You can stop now or continue toward your original target.",
+  "notifications.addWeightAction": "Add",
+  "notifications.addWeightAria": "Add a weight entry and dismiss this reminder."
 }
