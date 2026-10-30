@@ -1059,5 +1059,16 @@
   "a11y.weightChartNavigator": "Navegación del historial de peso",
   "a11y.weightChartOlder": "Más antiguos",
   "a11y.weightChartNewer": "Más recientes",
-  "a11y.weightChartRange": "Explorar el historial de peso: los valores más antiguos están a la izquierda y los más recientes a la derecha"
+  "a11y.weightChartRange": "Explorar el historial de peso: los valores más antiguos están a la izquierda y los más recientes a la derecha",
+  "fasting.encourageEarly": "Faltan {duration} para tu objetivo elegido. Continúa solo si te encuentras bien.",
+  "fasting.encourageMiddle": "Vas avanzando. Faltan {duration} para tu objetivo elegido; continúa solo si te encuentras bien.",
+  "fasting.encourageNear": "Te estás acercando: faltan {duration}. Continúa solo si te encuentras bien.",
+  "fasting.encourageAlmost": "Ya casi: faltan {duration} para tu objetivo elegido.",
+  "fasting.encourageComplete": "Has alcanzado tu objetivo elegido. Continuar es opcional; puedes parar ahora.",
+  "fasting.shorterOfferTitle": "¿Un siguiente paso más pequeño?",
+  "fasting.shorterOfferText": "Si todavía te encuentras bien, puedes continuar durante {duration}: la mitad del tiempo que queda hasta tu objetivo original. También puedes terminar el ayuno ahora.",
+  "fasting.shorterOfferContinue": "Continuar {duration}",
+  "fasting.shorterOfferStop": "Terminar mi ayuno",
+  "fasting.shorterCheckpoint": "Paso más corto: quedan {duration}. Tu objetivo original sigue siendo opcional.",
+  "fasting.shorterCheckpointReached": "Has completado el paso más corto. Puedes parar ahora o continuar hacia tu objetivo original."
 }
