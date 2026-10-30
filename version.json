@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.10",
+  "version": "1.17.11",
   "released": "2026-10-30",
-  "notes": "Added an Add action to weigh-in reminder details; it opens the weight-entry form directly and dismisses that reminder.",
+  "notes": "Added an explicit option to continue the current fast to its original target when the shorter half-remaining checkpoint is offered.",
   "entry": "./index.html",
   "shell": [
     "./",
