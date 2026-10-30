@@ -3,7 +3,7 @@
 ## v1.17.9 — 30 October 2026
 - Added concise, non-coercive fasting encouragement that shows the actual time remaining to the user's chosen target, with wording that makes continuing conditional on feeling well.
 - When a user chooses to stop before the target, offers one optional shorter step equal to half the remaining time, calculated at the moment of the decision; accepting it creates a visible checkpoint without changing the original target.
-- Health/safety stop reasons bypass the shorter-step offer. Ending the fast remains available, and reaching the original target explicitly makes further fasting optional.
+- Health/safety and other unavoidable stop reasons bypass the shorter-step offer. Ending the fast remains available, and reaching the original target explicitly makes further fasting optional.
 - Added English, Bulgarian and Spanish translations and regression coverage. No existing fasting, weight or backup records are changed.
 
 
