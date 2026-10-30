@@ -108,8 +108,8 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: fasting-tracker-v1.15.0-regression
-          path: /tmp/fasting-tracker-v1.15.0.zip
+          name: fasting-tracker-regression-release
+          path: /tmp/fasting-tracker-v*.zip
           retention-days: 14
 
       - name: Synchronize generated assets to development branch after passing tests
