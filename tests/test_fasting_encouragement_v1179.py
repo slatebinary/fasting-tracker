@@ -103,6 +103,7 @@ with sync_playwright() as p:
         print('FAIL: original-target choice was not recorded without a shorter checkpoint'); sys.exit(1)
     if '16' not in page3.locator('#goalText').inner_text():
         print('FAIL: original fasting target display changed after choosing to continue'); sys.exit(1)
+    page3.wait_for_timeout(400)  # respect the modal touch-through suppression window
     page3.locator('#toggleFast').click()
     page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
     page3.locator('#stopAndSaveBtn').click()
