@@ -1070,7 +1070,7 @@
     "fasting.encourageAlmost": "Almost there: {duration} left to your chosen target.",
     "fasting.encourageComplete": "You reached your chosen target. Continuing is optional; you can stop now.",
     "fasting.shorterOfferTitle": "A smaller next step?",
-    "fasting.shorterOfferText": "If you still feel well, you could continue for another {duration} — half the time remaining to your original target. You can also end your fast now.",
+    "fasting.shorterOfferText": "If you feel well, continue to your original target. If you prefer a smaller step, continue for another {duration} — half the time remaining. You can also end your fast now.",
     "fasting.shorterOfferContinue": "Continue for {duration}",
     "fasting.shorterOfferStop": "End my fast",
     "fasting.shorterCheckpoint": "Shorter step: {duration} remaining. Your original target is still optional.",
