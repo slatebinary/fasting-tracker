@@ -1066,7 +1066,7 @@
   "fasting.encourageAlmost": "Ya casi: faltan {duration} para tu objetivo elegido.",
   "fasting.encourageComplete": "Has alcanzado tu objetivo elegido. Continuar es opcional; puedes parar ahora.",
   "fasting.shorterOfferTitle": "¿Un siguiente paso más pequeño?",
-  "fasting.shorterOfferText": "Si todavía te encuentras bien, puedes continuar durante {duration}: la mitad del tiempo que queda hasta tu objetivo original. También puedes terminar el ayuno ahora.",
+  "fasting.shorterOfferText": "Si te encuentras bien, continúa hasta tu objetivo original. Si prefieres un paso más pequeño, continúa durante {duration} más — la mitad del tiempo restante. También puedes terminar el ayuno ahora.",
   "fasting.shorterOfferContinue": "Continuar {duration}",
   "fasting.shorterOfferStop": "Terminar mi ayuno",
   "fasting.shorterCheckpoint": "Paso más corto: quedan {duration}. Tu objetivo original sigue siendo opcional.",
