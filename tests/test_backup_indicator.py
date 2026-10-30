@@ -107,6 +107,7 @@ with sync_playwright() as p:
     page.wait_for_function("!document.querySelector('#stopFastModal').hidden")
     page.locator('#stopAndSaveBtn').click()
     page.wait_for_function("document.querySelector('#stopAndSaveBtn')?.textContent.includes('End my fast')",timeout=5000)
+    page.wait_for_timeout(300)  # Let the reliable modal-action lock expire before the second activation.
     page.locator('#stopAndSaveBtn').click()
     status(page,'stale')
     assert not errors, errors[:5]
