@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.17.7 — 30 October 2026
+- Fixed initial weight-chart selection so Older starts from the newest available measurement and can step through the complete history to the oldest record; Newer returns to the newest.
+- Added boundary-to-boundary regression coverage for Daily, Week, Month, Quarter, 6 months and Year views.
+- No fasting, weight, active-fast or backup records are changed.
+
 ## v1.17.6 — 29 October 2026
 - Older and Newer now move the selected weight pointer one measurement at a time, updating the displayed value and date.
 - Manual horizontal scrolling and the full-history range slider remain available; the buttons disable at the oldest and newest measurements.
