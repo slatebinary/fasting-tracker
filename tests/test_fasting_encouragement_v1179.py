@@ -50,6 +50,8 @@ with sync_playwright() as p:
         print('FAIL: shorter-step offer omits the original-target choice'); sys.exit(1)
     if 'original target' not in page.locator('#continueOriginalTargetBtn').inner_text().lower():
         print('FAIL: original-target choice is not clearly labelled'); sys.exit(1)
+    if page.evaluate("document.activeElement?.id") != 'continueOriginalTargetBtn':
+        print('FAIL: focus does not default to continuing to the original target'); sys.exit(1)
     page.locator('#keepFastingBtn').click()
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     if 'Stop' not in page.locator('#toggleFast').inner_text():
