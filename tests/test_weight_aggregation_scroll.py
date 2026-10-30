@@ -97,6 +97,8 @@ with sync_playwright() as p:
     if not selected_detail.strip() or not latest_detail.strip() or range_left >= latest_left:
         print('FAIL: range navigator did not select and reveal older measurements', latest_left, range_left, selected_detail); sys.exit(1)
 
+    # Force a fresh period open so the first Daily pass verifies automatic newest selection.
+    page.locator('[data-weight-period="month"]').click(); page.wait_for_timeout(80)
     # Older/Newer must traverse every valid bucket from the newest endpoint
     # to the oldest endpoint and back, for every chart period.
     for mode in ('daily','week','month','quarter','halfyear','year'):
@@ -110,6 +112,8 @@ with sync_playwright() as p:
         if info['valid'] < 2:
             print('FAIL: not enough valid buckets for endpoint traversal', mode, info); sys.exit(1)
         latest_index = int(nav.input_value())
+        if latest_index != int(nav.get_attribute('max') or '0'):
+            print('FAIL: chart did not select the newest bucket on period open', mode, latest_index, nav.get_attribute('max')); sys.exit(1)
         if page.locator('#weightChartNewerBtn').is_enabled():
             print('FAIL: Newer should be disabled at the newest endpoint on period open', mode, latest_index); sys.exit(1)
         previous_index = latest_index
