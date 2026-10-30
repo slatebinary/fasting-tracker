@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.6",
-  "released": "2026-10-29",
-  "notes": "Make Older and Newer move the selected weight measurement pointer while preserving manual scrolling and full-history range navigation.",
+  "version": "1.17.7",
+  "released": "2026-10-30",
+  "notes": "Select the newest weight measurement when opening a chart period so Older and Newer can traverse the complete history.",
   "entry": "./index.html",
   "shell": [
     "./",
