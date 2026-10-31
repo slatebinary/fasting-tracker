@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.12",
-  "released": "2026-10-30",
-  "notes": "Repeat the half-remaining-time continuation offer on every personal-reason early-stop attempt.",
+  "version": "1.17.13",
+  "released": "2026-10-31",
+  "notes": "Restore the missing v1.17.12 entry in the in-app changelog in English, Bulgarian and Spanish.",
   "entry": "./index.html",
   "shell": [
     "./",
