@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.17.13 — 31 October 2026
+- Restored the missing v1.17.12 release notes in the in-app changelog in English, Bulgarian and Spanish.
+- Added regression checks to keep the three in-app language sections aligned with the repository release history.
+- No application behavior or saved fasting, weight or backup data is changed.
+
 ## v1.17.12 — 30 October 2026
 - Show the half-remaining-time continuation offer on every attempt to stop an active fast for personal reasons, including after choosing the shorter checkpoint or continuing to the original target.
 - Keep health/safety and unavoidable stop reasons exempt from the continuation offer; preserve the existing active fast, target and checkpoint behavior.
