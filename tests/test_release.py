@@ -36,7 +36,7 @@ for lang, section_start, section_end in (('en','<section data-lang="en">','<sect
     start=changelog.find(section_start)
     end=changelog.find(section_end,start+len(section_start))
     section=changelog[start:end if end>=0 else len(changelog)] if start>=0 else ''
-    ok('<h2>v1.17.15</h2>' in section, f'{lang} in-app changelog is missing current release v1.17.14')
+    ok('<h2>v1.17.15</h2>' in section, f'{lang} in-app changelog is missing current release v1.17.15')
     ok('<h2>v1.17.12</h2>' in section, f'{lang} in-app changelog is missing release v1.17.12')
     if lang=='en':
         ok('every time the user attempts to stop an active fast for a personal reason' in section, 'English v1.17.12 changelog does not describe repeated personal-reason offers')
