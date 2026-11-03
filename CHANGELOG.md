@@ -1,3 +1,8 @@
+## v1.17.15 — 3 November 2026
+- Made external-backup freshness signatures independent of record-array order by canonicalizing fasting, deleted-fasting, weight and deleted-weight entries by ID before hashing.
+- Prevents a harmless IndexedDB reload/reordering from incorrectly displaying “Backup needed”; actual additions, edits and deletions still invalidate the backup.
+- Added regression assertions for order-independent signatures. No saved user data is rewritten or removed.
+
 # Fasting Tracker changelog
 
 ## v1.17.14 — 3 November 2026
