@@ -6968,14 +6968,23 @@ layout: null
     if (sourceData === data && backupDatasetSignatureCache &&
         backupDatasetSignatureCache.source === data && backupDatasetSignatureCache.revision === revision)
       return backupDatasetSignatureCache.signature;
+    // IndexedDB getAll() returns rows in primary-key order, which may differ
+    // from the in-memory array order used when an external backup was created.
+    // Dataset identity is order-independent: canonicalize each record collection
+    // by stable ID before hashing so a storage reload cannot falsely mark a
+    // backup stale merely because its arrays were reordered.
+    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => {
+      const left=String(a?.id ?? ''), right=String(b?.id ?? '');
+      return left < right ? -1 : left > right ? 1 : 0;
+    });
     const tracked = {
       activeStart:sourceData.activeStart || null,
       activeTimeZone:sourceData.activeTimeZone || null,
       activeGoalHours:sourceData.activeGoalHours ?? null,
       activeCreatedAt:sourceData.activeCreatedAt || null,
       activeModifiedAt:sourceData.activeModifiedAt || null,
-      records:sourceData.records || [], deletedFasts:sourceData.deletedFasts || [],
-      weights:sourceData.weights || [], deletedWeights:sourceData.deletedWeights || []
+      records:byId(sourceData.records), deletedFasts:byId(sourceData.deletedFasts),
+      weights:byId(sourceData.weights), deletedWeights:byId(sourceData.deletedWeights)
     };
     const signature = 'v1:' + fnv1a64Hex(stableStringify(tracked));
     if (sourceData === data) backupDatasetSignatureCache = {source:data,revision,signature};
