@@ -45,6 +45,8 @@ for lang, section_start, section_end in (('en','<section data-lang="en">','<sect
     else:
         ok('cada vez que el usuario intenta detener un ayuno activo por un motivo personal' in section, 'Spanish v1.17.12 changelog does not describe repeated personal-reason offers')
 ok(bool(re.fullmatch(r'\d+\.\d+\.\d+',str(ver.get('version','')))),'version must be semantic X.Y.Z')
+ok('const byId = list => (Array.isArray(list) ? list : []).slice().sort' in index, 'backup freshness signature must canonicalize array order')
+ok('records:byId(sourceData.records), deletedFasts:byId(sourceData.deletedFasts)' in index and 'weights:byId(sourceData.weights), deletedWeights:byId(sourceData.deletedWeights)' in index, 'backup signature must canonicalize every record collection')
 ok("const DAILY_TOTALS_ALGORITHM_VERSION = 2;" in index, 'daily-total cache algorithm version missing')
 ok("Number(daily.algorithmVersion) === DAILY_TOTALS_ALGORITHM_VERSION" in index, 'daily-total cache must be rebuilt when its algorithm version is stale')
 ok("algorithmVersion:DAILY_TOTALS_ALGORITHM_VERSION" in index, 'daily-total cache writes must persist the algorithm version')
