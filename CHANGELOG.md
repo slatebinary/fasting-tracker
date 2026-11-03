@@ -1,5 +1,10 @@
 # Fasting Tracker changelog
 
+## v1.17.14 — 3 November 2026
+- Swapped the positions of the **Reached target** and **Longest fast** tiles in Statistics.
+- Only the tile order changes; calculations, saved fasting records and all other statistics remain unchanged.
+
+
 ## v1.17.13 — 31 October 2026
 - Restored the missing v1.17.12 release notes in the in-app changelog in English, Bulgarian and Spanish.
 - Added regression checks to keep the three in-app language sections aligned with the repository release history.

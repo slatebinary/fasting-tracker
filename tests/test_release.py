@@ -36,7 +36,7 @@ for lang, section_start, section_end in (('en','<section data-lang="en">','<sect
     start=changelog.find(section_start)
     end=changelog.find(section_end,start+len(section_start))
     section=changelog[start:end if end>=0 else len(changelog)] if start>=0 else ''
-    ok('<h2>v1.17.13</h2>' in section, f'{lang} in-app changelog is missing current release v1.17.13')
+    ok('<h2>v1.17.14</h2>' in section, f'{lang} in-app changelog is missing current release v1.17.14')
     ok('<h2>v1.17.12</h2>' in section, f'{lang} in-app changelog is missing release v1.17.12')
     if lang=='en':
         ok('every time the user attempts to stop an active fast for a personal reason' in section, 'English v1.17.12 changelog does not describe repeated personal-reason offers')
@@ -52,6 +52,8 @@ ok("storedDayTotalsMap = buildStoredDayTotals(data.records);" in index and "dayT
 expected_version=ver.get('version')
 ok(f'<meta name="ft-app-version" content="{expected_version}"' in index,'index meta version mismatch')
 ok(f"const APP_VERSION = '{expected_version}';" in index,'APP_VERSION mismatch')
+ok(index.index('data-i18n="stats.reached"') < index.index('data-i18n="stats.longest"'), 'Statistics tiles must show Reached target before Longest fast')
+ok(index.index('id="mGoal"') < index.index('id="mLongest"'), 'Statistics tile values must follow the requested Reached target / Longest fast order')
 ok("function addIntegrityIssue(issues, code, detail='') { const text=String(detail||''); issues.push({code,detail:code==='daily-totals-mismatch'?text:text.slice(0,160)}); }" in index, 'daily-total integrity details must not be truncated')
 ok("const details=keys.map(key=>" in index and "return `Dates (${keys.length}): ${details.join('; ')}`;" in index, 'daily-total mismatch report must include every mismatched date')
 ok(bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}',str(ver.get('released','')))),'release date must be ISO YYYY-MM-DD')
