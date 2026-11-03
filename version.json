@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.14",
+  "version": "1.17.15",
   "released": "2026-11-03",
-  "notes": "Swap the Reached target and Longest fast tiles in Statistics.",
+  "notes": "Prevent false backup-needed warnings when record arrays are reordered during storage reload.",
   "entry": "./index.html",
   "shell": [
     "./",
