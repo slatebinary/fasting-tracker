@@ -54,7 +54,7 @@ def main():
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('dialog',lambda d:d.accept())
             page.evaluate(STORAGE_SHIM)
-            page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:CURRENT_VERSION}));}",current)
+            page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.17.17'}));}",current)
             page.set_content(inlined_html(),wait_until='domcontentloaded')
             page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
             page.locator('#importFile').set_input_files(str(f))

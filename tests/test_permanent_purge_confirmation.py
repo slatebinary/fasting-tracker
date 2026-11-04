@@ -21,7 +21,7 @@ with sync_playwright() as p:
         else: d.accept()
     page.on('dialog',dialog)
     page.evaluate(STORAGE_SHIM)
-    page.evaluate('d=>{__seedFastingDbV2(d,[]);localStorage.setItem("fastingTracker.appMeta",JSON.stringify({lastAppVersion:CURRENT_VERSION}));}',seed)
+    page.evaluate('d=>{__seedFastingDbV2(d,[]);localStorage.setItem("fastingTracker.appMeta",JSON.stringify({lastAppVersion:'1.17.17'}));}',seed)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
     page.locator('[data-screen="history"]').click()

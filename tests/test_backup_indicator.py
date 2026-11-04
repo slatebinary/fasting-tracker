@@ -14,7 +14,7 @@ def boot(page, backup_meta=None):
     page.evaluate(STORAGE_SHIM)
     page.evaluate("""arg => {
       __seedFastingDbV2(arg.data,[]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:CURRENT_VERSION}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.17.17'}));
       if (arg.meta) localStorage.setItem('fastingTracker.backupMeta', JSON.stringify(arg.meta));
     }""", {'data':DATA, 'meta':backup_meta})
     page.set_content(HTML, wait_until='domcontentloaded')
@@ -123,7 +123,7 @@ with sync_playwright() as p:
     page2.evaluate(STORAGE_SHIM)
     page2.evaluate("""arg=>{
       __seedFastingDbV2(arg.data,[]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:CURRENT_VERSION}));
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.17.17'}));
       localStorage.setItem('fastingTracker.backupMeta',JSON.stringify(arg.meta));
     }""", {'data':snapshot,'meta':old})
     page2.set_content(HTML,wait_until='domcontentloaded')
