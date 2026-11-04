@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.15",
-  "released": "2026-11-03",
-  "notes": "Prevent false backup-needed warnings when record arrays are reordered during storage reload.",
+  "version": "1.17.16",
+  "released": "2026-11-04",
+  "notes": "Read record state and daily totals from one IndexedDB snapshot; recover cleanly from blocked or failed database opens; mirror restored preferences only after commit.",
   "entry": "./index.html",
   "shell": [
     "./",

@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.15" />
+  <meta name="ft-app-version" content="1.17.16" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1801,7 +1801,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.15';
+  const APP_VERSION = '1.17.16';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2348,7 +2348,7 @@ layout: null
 
   function openAppDb() {
     if (appDbPromise) return appDbPromise;
-    appDbPromise = new Promise((resolve, reject) => {
+    const pending = new Promise((resolve, reject) => {
       const req = indexedDB.open(IDB_NAME, IDB_VERSION);
       req.onupgradeneeded = () => {
         const db = req.result;
@@ -2360,11 +2360,31 @@ layout: null
         if (!db.objectStoreNames.contains('weights')) db.createObjectStore('weights', {keyPath:'id'});
         if (!db.objectStoreNames.contains('deletedWeights')) db.createObjectStore('deletedWeights', {keyPath:'id'});
       };
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => {
+        const db = req.result;
+        const releaseConnection = () => {
+          try { db.close(); } catch {}
+          if (appDbPromise === pending) appDbPromise = null;
+        };
+        // A newer tab may request a schema upgrade. Close this connection so
+        // the upgrade can proceed, then let the next operation reopen the DB.
+        db.onversionchange = releaseConnection;
+        if ('onclose' in db) db.onclose = () => {
+          if (appDbPromise === pending) appDbPromise = null;
+        };
+        resolve(db);
+      };
       req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
-      req.onblocked = () => reject(new Error('IndexedDB upgrade blocked'));
+      // A blocked request may still succeed after another tab closes its
+      // connection. Keep it pending instead of caching a permanently rejected
+      // promise while the original open request remains capable of succeeding.
+      req.onblocked = () => noteDiagnosticError('idb_open_blocked');
     });
-    return appDbPromise;
+    appDbPromise = pending;
+    pending.catch(() => {
+      if (appDbPromise === pending) appDbPromise = null;
+    });
+    return pending;
   }
 
   function idbRequest(request) {
@@ -2468,25 +2488,51 @@ layout: null
   function recordMap(list) { return new Map((Array.isArray(list) ? list : []).map(item => [item.id, item])); }
   function sameStoredValue(a, b) { return a === b || (a && b && JSON.stringify(a) === JSON.stringify(b)); }
 
-  async function loadRecordBasedData() {
-    const settingsRow = await idbGet('state', 'settings');
-    if (!settingsRow?.data) return null;
-    // Rows written before v1.11.4 have no explicit generation marker but already
-    // use the current record-store layout, so treat the missing marker as current.
-    const marker = settingsRow.storageGeneration;
-    const generation = marker == null ? STORAGE_GENERATION : Number(marker);
-    if (!Number.isInteger(generation) || generation < MIN_DIRECT_STORAGE_GENERATION || generation > STORAGE_GENERATION) throw new Error('unsupported storage generation');
-    loadedStorageGeneration = generation;
-    recordStoreGenerationMarkerMissing = marker == null;
-    const [records, deletedFasts, weights, deletedWeights] = await Promise.all([
-      idbGetAll('records'), idbGetAll('deletedFasts'), idbGetAll('weights'), idbGetAll('deletedWeights')
-    ]);
-    return {...cloneDefault(), ...settingsRow.data, records, deletedFasts, weights, deletedWeights};
+  async function loadRecordBasedSnapshot() {
+    const db = await openAppDb();
+    const storeNames = ['state','records','deletedFasts','weights','deletedWeights'];
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeNames, 'readonly');
+      const state = tx.objectStore('state');
+      const result = {settingsRow:null, dailyTotals:null, records:[], deletedFasts:[], weights:[], deletedWeights:[]};
+      const read = (store, key, field) => {
+        const request = key === undefined ? store.getAll() : store.get(key);
+        request.onsuccess = () => { result[field] = request.result ?? (key === undefined ? [] : null); };
+        request.onerror = () => { try { tx.abort(); } catch {} };
+      };
+      read(state, 'settings', 'settingsRow');
+      read(state, 'dailyTotals', 'dailyTotals');
+      read(tx.objectStore('records'), undefined, 'records');
+      read(tx.objectStore('deletedFasts'), undefined, 'deletedFasts');
+      read(tx.objectStore('weights'), undefined, 'weights');
+      read(tx.objectStore('deletedWeights'), undefined, 'deletedWeights');
+      tx.oncomplete = () => {
+        const settingsRow = result.settingsRow;
+        if (!settingsRow?.data) { resolve(null); return; }
+        // All authoritative record stores and their revisioned daily aggregate
+        // are read from one IndexedDB snapshot, preventing mixed-tab revisions.
+        const marker = settingsRow.storageGeneration;
+        const generation = marker == null ? STORAGE_GENERATION : Number(marker);
+        if (!Number.isInteger(generation) || generation < MIN_DIRECT_STORAGE_GENERATION || generation > STORAGE_GENERATION) {
+          reject(new Error('unsupported storage generation'));
+          return;
+        }
+        loadedStorageGeneration = generation;
+        recordStoreGenerationMarkerMissing = marker == null;
+        resolve({
+          data:{...cloneDefault(), ...settingsRow.data, records:result.records, deletedFasts:result.deletedFasts, weights:result.weights, deletedWeights:result.deletedWeights},
+          dailyTotals:result.dailyTotals
+        });
+      };
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB snapshot read failed'));
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB snapshot read aborted'));
+    });
   }
 
   async function loadCompatibleStorageSource() {
-    const recordBased = await loadRecordBasedData();
-    if (recordBased) return {data:recordBased, source:'record-stores', generation:loadedStorageGeneration, current:true};
+    const recordSnapshot = await loadRecordBasedSnapshot();
+    const recordBased = recordSnapshot?.data || null;
+    if (recordBased) return {data:recordBased, dailyTotals:recordSnapshot.dailyTotals, source:'record-stores', generation:loadedStorageGeneration, current:true};
     if (MIN_DIRECT_STORAGE_GENERATION <= 2) {
       const primary = await idbGet('state', 'primary');
       if (primary?.data) return {data:validateCompatibleData(primary.data).data, source:'indexeddb-primary', generation:2, current:false};
@@ -2747,7 +2793,7 @@ layout: null
       // supported long-term recovery path.
       snapshotCache = pruneSnapshots((await idbGetAll('snapshotMeta')).map(normalizeSnapshot).filter(Boolean));
 
-      const daily = await idbGet('state', 'dailyTotals');
+      const daily = storageSource.dailyTotals || await idbGet('state', 'dailyTotals');
       if (daily && Number(daily.revision) === Number(data.revision) && Number(daily.algorithmVersion) === DAILY_TOTALS_ALGORITHM_VERSION && Array.isArray(daily.entries)) storedDayTotalsMap = new Map(daily.entries);
       else {
         storedDayTotalsMap = buildStoredDayTotals(data.records);
@@ -3611,7 +3657,8 @@ layout: null
   async function reloadFromIndexedDB({ notify = false } = {}) {
     if (recoveryMode) return false;
     try {
-      const next = (await loadRecordBasedData()) || cloneDefault();
+      const recordSnapshot = await loadRecordBasedSnapshot();
+      const next = recordSnapshot?.data || cloneDefault();
       const openModal = visibleModal();
       const activeField = document.activeElement;
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
@@ -3620,7 +3667,7 @@ layout: null
       if (!Array.isArray(next.deletedFasts)) next.deletedFasts = [];
       if (!Array.isArray(next.deletedWeights)) next.deletedWeights = [];
       data = next;
-      const daily = await idbGet('state', 'dailyTotals');
+      const daily = recordSnapshot?.dailyTotals;
       storedDayTotalsMap = daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)
         ? new Map(daily.entries) : buildStoredDayTotals(data.records);
       persistedRecordMap = recordMap(data.records);
@@ -3667,8 +3714,11 @@ layout: null
       normalized.updatedAt = new Date().toISOString();
       data = normalized;
       storedDayTotalsMap = buildStoredDayTotals(data.records); dayTotalsRecordMap = recordMap(data.records);
-      recoveryMode = null; invalidateDerivedCaches(); persistSmallPreferences();
+      recoveryMode = null; invalidateDerivedCaches();
       await persistRecordStores(data, {force:true});
+      // Keep the local preference mirror in step with the committed IndexedDB
+      // restore. A failed transaction must not leave attempted settings behind.
+      persistSmallPreferences();
       try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:data.revision, at:Date.now()})); } catch {}
       rememberCurrentAppVersion(); markViewsDirty();
       return true;
