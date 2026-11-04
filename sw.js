@@ -360,7 +360,8 @@ self.addEventListener('fetch', event => {
         const remote = await fetchVersionInfo();
         if (remote.version === active.version) {
           await activateRelease(remote);
-          const repaired = await caches.open(releaseCacheName(active.version));
+          const repairedActive = await activeRelease();
+          const repaired = await caches.open(repairedActive.cacheName);
           const repairedResponse = await repaired.match(event.request, {ignoreSearch:true});
           if (repairedResponse) return repairedResponse;
         }
