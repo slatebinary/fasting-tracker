@@ -1,3 +1,9 @@
+## v1.17.16 — 4 November 2026
+- Read settings, fasting records, deleted records, weight records and revisioned daily totals from one IndexedDB readonly transaction, preventing mixed-revision snapshots during cross-tab writes.
+- Made failed IndexedDB opens retryable, allowed blocked upgrades to complete after older tabs close, and closed stale connections when a newer tab requests a database version change.
+- Updated the local preference mirror only after an imported/restored dataset commits successfully to IndexedDB.
+- Added a regression guard for atomic reads, connection lifecycle and restore ordering. No database schema, backup format or existing user data is changed.
+
 ## v1.17.15 — 3 November 2026
 - Made external-backup freshness signatures independent of record-array order by canonicalizing fasting, deleted-fasting, weight and deleted-weight entries by ID before hashing.
 - Prevents a harmless IndexedDB reload/reordering from incorrectly displaying “Backup needed”; actual additions, edits and deletions still invalidate the backup.
