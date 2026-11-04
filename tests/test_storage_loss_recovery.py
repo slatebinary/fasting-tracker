@@ -17,7 +17,7 @@ def main():
         page=browser.new_page(viewport={'width':390,'height':844});errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
         # A newly recreated empty PWA store models the state after browser/iOS site-data eviction.
-        page.evaluate(STORAGE_SHIM);page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:VERSION}));}",empty)
+        page.evaluate(STORAGE_SHIM);page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.17.17'}));}",empty)
         page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{VERSION}'",timeout=20000)
         page.locator('.tab[data-screen="history"]').click();page.wait_for_timeout(100);assert page.locator('#historyList .historyRow').count()==0
         page.locator('.tab[data-screen="settings"]').click();page.locator('#importFile').set_input_files(str(fp))
