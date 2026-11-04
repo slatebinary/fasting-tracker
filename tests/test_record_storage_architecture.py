@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: v1.12.2 migrates the v1.8.x primary blob to record-level IndexedDB and uses compressed snapshots."""
 import sys, json
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
@@ -15,7 +17,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM)
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.19',seenAt:new Date().toISOString()})); }",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
     page.wait_for_timeout(300)
     state=page.evaluate("""() => new Promise((resolve,reject)=>{
       const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{

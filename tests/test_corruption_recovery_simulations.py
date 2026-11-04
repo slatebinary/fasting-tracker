@@ -3,6 +3,7 @@
 from pathlib import Path
 import json, tempfile, sys
 from playwright.sync_api import sync_playwright
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import STORAGE_SHIM, inlined_html
 
 DATA={
@@ -20,9 +21,9 @@ with sync_playwright() as p:
     dialogs=[]
     page.on('dialog',lambda d:(dialogs.append(d.message),d.accept()))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("d=>{__seedFastingDbV2(d,[['2026-10-01',57600000]]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",DATA)
+    page.evaluate("d=>{__seedFastingDbV2(d,[['2026-10-01',57600000]]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:CURRENT_VERSION}));}",DATA)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click(); page.locator('#settingsGroupAdvanced > summary').click(); page.locator('#settingsGroupData > summary').click(); page.wait_for_timeout(300)
 
     # Create a valid snapshot then remove only its payload to simulate partial/corrupt local recovery storage.

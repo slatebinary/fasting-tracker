@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: weight deletion is auditable, restorable and exported until permanently deleted."""
 import sys, json
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
@@ -12,8 +14,8 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844}); errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc))); page.on('dialog',lambda d:d.accept())
-    page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",data)
-    page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.2'",timeout=20000)
+    page.evaluate(STORAGE_SHIM); page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:CURRENT_VERSION}));}",data)
+    page.set_content(inlined_html(),wait_until='domcontentloaded'); page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click(); page.wait_for_function("document.querySelectorAll('#weightHistoryList .historyRow').length===3")
     page.locator('#weightHistoryList .historyRow').first.locator('.dangerText').click(); page.wait_for_function("!document.querySelector('#deletedWeightsCard').hidden")
     page.wait_for_timeout(200)

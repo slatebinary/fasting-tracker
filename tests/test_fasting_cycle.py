@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: shorter presets, carry-forward target and sub-24h next-fast countdown."""
-import sys
+import sys, json
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from datetime import datetime, timezone, timedelta
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
@@ -30,9 +32,9 @@ with sync_playwright() as p:
     errors=[]; page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
     data=seed_active(2,14,16)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:CURRENT_VERSION,seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
 
     for attr in ('data-goal','data-active-goal','data-setup-goal'):
         vals=page.eval_on_selector_all(f'[{attr}]', f"els => els.map(e => Number(e.getAttribute('{attr}')))" )
@@ -59,9 +61,9 @@ with sync_playwright() as p:
     long=browser.new_page(viewport={'width':390,'height':844})
     long.evaluate(STORAGE_SHIM)
     data2=seed_active(26,36,16)
-    long.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data2)
+    long.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:CURRENT_VERSION,seenAt:new Date().toISOString()})); }", data2)
     long.set_content(inlined_html(),wait_until='domcontentloaded')
-    long.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    long.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
     long.locator('#toggleFast').click(); long.locator('#stopFastModal').wait_for(state='visible',timeout=5000); long.locator('#stopAndSaveBtn').click()
     long.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Start')",timeout=5000)
     if not long.locator('#nextFastCard').is_hidden():
@@ -81,9 +83,9 @@ with sync_playwright() as p:
     precise=browser.new_page(viewport={'width':390,'height':844})
     precise.evaluate(STORAGE_SHIM)
     data3=seed_active(23 + 40/60,23,23)
-    precise.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data3)
+    precise.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:CURRENT_VERSION,seenAt:new Date().toISOString()})); }", data3)
     precise.set_content(inlined_html(),wait_until='domcontentloaded')
-    precise.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    precise.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
     precise.locator('#toggleFast').click(); precise.locator('#stopFastModal').wait_for(state='visible',timeout=5000); precise.locator('#stopAndSaveBtn').click()
     precise.wait_for_function("!document.querySelector('#nextFastCard').hidden",timeout=5000)
     precise_basis=precise.locator('#nextFastBasis').inner_text()
