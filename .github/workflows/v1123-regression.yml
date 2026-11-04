@@ -47,7 +47,6 @@ jobs:
       - name: Run release integrity and data safeguards regression
         run: |
           python3 tests/test_release.py
-          python3 tests/test_indexeddb_storage_reliability.py
           python3 tests/test_timeline_month_axis.py
           python3 tests/test_accessibility_theme_contrast.py
       - name: Validate GitHub Pages artifact preparation without deployment
@@ -71,6 +70,7 @@ jobs:
           sudo ln -sf "$(python3 -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')" /usr/bin/chromium
       - name: Execute backup restore and safe-merge browser tests
         run: |
+          python3 tests/test_indexeddb_storage_reliability.py
           python3 tests/test_backup_version_restore_matrix.py
           python3 tests/test_import_preview_merge.py
           python3 tests/test_destructive_guard.py
