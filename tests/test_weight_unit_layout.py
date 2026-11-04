@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: kg/lb controls and suffixes must remain horizontal on narrow screens."""
-import sys
+import sys, json
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
@@ -12,8 +14,8 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={"width":320,"height":844},timezone_id="Europe/Sofia")
     errors=[];page.on("pageerror",lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.15.3'})); }",data)
-    page.set_content(inlined_html(),wait_until="domcontentloaded");page.wait_for_timeout(150)
+    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:CURRENT_VERSION})); }",data)
+    page.set_content(inlined_html(),wait_until="domcontentloaded");page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     # The setup/onboarding unit buttons use the same no-wrap protection.
     setup=page.evaluate("""() => {const modal=document.querySelector('#setupModal'),step=document.querySelector('#setupStepBasics');modal.hidden=false;modal.style.display='flex';step.hidden=false;const toggle=document.querySelector('.setupUnitToggle'),kg=document.querySelector('#setupUnitKgBtn'),lb=document.querySelector('#setupUnitLbBtn');const rect=e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height};};return {toggle:rect(toggle),kg:rect(kg),lb:rect(lb),toggleWS:getComputedStyle(toggle).whiteSpace,kgWS:getComputedStyle(kg).whiteSpace,lbWS:getComputedStyle(lb).whiteSpace};}""")

@@ -25,5 +25,32 @@
       return version;
     }finally{clearTimeout(timer);}
   }
+  function confirmReleaseAfterStartupIntegrity(){
+    const meta=document.querySelector('meta[name="ft-app-version"]');
+    const version=cleanVersion(meta&&meta.content);
+    if(!version||!('serviceWorker' in navigator))return;
+    let attempts=0;
+    const timer=setInterval(()=>{
+      attempts++;
+      let appMeta=null;
+      try{appMeta=JSON.parse(localStorage.getItem('fastingTracker.appMeta')||'null');}catch{}
+      const good=appMeta&&appMeta.lastKnownGood;
+      if(good&&good.version===version&&good.reason==='startup-integrity'){
+        clearInterval(timer);
+        navigator.serviceWorker.ready.then(reg=>{
+          const worker=navigator.serviceWorker.controller||reg.active;
+          if(!worker)return;
+          const channel=new MessageChannel();
+          channel.port1.onmessage=()=>{try{channel.port1.close();}catch{}};
+          worker.postMessage({type:'CONFIRM_RELEASE',version,protocolVersion:1},[channel.port2]);
+        }).catch(()=>{});
+      }else if(attempts>=600){
+        clearInterval(timer);
+      }
+    },500);
+  }
+  if(document.readyState==='complete')confirmReleaseAfterStartupIntegrity();
+  else window.addEventListener('load',confirmReleaseAfterStartupIntegrity,{once:true});
+
   global.FTReleaseHealth=Object.freeze({cleanVersion,extractEntryVersion,validateMetadata,consistency,fetchLiveEntryVersion});
 })(window);
