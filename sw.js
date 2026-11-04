@@ -112,16 +112,30 @@ async function releaseCacheComplete(info, cacheName) {
 async function setActiveRelease(info, cacheName) {
   const current = await readReleaseState(ACTIVE_KEY);
   const previous = await readReleaseState(PREVIOUS_KEY);
+  let createdRollbackPoint = false;
   if (current && current.cacheName !== cacheName && !previous && await releaseCacheComplete(current.info, current.cacheName)) {
     const meta = await caches.open(META_CACHE);
     await meta.put(PREVIOUS_KEY, new Response(JSON.stringify({info:current.info,cacheName:current.cacheName,firstBootAt:null}), {headers:{'content-type':'application/json'}}));
+    createdRollbackPoint = true;
   }
-  await writeActiveRelease(info, cacheName);
+  try {
+    await writeActiveRelease(info, cacheName);
+  } catch (err) {
+    // If the active-pointer write partially succeeded but verification failed,
+    // restore the old pointer before the caller removes the staged cache.
+    const meta = await caches.open(META_CACHE);
+    if (current) await writeActiveRelease(current.info, current.cacheName);
+    else await meta.delete(ACTIVE_KEY);
+    if (createdRollbackPoint) await meta.delete(PREVIOUS_KEY);
+    throw err;
+  }
 }
 
 async function confirmActiveRelease(version) {
   const active = await activeRelease();
   if (!active || active.version !== String(version)) throw new Error('cannot confirm a different active release');
+  const previous = await readReleaseState(PREVIOUS_KEY);
+  if (previous && !previous.firstBootAt) throw new Error('new release startup has not been observed');
   const meta = await caches.open(META_CACHE);
   await meta.delete(PREVIOUS_KEY);
   await cleanupOldReleases(active.cacheName);
