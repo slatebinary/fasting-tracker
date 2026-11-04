@@ -57,27 +57,48 @@ STORAGE_SHIM = r"""() => {
   Object.defineProperty(window,'sessionStorage',{value:mkStorage(sessionMap),configurable:true});
 
   const databases = new Map();
-  const request = fn => {
-    const r={onsuccess:null,onerror:null,result:undefined,error:null};
-    setTimeout(()=>{ try { r.result=fn(); r.onsuccess && r.onsuccess({target:r}); }
-      catch(e){ r.error=e; r.onerror && r.onerror({target:r}); } },0);
-    return r;
-  };
+  window.__idbTransactions = [];
   const makeDb = () => {
     const db={stores:new Map(),version:0};
     db.objectStoreNames={contains:n=>db.stores.has(n)};
     db.createObjectStore=(name,opts={})=>{ db.stores.set(name,{map:new Map(),keyPath:opts.keyPath||null}); return {}; };
     db.transaction=(names,mode)=>{
+      const storeNames=Array.isArray(names)?names.slice():[names];
+      window.__idbTransactions.push({stores:storeNames,mode});
       const tx={oncomplete:null,onerror:null,onabort:null,error:null};
-      const finish=()=>setTimeout(()=>tx.oncomplete && tx.oncomplete(),0);
+      let pending=0, completeScheduled=false, completed=false;
+      const finish=()=>{
+        if(completed||completeScheduled)return;
+        completeScheduled=true;
+        setTimeout(()=>{
+          completeScheduled=false;
+          if(pending===0&&!completed){completed=true;tx.oncomplete&&tx.oncomplete();}
+        },0);
+      };
+      const txRequest=fn=>{
+        pending++;
+        const r={onsuccess:null,onerror:null,result:undefined,error:null};
+        setTimeout(()=>{
+          try { r.result=fn(); r.onsuccess&&r.onsuccess({target:r}); }
+          catch(e){ r.error=e; tx.error=e; r.onerror&&r.onerror({target:r}); tx.onerror&&tx.onerror({target:tx}); }
+          pending--;
+          finish();
+        },0);
+        return r;
+      };
+      tx.abort=()=>{
+        if(completed)return;
+        completed=true;
+        setTimeout(()=>tx.onabort&&tx.onabort({target:tx}),0);
+      };
       tx.objectStore=name=>{
         const st=db.stores.get(name); if(!st) throw new Error('missing store '+name);
         return {
-          get:key=>request(()=>st.map.get(key)),
-          getAll:()=>request(()=>Array.from(st.map.values())),
-          put:value=>{ const key=st.keyPath ? value[st.keyPath] : value.key; st.map.set(key,value); finish(); return request(()=>key); },
-          delete:key=>{ st.map.delete(key); finish(); return request(()=>undefined); },
-          clear:()=>{ st.map.clear(); finish(); return request(()=>undefined); }
+          get:key=>txRequest(()=>st.map.get(key)),
+          getAll:()=>txRequest(()=>Array.from(st.map.values())),
+          put:value=>txRequest(()=>{const key=st.keyPath?value[st.keyPath]:value.key;st.map.set(key,value);return key;}),
+          delete:key=>txRequest(()=>{st.map.delete(key);return undefined;}),
+          clear:()=>txRequest(()=>{st.map.clear();return undefined;})
         };
       };
       return tx;
