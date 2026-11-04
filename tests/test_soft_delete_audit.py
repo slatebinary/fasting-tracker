@@ -37,7 +37,7 @@ with sync_playwright() as p:
         dialogs.append(d.message); d.accept()
     page.on('dialog',handle_dialog)
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:CURRENT_VERSION,seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.17.17',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
 
