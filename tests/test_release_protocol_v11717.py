@@ -27,7 +27,7 @@ require("stageRelease(info)" in activate and "setActiveRelease(info, stagedCache
 require("cleanupOldReleases" not in activate, "old release is deleted before startup confirmation")
 require("CONFIRM_RELEASE" in sw and "confirmActiveRelease(String(event.data.version || ''))" in sw,
         "service worker confirmation message handler is missing")
-require("lastKnownGood" in health and "startup-integrity" in health and "CONFIRM_RELEASE" in health,
+require("lastKnownGood" in health and "startup-integrity" in health and "Date.parse(good.at)>=bootStartedAt" in health and "CONFIRM_RELEASE" in health,
         "page must confirm only after startup integrity succeeds")
 require("permissions:\n  contents: read" in workflow, "regression workflow must have read-only contents permission")
 require("sync-generated-assets:" in workflow and "permissions:\n      contents: write" in workflow,

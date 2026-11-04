@@ -29,13 +29,14 @@
     const meta=document.querySelector('meta[name="ft-app-version"]');
     const version=cleanVersion(meta&&meta.content);
     if(!version||!('serviceWorker' in navigator))return;
+    const bootStartedAt=Date.now();
     let attempts=0;
     const timer=setInterval(()=>{
       attempts++;
       let appMeta=null;
       try{appMeta=JSON.parse(localStorage.getItem('fastingTracker.appMeta')||'null');}catch{}
       const good=appMeta&&appMeta.lastKnownGood;
-      if(good&&good.version===version&&good.reason==='startup-integrity'){
+      if(good&&good.version===version&&good.reason==='startup-integrity'&&Date.parse(good.at)>=bootStartedAt){
         clearInterval(timer);
         navigator.serviceWorker.ready.then(reg=>{
           const worker=navigator.serviceWorker.controller||reg.active;
