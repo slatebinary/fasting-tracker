@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: first launch after a legacy/localStorage release must not report a false snapshot failure."""
 import json, sys
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
@@ -20,7 +22,7 @@ with sync_playwright() as p:
       localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.7.11',seenAt:'2026-09-30T10:00:00.000Z'}));
     }""", [payload])
     page.set_content(inlined_html(), wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
     page.wait_for_timeout(300)
     if errors:
         print('FAIL: startup browser errors: '+' | '.join(errors[:3])); sys.exit(1)

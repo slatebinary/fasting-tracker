@@ -15,7 +15,7 @@ on:
     branches: [main]
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
   regression:
     runs-on: ubuntu-latest
@@ -24,19 +24,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Align earlier browser-test version assertions
-        run: |
-          python3 - <<'PYTEST'
-          from pathlib import Path
-          import json, re
-          current_version = json.loads(Path('version.json').read_text())['version']
-          for filename in ('tests/test_backup_indicator.py', 'tests/test_permanent_purge_confirmation.py', 'tests/test_backup_version_restore_matrix.py', 'tests/test_import_preview_merge.py', 'tests/test_destructive_guard.py', 'tests/test_setup_notification_layout.py', 'tests/test_dst_timezone.py', 'tests/test_weight_unit_layout.py', 'tests/test_timeline_month_axis.py'):
-              p = Path(filename)
-              s = p.read_text()
-              for previous in ('1.12.6', '1.12.7', '1.13.0', '1.13.1', '1.13.2', '1.13.3', '1.13.4', '1.13.5', '1.13.6', '1.13.7', '1.13.8', '1.13.9', '1.13.10', '1.13.11', '1.14.0', '1.14.1', '1.15.1', '1.15.2'):
-                  s = re.sub(r'(?<![0-9.])' + re.escape(previous) + r'(?![0-9.])', current_version, s)
-              p.write_text(s)
-          PYTEST
       - name: Build consistent localization and release assets in runner
         run: |
           python3 tools/build_i18n_runtime.py
@@ -46,7 +33,9 @@ jobs:
         run: python3 tools/build_release.py --check
       - name: Run release integrity and data safeguards regression
         run: |
+          git diff --exit-code -- tests
           python3 tests/test_release.py
+          python3 tests/test_release_protocol_v11717.py
           python3 tests/test_timeline_month_axis.py
           python3 tests/test_accessibility_theme_contrast.py
       - name: Validate GitHub Pages artifact preparation without deployment
@@ -71,6 +60,12 @@ jobs:
       - name: Execute backup restore and safe-merge browser tests
         run: |
           python3 tests/test_indexeddb_storage_reliability.py
+          python3 tests/test_corruption_recovery_simulations.py
+          python3 tests/test_storage_loss_recovery.py
+          python3 tests/test_record_storage_architecture.py
+          python3 tests/test_startup_snapshot.py
+          python3 tests/test_soft_delete_audit.py
+          python3 tests/test_weight_soft_delete.py
           python3 tests/test_backup_version_restore_matrix.py
           python3 tests/test_import_preview_merge.py
           python3 tests/test_destructive_guard.py
@@ -115,13 +110,30 @@ jobs:
           path: /tmp/fasting-tracker-v*.zip
           retention-days: 14
 
-      - name: Synchronize generated assets to development branch after passing tests
-        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+  sync-generated-assets:
+    needs: regression
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Rebuild committed localization and release metadata
+        run: |
+          python3 tools/build_i18n_runtime.py
+          python3 tools/export_i18n_source.py
+          python3 tools/build_release.py
+      - name: Commit generated release assets only
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add i18n-source.json i18n/en.js i18n/bg.js i18n/es.js version.json index.html about.html privacy.html branding.html license.html changelog.html CHANGELOG.md README.md tests/v1123-regression.cjs tests/test_backup_indicator.py tests/test_permanent_purge_confirmation.py tests/test_backup_version_restore_matrix.py tests/test_import_preview_merge.py tests/test_destructive_guard.py tests/test_setup_notification_layout.py tests/test_dst_timezone.py tests/test_weight_unit_layout.py tests/test_timeline_month_axis.py tests/v1123-regression.cjs
+          git add i18n-source.json i18n/en.js i18n/bg.js i18n/es.js version.json index.html about.html privacy.html branding.html license.html changelog.html CHANGELOG.md README.md
           if ! git diff --cached --quiet; then
             git commit -m "build(release): synchronize generated localization and release assets"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git push origin main
           fi

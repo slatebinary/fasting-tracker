@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.16",
+  "version": "1.17.17",
   "released": "2026-11-04",
-  "notes": "Read record state and daily totals from one IndexedDB snapshot; recover cleanly from blocked or failed database opens; mirror restored preferences only after commit.",
+  "notes": "Stage service-worker releases in an isolated cache, retain the previous complete release until startup integrity is confirmed, and roll back an unconfirmed update; isolate CI write permissions and keep regression tests immutable.",
   "entry": "./index.html",
   "shell": [
     "./",

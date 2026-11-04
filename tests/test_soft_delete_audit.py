@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: deleted fasting records remain auditable and are exported until permanently deleted."""
 import json, sys
+from pathlib import Path
+CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
@@ -35,9 +37,9 @@ with sync_playwright() as p:
         dialogs.append(d.message); d.accept()
     page.on('dialog',handle_dialog)
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.17.17',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
 
     page.locator('.tab[data-screen="history"]').click()
     page.wait_for_function("document.querySelectorAll('#historyList .historyRow').length === 3",timeout=5000)

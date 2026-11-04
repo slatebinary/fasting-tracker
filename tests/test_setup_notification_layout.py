@@ -24,7 +24,7 @@ with sync_playwright() as pw:
         page.evaluate(STORAGE_SHIM)
         page.evaluate('''data => {
           __seedFastingDbV2(data, []);
-          localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.8'}));
+          localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.17.17'}));
         }''', DATA)
         page.set_content(HTML, wait_until='domcontentloaded')
         page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=15000)
@@ -84,7 +84,7 @@ with sync_playwright() as pw:
     page.evaluate('''data => {
       __seedFastingDbV2(data, []);
       localStorage.removeItem('fastingTracker.settingsGroups');
-      localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.16.6'}));
+      localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.17.17'}));
     }''', DATA)
     page.set_content(HTML, wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'", timeout=15000)

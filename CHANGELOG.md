@@ -1,3 +1,9 @@
+## v1.17.17 — 4 November 2026
+- Stage each replacement release in an isolated cache and verify every shell asset with SHA-256 before changing the active release pointer.
+- Retain the previous complete release until the new app completes startup and passes its startup integrity check; automatically restore the previous release on a later navigation if the new release never confirms.
+- Make regression CI read-only, move generated-asset synchronization into a separate narrowly write-scoped job, and keep test sources immutable.
+- Expand mandatory data-safety regression coverage. No IndexedDB schema, backup format, fasting records, weight records, or user data are changed.
+
 ## v1.17.16 — 4 November 2026
 - Read settings, fasting records, deleted records, weight records and revisioned daily totals from one IndexedDB readonly transaction, preventing mixed-revision snapshots during cross-tab writes.
 - Made failed IndexedDB opens retryable, allowed blocked upgrades to complete after older tabs close, and closed stale connections when a newer tab requests a database version change.

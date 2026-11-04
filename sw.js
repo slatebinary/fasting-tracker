@@ -18,6 +18,8 @@ const SCOPE_TOKEN = stableScopeToken(SCOPE_URL.href);
 const RELEASE_PREFIX = `fasting-tracker-${SCOPE_TOKEN}-release-`;
 const META_CACHE = `fasting-tracker-${SCOPE_TOKEN}-meta-v1`;
 const ACTIVE_KEY = new URL('./__active_release__', self.registration.scope).href;
+const PREVIOUS_KEY = new URL('./__previous_release__', self.registration.scope).href;
+const ROLLBACK_GRACE_MS = 300000;
 const APP_VERSION_META = 'name="ft-app-version" content="';
 const VERSION_FETCH_TIMEOUT_MS = 10000;
 const ASSET_FETCH_TIMEOUT_MS = 15000;
@@ -72,21 +74,92 @@ async function fetchVersionInfo() {
   return validateVersionInfo(await response.json());
 }
 
-async function activeRelease() {
+async function readReleaseState(key) {
   const meta = await caches.open(META_CACHE);
-  const response = await meta.match(ACTIVE_KEY);
+  const response = await meta.match(key);
   if (!response) return null;
-  try { return validateVersionInfo(await response.json()); }
-  catch { return null; }
+  try {
+    const stored = await response.json();
+    const info = validateVersionInfo(stored.info || stored);
+    return {
+      info,
+      cacheName: typeof stored.cacheName === 'string' ? stored.cacheName : releaseCacheName(info.version),
+      firstBootAt: typeof stored.firstBootAt === 'number' && Number.isFinite(stored.firstBootAt) ? stored.firstBootAt : null
+    };
+  } catch { return null; }
 }
 
-async function setActiveRelease(info) {
+async function activeRelease() {
+  const state = await readReleaseState(ACTIVE_KEY);
+  return state ? {...state.info, cacheName:state.cacheName} : null;
+}
+
+async function writeActiveRelease(info, cacheName) {
   const meta = await caches.open(META_CACHE);
-  await meta.put(ACTIVE_KEY, new Response(JSON.stringify(info), {headers:{'content-type':'application/json'}}));
-  const verify = await meta.match(ACTIVE_KEY);
-  if (!verify) throw new Error('failed to save active release');
-  const stored = validateVersionInfo(await verify.json());
-  if (stored.version !== info.version) throw new Error('active release verification failed');
+  await meta.put(ACTIVE_KEY, new Response(JSON.stringify({info, cacheName}), {headers:{'content-type':'application/json'}}));
+  const verify = await readReleaseState(ACTIVE_KEY);
+  if (!verify || verify.info.version !== info.version || verify.cacheName !== cacheName) throw new Error('active release verification failed');
+}
+
+async function releaseCacheComplete(info, cacheName) {
+  try {
+    const cache = await caches.open(cacheName || releaseCacheName(info.version));
+    for (const canonical of info.shell) if (!(await cache.match(canonical))) return false;
+    return true;
+  } catch { return false; }
+}
+
+async function setActiveRelease(info, cacheName) {
+  const current = await readReleaseState(ACTIVE_KEY);
+  const previous = await readReleaseState(PREVIOUS_KEY);
+  let createdRollbackPoint = false;
+  if (current && current.cacheName !== cacheName && !previous && await releaseCacheComplete(current.info, current.cacheName)) {
+    const meta = await caches.open(META_CACHE);
+    await meta.put(PREVIOUS_KEY, new Response(JSON.stringify({info:current.info,cacheName:current.cacheName,firstBootAt:null}), {headers:{'content-type':'application/json'}}));
+    createdRollbackPoint = true;
+  }
+  try {
+    await writeActiveRelease(info, cacheName);
+  } catch (err) {
+    // If the active-pointer write partially succeeded but verification failed,
+    // restore the old pointer before the caller removes the staged cache.
+    const meta = await caches.open(META_CACHE);
+    if (current) await writeActiveRelease(current.info, current.cacheName);
+    else await meta.delete(ACTIVE_KEY);
+    if (createdRollbackPoint) await meta.delete(PREVIOUS_KEY);
+    throw err;
+  }
+}
+
+async function confirmActiveRelease(version) {
+  const active = await activeRelease();
+  if (!active || active.version !== String(version)) throw new Error('cannot confirm a different active release');
+  const previous = await readReleaseState(PREVIOUS_KEY);
+  if (previous && !previous.firstBootAt) throw new Error('new release startup has not been observed');
+  const meta = await caches.open(META_CACHE);
+  await meta.delete(PREVIOUS_KEY);
+  await cleanupOldReleases(active.cacheName);
+  return true;
+}
+
+async function checkPendingReleaseOnNavigation() {
+  const previous = await readReleaseState(PREVIOUS_KEY);
+  if (!previous) return false;
+  const active = await activeRelease();
+  if (!active || active.cacheName === previous.cacheName) return false;
+  if (!previous.firstBootAt) {
+    previous.firstBootAt = Date.now();
+    const meta = await caches.open(META_CACHE);
+    await meta.put(PREVIOUS_KEY, new Response(JSON.stringify(previous), {headers:{'content-type':'application/json'}}));
+    return false;
+  }
+  if (Date.now() - previous.firstBootAt < ROLLBACK_GRACE_MS) return false;
+  if (!(await releaseCacheComplete(previous.info, previous.cacheName))) return false;
+  await writeActiveRelease(previous.info, previous.cacheName);
+  const meta = await caches.open(META_CACHE);
+  await meta.delete(PREVIOUS_KEY);
+  await caches.delete(active.cacheName);
+  return true;
 }
 
 function releaseCacheName(version) { return `${RELEASE_PREFIX}${version}`; }
@@ -134,19 +207,24 @@ async function fetchReleaseAsset(canonical, version, expectedHash) {
 }
 
 async function stageRelease(info) {
-  const cacheName = releaseCacheName(info.version);
+  const cacheName = `${RELEASE_PREFIX}${info.version}-staging-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   await caches.delete(cacheName);
   try {
-    const fetched = await Promise.all(info.shell.map(async canonical => [canonical, await fetchReleaseAsset(canonical, info.version, info.hashes[canonical])]));
+    const fetched = await Promise.all(info.shell.map(async canonical =>
+      [canonical, await fetchReleaseAsset(canonical, info.version, info.hashes[canonical])]
+    ));
     const entryPair = fetched.find(([canonical]) => canonical === info.entry);
     if (!entryPair) throw new Error('entry response missing');
     const entryText = await entryPair[1].clone().text();
     if (!entryText.includes(`${APP_VERSION_META}${info.version}"`)) throw new Error('entry version does not match version.json');
-
     const cache = await caches.open(cacheName);
     for (const [canonical, response] of fetched) await cache.put(canonical, response);
-    const verifyEntry = await cache.match(info.entry);
-    if (!verifyEntry) throw new Error('staged release verification failed');
+    for (const canonical of info.shell) {
+      const stored = await cache.match(canonical);
+      if (!stored) throw new Error(`staged release is missing ${new URL(canonical).pathname}`);
+      const actualHash = await responseDigestHex(canonical, stored);
+      if (actualHash !== info.hashes[canonical]) throw new Error(`staged cache integrity check failed for ${new URL(canonical).pathname}`);
+    }
     return cacheName;
   } catch (err) {
     await caches.delete(cacheName);
@@ -154,25 +232,31 @@ async function stageRelease(info) {
   }
 }
 
-async function cleanupOldReleases(activeVersion) {
-  const activeName = releaseCacheName(activeVersion);
+async function cleanupOldReleases(activeCacheName) {
+  const previous = await readReleaseState(PREVIOUS_KEY);
+  const keep = new Set([activeCacheName, previous?.cacheName].filter(Boolean));
   const keys = await caches.keys();
-  await Promise.all(keys.filter(k => k.startsWith(RELEASE_PREFIX) && k !== activeName).map(k => caches.delete(k)));
+  await Promise.all(keys.filter(k => k.startsWith(RELEASE_PREFIX) && !keep.has(k)).map(k => caches.delete(k)));
 }
 
 async function activateRelease(info) {
-  await stageRelease(info);
-  await setActiveRelease(info);
-  await cleanupOldReleases(info.version);
+  const stagedCacheName = await stageRelease(info);
+  try { await setActiveRelease(info, stagedCacheName); }
+  catch (err) { await caches.delete(stagedCacheName); throw err; }
 }
 
 async function ensureInitialRelease() {
   const active = await activeRelease();
   if (active) {
-    const cache = await caches.open(releaseCacheName(active.version));
-    if (await cache.match(active.entry)) return;
-    // Cache metadata exists but its release cache is incomplete. Rebuild only if
-    // version.json still describes exactly the same release; never jump versions here.
+    if (await releaseCacheComplete(active, active.cacheName)) return;
+    const previous = await readReleaseState(PREVIOUS_KEY);
+    if (previous && await releaseCacheComplete(previous.info, previous.cacheName)) {
+      await writeActiveRelease(previous.info, previous.cacheName);
+      const meta = await caches.open(META_CACHE);
+      await meta.delete(PREVIOUS_KEY);
+      await caches.delete(active.cacheName);
+      return;
+    }
     const remote = await fetchVersionInfo();
     if (remote.version !== active.version) throw new Error('active release cache incomplete');
     await activateRelease(remote);
@@ -206,7 +290,7 @@ self.addEventListener('notificationclick', event => {
 async function releaseHealthReport() {
   const active = await activeRelease();
   if (!active) return {ok:false, activeVersion:null, cacheComplete:false, missingAssets:0, reason:'no-active-release', protocolVersion:UPDATE_PROTOCOL_VERSION};
-  const cache = await caches.open(releaseCacheName(active.version));
+  const cache = await caches.open(active.cacheName);
   let missing = 0;
   for (const canonical of active.shell) if (!(await cache.match(canonical, {ignoreSearch:true}))) missing++;
   return {ok:true, activeVersion:active.version, cacheComplete:missing===0, missingAssets:missing, shellAssets:active.shell.length, protocolVersion:UPDATE_PROTOCOL_VERSION};
@@ -216,6 +300,18 @@ self.addEventListener('message', event => {
   if (!event.data) return;
   const port = event.ports && event.ports[0];
   if (event.data.type === 'SKIP_WAITING') { event.waitUntil(self.skipWaiting()); return; }
+  if (event.data.type === 'CONFIRM_RELEASE') {
+    event.waitUntil((async () => {
+      try {
+        if (Number(event.data.protocolVersion) !== UPDATE_PROTOCOL_VERSION) throw new Error('unsupported update protocol');
+        await confirmActiveRelease(String(event.data.version || ''));
+        port?.postMessage({ok:true, confirmed:true, version:String(event.data.version), protocolVersion:UPDATE_PROTOCOL_VERSION});
+      } catch (err) {
+        port?.postMessage({ok:false, error:String(err && err.message || err), protocolVersion:UPDATE_PROTOCOL_VERSION});
+      }
+    })());
+    return;
+  }
   if (event.data.type === 'CHECK_HEALTH') {
     event.waitUntil((async () => {
       try {
@@ -257,12 +353,15 @@ self.addEventListener('fetch', event => {
   }
 
   event.respondWith((async () => {
+    if (event.request.mode === 'navigate') {
+      try { await checkPendingReleaseOnNavigation(); } catch {}
+    }
     const active = await activeRelease();
     if (!active) {
       try { return await fetch(event.request); } catch { return Response.error(); }
     }
 
-    const cache = await caches.open(releaseCacheName(active.version));
+    const cache = await caches.open(active.cacheName);
     const cached = await cache.match(event.request, {ignoreSearch:true});
     if (cached) return cached;
 
@@ -275,7 +374,8 @@ self.addEventListener('fetch', event => {
         const remote = await fetchVersionInfo();
         if (remote.version === active.version) {
           await activateRelease(remote);
-          const repaired = await caches.open(releaseCacheName(active.version));
+          const repairedActive = await activeRelease();
+          const repaired = await caches.open(repairedActive.cacheName);
           const repairedResponse = await repaired.match(event.request, {ignoreSearch:true});
           if (repairedResponse) return repairedResponse;
         }

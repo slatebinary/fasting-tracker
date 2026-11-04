@@ -1,5 +1,6 @@
 (function(global){
   'use strict';
+  const PAGE_BOOT_STARTED_AT=Date.now();
   const VERSION_RE=/^\d+\.\d+\.\d+$/;
   function cleanVersion(value){const v=String(value||'').trim();return VERSION_RE.test(v)?v:'';}
   function extractEntryVersion(html){const m=String(html||'').match(/<meta\s+name=["']ft-app-version["']\s+content=["']([^"']+)["']/i);return cleanVersion(m&&m[1]);}
@@ -25,5 +26,32 @@
       return version;
     }finally{clearTimeout(timer);}
   }
+  function confirmReleaseAfterStartupIntegrity(){
+    const meta=document.querySelector('meta[name="ft-app-version"]');
+    const version=cleanVersion(meta&&meta.content);
+    if(!version||!('serviceWorker' in navigator))return;
+    let attempts=0;
+    const timer=setInterval(()=>{
+      attempts++;
+      let appMeta=null;
+      try{appMeta=JSON.parse(localStorage.getItem('fastingTracker.appMeta')||'null');}catch{}
+      const good=appMeta&&appMeta.lastKnownGood;
+      if(good&&good.version===version&&good.reason==='startup-integrity'&&Date.parse(good.at)>=PAGE_BOOT_STARTED_AT){
+        clearInterval(timer);
+        navigator.serviceWorker.ready.then(reg=>{
+          const worker=navigator.serviceWorker.controller||reg.active;
+          if(!worker)return;
+          const channel=new MessageChannel();
+          channel.port1.onmessage=()=>{try{channel.port1.close();}catch{}};
+          worker.postMessage({type:'CONFIRM_RELEASE',version,protocolVersion:1},[channel.port2]);
+        }).catch(()=>{});
+      }else if(attempts>=600){
+        clearInterval(timer);
+      }
+    },500);
+  }
+  if(document.readyState==='complete')confirmReleaseAfterStartupIntegrity();
+  else window.addEventListener('load',confirmReleaseAfterStartupIntegrity,{once:true});
+
   global.FTReleaseHealth=Object.freeze({cleanVersion,extractEntryVersion,validateMetadata,consistency,fetchLiveEntryVersion});
 })(window);
