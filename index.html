@@ -3873,7 +3873,7 @@ layout: null
     // Resolve their next boundary directly instead of binary-searching through
     // dozens of Intl.DateTimeFormat calls. Transition/ambiguous-midnight days
     // fall through to the original exact search below.
-    const parts=key.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+    const parts=key.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if(parts) {
       const nextDate=new Date(Date.UTC(+parts[1],+parts[2]-1,+parts[3]+1));
       const y=nextDate.getUTCFullYear(),m=nextDate.getUTCMonth()+1,d=nextDate.getUTCDate();
