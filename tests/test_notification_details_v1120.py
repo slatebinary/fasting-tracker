@@ -2,7 +2,7 @@
 """Regression: concise device notifications keep full, dismissible details inside the app."""
 import json, sys
 from datetime import datetime, timezone, timedelta
-from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
+from browser_perf_common import CURRENT_VERSION, build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -39,7 +39,7 @@ with sync_playwright() as p:
     data.update({'goalHours':18,'activeStart':start.isoformat().replace('+00:00','Z'),'activeGoalHours':18,'activeTimeZone':'UTC','activeCreatedAt':start.isoformat().replace('+00:00','Z'),'activeModifiedAt':None,'notificationPreferences':{'enabled':True,'targetReached':True,'backupDue':False,'longFastSafety':True,'weighIn':False,'weighInCadence':'weekly','cycleComplete':False}})
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2'})); }",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
     page.wait_for_function("window.__ftNotifications.length >= 2",timeout=7000)
     notifications=page.evaluate("window.__ftNotifications")
     bodies=[n['options']['body'] for n in notifications]
@@ -76,7 +76,7 @@ with sync_playwright() as p:
     }))""")
     page2.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2'})); }",build_data(0))
     page2.set_content(inlined_html(),wait_until='domcontentloaded')
-    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page2.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
     page2.locator('.notificationDetailAddWeight').wait_for(state='visible',timeout=5000)
     page2.locator('.notificationDetailAddWeight').click()
     page2.wait_for_function("document.querySelector('#weightModal') && !document.querySelector('#weightModal').hidden",timeout=3000)
