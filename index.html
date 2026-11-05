@@ -498,6 +498,11 @@ layout: null
     .iconChoice img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:22%; margin-bottom:7px; }
     .iconChoice span { display:block; font-size:12px; line-height:1.25; }
     .iconChoice.active { border:3px solid var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--card)); font-weight:800; }
+    /* Theme button overrides use !important; restate the selected icon state
+       after them so its stronger border remains visible in every palette. */
+    html[data-theme="grayscale"] .iconInstallationGroup .iconChoice.active { border:3px solid #000 !important; background:#e6e6e6 !important; color:#000 !important; }
+    html[data-theme="high-contrast-light"] .iconInstallationGroup .iconChoice.active { border:3px solid #0037b3 !important; background:#eaf0ff !important; color:#000 !important; }
+    html[data-theme="high-contrast-dark"] .iconInstallationGroup .iconChoice.active { border:3px solid #80dfff !important; background:#222 !important; color:#fff !important; }
     .iconChoice.active span::before { content:"✓ "; font-weight:800; }
     button, select, .small, .metric .label, .notice { word-break: normal; overflow-wrap: normal; }
     button { max-width: 100%; }
