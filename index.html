@@ -5242,6 +5242,22 @@ layout: null
     return statsSummaryCache;
   }
 
+  let statsGamificationRenderToken = 0;
+  let statsGamificationRenderTimer = 0;
+
+  function scheduleStatsGamificationDetail() {
+    const token = ++statsGamificationRenderToken;
+    if (statsGamificationRenderTimer) { clearTimeout(statsGamificationRenderTimer); statsGamificationRenderTimer = 0; }
+    requestAnimationFrame(() => {
+      if (token !== statsGamificationRenderToken) return;
+      statsGamificationRenderTimer = setTimeout(() => {
+        statsGamificationRenderTimer = 0;
+        if (token !== statsGamificationRenderToken || !el('stats').classList.contains('active')) return;
+        renderGamificationDetail();
+      }, 0);
+    });
+  }
+
   function renderStats() {
     const summary = statsSummary();
     el('mTotal').textContent = formatNumber(summary.count);
@@ -5250,8 +5266,9 @@ layout: null
     el('mGoal').textContent = formatNumber(summary.goalCount);
     el('mStreak').textContent = formatNumber(summary.streak);
     el('mHours').textContent = summary.total ? compactDuration(summary.total) : `0${t('unit.h')}`;
+    renderGamificationSummary();
     renderStatsVisualizations();
-    renderGamification();
+    scheduleStatsGamificationDetail();
   }
 
   function allFastingIntervals(rangeStart = -Infinity, rangeEnd = Infinity) {
@@ -5965,9 +5982,11 @@ layout: null
     // view can otherwise remain hidden while its chart is rendered off-screen.
     showStatsVizView(statsVizMode);
     updateStatsRangeControl();
-    // Data changes invalidate the render cache. Render only the visible mode;
-    // other modes are rendered lazily after their tab has already painted.
-    renderStatsVisualizationMode(statsVizMode);
+    // Let the Statistics screen paint its summary and controls before doing
+    // chart aggregation. The active visualization is then rendered by the same
+    // cancellable, post-paint scheduler used for subsequent mode changes.
+    renderChartDetailForMode();
+    if (!statsVizRendered.has(statsVizMode) || data.activeStart) scheduleStatsVizRender(statsVizMode);
   }
 
   function verifyStatsVisualizationAfterLayout() {
