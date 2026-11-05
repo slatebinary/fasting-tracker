@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.17",
-  "released": "2026-11-04",
-  "notes": "Stage service-worker releases in an isolated cache, retain the previous complete release until startup integrity is confirmed, and roll back an unconfirmed update; isolate CI write permissions and keep regression tests immutable.",
+  "version": "1.17.18",
+  "released": "2026-11-05",
+  "notes": "Fix integrity checks to read the authoritative record-store snapshot instead of an obsolete storage-loader function.",
   "entry": "./index.html",
   "shell": [
     "./",
