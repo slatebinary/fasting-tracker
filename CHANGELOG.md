@@ -1,3 +1,8 @@
+## v1.17.22 — 5 November 2026
+- Improved grayscale and high-contrast bottom navigation with explicit selected-tab surfaces, underlines and monochrome symbols.
+- Improved app-icon selection cards and the collapsible installation heading with stronger borders, text contrast and visible keyboard focus.
+- Added WCAG contrast-ratio regression checks for grayscale, high-contrast light/dark and colour-vision-friendly palettes.
+
 ## v1.17.21 — 5 November 2026
 - Improved Statistics first-paint responsiveness by displaying the summary and controls before expensive chart aggregation and detailed gamification calculations begin.
 - Chart rendering remains cancellable and runs after the browser has had an opportunity to paint; the full 70-year history, chart content and accessibility details remain available.

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.21",
+  "version": "1.17.22",
   "released": "2026-11-05",
-  "notes": "Improved Statistics first-paint responsiveness by deferring chart aggregation and gamification detail until after the summary is visible.",
+  "notes": "Improved grayscale and high-contrast navigation, made selected tabs distinguishable without colour alone, and strengthened app-icon selector contrast and focus visibility.",
   "entry": "./index.html",
   "shell": [
     "./",
