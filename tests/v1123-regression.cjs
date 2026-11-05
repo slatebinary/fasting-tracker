@@ -71,7 +71,7 @@ for (const icon of ['grayscale','highcontrast','colorblind']) {
   assert.match(index,new RegExp('data-icon-choice="'+icon+'"[^>]*><img[^>]*src="icons/'+icon+'/icon-192\\.png"'),'Missing visible icon choice: '+icon);
   assert.ok(fs.existsSync('icons/'+icon+'/icon-192.png'),'Missing icon image asset: '+icon);
 }
-assert.match(index,/\.iconChoice\.active \{ border:0;/,'Selected icon must not have a blue border');
+assert.match(index,/\.iconChoice\.active \{ border:3px solid var\(--accent\);/,'Selected icon must use a visible theme-aware border');
 assert.match(index,/patientTortoiseTapCount < 7/);
 assert.match(index,/prefers-reduced-motion: no-preference/);
 assert.match(index,/data-i18n="easterEgg.patientTortoiseMessage"/);
