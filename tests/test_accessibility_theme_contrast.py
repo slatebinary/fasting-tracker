@@ -32,6 +32,52 @@ for theme in ("high-contrast-light", "high-contrast-dark", "grayscale"):
     end = html.find("}", start)
     assert "!important" in html[start:end], f"{theme} rules must override widget styles"
 
+# Compute WCAG relative-luminance contrast from the actual theme tokens.
+import re
+
+def rgb(hex_color):
+    value = hex_color.lstrip("#")
+    if len(value) == 3:
+        value = "".join(ch * 2 for ch in value)
+    assert len(value) == 6 and all(ch in "0123456789abcdefABCDEF" for ch in value), hex_color
+    return tuple(int(value[i:i+2], 16) / 255 for i in (0, 2, 4))
+
+def luminance(hex_color):
+    channels = []
+    for channel in rgb(hex_color):
+        channels.append(channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+def contrast(foreground, background):
+    high, low = sorted((luminance(foreground), luminance(background)), reverse=True)
+    return (high + 0.05) / (low + 0.05)
+
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind"):
+    match = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\{{([^}}]*)\}}', html)
+    assert match, f"missing {theme} palette"
+    tokens = dict(re.findall(r'--([a-z-]+):\s*(#[0-9a-fA-F]{3,6})', match.group(1)))
+    for token in ("bg", "text", "muted", "accent"):
+        assert token in tokens, f"{theme} is missing --{token}"
+    assert contrast(tokens["text"], tokens["bg"]) >= 7, f"{theme} normal text must meet 7:1 contrast"
+    assert contrast(tokens["muted"], tokens["bg"]) >= 4.5, f"{theme} secondary text must meet 4.5:1 contrast"
+    assert contrast(tokens["accent"], tokens["bg"]) >= 4.5, f"{theme} accent must meet 4.5:1 contrast"
+
+# Navigation must provide a non-colour-only selected state and monochrome symbols.
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind"):
+    active = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\.tab\.active\s*\{{([^}}]*)\}}', html)
+    assert active, f"{theme} navigation needs an explicit active-tab style"
+    assert "background" in active.group(1) and "box-shadow" in active.group(1), f"{theme} active tab must use a surface and underline"
+    icon = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\.tab\s*\.ico\s*\{{([^}}]*)\}}', html)
+    assert icon and "grayscale" in icon.group(1), f"{theme} navigation symbols must be monochrome"
+
+# Icon selector cards and the collapsible installation heading need visible boundaries.
+assert ".iconChoice { padding:8px; background:var(--card); color:var(--text); border:2px solid var(--line);" in html
+assert ".iconChoice.active { border:3px solid var(--accent);" in html
+assert ".iconChoice:focus-visible { outline:3px solid var(--accent);" in html
+assert "color:var(--text); background:var(--card); border:2px solid var(--line);" in html
+assert '<details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons"' in html
+assert '<summary><span class="settingsIconSectionLead">' in html
+
 # The level guidance must be visible by default, not hidden inside a collapsed <details>.
 assert '<div class="scienceSources gameLevelGuide"' in html
 assert '<details class="scienceSources gameLevelGuide"' not in html
