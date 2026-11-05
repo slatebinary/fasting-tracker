@@ -307,6 +307,75 @@ layout: null
       outline: 3px solid #003f73;
       outline-offset: -4px;
     }
+
+    /* High-contrast and grayscale navigation: the active tab uses both a
+       contrasting surface and a persistent underline, not colour alone. */
+    html[data-theme="grayscale"] nav {
+      background:#fff;
+      border-top:2px solid #000;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+    }
+    html[data-theme="grayscale"] .tab {
+      color:#111 !important;
+      font-weight:750;
+    }
+    html[data-theme="grayscale"] .tab .ico {
+      color:#000;
+      filter:grayscale(1) contrast(1.8);
+    }
+    html[data-theme="grayscale"] .tab.active {
+      color:#000 !important;
+      background:#e6e6e6 !important;
+      box-shadow:inset 0 -4px 0 #000;
+      font-weight:850;
+    }
+    html[data-theme="high-contrast-light"] nav {
+      background:#fff;
+      border-top:2px solid #000;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+    }
+    html[data-theme="high-contrast-light"] .tab {
+      color:#000 !important;
+      font-weight:800;
+    }
+    html[data-theme="high-contrast-light"] .tab .ico {
+      color:#000;
+      filter:grayscale(1) brightness(.65) contrast(1.8);
+    }
+    html[data-theme="high-contrast-light"] .tab.active {
+      color:#fff !important;
+      background:#0037b3 !important;
+      box-shadow:inset 0 -4px 0 #001f66;
+      font-weight:850;
+    }
+    html[data-theme="high-contrast-light"] .tab.active .ico {
+      filter:grayscale(1) brightness(1.8) contrast(1.5);
+    }
+    html[data-theme="high-contrast-dark"] nav {
+      background:#000;
+      border-top:2px solid #fff;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+    }
+    html[data-theme="high-contrast-dark"] .tab {
+      color:#fff !important;
+      font-weight:800;
+    }
+    html[data-theme="high-contrast-dark"] .tab .ico {
+      color:#fff;
+      filter:grayscale(1) brightness(1.7) contrast(1.5);
+    }
+    html[data-theme="high-contrast-dark"] .tab.active {
+      color:#000 !important;
+      background:#80dfff !important;
+      box-shadow:inset 0 -4px 0 #fff;
+      font-weight:850;
+    }
+    html[data-theme="high-contrast-dark"] .tab.active .ico {
+      filter:grayscale(1) brightness(.65) contrast(1.8);
+    }
     .notice { background: color-mix(in srgb, var(--accent) 12%, var(--card)); border-radius: 14px; padding: 12px 14px; color: var(--text); font-size: 14px; margin-bottom: 14px; line-height: 1.4; }
     .patientTortoise { display:flex; align-items:center; gap:14px; margin:12px 0 4px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--card); }
     .patientTortoiseProgress { margin:8px 0 0; padding:9px 11px; border:1px dashed var(--line); border-radius:12px; color:var(--text); background:var(--card); font-size:14px; line-height:1.4; }
@@ -424,10 +493,11 @@ layout: null
     .historyActions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 5px; }
     .historyActions button { padding: 7px 9px; font-size: 13px; }
     .iconChoiceGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:14px; }
-    .iconChoice { padding:8px; background:var(--bg); color:var(--text); border:0; white-space:normal !important; min-width:0; text-align:center; }
+    .iconChoice { padding:8px; background:var(--card); color:var(--text); border:2px solid var(--line); white-space:normal !important; min-width:0; text-align:center; }
+    .iconChoice:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
     .iconChoice img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:22%; margin-bottom:7px; }
     .iconChoice span { display:block; font-size:12px; line-height:1.25; }
-    .iconChoice.active { border:0; background:color-mix(in srgb, var(--accent) 10%, var(--bg)); font-weight:700; }
+    .iconChoice.active { border:3px solid var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--card)); font-weight:800; }
     .iconChoice.active span::before { content:"✓ "; font-weight:800; }
     button, select, .small, .metric .label, .notice { word-break: normal; overflow-wrap: normal; }
     button { max-width: 100%; }
@@ -631,7 +701,7 @@ layout: null
     .iconInstallationGroup[open] > summary { border-bottom:0; }
     .settingsSubgroup > .card, .settingsSubgroup > .row { margin:0; border:0; border-radius:0; box-shadow:none; }
     .settingsGroup.iconInstallationGroup { margin:8px 0 18px; border:0; border-radius:0; background:transparent; overflow:visible; box-shadow:none; }
-    .iconInstallationGroup > summary { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 13px; }
+    .iconInstallationGroup > summary { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 13px; color:var(--text); background:var(--card); border:2px solid var(--line); border-radius:12px; }
     .iconInstallationGroup > summary:focus-visible { outline:3px solid var(--text); outline-offset:2px; border-radius:8px; }
     .settingsIconSectionLead { display:flex; align-items:center; gap:12px; min-width:0; }
     .settingsIconSectionSymbol { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border:0; border-radius:0; color:var(--text); background:transparent; font-size:30px; font-weight:800; line-height:1; }
