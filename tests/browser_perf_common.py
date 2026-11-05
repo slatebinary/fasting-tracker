@@ -2,6 +2,7 @@ from pathlib import Path
 import json, re, time
 
 ROOT = Path(__file__).resolve().parents[1]
+CURRENT_VERSION = json.loads((ROOT / 'version.json').read_text(encoding='utf-8'))['version']
 
 
 def iso(ms):

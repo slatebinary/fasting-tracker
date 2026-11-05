@@ -3863,12 +3863,41 @@ layout: null
     return d.toLocaleTimeString(currentLocale(), opts);
   }
 
-  function nextZonedDayBoundary(ms, timeZone) {
-    const tz=normalizeTimeZone(timeZone), key=dayKey(ms,tz);
+  function nextZonedDayBoundary(ms, timeZone, knownKey = null) {
+    const tz=normalizeTimeZone(timeZone), key=knownKey || dayKey(ms,tz), cacheKey=`${tz}|${key}`;
+    const cache=nextZonedDayBoundary.cache || (nextZonedDayBoundary.cache=new Map());
+    const cached=cache.get(cacheKey);
+    if (Number.isFinite(cached) && cached>ms) return cached;
+
+    // Most calendar days have a single UTC offset from midnight to midnight.
+    // Resolve their next boundary directly instead of binary-searching through
+    // dozens of Intl.DateTimeFormat calls. Transition/ambiguous-midnight days
+    // fall through to the original exact search below.
+    const parts=key.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(parts) {
+      const nextDate=new Date(Date.UTC(+parts[1],+parts[2]-1,+parts[3]+1));
+      const y=nextDate.getUTCFullYear(),m=nextDate.getUTCMonth()+1,d=nextDate.getUTCDate();
+      const nextKey=`${y}-${pad(m)}-${pad(d)}`;
+      const target=Date.UTC(y,m-1,d);
+      const candidate=target-timeZoneOffsetMs(ms,tz);
+      if(candidate>ms) {
+        const check=zonedParts(candidate,tz);
+        if(`${check.year}-${pad(check.month)}-${pad(check.day)}`===nextKey&&check.hour===0&&check.minute===0&&check.second===0) {
+          if(cache.size>10000) cache.clear();
+          cache.set(cacheKey,candidate);
+          return candidate;
+        }
+      }
+    }
+
+    // Preserve exact behavior for midnight gaps, repeated midnights and
+    // unusual historical offset changes.
     let lo=ms, hi=ms+30*3600000;
     while (dayKey(hi,tz)===key && hi-ms<72*3600000) hi+=12*3600000;
     if (dayKey(hi,tz)===key) return hi;
     while (hi-lo>1) { const mid=Math.floor((lo+hi)/2); if (dayKey(mid,tz)===key) lo=mid; else hi=mid; }
+    if(cache.size>10000) cache.clear();
+    cache.set(cacheKey,hi);
     return hi;
   }
   function addIntervalToDayMap(map, startLike, endLike, timeZone) {
@@ -5289,15 +5318,19 @@ layout: null
     const intervals = allFastingIntervals(oldestAnchor.getTime(), newestAnchor.getTime() + 2*86400000);
     const days = [];
     let intervalCursor = 0;
+    let previousEndMs = null;
+    const anchor = new Date(newestAnchor);
     for (let i = dayCount - 1; i >= 0; i--) {
-      const anchor = new Date();
-      anchor.setHours(12, 0, 0, 0);
-      anchor.setDate(anchor.getDate() - i);
+      anchor.setTime(newestAnchor.getTime());
+      anchor.setDate(newestAnchor.getDate() - i);
       const key = dayKey(anchor, tz);
-      const start = zonedLocalToDate(`${key}T00:00`, tz);
-      if (!start) continue;
-      const startMs = start.getTime();
-      const endMs = nextZonedDayBoundary(startMs, tz);
+      // Consecutive chart days share the exact previous end/next start. Resolve
+      // the expensive local-midnight conversion only once for the oldest day.
+      const firstStart = previousEndMs === null ? zonedLocalToDate(`${key}T00:00`, tz) : null;
+      const startMs = previousEndMs === null ? firstStart?.getTime() : previousEndMs;
+      const endMs = nextZonedDayBoundary(anchor.getTime(), tz, key);
+      previousEndMs = endMs;
+      if (!Number.isFinite(startMs) || endMs <= startMs) continue;
       const segments = [];
       let cursor = startMs;
       let fastCount = 0;
@@ -5328,7 +5361,7 @@ layout: null
         cursor = Math.max(cursor, segEnd);
       }
       if (cursor < endMs) segments.push({ type: 'gap', start: cursor, end: endMs, index: segments.length });
-      days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz, label: localDateLabel(startMs, tz) });
+      days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz });
     }
 
     // Give every segment a stable continuation key across midnight. Fast
@@ -5366,7 +5399,7 @@ layout: null
     if (!day) return null;
     if (chartSelectedTarget.kind === 'day') {
       return {
-        title: day.label,
+        title: day.label || localDateLabel(day.startMs, day.timeZone),
         text: t('stats.detailTotal', { duration: compactDuration(day.totalFastMs), count: formatNumber(day.fastCount) })
       };
     }
@@ -5391,7 +5424,7 @@ layout: null
       const splitAcrossDay = Math.abs(sourceDuration - segmentDuration) >= 60000;
       const beyondTarget = Math.max(0, sourceDuration - targetDuration);
       return {
-        title: day.label,
+        title: day.label || localDateLabel(day.startMs, day.timeZone),
         text: splitAcrossDay
           ? t(beyondTarget >= 60000 ? 'stats.detailFastSplitTargetBeyond' : 'stats.detailFastSplitTarget', {
               start,
@@ -5410,7 +5443,7 @@ layout: null
       };
     }
     return {
-      title: day.label,
+      title: day.label || localDateLabel(day.startMs, day.timeZone),
       text: t('stats.detailGap', { start, end, duration: compactDuration(segment.end - segment.start) })
     };
   }
@@ -5557,10 +5590,10 @@ layout: null
     // always drawn, even when the history is too long to fit every label.
     const timelineMonthGroups = [];
     days.forEach((day, index) => {
-      const dp = zonedParts(day.startMs, day.timeZone);
-      const key = `${dp.year}-${String(dp.month).padStart(2, '0')}`;
+      const year=Number(day.key.slice(0,4)), month=Number(day.key.slice(5,7));
+      const key = `${year}-${String(month).padStart(2, '0')}`;
       const last = timelineMonthGroups[timelineMonthGroups.length - 1];
-      if (!last || last.key !== key) timelineMonthGroups.push({key, year:dp.year, month:dp.month, startIndex:index, endIndex:index});
+      if (!last || last.key !== key) timelineMonthGroups.push({key, year, month, startIndex:index, endIndex:index});
       else last.endIndex = index;
     });
     ctx.save();
@@ -5635,7 +5668,7 @@ layout: null
         }
       });
 
-      const dp = zonedParts(day.startMs, day.timeZone);
+      const dayOfMonth=Number(day.key.slice(8,10));
       const clockInfo=dayClockChangeInfo(day);
       if(clockInfo&&slot>=18){
         const clockLabel=clockInfo.label.replace(/^(Day|Offset)\s+/,'');
@@ -5646,7 +5679,7 @@ layout: null
       }
       ctx.fillStyle = muted; ctx.font = '11px -apple-system'; ctx.textAlign = 'center';
       if (slot >= 18) {
-        ctx.fillText(formatNumber(dp.day), x0 + bw / 2, cssH - 11);
+        ctx.fillText(formatNumber(dayOfMonth), x0 + bw / 2, cssH - 11);
       } else if (slot < 3 && dp.day === 1 && dp.month === 1) {
         ctx.fillText(String(dp.year), x0 + bw / 2, cssH - 11);
       }
@@ -5951,9 +5984,11 @@ layout: null
     if(!day||!Number.isFinite(day.startMs)||!Number.isFinite(day.endMs)||day.endMs<=day.startMs)return null;
     const tz=normalizeTimeZone(day.timeZone||currentTimeZone()),elapsed=day.endMs-day.startMs;
     const dayDelta=Math.round((elapsed-86400000)/60000);
+    // For local-midnight boundaries, elapsed day length already captures the
+    // net UTC-offset change. Ordinary 24-hour days need no extra Intl calls.
+    if(Math.abs(dayDelta)<1)return null;
     const startOffset=timeZoneOffsetMs(day.startMs+1000,tz),endOffset=timeZoneOffsetMs(day.endMs-1000,tz);
     const offsetDelta=Math.round((endOffset-startOffset)/60000);
-    if(Math.abs(dayDelta)<1&&Math.abs(offsetDelta)<1)return null;
     const isDayLengthChange=Math.abs(dayDelta)>=1,delta=isDayLengthChange?dayDelta:offsetDelta;
     const sign=delta>0?'+':'−',duration=formatClockChangeDuration(delta),change=sign+duration;
     const label=t(isDayLengthChange?'stats.clockDayChangeLabel':'stats.clockOffsetChangeLabel',{sign,duration});
