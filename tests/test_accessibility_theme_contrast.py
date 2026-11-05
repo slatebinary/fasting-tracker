@@ -73,6 +73,8 @@ for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorbl
 # Icon selector cards and the collapsible installation heading need visible boundaries.
 assert ".iconChoice { padding:8px; background:var(--card); color:var(--text); border:2px solid var(--line);" in html
 assert ".iconChoice.active { border:3px solid var(--accent);" in html
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark"):
+    assert f'html[data-theme="{theme}"] .iconInstallationGroup .iconChoice.active' in html, f"{theme} must preserve a visible selected app-icon border"
 assert ".iconChoice:focus-visible { outline:3px solid var(--accent);" in html
 assert "color:var(--text); background:var(--card); border:2px solid var(--line);" in html
 assert '<details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons"' in html
