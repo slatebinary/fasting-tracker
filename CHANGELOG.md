@@ -1,3 +1,15 @@
+## v1.17.20 — 5 November 2026
+- Completed the offline in-app release history by adding the verified v1.17.18 and v1.17.19 notes in English, Bulgarian and Spanish.
+- Added a regression check that keeps the newest in-app changelog entry aligned with the release metadata in all three languages.
+
+## v1.17.19 — 5 November 2026
+- Reduced Statistics timeline rendering cost by caching ordinary local-day boundaries and reusing consecutive day boundaries; exact-search fallback remains for DST and unusual midnight transitions.
+- Added a 2,000-record browser performance regression to the required CI workflow.
+
+## v1.17.18 — 5 November 2026
+- Fixed data-integrity verification to read the authoritative IndexedDB record-store snapshot instead of an obsolete storage-loader function.
+- Added regression coverage for leap day, midnight crossing, spring/autumn DST, travel time zones and 72-hour fasting through backup import and integrity verification.
+
 ## v1.17.19 — 5 November 2026
 - Reduced Statistics timeline rendering cost by caching ordinary time-zone day boundaries and reusing consecutive day boundaries; unusual DST/midnight-transition cases retain the exact-search fallback.
 - Added a 2,000-record browser performance regression to the required CI workflow.

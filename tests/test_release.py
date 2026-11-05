@@ -32,12 +32,18 @@ en_source=json.loads((ROOT/'i18n'/'en.json').read_text(encoding='utf-8'))
 sw=(ROOT/'sw.js').read_text()
 ver=json.loads((ROOT/'version.json').read_text())
 changelog=(ROOT/'changelog.html').read_text(encoding='utf-8')
+ok('./changelog.html' in ver.get('shell',[]), 'offline changelog must be included in the service-worker release shell')
+ok('href="changelog.html?return=settings"' in index, 'Settings must provide a direct in-app changelog link')
 for lang, section_start, section_end in (('en','<section data-lang="en">','<section data-lang="bg">'),('bg','<section data-lang="bg">','<section data-lang="es">'),('es','<section data-lang="es">','<script>')):
     start=changelog.find(section_start)
     end=changelog.find(section_end,start+len(section_start))
     section=changelog[start:end if end>=0 else len(changelog)] if start>=0 else ''
-    ok('<h2>v1.17.15</h2>' in section, f'{lang} in-app changelog is missing current release v1.17.15')
-    ok('<h2>v1.17.12</h2>' in section, f'{lang} in-app changelog is missing release v1.17.12')
+    latest=f'<h2>v{ver.get("version")}</h2>'
+    ok(section.lstrip().startswith(section_start+ '<article class="version">'+latest), f'{lang} in-app changelog must start with current release {ver.get("version")}')
+    for required in ("1.17.19","1.17.18","1.17.12"):
+        ok(f'<h2>v{required}</h2>' in section, f'{lang} in-app changelog is missing release v{required}')
+    version_order=[tuple(int(x) for x in m) for m in re.findall(r'<h2>v(\d+)\.(\d+)\.(\d+)</h2>',section)]
+    ok(version_order==sorted(version_order,reverse=True), f'{lang} in-app changelog must be newest-first without out-of-order releases')
     if lang=='en':
         ok('every time the user attempts to stop an active fast for a personal reason' in section, 'English v1.17.12 changelog does not describe repeated personal-reason offers')
     elif lang=='bg':
