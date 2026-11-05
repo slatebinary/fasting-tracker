@@ -1,3 +1,7 @@
+## v1.17.18 — 5 November 2026
+- Fixed data-integrity verification to read the current authoritative IndexedDB record-store snapshot; removed obsolete loader references that caused false storage-read failures.
+- Added regression coverage for leap day, midnight, spring/autumn DST, travel time zones and 72-hour fasting through backup import and integrity verification.
+
 ## v1.17.17 — 4 November 2026
 - Stage each replacement release in an isolated cache and verify every shell asset with SHA-256 before changing the active release pointer.
 - Retain the previous complete release until the new app completes startup and passes its startup integrity check; automatically restore the previous release on a later navigation if the new release never confirms.
