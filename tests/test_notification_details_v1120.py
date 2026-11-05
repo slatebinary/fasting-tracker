@@ -8,6 +8,7 @@ try:
 except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
 
+# Exercise the current release label while keeping legacy lastAppVersion migration data.
 SHORT_KEYS=['notifications.testBodyShort','notifications.targetBodyShort','notifications.backupBodyShort','notifications.safetyBodyShort','notifications.weighBodyShort','notifications.cycleBodyShort']
 for lang in ('en','bg','es'):
     strings=json.load(open(f'i18n/{lang}.json',encoding='utf-8'))
