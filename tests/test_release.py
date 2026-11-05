@@ -449,7 +449,7 @@ ok(index.index('let emergencyBoot =') < boot_load, 'emergencyBoot must be initia
 # v1.6.2 recovery hardening + exact documentation return regressions
 ok("const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';" in index and 'sessionStorage.setItem(DOC_RETURN_KEY, location.href)' in index, 'exact documentation return capture missing')
 ok('data.records.length > MAX_IMPORT_FASTS' in index and 'data.deletedFasts.length > MAX_IMPORT_DELETED_FASTS' in index and 'data.weights.length > MAX_IMPORT_WEIGHTS' in index and 'queuePrimaryPersistence()' in index, 'save must enforce lifetime record limits and queue IndexedDB persistence')
-ok('async function reloadFromIndexedDB' in index and 'loadRecordBasedData()' in index and 'DATA_REVISION_SIGNAL_KEY' in index, 'cross-context storage sync must reload record-based IndexedDB state')
+ok('async function reloadFromIndexedDB' in index and 'loadRecordBasedSnapshot()' in index and 'DATA_REVISION_SIGNAL_KEY' in index, 'cross-context storage sync must reload record-based IndexedDB state')
 ok("throw new Error('overlapping fasting records')" not in index and "throw new Error('active fast overlaps history')" not in index, 'legacy semantic overlap must not force Recovery mode')
 ok('id="recoveryDiagnostic"' in index and "recoveryMode.error" in index, 'Recovery mode diagnostic reason missing')
 for rel in ['about.html','privacy.html','branding.html','license.html']:

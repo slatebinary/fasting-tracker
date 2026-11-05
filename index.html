@@ -7483,7 +7483,7 @@ layout: null
       ids.add(r.id); const a=Date.parse(r.start),b=Date.parse(r.end); if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a){addIntegrityIssue(issues,'primary-structure');break;}
     }
     if(!issues.length){
-      try{const stored=await loadRecordBasedData();if(!stored)addIntegrityIssue(issues,'primary-store-missing');else if(Number(stored.revision)!==Number(data.revision))addIntegrityIssue(issues,'revision-mismatch');}
+      try{const storedSnapshot=await loadRecordBasedSnapshot();const stored=storedSnapshot?.data||null;if(!stored)addIntegrityIssue(issues,'primary-store-missing');else if(Number(stored.revision)!==Number(data.revision))addIntegrityIssue(issues,'revision-mismatch');}
       catch(err){addIntegrityIssue(issues,'primary-store-read',err?.message);}
     }
     return issues;
@@ -7511,7 +7511,7 @@ layout: null
       }
     } catch(err){addIntegrityIssue(issues,'snapshot-store-read',err?.message);}
     try {
-      const stored=await loadRecordBasedData();
+      const storedSnapshot=await loadRecordBasedSnapshot();const stored=storedSnapshot?.data||null;
       if(!stored)addIntegrityIssue(issues,'primary-store-missing');
       else if(Number(stored.revision)!==Number(data.revision))addIntegrityIssue(issues,'revision-mismatch');
     } catch(err){addIntegrityIssue(issues,'primary-store-read',err?.message);}
