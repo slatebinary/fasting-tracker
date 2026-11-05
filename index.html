@@ -5321,6 +5321,7 @@ layout: null
     let previousEndMs = null;
     const anchor = new Date(newestAnchor);
     for (let i = dayCount - 1; i >= 0; i--) {
+      anchor.setTime(newestAnchor.getTime());
       anchor.setDate(newestAnchor.getDate() - i);
       const key = dayKey(anchor, tz);
       // Consecutive chart days share the exact previous end/next start. Resolve
