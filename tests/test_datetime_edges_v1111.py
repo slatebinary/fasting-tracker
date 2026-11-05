@@ -2,7 +2,7 @@
 """v1.12.2 date/time edge matrix through real backup import and integrity verification."""
 import json,tempfile,sys
 from playwright.sync_api import sync_playwright
-from browser_perf_common import inlined_html, STORAGE_SHIM
+from browser_perf_common import CURRENT_VERSION, inlined_html, STORAGE_SHIM
 VERSION='1.12.2'
 RECORDS=[
  {'id':'leap','start':'2024-02-28T20:00:00.000Z','end':'2024-02-29T12:00:00.000Z','goalHours':16,'timeZone':'Europe/Sofia','createdAt':'2024-02-29T12:00:00.000Z','modifiedAt':None,'editHistory':[]},
@@ -22,14 +22,14 @@ def main():
         browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
         page=browser.new_page(viewport={'width':390,'height':844});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.evaluate(STORAGE_SHIM);page.evaluate("d=>{__seedFastingDbV2(d,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",empty)
-        page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.2'",timeout=20000)
+        page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
         page.locator('.tab[data-screen="settings"]').click();page.locator('#settingsGroupData > summary').click();page.locator('#settingsGroupAdvanced > summary').click();page.wait_for_timeout(80)
         page.on('dialog',lambda d:d.accept())
         page.locator('#importFile').set_input_files(path);page.wait_for_timeout(120)
         assert page.locator('#importPreviewModal').is_visible();page.locator('#importPreviewReplaceBtn').click();page.wait_for_timeout(250)
         page.locator('#integrityCheckBtn').click();page.wait_for_timeout(350)
         assert page.locator('#integrityModal').is_visible()
-        summary=page.locator('#integritySummary').inner_text().lower();assert 'no problems' in summary or 'passed' in summary,summary
+        summary=page.locator('#integritySummary').inner_text().lower();issues=page.locator('#integrityIssueList').inner_text();assert 'no problems' in summary or 'passed' in summary, f'{summary}; issues: {issues}'
         page.locator('#integrityCloseBtn').click();page.locator('.tab[data-screen="history"]').click();page.wait_for_timeout(100)
         text=page.locator('#historyList').inner_text();assert '72h' in text and page.locator('#historyList .historyRow').count()>=6
         assert not errors,errors[:5]

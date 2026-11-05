@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regression: storage-health panel and privacy-preserving diagnostic export."""
 import sys, json
-from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
+from browser_perf_common import CURRENT_VERSION, build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -13,7 +13,7 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={'width':390,'height':844});errors=[];page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM);page.evaluate("data=>{__seedFastingDbV2(data,[]);localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2'}));}",data)
     page.evaluate("""() => {Object.defineProperty(navigator,'storage',{value:{persisted:async()=>true,estimate:async()=>({usage:5*1048576,quota:100*1048576}),persist:async()=>true},configurable:true});const orig=URL.createObjectURL;URL.createObjectURL=b=>{window.__diagBlob=b;return 'blob:diag'};HTMLAnchorElement.prototype.click=function(){};}""")
-    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent==='v1.12.2'",timeout=20000)
+    page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="settings"]').click();page.locator('#settingsGroupAdvanced > summary').click();page.wait_for_function("document.querySelector('#healthRecordCount')?.textContent.trim()==='4'",timeout=5000)
     health=page.locator('#storageHealthCard').inner_text()
     if '5' not in health or '100' not in health:
