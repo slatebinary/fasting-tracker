@@ -189,7 +189,8 @@ assert.ok(index.includes('class="settingsGroup iconInstallationGroup" id="settin
 assert.ok(/\.settingsGroup\.iconInstallationGroup\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section must not have a prominent border');
 assert.ok(/\.settingsIconSectionSymbol\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'App icon section symbol must not have a border');
 assert.ok(index.includes('data-i18n="settings.appIconSectionHelp"'), 'App icon section must explain its contents');
-assert.ok(/\.iconChoice\.active\s*\{[^}]*border:\s*0(?:;|\s)/.test(index), 'Selected icon must not use a prominent border');
+assert.ok(/\.iconInstallationGroup\s*>\s*summary\s*\{[^}]*border:\s*2px\s+solid\s+var\(--line\)/.test(index), 'App icon section summary must have a visible neutral boundary');
+assert.ok(/\.iconChoice\.active\s*\{[^}]*border:\s*3px\s+solid\s+var\(--accent\)/.test(index), 'Selected icon must use a visible theme-aware border');
 assert.ok(index.includes('.iconChoice.active span::before { content:"✓ ";'), 'Selected icon must have a non-colour-only check-mark indicator');
 assert.ok(index.includes("group.open=Object.prototype.hasOwnProperty.call(state,group.id)?!!state[group.id]:(group.id==='settingsGroupAppIcons'||group.id==='settingsGroupGeneral');"), 'Icon section must default open but honour the saved disclosure choice');
 assert.ok(!index.includes("if (group.id==='settingsGroupAppIcons' && !group.open)"), 'Icon section must not override a user collapse action');
