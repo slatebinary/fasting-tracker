@@ -1844,7 +1844,6 @@ layout: null
     if (savedPreferences && savedPreferences.timeZone && savedPreferences.timeZone !== 'system') preferredTimeZone = String(savedPreferences.timeZone);
   } catch {}
   const zonedFormatterCache = new Map();
-  const zonedDayBoundaryCache = new Map();
   // Initialize URL-dependent UI state and a safe default data object before loading
   // persisted data. Legacy-number normalization may ask currentLocale() ->
   // uiLanguage() during load(), so these bindings must never be in the TDZ.
@@ -3866,7 +3865,8 @@ layout: null
 
   function nextZonedDayBoundary(ms, timeZone) {
     const tz=normalizeTimeZone(timeZone), key=dayKey(ms,tz), cacheKey=`${tz}|${key}`;
-    const cached=zonedDayBoundaryCache.get(cacheKey);
+    const cache=nextZonedDayBoundary.cache || (nextZonedDayBoundary.cache=new Map());
+    const cached=cache.get(cacheKey);
     if (Number.isFinite(cached) && cached>ms) return cached;
 
     // Most calendar days have a single UTC offset from midnight to midnight.
@@ -3883,8 +3883,8 @@ layout: null
       if(candidate>ms) {
         const check=zonedParts(candidate,tz);
         if(`${check.year}-${pad(check.month)}-${pad(check.day)}`===nextKey&&check.hour===0&&check.minute===0&&check.second===0) {
-          if(zonedDayBoundaryCache.size>10000) zonedDayBoundaryCache.clear();
-          zonedDayBoundaryCache.set(cacheKey,candidate);
+          if(cache.size>10000) cache.clear();
+          cache.set(cacheKey,candidate);
           return candidate;
         }
       }
@@ -3896,8 +3896,8 @@ layout: null
     while (dayKey(hi,tz)===key && hi-ms<72*3600000) hi+=12*3600000;
     if (dayKey(hi,tz)===key) return hi;
     while (hi-lo>1) { const mid=Math.floor((lo+hi)/2); if (dayKey(mid,tz)===key) lo=mid; else hi=mid; }
-    if(zonedDayBoundaryCache.size>10000) zonedDayBoundaryCache.clear();
-    zonedDayBoundaryCache.set(cacheKey,hi);
+    if(cache.size>10000) cache.clear();
+    cache.set(cacheKey,hi);
     return hi;
   }
   function addIntervalToDayMap(map, startLike, endLike, timeZone) {
