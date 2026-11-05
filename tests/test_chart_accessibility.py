@@ -22,7 +22,16 @@ with sync_playwright() as p:
     if page.locator('#weightChartDataBtn').get_attribute('aria-expanded')!='true': print('FAIL: weight data disclosure aria state wrong');sys.exit(1)
     weight_rows=page.locator('#weightChartData li').all_inner_texts()
     if '71' not in weight_rows[0] or '60' not in weight_rows[-1]: print('FAIL: weight chart data is not newest-first:',weight_rows);sys.exit(1)
-    page.locator('.tab[data-screen="stats"]').click();page.locator('#statsChartDataBtn').click();page.wait_for_function("!document.querySelector('#statsChartData').hidden && document.querySelectorAll('#statsChartData li').length>0")
+    page.locator('.tab[data-screen="stats"]').click();page.locator('#statsChartDataBtn').click()
+    # Statistics charts are intentionally rendered after the first screen paint.
+    # Opening the text disclosure immediately must not leave a transient
+    # "No chart data" placeholder as the final accessible representation.
+    page.wait_for_function("""() => {
+      const box=document.querySelector('#statsChartData');
+      if(!box || box.hidden) return false;
+      const rows=[...box.querySelectorAll('li')];
+      return rows.length>=2 && /^\\w{3}, \\w{3} \\d{1,2}, \\d{4}/.test(rows[0].textContent.trim());
+    }""",timeout=15000)
     stat_rows=page.locator('#statsChartData li').all_inner_texts()
     if len(stat_rows) < 2: print('FAIL: fasting chart data has too few rows:',stat_rows);sys.exit(1)
     from datetime import datetime as _dt
