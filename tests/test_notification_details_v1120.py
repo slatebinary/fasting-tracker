@@ -66,6 +66,23 @@ with sync_playwright() as p:
     if len(last['options']['body'])>72 or 'working' not in last['options']['body'].lower():
         print('FAIL: test notification is not concise:',last); sys.exit(1)
     page.wait_for_function("document.querySelector('#notificationDetailStack')?.innerText.includes('no action is required')",timeout=3000)
+    # A weigh-in reminder's Add action must open the weight editor and
+    # dismiss the reminder detail, so the user can act without hunting for it.
+    page2=browser.new_page(viewport={'width':390,'height':844})
+    errors2=[]; page2.on('pageerror',lambda exc:errors2.append(str(exc)))
+    page2.evaluate(STORAGE_SHIM)
+    page2.evaluate("""() => localStorage.setItem('fastingTracker.notificationState', JSON.stringify({
+      details:[{id:'test-weigh-in-add',kind:'weigh-in',screen:'weight',createdAt:new Date().toISOString(),params:{cadence:'weekly'}}]
+    }))""")
+    page2.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2'})); }",build_data(0))
+    page2.set_content(inlined_html(),wait_until='domcontentloaded')
+    page2.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page2.locator('.notificationDetailAddWeight').wait_for(state='visible',timeout=5000)
+    page2.locator('.notificationDetailAddWeight').click()
+    page2.wait_for_function("document.querySelector('#weightModal') && !document.querySelector('#weightModal').hidden",timeout=3000)
+    page2.wait_for_function("document.querySelectorAll('#notificationDetailStack .notificationDetailCard').length === 0",timeout=3000)
+    if errors2:
+        print('FAIL: weigh-in Add action browser errors: '+' | '.join(errors2[:4])); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:4])); sys.exit(1)
     browser.close()
