@@ -5997,8 +5997,10 @@ layout: null
       showStatsVizView(statsVizMode);
       syncStatsVizNavigator();
       updateStatsRangeControl();
-      renderStatsVisualizationMode(statsVizMode);
       renderChartDetailForMode();
+      // Re-render after the final layout through the post-paint scheduler;
+      // never perform expensive chart aggregation inside this animation frame.
+      scheduleStatsVizRender(statsVizMode);
       if (statsVizMode === 'timeline') scrollTimelineToLatest();
     });
   }
