@@ -1,3 +1,7 @@
+## v1.17.21 — 5 November 2026
+- Improved Statistics first-paint responsiveness by displaying the summary and controls before expensive chart aggregation and detailed gamification calculations begin.
+- Chart rendering remains cancellable and runs after the browser has had an opportunity to paint; the full 70-year history, chart content and accessibility details remain available.
+
 ## v1.17.20 — 5 November 2026
 - Completed the offline in-app release history by adding the verified v1.17.18 and v1.17.19 notes in English, Bulgarian and Spanish.
 - Added a regression check that keeps the newest in-app changelog entry aligned with the release metadata in all three languages.

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.20",
+  "version": "1.17.21",
   "released": "2026-11-05",
-  "notes": "Completed the offline in-app changelog through v1.17.19 and added version-alignment regression coverage.",
+  "notes": "Improved Statistics first-paint responsiveness by deferring chart aggregation and gamification detail until after the summary is visible.",
   "entry": "./index.html",
   "shell": [
     "./",
