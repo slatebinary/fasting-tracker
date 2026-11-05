@@ -9033,6 +9033,7 @@ layout: null
   applyRecoveryMode();
   renderBackupStatus();
   renderInstallStorageNotice();
+  renderNotificationDetails();
   activateScreen(location.hash.slice(1), { updateHash: false });
   renderScreen(activeScreenId(), { force:true });
   if(versionTransitionSnapshotOK&&!recoveryMode)setTimeout(async()=>{try{const issues=await collectStartupIntegrityIssues();if(!issues.length)markLastKnownGood('startup-integrity');}catch{}},900);
