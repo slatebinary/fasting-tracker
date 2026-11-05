@@ -5987,15 +5987,12 @@ layout: null
     // For local-midnight boundaries, elapsed day length already captures the
     // net UTC-offset change. Ordinary 24-hour days need no extra Intl calls.
     if(Math.abs(dayDelta)<1)return null;
-    const startOffset=timeZoneOffsetMs(day.startMs+1000,tz),endOffset=timeZoneOffsetMs(day.endMs-1000,tz);
-    const offsetDelta=Math.round((endOffset-startOffset)/60000);
-    const isDayLengthChange=Math.abs(dayDelta)>=1,delta=isDayLengthChange?dayDelta:offsetDelta;
-    const sign=delta>0?'+':'−',duration=formatClockChangeDuration(delta),change=sign+duration;
-    const label=t(isDayLengthChange?'stats.clockDayChangeLabel':'stats.clockOffsetChangeLabel',{sign,duration});
-    const description=t(isDayLengthChange?'stats.clockDayChangeHelp':'stats.clockOffsetChangeHelp',{
+    const delta=dayDelta,sign=delta>0?'+':'−',duration=formatClockChangeDuration(delta),change=sign+duration;
+    const label=t('stats.clockDayChangeLabel',{sign,duration});
+    const description=t('stats.clockDayChangeHelp',{
       date:day.label||localDateLabel(day.startMs,tz),dayLength:totalHoursDuration(elapsed),change,zone:tz
     });
-    return {label,description,deltaMinutes:delta,dayDeltaMinutes:dayDelta,offsetDeltaMinutes:offsetDelta};
+    return {label,description,deltaMinutes:delta,dayDeltaMinutes:dayDelta,offsetDeltaMinutes:-dayDelta};
   }
   function clockChangeSummaryForRange(startMs,endMs,timeZone=currentTimeZone()) {
     const tz=normalizeTimeZone(timeZone),changes=[];let cursor=startMs,guard=0;
@@ -6974,7 +6971,7 @@ layout: null
   }
   function renderStatsChartData(){
     const box=el('statsChartData'); if(!box||box.hidden)return; box.replaceChildren(); const ul=document.createElement('ul');
-    if(statsVizMode==='timeline'){for(const d of [...timelineChartDays].reverse()){const li=document.createElement('li');const clockNote=clockChangeNoteForDetail({dayKey:d.key},'timeline');li.textContent=`${d.label||d.key||''} — ${compactDuration(d.totalFastMs||0)}${clockNote?' • '+clockNote:''}`;ul.append(li);}}
+    if(statsVizMode==='timeline'){for(const d of [...timelineChartDays].reverse()){const li=document.createElement('li');const clockNote=clockChangeNoteForDetail({dayKey:d.key},'timeline');li.textContent=`${d.label||localDateLabel(d.startMs,d.timeZone)||d.key||''} — ${compactDuration(d.totalFastMs||0)}${clockNote?' • '+clockNote:''}`;ul.append(li);}}
     else if(statsVizMode==='trend'){for(const d of [...buildTrendDays()].reverse()){const li=document.createElement('li');const clockNote=clockChangeNoteForDetail({dayKey:d.key},'trend');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.hours||0,0,1)} ${t('unit.h')} • 7d ${formatNumber(d.avg7||0,0,1)} • 30d ${formatNumber(d.avg30||0,0,1)}${clockNote?' • '+clockNote:''}`;ul.append(li);}}
     else if(statsVizMode==='weeks'){for(const w of [...(weeklySummariesCache||[])].reverse()){const li=document.createElement('li');li.textContent=`${w.label||w.key||''} — ${formatNumber((w.totalFastMs||0)/3600000,0,1)} ${t('unit.h')}`;ul.append(li);}}
     else if(statsVizMode==='months'){for(const x of [...buildMonthSummaries()].reverse()){const li=document.createElement('li');li.textContent=`${x.label} — ${formatNumber(x.hours,0,1)} ${t('unit.h')} • ${x.count}`;ul.append(li);}}
