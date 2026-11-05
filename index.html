@@ -3882,7 +3882,7 @@ layout: null
       const candidate=target-timeZoneOffsetMs(ms,tz);
       if(candidate>ms) {
         const check=zonedParts(candidate,tz);
-        if(check.year===y&&check.month===m&&check.day===d&&check.hour===0&&check.minute===0&&check.second===0) {
+        if(`${check.year}-${pad(check.month)}-${pad(check.day)}`===nextKey&&check.hour===0&&check.minute===0&&check.second===0) {
           if(zonedDayBoundaryCache.size>10000) zonedDayBoundaryCache.clear();
           zonedDayBoundaryCache.set(cacheKey,candidate);
           return candidate;
@@ -5592,7 +5592,7 @@ layout: null
       const year=Number(day.key.slice(0,4)), month=Number(day.key.slice(5,7));
       const key = `${year}-${String(month).padStart(2, '0')}`;
       const last = timelineMonthGroups[timelineMonthGroups.length - 1];
-      if (!last || last.key !== key) timelineMonthGroups.push({key, year:dp.year, month:dp.month, startIndex:index, endIndex:index});
+      if (!last || last.key !== key) timelineMonthGroups.push({key, year, month, startIndex:index, endIndex:index});
       else last.endIndex = index;
     });
     ctx.save();
