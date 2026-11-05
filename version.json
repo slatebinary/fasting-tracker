@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.18",
+  "version": "1.17.19",
   "released": "2026-11-05",
-  "notes": "Fix integrity checks to read the authoritative record-store snapshot instead of an obsolete storage-loader function.",
+  "notes": "Optimized Statistics timeline rendering by caching ordinary local-day boundaries and reusing consecutive boundaries without changing DST fallback behavior.",
   "entry": "./index.html",
   "shell": [
     "./",
