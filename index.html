@@ -3863,8 +3863,8 @@ layout: null
     return d.toLocaleTimeString(currentLocale(), opts);
   }
 
-  function nextZonedDayBoundary(ms, timeZone) {
-    const tz=normalizeTimeZone(timeZone), key=dayKey(ms,tz), cacheKey=`${tz}|${key}`;
+  function nextZonedDayBoundary(ms, timeZone, knownKey = null) {
+    const tz=normalizeTimeZone(timeZone), key=knownKey || dayKey(ms,tz), cacheKey=`${tz}|${key}`;
     const cache=nextZonedDayBoundary.cache || (nextZonedDayBoundary.cache=new Map());
     const cached=cache.get(cacheKey);
     if (Number.isFinite(cached) && cached>ms) return cached;
@@ -5328,7 +5328,7 @@ layout: null
       // the expensive local-midnight conversion only once for the oldest day.
       const firstStart = previousEndMs === null ? zonedLocalToDate(`${key}T00:00`, tz) : null;
       const startMs = previousEndMs === null ? firstStart?.getTime() : previousEndMs;
-      const endMs = nextZonedDayBoundary(anchor.getTime(), tz);
+      const endMs = nextZonedDayBoundary(anchor.getTime(), tz, key);
       previousEndMs = endMs;
       if (!Number.isFinite(startMs) || endMs <= startMs) continue;
       const segments = [];
@@ -5361,7 +5361,7 @@ layout: null
         cursor = Math.max(cursor, segEnd);
       }
       if (cursor < endMs) segments.push({ type: 'gap', start: cursor, end: endMs, index: segments.length });
-      days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz, label: localDateLabel(startMs, tz) });
+      days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz });
     }
 
     // Give every segment a stable continuation key across midnight. Fast
@@ -5399,7 +5399,7 @@ layout: null
     if (!day) return null;
     if (chartSelectedTarget.kind === 'day') {
       return {
-        title: day.label,
+        title: day.label || localDateLabel(day.startMs, day.timeZone),
         text: t('stats.detailTotal', { duration: compactDuration(day.totalFastMs), count: formatNumber(day.fastCount) })
       };
     }
@@ -5424,7 +5424,7 @@ layout: null
       const splitAcrossDay = Math.abs(sourceDuration - segmentDuration) >= 60000;
       const beyondTarget = Math.max(0, sourceDuration - targetDuration);
       return {
-        title: day.label,
+        title: day.label || localDateLabel(day.startMs, day.timeZone),
         text: splitAcrossDay
           ? t(beyondTarget >= 60000 ? 'stats.detailFastSplitTargetBeyond' : 'stats.detailFastSplitTarget', {
               start,
@@ -5443,7 +5443,7 @@ layout: null
       };
     }
     return {
-      title: day.label,
+      title: day.label || localDateLabel(day.startMs, day.timeZone),
       text: t('stats.detailGap', { start, end, duration: compactDuration(segment.end - segment.start) })
     };
   }
@@ -5984,9 +5984,11 @@ layout: null
     if(!day||!Number.isFinite(day.startMs)||!Number.isFinite(day.endMs)||day.endMs<=day.startMs)return null;
     const tz=normalizeTimeZone(day.timeZone||currentTimeZone()),elapsed=day.endMs-day.startMs;
     const dayDelta=Math.round((elapsed-86400000)/60000);
+    // For local-midnight boundaries, elapsed day length already captures the
+    // net UTC-offset change. Ordinary 24-hour days need no extra Intl calls.
+    if(Math.abs(dayDelta)<1)return null;
     const startOffset=timeZoneOffsetMs(day.startMs+1000,tz),endOffset=timeZoneOffsetMs(day.endMs-1000,tz);
     const offsetDelta=Math.round((endOffset-startOffset)/60000);
-    if(Math.abs(dayDelta)<1&&Math.abs(offsetDelta)<1)return null;
     const isDayLengthChange=Math.abs(dayDelta)>=1,delta=isDayLengthChange?dayDelta:offsetDelta;
     const sign=delta>0?'+':'−',duration=formatClockChangeDuration(delta),change=sign+duration;
     const label=t(isDayLengthChange?'stats.clockDayChangeLabel':'stats.clockOffsetChangeLabel',{sign,duration});
