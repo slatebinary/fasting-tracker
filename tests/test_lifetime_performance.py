@@ -2,11 +2,11 @@
 """70-year daily-history browser responsiveness regression.
 
 25,567 completed fasts + 25,567 weight records approximates 70 years of daily use.
-This models an established v1.12.2 IndexedDB database with its persisted daily
+This models an established current-version IndexedDB database with its persisted daily
 aggregate already present, which is the normal state after years of incremental use.
 """
 import sys, time
-from browser_perf_common import inlined_html, STORAGE_SHIM, measure_click, measure_pointer_paint, measure_select_paint
+from browser_perf_common import CURRENT_VERSION, inlined_html, STORAGE_SHIM, measure_click, measure_pointer_paint, measure_select_paint
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -18,7 +18,8 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={'width':390,'height':844}); errors=[]; page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
     seed_start=time.perf_counter()
-    page.evaluate("""count => {
+    page.evaluate("""args => {
+      const {count, version} = args;
       const base=1767225600000, dayMs=86400000, hour=3600000;
       const records=[], weights=[], daily=new Map();
       const add=(key,ms)=>daily.set(key,(daily.get(key)||0)+ms);
@@ -32,11 +33,11 @@ with sync_playwright() as p:
       }
       const data={dataVersion:1,revision:1,updatedAt:'2026-01-01T00:00:00.000Z',goalHours:16,activeStart:null,activeGoalHours:null,activeTimeZone:null,activeCreatedAt:null,activeModifiedAt:null,records,deletedFasts:[],weights,deletedWeights:[],weightUnit:'kg',targetWeightKg:75,gamificationEnabled:true,language:'en',appearance:'system',iconChoice:'plate'};
       window.__seedFastingDbV2(data,[...daily.entries()]);
-      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()}));
-    }""", COUNT)
+      localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:version,seenAt:new Date().toISOString()}));
+    }""", {"count": COUNT, "version": CURRENT_VERSION})
     seed_ms=(time.perf_counter()-seed_start)*1000
     start=time.perf_counter(); page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=30000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=30000)
     boot=(time.perf_counter()-start)*1000
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     if page.locator('#recoveryBanner').is_visible(): print('FAIL: 70-year valid dataset entered Recovery mode'); sys.exit(1)
