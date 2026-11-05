@@ -2,12 +2,16 @@
   'use strict';
   const PAGE_BOOT_STARTED_AT=Date.now();
   const VERSION_RE=/^\d+\.\d+\.\d+$/;
+  const HASH_RE=/^[0-9a-f]{64}$/i;
   function cleanVersion(value){const v=String(value||'').trim();return VERSION_RE.test(v)?v:'';}
   function extractEntryVersion(html){const m=String(html||'').match(/<meta\s+name=["']ft-app-version["']\s+content=["']([^"']+)["']/i);return cleanVersion(m&&m[1]);}
   function validateMetadata(info,protocolVersion){
-    if(!info||Number(info.protocolVersion)!==Number(protocolVersion)||!Array.isArray(info.shell)||typeof info.entry!=='string')throw new Error('unsupported update metadata');
+    if(!info||Number(info.protocolVersion)!==Number(protocolVersion)||!Array.isArray(info.shell)||!info.shell.length||info.shell.length>100||typeof info.entry!=='string')throw new Error('unsupported update metadata');
     const version=cleanVersion(info.version);if(!version)throw new Error('invalid version');
-    if(!info.hashes||typeof info.hashes!=='object'||typeof info.hashes[info.entry]!=='string')throw new Error('incomplete release metadata');
+    if(info.integrityAlgorithm!=='SHA-256'||info.htmlNormalization!=='github-pages-v1')throw new Error('unsupported release integrity metadata');
+    if(new Set(info.shell).size!==info.shell.length||!info.shell.includes(info.entry))throw new Error('invalid release shell');
+    if(!info.hashes||typeof info.hashes!=='object'||Array.isArray(info.hashes)||Object.keys(info.hashes).length!==info.shell.length)throw new Error('incomplete release metadata');
+    for(const path of info.shell){if(typeof info.hashes[path]!=='string'||!HASH_RE.test(info.hashes[path]))throw new Error('invalid release hash');}
     return {...info,version};
   }
   function consistency(metadataVersion,entryVersion){
