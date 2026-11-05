@@ -53,6 +53,16 @@ with sync_playwright() as p:
         print('FAIL: 70-year weight chart did not open on newest side',weight_chart); sys.exit(1)
     timings['history']=measure_click(page,'.tab[data-screen="history"]',"document.querySelector('#history.screen.active') !== null && document.querySelectorAll('#historyList .historyRow').length > 0",20000)
     timings['stats']=measure_click(page,'.tab[data-screen="stats"]',f"document.querySelector('#stats.screen.active') !== null && document.querySelector('#mTotal').textContent.replace(/\\D/g,'') === '{COUNT}'",20000)
+    # The summary must be interactive before chart aggregation; the initial
+    # timeline is still required to paint after the browser gets a frame.
+    page.wait_for_function("""() => {
+      const canvas=document.querySelector('#chart');
+      if(!canvas || !canvas.width || !canvas.height) return false;
+      const ctx=canvas.getContext('2d');
+      const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+      for(let i=3;i<pixels.length;i+=4) if(pixels[i]>0) return true;
+      return false;
+    }""",timeout=15000)
     for mode in ('calendar','trend','weeks','months','distribution','success','startpattern','cumulative','timeline'):
         timings[f'viz-{mode}']=measure_select_paint(page,'#statsVizSelect',mode); page.wait_for_timeout(150)
     timings['settings-paint']=page.evaluate("""() => new Promise(resolve => { const el=document.querySelector('.tab[data-screen="settings"]'); const t=performance.now(); el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:88,pointerType:'touch',button:0,clientX:5,clientY:5})); el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:88,pointerType:'touch',button:0,clientX:5,clientY:5})); requestAnimationFrame(()=>resolve(performance.now()-t)); })""")
