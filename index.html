@@ -3874,19 +3874,28 @@ layout: null
     // dozens of Intl.DateTimeFormat calls. Transition/ambiguous-midnight days
     // fall through to the original exact search below.
     const parts=key.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(parts) {
+    if(parts && +parts[1]>=100) {
       const nextDate=new Date(Date.UTC(+parts[1],+parts[2]-1,+parts[3]+1));
       const y=nextDate.getUTCFullYear(),m=nextDate.getUTCMonth()+1,d=nextDate.getUTCDate();
       const nextKey=`${y}-${pad(m)}-${pad(d)}`;
       const target=Date.UTC(y,m-1,d);
-      const candidate=target-timeZoneOffsetMs(ms,tz);
-      if(candidate>ms) {
-        const check=zonedParts(candidate,tz);
-        if(`${check.year}-${pad(check.month)}-${pad(check.day)}`===nextKey&&check.hour===0&&check.minute===0&&check.second===0) {
-          if(cache.size>10000) cache.clear();
-          cache.set(cacheKey,candidate);
-          return candidate;
-        }
+      const offsetCache=nextZonedDayBoundary.offsets || (nextZonedDayBoundary.offsets=new Map());
+      const prior=offsetCache.get(tz);
+      let offset=prior?.key===key?prior.offset:timeZoneOffsetMs(ms,tz);
+      let candidate=target-offset;
+      const utcZone=tz==='UTC'||tz==='Etc/UTC'||tz==='Etc/GMT';
+      let check=candidate>ms?(utcZone?{year:y,month:m,day:d,hour:0,minute:0,second:0}:zonedParts(candidate,tz)):null;
+      if(!(check&&`${check.year}-${pad(check.month)}-${pad(check.day)}`===nextKey&&check.hour===0&&check.minute===0&&check.second===0)&&prior?.key===key) {
+        offset=timeZoneOffsetMs(ms,tz);
+        candidate=target-offset;
+        check=candidate>ms?zonedParts(candidate,tz):null;
+      }
+      if(candidate>ms&&check&&`${check.year}-${pad(check.month)}-${pad(check.day)}`===nextKey&&check.hour===0&&check.minute===0&&check.second===0) {
+        const nextOffset=utcZone?0:Date.UTC(check.year,check.month-1,check.day,check.hour,check.minute,check.second)-Math.floor(candidate/1000)*1000;
+        offsetCache.set(tz,{key:nextKey,offset:nextOffset});
+        if(cache.size>10000) cache.clear();
+        cache.set(cacheKey,candidate);
+        return candidate;
       }
     }
 
@@ -3896,6 +3905,11 @@ layout: null
     while (dayKey(hi,tz)===key && hi-ms<72*3600000) hi+=12*3600000;
     if (dayKey(hi,tz)===key) return hi;
     while (hi-lo>1) { const mid=Math.floor((lo+hi)/2); if (dayKey(mid,tz)===key) lo=mid; else hi=mid; }
+    const offsetCache=nextZonedDayBoundary.offsets || (nextZonedDayBoundary.offsets=new Map());
+    const boundaryParts=zonedParts(hi,tz);
+    const boundaryKey=`${boundaryParts.year}-${pad(boundaryParts.month)}-${pad(boundaryParts.day)}`;
+    const boundaryOffset=Date.UTC(boundaryParts.year,boundaryParts.month-1,boundaryParts.day,boundaryParts.hour,boundaryParts.minute,boundaryParts.second)-Math.floor(hi/1000)*1000;
+    offsetCache.set(tz,{key:boundaryKey,offset:boundaryOffset});
     if(cache.size>10000) cache.clear();
     cache.set(cacheKey,hi);
     return hi;
