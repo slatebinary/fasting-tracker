@@ -78,6 +78,15 @@ jobs:
           python3 tests/test_weight_aggregation_scroll.py
           python3 tests/test_v1178_stats_history_navigation.py
           python3 tests/test_fasting_encouragement_v1179.py
+      - name: Execute extended migration, accessibility and performance regressions
+        run: |
+          python3 tests/test_migration_matrix.py
+          python3 tests/test_datetime_edges_v1111.py
+          python3 tests/test_chart_accessibility.py
+          python3 tests/test_storage_health_diagnostics.py
+          python3 tests/test_performance.py
+          python3 tests/test_lifetime_performance.py
+          python3 tests/test_repository_cleanliness_v1115.py
       - name: Check application JavaScript and document navigation
         run: node tests/v1123-regression.cjs
       - name: Verify release archive
