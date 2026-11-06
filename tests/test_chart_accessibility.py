@@ -38,6 +38,35 @@ with sync_playwright() as p:
     first_date=_dt.strptime(stat_rows[0].split(' — ')[0],'%a, %b %d, %Y')
     last_date=_dt.strptime(stat_rows[-1].split(' — ')[0],'%a, %b %d, %Y')
     if first_date <= last_date: print('FAIL: fasting chart data is not newest-first:',stat_rows);sys.exit(1)
+
+    # Calendar days form a labelled group with a live month heading and
+    # roving keyboard focus. Arrow keys follow the visible seven-column grid.
+    page.locator('#statsVizSelect').select_option('calendar')
+    page.wait_for_function("document.querySelectorAll('#fastCalendar .calendarDay:not(:disabled)').length > 0")
+    if page.locator('#calendarMonthTitle').get_attribute('aria-live') != 'polite':
+        print('FAIL: calendar month heading is not announced');sys.exit(1)
+    if page.locator('#fastCalendar').get_attribute('role') != 'group' or page.locator('#fastCalendar').get_attribute('aria-labelledby') != 'calendarMonthTitle':
+        print('FAIL: calendar day group is not labelled by its month heading');sys.exit(1)
+    tab_stops=page.locator('#fastCalendar .calendarDay[tabindex="0"]')
+    if tab_stops.count()!=1:
+        print('FAIL: calendar must expose exactly one roving keyboard tab stop');sys.exit(1)
+    first_day=tab_stops.first
+    first_day.focus()
+    first_index=first_day.evaluate("(el)=>[...el.parentElement.children].indexOf(el)")
+    page.keyboard.press('ArrowRight')
+    right_index=page.evaluate("()=>[...document.querySelector('#fastCalendar').children].indexOf(document.activeElement)")
+    if right_index != first_index+1:
+        print('FAIL: calendar ArrowRight did not move one day');sys.exit(1)
+    page.keyboard.press('ArrowDown')
+    down_index=page.evaluate("()=>[...document.querySelector('#fastCalendar').children].indexOf(document.activeElement)")
+    if down_index != right_index+7:
+        print('FAIL: calendar ArrowDown did not move one week');sys.exit(1)
+    page.keyboard.press('Enter')
+    if page.locator('#fastCalendar .calendarDay.selected').count()!=1:
+        print('FAIL: keyboard activation did not select a calendar day');sys.exit(1)
+    if not page.locator('#statsSelectionLive').inner_text().strip():
+        print('FAIL: calendar selection was not announced through the live region');sys.exit(1)
+
     if errors: print('FAIL: browser errors: '+' | '.join(errors[:3]));sys.exit(1)
     browser.close()
 print('PASS: accessible chart-data disclosures for weight and fasting statistics')

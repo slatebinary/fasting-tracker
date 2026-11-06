@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.25",
+  "version": "1.17.26",
   "released": "2026-11-06",
-  "notes": "Redesigned the specialist colour-vision palettes with visibly distinct colour systems and added simulated colour-vision regression checks.",
+  "notes": "Added keyboard arrow navigation and screen-reader announcements for the fasting calendar, with a single tab stop and visible focus.",
   "entry": "./index.html",
   "shell": [
     "./",
