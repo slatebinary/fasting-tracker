@@ -40,8 +40,8 @@ specialized_themes = {
 }
 for theme, key in specialized_themes.items():
     assert f'<option data-i18n="{key}" value="{theme}">' in html, f"missing appearance option for {theme}"
-    assert f'"{theme}"' in html[html.find("function normalizeAppearance"):html.find("function normalizeIconChoice")], f"{theme} is not accepted by appearance normalization"
-    assert f'"{theme}"' in html[html.find("invalid appearance")-300:html.find("invalid appearance")], f"{theme} is not accepted by imported settings"
+    assert f"'{theme}'" in html[html.find("function normalizeAppearance"):html.find("function normalizeIconChoice")], f"{theme} is not accepted by appearance normalization"
+    assert f"'{theme}'" in html[html.find("invalid appearance")-300:html.find("invalid appearance")], f"{theme} is not accepted by imported settings"
     for language in ("en", "bg", "es"):
         translations = json.loads((root / "i18n" / f"{language}.json").read_text(encoding="utf-8"))
         assert key in translations and translations[key], f"missing {language} translation for {theme}"
