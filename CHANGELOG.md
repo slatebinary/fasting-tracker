@@ -19,12 +19,10 @@
 - Fixed data-integrity verification to read the authoritative IndexedDB record-store snapshot instead of an obsolete storage-loader function.
 - Added regression coverage for leap day, midnight crossing, spring/autumn DST, travel time zones and 72-hour fasting through backup import and integrity verification.
 
-## v1.17.19 — 5 November 2026
-- Reduced Statistics timeline rendering cost by caching ordinary time-zone day boundaries and reusing consecutive day boundaries; unusual DST/midnight-transition cases retain the exact-search fallback.
+
 - Added a 2,000-record browser performance regression to the required CI workflow.
 
-## v1.17.18 — 5 November 2026
-- Fixed data-integrity verification to read the current authoritative IndexedDB record-store snapshot; removed obsolete loader references that caused false storage-read failures.
+
 - Added regression coverage for leap day, midnight, spring/autumn DST, travel time zones and 72-hour fasting through backup import and integrity verification.
 
 ## v1.17.17 — 4 November 2026
