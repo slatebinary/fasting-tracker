@@ -1,3 +1,7 @@
+## v1.17.25 — 6 November 2026
+- Redesigned the Protanopia, Deuteranopia and Tritanopia palettes with visibly distinct background, accent and status-colour systems instead of near-identical shade variations.
+- Added colour-vision-deficiency simulation checks and retained WCAG contrast requirements; success and danger states continue to use non-colour cues as well.
+
 ## v1.17.24 — 6 November 2026
 - Extended full-strength keyboard-focus indicators to buttons, inputs, selectors, textareas, links, disclosure headings and keyboard-focusable chart controls across grayscale, high-contrast and colour-vision palettes.
 - Added regression checks to ensure every accessibility palette applies the same visible focus treatment to all interactive control types.
