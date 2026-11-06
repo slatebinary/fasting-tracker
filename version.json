@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.24",
+  "version": "1.17.25",
   "released": "2026-11-06",
-  "notes": "Extended full-strength keyboard-focus indicators to all interactive controls across grayscale, high-contrast and colour-vision palettes.",
+  "notes": "Redesigned the specialist colour-vision palettes with visibly distinct colour systems and added simulated colour-vision regression checks.",
   "entry": "./index.html",
   "shell": [
     "./",
