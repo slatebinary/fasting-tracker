@@ -19,12 +19,6 @@
 - Fixed data-integrity verification to read the authoritative IndexedDB record-store snapshot instead of an obsolete storage-loader function.
 - Added regression coverage for leap day, midnight crossing, spring/autumn DST, travel time zones and 72-hour fasting through backup import and integrity verification.
 
-
-- Added a 2,000-record browser performance regression to the required CI workflow.
-
-
-- Added regression coverage for leap day, midnight, spring/autumn DST, travel time zones and 72-hour fasting through backup import and integrity verification.
-
 ## v1.17.17 — 4 November 2026
 - Stage each replacement release in an isolated cache and verify every shell asset with SHA-256 before changing the active release pointer.
 - Retain the previous complete release until the new app completes startup and passes its startup integrity check; automatically restore the previous release on a later navigation if the new release never confirms.
