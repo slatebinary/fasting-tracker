@@ -78,12 +78,18 @@ for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorbl
     assert contrast(tokens["accent"], tokens["bg"]) >= 4.5, f"{theme} accent must meet 4.5:1 contrast"
 
 # Navigation must provide a non-colour-only selected state and monochrome symbols.
-for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind"):
-    active = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\.tab\.active\s*\{{([^}}]*)\}}', html)
-    assert active, f"{theme} navigation needs an explicit active-tab style"
-    assert "background" in active.group(1) and "box-shadow" in active.group(1), f"{theme} active tab must use a surface and underline"
-    icon = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\.tab\s*\.ico\s*\{{([^}}]*)\}}', html)
-    assert icon and "grayscale" in icon.group(1), f"{theme} navigation symbols must be monochrome"
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind", "protanopia", "deuteranopia", "tritanopia"):
+    active_start = html.find(f'html[data-theme="{theme}"] .tab.active')
+    assert active_start >= 0, f"{theme} navigation needs an explicit active-tab style"
+    active_open = html.find("{", active_start)
+    active_close = html.find("}", active_open)
+    active_body = html[active_open:active_close]
+    assert "background" in active_body and "box-shadow" in active_body, f"{theme} active tab must use a surface and underline"
+    icon_start = html.find(f'html[data-theme="{theme}"] .tab .ico')
+    assert icon_start >= 0, f"{theme} navigation symbols must be monochrome"
+    icon_open = html.find("{", icon_start)
+    icon_close = html.find("}", icon_open)
+    assert "grayscale" in html[icon_open:icon_close], f"{theme} navigation symbols must be monochrome"
 
 # Icon selector cards and the collapsible installation heading need visible boundaries.
 assert ".iconChoice { padding:8px; background:var(--card); color:var(--text); border:2px solid var(--line);" in html
