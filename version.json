@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.22",
-  "released": "2026-11-05",
-  "notes": "Improved grayscale and high-contrast navigation, made selected tabs distinguishable without colour alone, and strengthened app-icon selector contrast and focus visibility.",
+  "version": "1.17.23",
+  "released": "2026-11-06",
+  "notes": "Added separate Protanopia, Deuteranopia and Tritanopia appearance palettes with localized controls and accessible navigation cues.",
   "entry": "./index.html",
   "shell": [
     "./",
