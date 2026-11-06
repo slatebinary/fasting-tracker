@@ -59,7 +59,7 @@
   "settings.languageHelp": "Usa automáticamente el idioma del dispositivo o elige un idioma solo para esta app.",
   "settings.systemLanguage": "Idioma del sistema",
   "settings.appearance": "Apariencia",
-  "settings.appearanceHelp": "Sigue la apariencia del dispositivo o elige un modo claro, oscuro, en escala de grises, de alto contraste o adaptado a la visión del color.",
+  "settings.appearanceHelp": "Sigue la apariencia del dispositivo o elige un modo claro, oscuro, en escala de grises, de alto contraste o una paleta para la visión del color. Las paletas son orientativas; los resultados varían según la persona.",
   "settings.appearanceSystem": "Sistema",
   "settings.appearanceLight": "Claro",
   "settings.appearanceDark": "Oscuro",
@@ -1074,5 +1074,8 @@
   "notifications.addWeightAction": "Añadir",
   "notifications.addWeightAria": "Añade un registro de peso y cierra este recordatorio.",
   "fasting.shorterOfferOriginal": "Continuar hasta el objetivo original",
-  "fasting.shorterOfferOriginalAria": "Mantén el ayuno actual hasta alcanzar el objetivo original."
+  "fasting.shorterOfferOriginalAria": "Mantén el ayuno actual hasta alcanzar el objetivo original.",
+  "settings.appearanceProtanopia": "Paleta para protanopía",
+  "settings.appearanceDeuteranopia": "Paleta para deuteranopía",
+  "settings.appearanceTritanopia": "Paleta para tritanopía"
 }
