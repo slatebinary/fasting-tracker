@@ -1,3 +1,7 @@
+## v1.17.26 — 6 November 2026
+- Corrected completed Calendar day totals that fall within one second of a full local day, so a full day displays 24h (or the actual 23h/25h on DST transition days) instead of 23h 59m.
+- Kept the current day unrounded while a fast is ongoing; the Calendar continues to show elapsed fasting time only. Added browser regression coverage for near-midnight boundaries, consecutive full days, DST days and active current-day totals.
+
 ## v1.17.25 — 6 November 2026
 - Redesigned the Protanopia, Deuteranopia and Tritanopia palettes with visibly distinct background, accent and status-colour systems instead of near-identical shade variations.
 - Added colour-vision-deficiency simulation checks and retained WCAG contrast requirements; success and danger states continue to use non-colour cues as well.
