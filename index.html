@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.24" />
+  <meta name="ft-app-version" content="1.17.25" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -122,9 +122,9 @@ layout: null
     html[data-theme="high-contrast-dark"] { color-scheme: dark; --bg:#000; --card:#000; --text:#fff; --muted:#f0f0f0; --line:#fff; --accent:#80dfff; --good:#a8ff9e; --danger:#ff9eaa; --tab:#000; --primary-button-text:#000; --danger-button-text:#000; }
     html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#007f5f; --danger:#c44e00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#000; }
     /* Specialized palettes are starting points, not clinical guarantees. Keep status cues redundant. */
-    html[data-theme="protanopia"] { color-scheme:light; --bg:#f7f9fc; --card:#fff; --text:#17212b; --muted:#465564; --line:#aab8c6; --accent:#005a9c; --good:#006b50; --danger:#a84300; --tab:#edf3f8; --primary-button-text:#fff; --danger-button-text:#fff; }
-    html[data-theme="deuteranopia"] { color-scheme:light; --bg:#f7f9fc; --card:#fff; --text:#17212b; --muted:#465564; --line:#aab8c6; --accent:#005a9c; --good:#005a8d; --danger:#a84300; --tab:#edf3f8; --primary-button-text:#fff; --danger-button-text:#fff; }
-    html[data-theme="tritanopia"] { color-scheme:light; --bg:#fbf8fc; --card:#fff; --text:#211923; --muted:#514451; --line:#b9aeb9; --accent:#853b70; --good:#006653; --danger:#a33b3b; --tab:#f3edf4; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="protanopia"] { color-scheme:light; --bg:#fff9e8; --card:#fff; --text:#202536; --muted:#465064; --line:#b9b49f; --accent:#164e9b; --good:#006f8b; --danger:#9a5700; --tab:#f4edcf; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="deuteranopia"] { color-scheme:light; --bg:#f4f2ff; --card:#fff; --text:#211d33; --muted:#4b4561; --line:#b5afcc; --accent:#493b8f; --good:#006d9f; --danger:#a65c00; --tab:#eae6fa; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="tritanopia"] { color-scheme:light; --bg:#fff4f7; --card:#fff; --text:#291b26; --muted:#55404d; --line:#c5aeb9; --accent:#8a315d; --good:#006653; --danger:#a33b3b; --tab:#f5e8ee; --primary-button-text:#fff; --danger-button-text:#fff; }
     .primary { color:var(--primary-button-text, #fff); }
     .stop { color:var(--danger-button-text, #fff); }
     html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop, html[data-theme="colorblind"] .stop { color:#000; }
@@ -1897,7 +1897,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.24';
+  const APP_VERSION = '1.17.25';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
