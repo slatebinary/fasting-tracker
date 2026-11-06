@@ -5,7 +5,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-versions = re.findall(r"^## (v\\d+\\.\\d+\\.\\d+) — ", text, re.M)
+versions = re.findall(r"^## (v\d+\.\d+\.\d+) — ", text, re.M)
 assert versions, "CHANGELOG.md must contain release entries"
 assert len(versions) == len(set(versions)), "CHANGELOG.md contains duplicate release-version headings"
 current = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
