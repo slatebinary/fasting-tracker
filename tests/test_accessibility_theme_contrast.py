@@ -180,9 +180,9 @@ CVD_MATRICES = {
 
 
 def _palette_tokens(theme):
-    match = re.search(rf'html\\[data-theme="{re.escape(theme)}"\\]\\s*\\{{([^}}]*)\\}}', html)
+    match = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\{{([^}}]*)\}}', html)
     assert match, f"missing {theme} palette for colour simulation"
-    return dict(re.findall(r'--([a-z-]+):\\s*(#[0-9a-fA-F]{3,6})', match.group(1)))
+    return dict(re.findall(r'--([a-z-]+):\s*(#[0-9a-fA-F]{3,6})', match.group(1)))
 
 
 baseline = _palette_tokens("colorblind")
