@@ -1,3 +1,7 @@
+## v1.17.24 — 6 November 2026
+- Extended full-strength keyboard-focus indicators to buttons, inputs, selectors, textareas, links, disclosure headings and keyboard-focusable chart controls across grayscale, high-contrast and colour-vision palettes.
+- Added regression checks to ensure every accessibility palette applies the same visible focus treatment to all interactive control types.
+
 ## v1.17.23 — 6 November 2026
 - Added separate Protanopia, Deuteranopia and Tritanopia appearance palettes, with English, Bulgarian and Spanish labels.
 - Kept keyboard focus and bottom-navigation selection distinguishable through outlines, neutral labels and persistent underlines rather than colour alone.

@@ -45,7 +45,7 @@ for theme, key in specialized_themes.items():
     for language in ("en", "bg", "es"):
         translations = json.loads((root / "i18n" / f"{language}.json").read_text(encoding="utf-8"))
         assert key in translations and translations[key], f"missing {language} translation for {theme}"
-    assert f'html[data-theme="{theme}"] button:focus-visible' in html, f"{theme} needs a visible keyboard focus indicator"
+    assert f'html[data-theme="{theme}"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible' in html, f"{theme} needs a visible keyboard focus indicator for every control"
 
 # Compute WCAG relative-luminance contrast from the actual theme tokens.
 import re
@@ -106,5 +106,11 @@ assert '<div class="scienceSources gameLevelGuide"' in html
 assert '<details class="scienceSources gameLevelGuide"' not in html
 for key in ("game.levelsExplainTitle", "game.levelsExplain", "game.levelsThresholds", "game.levelsPurpose"):
     assert f'data-i18n="{key}"' in html, f"missing visible/localized guide content: {key}"
+
+# Keyboard focus must be explicit and high-contrast on all interactive control types.
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind", "protanopia", "deuteranopia", "tritanopia"):
+    selector = f'html[data-theme="{theme}"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible'
+    assert selector in html, f"{theme} is missing the shared full-control focus rule"
+assert "outline:3px solid var(--accent) !important; outline-offset:3px;" in html, "accessibility focus indicators must use a full-strength accent outline"
 
 print("Accessibility theme contrast and visible gamification guide checks passed.")

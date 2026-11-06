@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.23" />
+  <meta name="ft-app-version" content="1.17.24" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -143,7 +143,14 @@ layout: null
     html[data-theme="grayscale"] button.secondary { background:#e6e6e6 !important; color:#000 !important; border:2px solid #000 !important; }
     html[data-theme="grayscale"] button.primary, html[data-theme="grayscale"] button.stop { background:#000 !important; color:#fff !important; border:2px solid #000 !important; }
     html[data-theme="grayscale"] button.dangerText { background:transparent !important; color:#000 !important; border:2px solid #000 !important; }
-    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible, html[data-theme="protanopia"] button:focus-visible, html[data-theme="deuteranopia"] button:focus-visible, html[data-theme="tritanopia"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    /* Use a full-strength focus indicator for every keyboard-operable control in accessibility themes. */
+html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible,
+    html[data-theme="high-contrast-dark"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible,
+    html[data-theme="grayscale"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible,
+    html[data-theme="colorblind"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible,
+    html[data-theme="protanopia"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible,
+    html[data-theme="deuteranopia"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible,
+    html[data-theme="tritanopia"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible { outline:3px solid var(--accent) !important; outline-offset:3px; }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
     body { padding: env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom)); }
@@ -1890,7 +1897,7 @@ layout: null
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.23';
+  const APP_VERSION = '1.17.24';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
