@@ -59,7 +59,7 @@
   "settings.languageHelp": "Use the device language automatically, or choose a language for this app.",
   "settings.systemLanguage": "System language",
   "settings.appearance": "Appearance",
-  "settings.appearanceHelp": "Follow the device appearance, or choose light, dark, grayscale, high-contrast, or colour-vision-friendly colours.",
+  "settings.appearanceHelp": "Follow the device appearance, or choose light, dark, grayscale, high-contrast, or a colour-vision palette. Colour palettes are starting points; individual results vary.",
   "settings.appearanceSystem": "System",
   "settings.appearanceLight": "Light",
   "settings.appearanceDark": "Dark",
@@ -1074,5 +1074,8 @@
   "notifications.addWeightAction": "Add",
   "notifications.addWeightAria": "Add a weight entry and dismiss this reminder.",
   "fasting.shorterOfferOriginal": "Continue to original target",
-  "fasting.shorterOfferOriginalAria": "Keep the current fast running until the original fasting target."
+  "fasting.shorterOfferOriginalAria": "Keep the current fast running until the original fasting target.",
+  "settings.appearanceProtanopia": "Protanopia palette",
+  "settings.appearanceDeuteranopia": "Deuteranopia palette",
+  "settings.appearanceTritanopia": "Tritanopia palette"
 }
