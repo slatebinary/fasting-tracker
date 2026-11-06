@@ -32,6 +32,21 @@ for theme in ("high-contrast-light", "high-contrast-dark", "grayscale"):
     end = html.find("}", start)
     assert "!important" in html[start:end], f"{theme} rules must override widget styles"
 
+# Specialized palettes must be selectable, persisted/importable, and localized.
+specialized_themes = {
+    "protanopia": "settings.appearanceProtanopia",
+    "deuteranopia": "settings.appearanceDeuteranopia",
+    "tritanopia": "settings.appearanceTritanopia",
+}
+for theme, key in specialized_themes.items():
+    assert f'<option data-i18n="{key}" value="{theme}">' in html, f"missing appearance option for {theme}"
+    assert f'"{theme}"' in html[html.find("function normalizeAppearance"):html.find("function normalizeIconChoice")], f"{theme} is not accepted by appearance normalization"
+    assert f'"{theme}"' in html[html.find("invalid appearance")-300:html.find("invalid appearance")], f"{theme} is not accepted by imported settings"
+    for language in ("en", "bg", "es"):
+        translations = json.loads((root / "i18n" / f"{language}.json").read_text(encoding="utf-8"))
+        assert key in translations and translations[key], f"missing {language} translation for {theme}"
+    assert f'html[data-theme="{theme}"] button:focus-visible' in html, f"{theme} needs a visible keyboard focus indicator"
+
 # Compute WCAG relative-luminance contrast from the actual theme tokens.
 import re
 
@@ -52,7 +67,7 @@ def contrast(foreground, background):
     high, low = sorted((luminance(foreground), luminance(background)), reverse=True)
     return (high + 0.05) / (low + 0.05)
 
-for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind"):
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind", "protanopia", "deuteranopia", "tritanopia"):
     match = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\{{([^}}]*)\}}', html)
     assert match, f"missing {theme} palette"
     tokens = dict(re.findall(r'--([a-z-]+):\s*(#[0-9a-fA-F]{3,6})', match.group(1)))
