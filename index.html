@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.25" />
+  <meta name="ft-app-version" content="1.17.26" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -218,6 +218,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .calendarDay.outside { opacity:.38; }
     .calendarDay.future { opacity:.28; }
     .calendarDay.selected { outline:3px solid #fff; outline-offset:-3px; box-shadow:0 0 0 1px rgba(0,0,0,.50),0 0 0 4px #fff; position:relative; z-index:1; }
+    .calendarDay:focus-visible { outline:3px solid var(--accent); outline-offset:2px; position:relative; z-index:2; }
     .calendarDay:disabled { cursor:default; }
     .vizLegend { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; margin-top:9px; flex-wrap:wrap; }
     .legendSwatch { min-width:34px; height:22px; padding:0 4px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; border-radius:5px; border:1px solid var(--line); background:var(--card); color:var(--text); font-size:9px; font-weight:750; font-variant-numeric:tabular-nums; white-space:nowrap; }
@@ -1054,11 +1055,11 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       <div class="statsVizView" id="statsCalendarView" hidden>
         <div class="calendarHeader">
           <button id="calendarPrevBtn" class="secondary" type="button" aria-label="Previous month" data-i18n-aria="stats.prevMonth">‹</button>
-          <div class="calendarMonthTitle" id="calendarMonthTitle"></div>
+          <div class="calendarMonthTitle" id="calendarMonthTitle" aria-live="polite" aria-atomic="true"></div>
           <button id="calendarNextBtn" class="secondary" type="button" aria-label="Next month" data-i18n-aria="stats.nextMonth">›</button>
         </div>
         <div class="calendarWeekdays" id="calendarWeekdays"></div>
-        <div class="fastCalendar" id="fastCalendar"></div>
+        <div class="fastCalendar" id="fastCalendar" role="group" aria-labelledby="calendarMonthTitle"></div>
         <div class="vizLegend calendarNumericLegend" role="img" aria-label="Fasting hours per day: 0 hours, 1 to 5 hours, 6 to 11 hours, 12 to 17 hours, 18 hours or more"><span class="legendSwatch" aria-hidden="true">0h</span><span class="legendSwatch l1" aria-hidden="true">1–5h</span><span class="legendSwatch l2" aria-hidden="true">6–11h</span><span class="legendSwatch l3" aria-hidden="true">12–17h</span><span class="legendSwatch l4" aria-hidden="true">18h+</span></div>
       </div>
       <div class="statsVizView" id="statsTrendView" hidden>
@@ -1897,7 +1898,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.25';
+  const APP_VERSION = '1.17.26';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2056,6 +2057,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   let statsVizGroup = statsVizPrefs.activeGroup;
   let statsVizMode = statsVizPrefs.lastByGroup[statsVizGroup] || STATS_VIZ_GROUPS[statsVizGroup][0];
   let statsCalendarMonthOffset = 0;
+  let calendarFocusDayKey = null;
   let statsDetailOverride = null;
   let trendInteractiveLayout = [];
   let trendPlotBounds = null;
@@ -6205,24 +6207,52 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       calendarDaysCache.set(cacheKey,calendarDays);
     }
     grid.replaceChildren();
+    let firstEnabledButton=null, restoredFocusTarget=false;
     for (const {d,day} of calendarDays) {
-      const btn=document.createElement('button'); btn.type='button'; btn.className=`calendarDay level${calendarLevel(day.totalFastMs)}`;
+      const btn=document.createElement('button'); btn.type='button'; btn.className='calendarDay level'+calendarLevel(day.totalFastMs);
       const outside=d.getMonth()!==monthIndex, future=d.getTime()>now.getTime()+12*3600000;
       if (outside) btn.classList.add('outside'); if (future) btn.classList.add('future');
       if (statsDetailOverride?.dayKey===day.key) btn.classList.add('selected');
       btn.disabled=future; btn.dataset.dayKey=day.key;
+      btn.tabIndex=!future&&day.key===calendarFocusDayKey?0:-1;
+      if(!future&&!firstEnabledButton)firstEnabledButton=btn;
+      if(btn.tabIndex===0)restoredFocusTarget=true;
       const n=document.createElement('span'); n.textContent=formatNumber(d.getDate());
       const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? totalHoursDuration(day.totalFastMs) : '—';
       const clockInfo=dayClockChangeInfo(day);
       btn.append(n,h);
       if(clockInfo){const clock=document.createElement('span');clock.className='calendarClockChange';clock.textContent=clockInfo.label.replace(/^(Day|Offset)\s+/,'');clock.setAttribute('aria-hidden','true');btn.append(clock);btn.title=clockInfo.description;}
-      btn.setAttribute('aria-label',`${day.label}: ${totalHoursDuration(day.totalFastMs)}${clockInfo?'; '+clockInfo.description:''}`);
+      btn.setAttribute('aria-label',day.label+': '+totalHoursDuration(day.totalFastMs)+(clockInfo?'; '+clockInfo.description:''));
       const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:totalHoursDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
       btn.addEventListener('pointerdown',event=>{ selectCalendarDay(); if(event.cancelable) event.preventDefault(); });
       btn.addEventListener('click',event=>{ if(event.detail===0) selectCalendarDay(); });
       grid.append(btn);
     }
+    if(!restoredFocusTarget&&firstEnabledButton){firstEnabledButton.tabIndex=0;calendarFocusDayKey=firstEnabledButton.dataset.dayKey;}
     renderChartDetailForMode();
+  }
+
+  function handleCalendarGridKeydown(event) {
+    const grid=el('fastCalendar'),current=event.target.closest?.('.calendarDay');
+    if(!grid||!current||!grid.contains(current))return;
+    const buttons=[...grid.querySelectorAll('.calendarDay')],index=buttons.indexOf(current);
+    if(index<0)return;
+    const rowStart=Math.floor(index/7)*7,rowEnd=Math.min(buttons.length-1,rowStart+6);
+    let targetIndex=index,step=0,lower=0,upper=buttons.length-1;
+    switch(event.key){
+      case 'ArrowLeft': targetIndex=index-1;step=-1;lower=rowStart;upper=rowEnd;break;
+      case 'ArrowRight': targetIndex=index+1;step=1;lower=rowStart;upper=rowEnd;break;
+      case 'ArrowUp': targetIndex=index-7;step=-7;break;
+      case 'ArrowDown': targetIndex=index+7;step=7;break;
+      case 'Home': targetIndex=rowStart;step=1;lower=rowStart;upper=rowEnd;break;
+      case 'End': targetIndex=rowEnd;step=-1;lower=rowStart;upper=rowEnd;break;
+      default:return;
+    }
+    event.preventDefault();
+    while(targetIndex>=lower&&targetIndex<=upper&&buttons[targetIndex]?.disabled)targetIndex+=step;
+    const target=buttons[targetIndex];
+    if(!target||target.disabled||targetIndex<lower||targetIndex>upper)return;
+    current.tabIndex=-1;target.tabIndex=0;calendarFocusDayKey=target.dataset.dayKey;target.focus();
   }
 
   function buildSummaryChartDays(dayCount = 30, timeZone = currentTimeZone()) {
@@ -8885,6 +8915,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   el('statsVizGroupSwitcher').addEventListener('pointerdown', handleStatsVizGroupPointerDown);
   el('statsVizGroupSwitcher').addEventListener('click', handleStatsVizGroupClick);
   el('statsVizSelect').addEventListener('change', event => setStatsVizMode(event.target.value));
+  el('fastCalendar').addEventListener('keydown',handleCalendarGridKeydown);
   el('calendarPrevBtn').addEventListener('click', () => { statsCalendarMonthOffset -= 1; statsDetailOverride = null; renderFastCalendar(); });
   el('calendarNextBtn').addEventListener('click', () => { if (statsCalendarMonthOffset < 0) statsCalendarMonthOffset += 1; statsDetailOverride = null; renderFastCalendar(); });
   el('fastTrendChart').addEventListener('pointerdown', handleTrendPointer);

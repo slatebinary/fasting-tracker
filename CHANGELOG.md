@@ -1,3 +1,7 @@
+## v1.17.26 — 6 November 2026
+- Added arrow-key navigation to the fasting calendar, including left/right day movement, up/down week movement and Home/End row navigation with one keyboard tab stop.
+- Added a visible focus indicator, a labelled calendar group and polite screen-reader announcements for month changes and selected-day details.
+
 ## v1.17.25 — 6 November 2026
 - Redesigned the Protanopia, Deuteranopia and Tritanopia palettes with visibly distinct background, accent and status-colour systems instead of near-identical shade variations.
 - Added colour-vision-deficiency simulation checks and retained WCAG contrast requirements; success and danger states continue to use non-colour cues as well.
