@@ -32,6 +32,21 @@ for theme in ("high-contrast-light", "high-contrast-dark", "grayscale"):
     end = html.find("}", start)
     assert "!important" in html[start:end], f"{theme} rules must override widget styles"
 
+# Specialized palettes must be selectable, persisted/importable, and localized.
+specialized_themes = {
+    "protanopia": "settings.appearanceProtanopia",
+    "deuteranopia": "settings.appearanceDeuteranopia",
+    "tritanopia": "settings.appearanceTritanopia",
+}
+for theme, key in specialized_themes.items():
+    assert f'<option data-i18n="{key}" value="{theme}">' in html, f"missing appearance option for {theme}"
+    assert f"'{theme}'" in html[html.find("function normalizeAppearance"):html.find("function normalizeIconChoice")], f"{theme} is not accepted by appearance normalization"
+    assert f"'{theme}'" in html[html.find("invalid appearance")-300:html.find("invalid appearance")], f"{theme} is not accepted by imported settings"
+    for language in ("en", "bg", "es"):
+        translations = json.loads((root / "i18n" / f"{language}.json").read_text(encoding="utf-8"))
+        assert key in translations and translations[key], f"missing {language} translation for {theme}"
+    assert f'html[data-theme="{theme}"] button:focus-visible' in html, f"{theme} needs a visible keyboard focus indicator"
+
 # Compute WCAG relative-luminance contrast from the actual theme tokens.
 import re
 
@@ -52,7 +67,7 @@ def contrast(foreground, background):
     high, low = sorted((luminance(foreground), luminance(background)), reverse=True)
     return (high + 0.05) / (low + 0.05)
 
-for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind"):
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind", "protanopia", "deuteranopia", "tritanopia"):
     match = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\{{([^}}]*)\}}', html)
     assert match, f"missing {theme} palette"
     tokens = dict(re.findall(r'--([a-z-]+):\s*(#[0-9a-fA-F]{3,6})', match.group(1)))
@@ -63,12 +78,18 @@ for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorbl
     assert contrast(tokens["accent"], tokens["bg"]) >= 4.5, f"{theme} accent must meet 4.5:1 contrast"
 
 # Navigation must provide a non-colour-only selected state and monochrome symbols.
-for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind"):
-    active = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\.tab\.active\s*\{{([^}}]*)\}}', html)
-    assert active, f"{theme} navigation needs an explicit active-tab style"
-    assert "background" in active.group(1) and "box-shadow" in active.group(1), f"{theme} active tab must use a surface and underline"
-    icon = re.search(rf'html\[data-theme="{re.escape(theme)}"\]\s*\.tab\s*\.ico\s*\{{([^}}]*)\}}', html)
-    assert icon and "grayscale" in icon.group(1), f"{theme} navigation symbols must be monochrome"
+for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind", "protanopia", "deuteranopia", "tritanopia"):
+    active_start = html.find(f'html[data-theme="{theme}"] .tab.active')
+    assert active_start >= 0, f"{theme} navigation needs an explicit active-tab style"
+    active_open = html.find("{", active_start)
+    active_close = html.find("}", active_open)
+    active_body = html[active_open:active_close]
+    assert "background" in active_body and "box-shadow" in active_body, f"{theme} active tab must use a surface and underline"
+    icon_start = html.find(f'html[data-theme="{theme}"] .tab .ico')
+    assert icon_start >= 0, f"{theme} navigation symbols must be monochrome"
+    icon_open = html.find("{", icon_start)
+    icon_close = html.find("}", icon_open)
+    assert "grayscale" in html[icon_open:icon_close], f"{theme} navigation symbols must be monochrome"
 
 # Icon selector cards and the collapsible installation heading need visible boundaries.
 assert ".iconChoice { padding:8px; background:var(--card); color:var(--text); border:2px solid var(--line);" in html

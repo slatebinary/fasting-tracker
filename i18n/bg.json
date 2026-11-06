@@ -59,7 +59,7 @@
   "settings.languageHelp": "Използвайте автоматично езика на устройството или изберете език само за приложението.",
   "settings.systemLanguage": "Системен език",
   "settings.appearance": "Външен вид",
-  "settings.appearanceHelp": "Следвайте изгледа на устройството или изберете светъл, тъмен, сив, висококонтрастен или подходящ за нарушения на цветното зрение режим.",
+  "settings.appearanceHelp": "Следвайте изгледа на устройството или изберете светъл, тъмен, сив, висококонтрастен или режим за цветното зрение. Цветовите палитри са ориентировъчни и индивидуалният ефект варира.",
   "settings.appearanceSystem": "Системен",
   "settings.appearanceLight": "Светъл",
   "settings.appearanceDark": "Тъмен",
@@ -1074,5 +1074,8 @@
   "notifications.addWeightAction": "Добави",
   "notifications.addWeightAria": "Добави запис за тегло и затвори това напомняне.",
   "fasting.shorterOfferOriginal": "Продължи до първоначалната цел",
-  "fasting.shorterOfferOriginalAria": "Продължете текущото гладуване до първоначално зададената цел."
+  "fasting.shorterOfferOriginalAria": "Продължете текущото гладуване до първоначално зададената цел.",
+  "settings.appearanceProtanopia": "Палитра за протанопия",
+  "settings.appearanceDeuteranopia": "Палитра за дейтеранопия",
+  "settings.appearanceTritanopia": "Палитра за тританопия"
 }

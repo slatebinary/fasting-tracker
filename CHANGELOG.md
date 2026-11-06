@@ -1,3 +1,8 @@
+## v1.17.23 — 6 November 2026
+- Added separate Protanopia, Deuteranopia and Tritanopia appearance palettes, with English, Bulgarian and Spanish labels.
+- Kept keyboard focus and bottom-navigation selection distinguishable through outlines, neutral labels and persistent underlines rather than colour alone.
+- Added contrast, selection, import-validation and localization regression coverage. Palette choices are visual aids, not a guarantee of suitability for every individual.
+
 ## v1.17.22 — 5 November 2026
 - Improved grayscale and high-contrast bottom navigation with explicit selected-tab surfaces, underlines and monochrome symbols.
 - Improved app-icon selection cards and the collapsible installation heading with stronger borders, text contrast and visible keyboard focus.

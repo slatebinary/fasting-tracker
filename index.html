@@ -45,7 +45,7 @@ layout: null
       const q=params.get('lang');
       const qi=params.get('icon');
       let pref=null, storedData=null;
-      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=['dark','high-contrast-dark'].includes(storedData.appearance)?'#000000':'#ffffff'; } } catch {}
+      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind','protanopia','deuteranopia','tritanopia'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=['dark','high-contrast-dark'].includes(storedData.appearance)?'#000000':'#ffffff'; } } catch {}
       const primarySystemTag=((Array.isArray(navigator.languages)&&navigator.languages[0])||navigator.language||'en').toLowerCase();
       const systemBase=primarySystemTag.split(/[-_]/,1)[0];
       const systemLang=allowed.includes(systemBase)?systemBase:'en';
@@ -121,6 +121,10 @@ layout: null
     html[data-theme="high-contrast-light"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#000; --accent:#0037b3; --good:#005a00; --danger:#b00020; --tab:#fff; --primary-button-text:#fff; --danger-button-text:#fff; }
     html[data-theme="high-contrast-dark"] { color-scheme: dark; --bg:#000; --card:#000; --text:#fff; --muted:#f0f0f0; --line:#fff; --accent:#80dfff; --good:#a8ff9e; --danger:#ff9eaa; --tab:#000; --primary-button-text:#000; --danger-button-text:#000; }
     html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#007f5f; --danger:#c44e00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#000; }
+    /* Specialized palettes are starting points, not clinical guarantees. Keep status cues redundant. */
+    html[data-theme="protanopia"] { color-scheme:light; --bg:#f7f9fc; --card:#fff; --text:#17212b; --muted:#465564; --line:#aab8c6; --accent:#005a9c; --good:#006b50; --danger:#a84300; --tab:#edf3f8; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="deuteranopia"] { color-scheme:light; --bg:#f7f9fc; --card:#fff; --text:#17212b; --muted:#465564; --line:#aab8c6; --accent:#005a9c; --good:#005a8d; --danger:#a84300; --tab:#edf3f8; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="tritanopia"] { color-scheme:light; --bg:#fbf8fc; --card:#fff; --text:#211923; --muted:#514451; --line:#b9aeb9; --accent:#853b70; --good:#006653; --danger:#a33b3b; --tab:#f3edf4; --primary-button-text:#fff; --danger-button-text:#fff; }
     .primary { color:var(--primary-button-text, #fff); }
     .stop { color:var(--danger-button-text, #fff); }
     html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop, html[data-theme="colorblind"] .stop { color:#000; }
@@ -139,8 +143,7 @@ layout: null
     html[data-theme="grayscale"] button.secondary { background:#e6e6e6 !important; color:#000 !important; border:2px solid #000 !important; }
     html[data-theme="grayscale"] button.primary, html[data-theme="grayscale"] button.stop { background:#000 !important; color:#fff !important; border:2px solid #000 !important; }
     html[data-theme="grayscale"] button.dangerText { background:transparent !important; color:#000 !important; border:2px solid #000 !important; }
-    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
-    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    html[data-theme="high-contrast-light"] button:focus-visible, html[data-theme="high-contrast-dark"] button:focus-visible, html[data-theme="grayscale"] button:focus-visible, html[data-theme="colorblind"] button:focus-visible, html[data-theme="protanopia"] button:focus-visible, html[data-theme="deuteranopia"] button:focus-visible, html[data-theme="tritanopia"] button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
     body { padding: env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom)); }
@@ -307,6 +310,14 @@ layout: null
       outline: 3px solid #003f73;
       outline-offset: -4px;
     }
+
+    /* Specialized colour-vision palettes use neutral labels and a persistent accent underline. */
+    html[data-theme="protanopia"] nav, html[data-theme="deuteranopia"] nav, html[data-theme="tritanopia"] nav { background:#fff; border-top:2px solid var(--text); backdrop-filter:none; -webkit-backdrop-filter:none; }
+    html[data-theme="protanopia"] .tab, html[data-theme="deuteranopia"] .tab, html[data-theme="tritanopia"] .tab { color:var(--muted); font-weight:750; }
+    html[data-theme="protanopia"] .tab .ico, html[data-theme="deuteranopia"] .tab .ico, html[data-theme="tritanopia"] .tab .ico { color:var(--text); filter:grayscale(1) contrast(1.4); font-weight:800; }
+    html[data-theme="protanopia"] .tab.active, html[data-theme="deuteranopia"] .tab.active, html[data-theme="tritanopia"] .tab.active { color:var(--text); background:color-mix(in srgb,var(--accent) 14%,var(--card)); box-shadow:inset 0 -4px 0 var(--accent); font-weight:850; }
+    html[data-theme="protanopia"] .tab.active .ico, html[data-theme="deuteranopia"] .tab.active .ico, html[data-theme="tritanopia"] .tab.active .ico { filter:grayscale(1) contrast(1.7); }
+    html[data-theme="protanopia"] .tab:focus-visible, html[data-theme="deuteranopia"] .tab:focus-visible, html[data-theme="tritanopia"] .tab:focus-visible { position:relative; z-index:1; outline:3px solid var(--accent); outline-offset:-4px; }
 
     /* High-contrast and grayscale navigation: the active tab uses both a
        contrasting surface and a persistent underline, not colour alone. */
@@ -1132,6 +1143,9 @@ layout: null
 <option data-i18n="settings.appearanceHighContrastLight" value="high-contrast-light">High contrast (light)</option>
 <option data-i18n="settings.appearanceHighContrastDark" value="high-contrast-dark">High contrast (dark)</option>
 <option data-i18n="settings.appearanceColorblind" value="colorblind">Colour-vision friendly</option>
+<option data-i18n="settings.appearanceProtanopia" value="protanopia">Protanopia palette</option>
+<option data-i18n="settings.appearanceDeuteranopia" value="deuteranopia">Deuteranopia palette</option>
+<option data-i18n="settings.appearanceTritanopia" value="tritanopia">Tritanopia palette</option>
 </select>
 </div>
 <div class="timeZoneSettings">
@@ -2072,7 +2086,7 @@ layout: null
     return SUPPORTED_LANGUAGES.includes(base) ? base : 'en';
   }
   function normalizeLanguage(value) { return value === 'system' || SUPPORTED_LANGUAGES.includes(value) ? value : 'system'; }
-  function normalizeAppearance(value) { return ['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(value) ? value : 'system'; }
+  function normalizeAppearance(value) { return ['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind','protanopia','deuteranopia','tritanopia'].includes(value) ? value : 'system'; }
   function normalizeIconChoice(value) { return ['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(value) ? value : 'plate'; }
   function manifestFor(lang, icon) {
     icon = normalizeIconChoice(icon);
@@ -3611,7 +3625,7 @@ layout: null
     if (!Number.isFinite(parseLocalizedNumber(rawData.goalHours)) || parseLocalizedNumber(rawData.goalHours) <= 0 || parseLocalizedNumber(rawData.goalHours) > MAX_SAFE_GOAL_HOURS) throw new Error('invalid default goal');
     if (!['kg','lb'].includes(rawData.weightUnit)) throw new Error('invalid weight unit');
     if (rawData.language != null && typeof rawData.language !== 'string') throw new Error('invalid language');
-    if (!['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind'].includes(rawData.appearance)) throw new Error('invalid appearance');
+    if (!['system','light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind','protanopia','deuteranopia','tritanopia'].includes(rawData.appearance)) throw new Error('invalid appearance');
     if (rawData.iconChoice != null && !['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'].includes(rawData.iconChoice)) throw new Error('invalid icon choice');
     if (typeof rawData.gamificationEnabled !== 'boolean') throw new Error('invalid gamification setting');
     const notificationPreferences = rawData.notificationPreferences;
