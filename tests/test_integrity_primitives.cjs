@@ -19,10 +19,10 @@ function loadIntegrity(crypto) {
   assert.equal(fallback.fnv1a64Hex(''), 'cbf29ce484222325');
   assert.equal(fallback.fnv1a64Hex('Fasting Tracker'), fallback.fnv1a64Hex('Fasting Tracker'));
   assert.notEqual(fallback.fnv1a64Hex('red'), fallback.fnv1a64Hex('blue'));
-  assert.deepEqual(await fallback.checksumText('payload'), {
+  assert.deepEqual(JSON.parse(JSON.stringify(await fallback.checksumText('payload'))), {
     algorithm:'FNV-1a-64', digest:fallback.fnv1a64Hex('payload')
   });
-  assert.deepEqual(await fallback.checksumText('payload','FNV-1a-64'), {
+  assert.deepEqual(JSON.parse(JSON.stringify(await fallback.checksumText('payload','FNV-1a-64'))), {
     algorithm:'FNV-1a-64', digest:fallback.fnv1a64Hex('payload')
   });
 
@@ -35,7 +35,7 @@ function loadIntegrity(crypto) {
   const result = await secure.checksumText('abc');
   assert.equal(algorithm,'SHA-256');
   assert.deepEqual(bytes,[97,98,99]);
-  assert.deepEqual(result,{algorithm:'SHA-256',digest:'00010fff'});
+  assert.deepEqual(JSON.parse(JSON.stringify(result)),{algorithm:'SHA-256',digest:'00010fff'});
 
   console.log('PASS: deterministic serialization, FNV fallback and SHA-256 delegation');
 })().catch(error => { console.error(error); process.exitCode=1; });
