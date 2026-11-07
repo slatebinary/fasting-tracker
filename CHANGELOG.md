@@ -1,3 +1,8 @@
+## v1.17.33 — 7 November 2026
+- Atomized the app-shell source into six ordered JavaScript domain fragments and a separate stylesheet, with a reproducible build step that preserves the existing single-script runtime and lexical scope.
+- Added CI verification to detect generated app-shell drift before release.
+- No fasting, weight, backup, storage-schema or runtime interaction behaviour was changed.
+
 ## v1.17.32 — 7 November 2026
 - Redesigned all four colour-vision-friendly palettes as distinct systems: Okabe–Ito-inspired blue/green/vermilion, protanopia-focused ivory/violet/cyan/ochre, deuteranopia-focused sea-glass/teal/blue/berry, and tritanopia-focused rose/peach/burgundy/green/rust.
 - Added six pairwise CIEDE2000 (Delta E 00) comparisons across all four palettes, alongside WCAG contrast and simulated colour-vision status-separation checks.

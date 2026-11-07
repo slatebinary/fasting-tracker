@@ -1,0 +1,1183 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="ft-app-version" content="@@FT_APP_VERSION@@" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" id="appleAppTitle" content="Fasting" />
+  <meta name="description" content="Intermittent fasting and weight tracker with multi-day fasting, science notes and local-first privacy" />
+  <meta name="keywords" content="intermittent fasting tracker, fasting timer, weight tracker, fasting history, autophagy science" />
+  <meta name="author" content="Fasting Tracker" />
+  <link rel="canonical" href="{{ site.github.url }}/" />
+  <link rel="alternate" hreflang="en" href="{{ site.github.url }}/en/" />
+  <link rel="alternate" hreflang="bg" href="{{ site.github.url }}/bg/" />
+  <link rel="alternate" hreflang="es" href="{{ site.github.url }}/es/" />
+  <link rel="alternate" hreflang="x-default" href="{{ site.github.url }}/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Fasting Tracker" />
+  <meta property="og:title" content="Fasting Tracker — fasting timer, weight tracking and science notes" />
+  <meta property="og:description" content="A local-first intermittent fasting and weight tracker with multi-day fasting support, statistics, backups and evidence-aware science notes." />
+  <meta property="og:url" content="{{ site.github.url }}/" />
+  <meta property="og:image" content="{{ site.github.url }}/icons/plate/icon-512.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Fasting Tracker" />
+  <meta name="twitter:description" content="Track intermittent fasting and weight locally, with statistics, backups and evidence-aware science notes." />
+  <meta name="twitter:image" content="{{ site.github.url }}/icons/plate/icon-512.png" />
+  <link rel="manifest" id="appManifest" href="manifest.webmanifest" />
+  <link rel="icon" id="appFavicon" type="image/png" sizes="32x32" href="icons/plate/favicon-32.png" />
+  <link rel="apple-touch-icon" id="appleTouchIcon" sizes="180x180" href="icons/plate/apple-touch-icon.png" />
+  <title>Fasting Tracker — fasting timer & weight tracker</title>
+  <script>
+  (function(){
+    try {
+      const allowed=['en','bg','es'];
+      const params=new URLSearchParams(location.search);
+      const q=params.get('lang');
+      const qi=params.get('icon');
+      let pref=null, storedData=null;
+      try { storedData=JSON.parse(localStorage.getItem('fastingTracker.preferences')||'null'); pref=storedData&&storedData.language; if(storedData&&['light','dark','grayscale','high-contrast-light','high-contrast-dark','colorblind','protanopia','deuteranopia','tritanopia'].includes(storedData.appearance)){ document.documentElement.dataset.theme=storedData.appearance; const theme=document.querySelector('meta[name=\"theme-color\"]'); if(theme) theme.content=['dark','high-contrast-dark'].includes(storedData.appearance)?'#000000':'#ffffff'; } } catch {}
+      const primarySystemTag=((Array.isArray(navigator.languages)&&navigator.languages[0])||navigator.language||'en').toLowerCase();
+      const systemBase=primarySystemTag.split(/[-_]/,1)[0];
+      const systemLang=allowed.includes(systemBase)?systemBase:'en';
+      const lang=allowed.includes(q)?q:(allowed.includes(pref)?pref:systemLang);
+      const iconAllowed=['plate','moon','hourglass','timer','grayscale','highcontrast','colorblind'];
+      const icon=iconAllowed.includes(qi)?qi:(iconAllowed.includes(storedData&&storedData.iconChoice)?storedData.iconChoice:'plate');
+      const manifestFor=(lng,ico)=>{
+        if(ico==='plate') return lng==='bg'?'manifest-bg.webmanifest':lng==='es'?'manifest-es.webmanifest':'manifest.webmanifest';
+        return `manifest-${ico}${lng==='bg'?'-bg':lng==='es'?'-es':''}.webmanifest`;
+      };
+      const titles={en:'Fasting',bg:'Гладуване',es:'Ayuno'};
+      document.getElementById('appManifest').href=manifestFor(lang,icon);
+      const accessibleThemeIcon=['grayscale','highcontrast','colorblind'].includes(icon);
+      const fav=document.getElementById('appFavicon'); if(fav) fav.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'favicon-32.png'}`;
+      const touch=document.getElementById('appleTouchIcon'); if(touch) touch.href=`icons/${icon}/${accessibleThemeIcon?'icon-192.png':'apple-touch-icon.png'}`;
+      document.getElementById('appleAppTitle').content=titles[lang];
+    } catch {}
+  })();
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Fasting Tracker",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "iOS, Android, Web",
+    "url": "{{ site.github.url }}/",
+    "image": "{{ site.github.url }}/icons/plate/icon-512.png",
+    "description": "Intermittent fasting and weight tracker with multi-day fasting, statistics, local backups and evidence-aware fasting science notes.",
+    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+  }
+  </script>
+  <style>@@FT_APP_CSS@@</style>
+</head>
+<body>
+<main>
+  <div class="card recoveryCard" id="recoveryBanner" role="alert" hidden>
+    <h2 data-i18n="recovery.title">Recovery mode</h2>
+    <div class="small" data-i18n="recovery.text">Stored app data could not be read safely. Normal changes are blocked so the original data is not overwritten.</div>
+    <div class="small" id="recoveryDiagnostic" style="margin-top:8px"></div>
+    <div class="recoveryActions">
+      <button id="recoveryExportBtn" class="secondary" data-i18n="recovery.exportRaw">Export raw data</button>
+      <button id="recoverySnapshotsBtn" class="secondary" data-i18n="recovery.snapshots">Recovery snapshots</button>
+      <button id="recoveryImportBtn" class="secondary" data-i18n="recovery.importBackup">Import backup</button>
+      <button id="recoveryResetBtn" class="dangerText" data-i18n="recovery.startFresh">Start fresh</button>
+    </div>
+  </div>
+  <div id="notificationDetailStack" class="notificationDetailStack" aria-label="Notification details" data-i18n-aria="notifications.detailsHeading" hidden></div>
+  <section id="fasting" class="screen active">
+    <div class="sectionHeader fastingSectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
+    <div id="fastingBackupRow" class="fastingBackupRow" hidden>
+      <button id="fastingBackupStatusBtn" class="backupStatusButton" data-state="empty" type="button"><span class="backupStatusDot" aria-hidden="true"></span><span id="fastingBackupStatusText" aria-live="polite">Backup status</span></button>
+    </div>
+    <div class="notice installStorageNotice" id="installStorageNotice" role="status" hidden>
+      <strong data-i18n="installStorage.title">Using Safari on iPhone?</strong>
+      <div class="small" data-i18n="installStorage.text">Safari and a Home Screen web app can use separate local storage. If you plan to use the Home Screen app, install it before entering data. To move existing Safari records, export a backup here, install the app, then import the backup there.</div>
+      <div class="publicLinks" style="margin-top:8px"><button id="installStorageSetupBtn" class="secondary" data-i18n="setup.open">Setup guide</button><button id="installStorageDismiss" class="secondary" data-i18n="common.dismiss">Dismiss</button></div>
+    </div>
+    <div class="updateBanner" id="updateBanner" hidden>
+      <div><strong id="updateBannerTitle" data-i18n="update.newVersion">New version available</strong><div class="small" id="updateBannerText" data-i18n="update.releaseReady">A newer Fasting Tracker release is ready.</div></div>
+      <button id="updateBannerBtn" class="secondary" data-i18n="update.update">Update</button>
+    </div>
+    <div class="backupBanner" id="backupReminder" hidden>
+      <div><strong id="backupReminderTitle" data-i18n="backup.reminderTitle">External backup reminder</strong><div class="small" id="backupReminderText">It has been 7 days since your last backup.</div></div>
+      <button id="backupReminderBtn" class="secondary" data-i18n="backup.now">Back up now</button>
+    </div>
+    <div class="card hero">
+      <div class="eyebrow" id="statusText" data-i18n="fasting.ready">Ready to start</div>
+      <div class="fastRing" id="fastProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Fasting target progress" data-i18n-aria="a11y.fastProgress">
+        <div class="fastRingInner">
+          <div class="friendlyTimer" id="friendlyTimer">—</div>
+          <div class="exactTimer" id="timer">00:00:00</div>
+        </div>
+      </div>
+      <div class="goal" id="goalText">—</div>
+      <div class="progressDetail" id="progressDetail" data-i18n="fasting.zeroProgress">0% complete</div>
+      <div class="fastingEncouragement" id="fastingEncouragement" aria-live="off" hidden></div>
+      <div class="targetMoment" id="targetMoment" hidden></div>
+      <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
+      <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
+      <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
+    </div>
+    <div class="card nextFastCard" id="nextFastCard" hidden>
+      <div class="sectionHeader"><h2 data-i18n="fasting.nextTitle">24-hour cycle</h2><span class="levelPill" data-i18n="fasting.nextCycleBadge">Optional timing</span></div>
+      <div class="small" data-i18n="fasting.nextIn">Time remaining in this cycle</div>
+      <div class="nextFastCountdownValue" id="nextFastCountdown" aria-live="polite">00:00:00</div>
+      <div class="small" id="nextFastAt"></div>
+      <div class="small" id="nextFastBasis" style="margin-top:6px"></div>
+      <div class="small" style="margin-top:6px" data-i18n="fasting.nextHelp">Optional arithmetic/timing reference only. The remainder completes a 24-hour cycle; it is not a recommendation for how long to eat or when to start another fast.</div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="fasting.today">Today</h2>
+      <div class="row"><div data-i18n="fasting.elapsedToday">Fasting elapsed today</div><div class="duration" id="todayTotal">0h 0m</div></div>
+      <div class="row"><div data-i18n="fasting.targetStreak">Current target streak</div><div class="duration" id="streakValue">0 fasts</div></div>
+    </div>
+    <div class="card gamificationCard" id="gamificationSummary">
+      <div class="sectionHeader"><h2 data-i18n="game.consistency">Consistency</h2><span class="levelPill" id="gSummaryLevel">Level 1</span></div>
+      <div class="xpHeader"><div class="xpValue" id="gSummaryXP">—</div><div class="small" id="gSummaryNext">—</div></div>
+      <div class="xpTrack" id="xpProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Consistency level progress" data-i18n-aria="a11y.xpProgress"><div class="xpFill" id="gSummaryFill"></div></div>
+      <div class="small" data-i18n="game.summaryHelp">XP rewards completing your chosen target and logging weight consistently. Excused unavoidable interruptions are neutral for the target streak but do not earn target XP. Fasting beyond the target earns no extra XP.</div>
+    </div>
+    <div class="card" id="ifBasicsCard">
+      <h2 data-i18n="if.title">What is intermittent fasting?</h2>
+      <div class="small" data-i18n="if.what">Intermittent fasting (IF) is an eating pattern that alternates planned periods of eating with periods of little or no caloric intake. It focuses mainly on when you eat rather than prescribing a particular food list.</div>
+      <div class="small" style="margin-top:8px" data-i18n="if.examples">Common approaches include daily time-restricted eating (for example, 16:8), the 5:2 pattern, and alternate-day fasting.</div>
+      <details class="scienceSources">
+        <summary data-i18n="if.learnMore">Potential benefits, limits &amp; safety</summary>
+        <div class="helpHeading" data-i18n="if.benefitsTitle">Potential benefits</div>
+        <div class="small" data-i18n="if.benefits">Human trials suggest intermittent fasting can help some adults reduce body weight and waist circumference and may improve blood-glucose control, insulin sensitivity, blood pressure and some blood-lipid markers. Effects are usually modest, vary among people and regimens, and are often similar to continuous calorie restriction when total energy intake and weight loss are comparable.</div>
+        <div class="helpHeading" data-i18n="if.limitsTitle">What is still uncertain</div>
+        <div class="small" data-i18n="if.limits">Long-term effects on disease prevention, lifespan, cognitive function and the best fasting schedule remain uncertain. Much of the human evidence is short- to medium-term and is concentrated in adults with overweight, obesity or metabolic risk.</div>
+        <div class="helpHeading" data-i18n="if.safetyTitle">Who should be cautious</div>
+        <div class="small" data-i18n="if.safety">Fasting is not suitable for everyone. Seek professional advice before fasting if you are pregnant or breastfeeding, under 18, underweight, have a current or past eating disorder, diabetes or another medical condition, or take medicines that can be affected by meal timing. Stop the fast and seek appropriate care for severe weakness, fainting, confusion, dehydration, persistent vomiting or other concerning symptoms.</div>
+        <div class="helpHeading" data-i18n="if.sourcesTitle">Evidence &amp; sources</div>
+        <ul class="sourceList small">
+          <li data-i18n-html="if.src1"><a href="https://www.bmj.com/content/389/bmj-2024-082007" target="_blank" rel="noopener noreferrer">BMJ 2025 systematic review</a> — 99 randomized trials; intermittent fasting and continuous calorie restriction produced broadly similar weight and cardiometabolic outcomes, with generally small differences between strategies.</li>
+          <li data-i18n-html="if.src2"><a href="https://www.nia.nih.gov/news/research-intermittent-fasting-shows-health-benefits" target="_blank" rel="noopener noreferrer">U.S. National Institute on Aging</a> — overview of intermittent-fasting patterns, potential health effects and uncertainty about long-term outcomes.</li>
+          <li data-i18n-html="if.src3"><a href="https://www.nih.gov/news-events/nih-research-matters/time-restricted-eating-metabolic-syndrome" target="_blank" rel="noopener noreferrer">NIH Research Matters, 2024</a> — an 8–10 hour eating window produced modest benefits over three months in people with metabolic syndrome; longer studies are needed.</li>
+          <li data-i18n-html="if.src4"><a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/patients-intermittent-fasting" target="_blank" rel="noopener noreferrer">NIDDK, 2024</a> — possible benefits and medication-related safety considerations for people with type 2 diabetes.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="card scienceCard" id="scienceCard">
+      <h2 data-i18n="science.title">Autophagy &amp; fasting science</h2>
+      <div class="scienceLead">
+        <div class="scienceWindow" id="scienceWindow" data-i18n="science.notFasting">Not fasting</div>
+        <div class="evidenceBadge" id="scienceEvidence" data-i18n="science.limited">Human evidence: limited</div>
+      </div>
+      <div class="small" id="scienceText" data-i18n="science.idle">Autophagy is active at basal levels even when you are not fasting. Human research has not established a universal hour when fasting-induced autophagy “starts.”</div>
+      <div class="scienceTimeline" id="scienceTimeline">
+        <div class="scienceStage" data-stage="0" data-i18n-html="science.timeline0"><strong>0–8 h</strong> — early fast; no clock-based autophagy inference.</div>
+        <div class="scienceStage" data-stage="1" data-i18n-html="science.timeline1"><strong>8–12 h</strong> — ketones commonly begin to rise; metabolic switching starts.</div>
+        <div class="scienceStage" data-stage="2" data-i18n-html="science.timeline2"><strong>12–24 h</strong> — metabolic transition progresses; autophagy onset in humans remains unproven.</div>
+        <div class="scienceStage" data-stage="3" data-i18n-html="science.timeline3"><strong>24–36 h</strong> — human autophagy-related markers have been studied; results are mixed and tissue-dependent.</div>
+        <div class="scienceStage" data-stage="4" data-i18n-html="science.timeline4"><strong>36–48 h</strong> — prolonged fasting; a 36 h human muscle study found only modest effects on autophagy mediators.</div>
+        <div class="scienceStage" data-stage="5" data-i18n-html="science.timeline5"><strong>48 h+</strong> — extended fasting; there is no validated whole-body “autophagy level” that can be calculated from elapsed time.</div>
+      </div>
+      <div class="scienceCaution" data-i18n="science.caution">This indicator is educational, not a measurement of autophagy and not a reason to prolong a fast. Fasting responses vary by tissue, activity, prior diet, glycogen status and other factors.</div>
+      <div class="small" style="margin-top:9px"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
+      <details class="scienceSources">
+        <summary data-i18n="science.sources">Scientific basis &amp; sources</summary>
+        <ul class="sourceList small">
+          <li data-i18n-html="science.src1"><a href="https://pubmed.ncbi.nlm.nih.gov/35892559/" target="_blank" rel="noopener noreferrer">Gómez-Virgilio et al., 2022 (PubMed)</a> — autophagy is active at basal levels in cells and responds to nutrient stress.</li>
+          <li data-i18n-html="science.src2"><a href="https://www.nejm.org/doi/abs/10.1056/NEJMra1905136" target="_blank" rel="noopener noreferrer">de Cabo &amp; Mattson, NEJM 2019</a> and <a href="https://www.nejm.org/doi/full/10.1056/NEJMx200002" target="_blank" rel="noopener noreferrer">2020 correction</a> — human ketone levels begin rising roughly 8–12 h into fasting and increase further by 48 h.</li>
+          <li data-i18n-html="science.src3"><a href="https://pubmed.ncbi.nlm.nih.gov/35142356/" target="_blank" rel="noopener noreferrer">Anton et al., 2022 (PubMed)</a> — review concluding that whether an acute fast produces significant increases in human autophagy remains unknown.</li>
+          <li data-i18n-html="science.src4"><a href="https://pubmed.ncbi.nlm.nih.gov/35660501/" target="_blank" rel="noopener noreferrer">Chaudhary et al., 2022 (PubMed)</a> — 12–24 h fasting did not show robust activation of autophagy markers in human skeletal muscle.</li>
+          <li data-i18n-html="science.src5"><a href="https://pubmed.ncbi.nlm.nih.gov/30161009/" target="_blank" rel="noopener noreferrer">Dethlefsen et al., 2018 (PubMed)</a> — 36 h fasting produced only modest changes in autophagy-related markers in human skeletal muscle, influenced by training status.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <section id="history" class="screen">
+    <div class="sectionHeader"><h1 data-i18n="nav.history">History</h1><button id="addEntryBtn" class="secondary" data-i18n="history.add">Add entry</button></div>
+    <details class="card historyTools" id="historyTools">
+      <summary data-i18n="history.tools">Filter &amp; bulk tools</summary>
+      <div class="historyFilterGrid">
+        <label><span data-i18n="history.filterFrom">From date</span><input id="historyFilterFrom" type="date"></label>
+        <label><span data-i18n="history.filterTo">To date</span><input id="historyFilterTo" type="date"></label>
+        <label><span data-i18n="history.filterMin">Minimum hours</span><input id="historyFilterMin" type="number" min="0" step="0.25" inputmode="decimal"></label>
+        <label><span data-i18n="history.filterMax">Maximum hours</span><input id="historyFilterMax" type="number" min="0" step="0.25" inputmode="decimal"></label>
+        <label><span data-i18n="history.filterTarget">Target result</span><select id="historyFilterTarget"><option value="all" data-i18n="common.all">All</option><option value="reached" data-i18n="history.filterReached">Reached</option><option value="missed" data-i18n="history.filterMissed">Not reached</option><option value="excused" data-i18n="history.filterExcused">Excused stop</option></select></label>
+        <label><span data-i18n="history.filterEdited">Edit status</span><select id="historyFilterEdited"><option value="all" data-i18n="common.all">All</option><option value="edited" data-i18n="history.filterEditedOnly">Edited</option><option value="original" data-i18n="history.filterOriginalOnly">Not edited</option></select></label>
+      </div>
+      <label class="setupInlineToggle"><input id="historyIncludeDeleted" type="checkbox" checked><span data-i18n="history.filterDeleted">Include Recently Deleted</span></label>
+      <div class="historyToolActions"><button id="historyClearFiltersBtn" class="secondary" type="button" data-i18n="history.clearFilters">Clear filters</button><button id="historyBulkModeBtn" class="secondary" type="button" aria-pressed="false" data-i18n="bulk.select">Select records</button><span class="small" id="historyFilterStatus" aria-live="polite"></span></div>
+    </details>
+    <div class="card">
+      <div class="bulkActionBar" id="historyBulkBar" hidden><button id="historySelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="historyBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="historyBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="historyBulkCount"></span></div>
+      <div id="historyList"></div>
+    </div>
+    <div class="card" id="deletedFastsCard" style="margin-top:14px" hidden>
+      <div class="sectionHeader"><h2 data-i18n="history.deletedTitle">Recently deleted</h2><span class="small" id="deletedFastsCount"></span></div>
+      <div class="small" data-i18n="history.deletedHelp">Deleted fasts are excluded from History, Statistics and XP, but their audit records stay in JSON backups until you restore or permanently delete them.</div>
+      <div class="bulkActionBar" id="deletedFastBulkBar" hidden><button id="deletedFastSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="deletedFastBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="deletedFastBulkRestoreBtn" class="secondary" type="button" data-i18n="bulk.restore">Restore selected</button><button id="deletedFastBulkPurgeBtn" class="dangerText" type="button" data-i18n="bulk.purge">Delete permanently</button><span class="small" id="deletedFastBulkCount"></span></div>
+      <div id="deletedFastsList" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section id="weight" class="screen">
+    <div class="sectionHeader"><h1 data-i18n="nav.weight">Weight</h1><button id="addWeightBtn" class="secondary" data-i18n="weight.add">Add weight</button></div>
+    <details class="card historyTools" id="weightTools">
+      <summary data-i18n="weight.tools">History tools</summary>
+      <div class="historyFilterGrid"><label><span data-i18n="history.filterFrom">From date</span><input id="weightFilterFrom" type="date"></label><label><span data-i18n="history.filterTo">To date</span><input id="weightFilterTo" type="date"></label></div>
+      <label class="setupInlineToggle"><input id="weightIncludeDeleted" type="checkbox" checked><span data-i18n="history.filterDeleted">Include Recently Deleted</span></label>
+      <div class="historyToolActions"><button id="weightClearFiltersBtn" class="secondary" type="button" data-i18n="history.clearFilters">Clear filters</button><button id="weightBulkModeBtn" class="secondary" type="button" aria-pressed="false" data-i18n="bulk.select">Select records</button><span class="small" id="weightFilterStatus" aria-live="polite"></span></div>
+    </details>
+    <div class="weightTop">
+      <div class="small" data-i18n="weight.intro">Track body weight alongside your fasting history.</div>
+      <div class="weightUnitToggle" aria-label="Weight unit" data-i18n-aria="a11y.weightUnit">
+        <button id="unitKgBtn" type="button" data-unit="kg">kg</button>
+        <button id="unitLbBtn" type="button" data-unit="lb">lb</button>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="metric"><div class="value weightValue" id="wLatest">—</div><div class="label" data-i18n="weight.latest">Latest weight</div></div>
+      <div class="metric"><div class="value weightValue" id="wChange">—</div><div class="label" data-i18n="weight.change">Change since first</div></div>
+      <div class="metric"><div class="value weightValue" id="wTarget">—</div><div class="label" data-i18n="weight.target">Target weight</div></div>
+      <div class="metric"><div class="value weightValue" id="wToTarget">—</div><div class="label" data-i18n="weight.toTarget">Difference to target</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="row weightTargetRow">
+        <div><strong data-i18n="weight.target">Target weight</strong><div class="small" data-i18n="weight.targetHelp">Optional. Leave blank if you only want to track the trend.</div></div>
+        <div class="weightTargetWrap"><input id="weightTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Target weight" data-i18n-aria="weight.target"><span id="weightTargetUnit">kg</span></div>
+      </div>
+    </div>
+    <div class="card weightStatsCard">
+      <h2 data-i18n="weight.statistics">Weight statistics</h2>
+      <div class="weightPeriodSwitcher" id="weightPeriodSwitcher" role="tablist" aria-label="Weight statistics period" data-i18n-aria="a11y.weightPeriod">
+        <button type="button" data-weight-period="daily" role="tab" aria-selected="true" class="active" data-i18n="weight.periodDaily">Daily</button>
+        <button type="button" data-weight-period="week" role="tab" aria-selected="false" data-i18n="weight.periodWeek">Week</button>
+        <button type="button" data-weight-period="month" role="tab" aria-selected="false" data-i18n="weight.periodMonth">Month</button>
+        <button type="button" data-weight-period="quarter" role="tab" aria-selected="false" data-i18n="weight.periodQuarter">Quarter</button>
+        <button type="button" data-weight-period="halfyear" role="tab" aria-selected="false" data-i18n="weight.periodHalfYear">6 months</button>
+        <button type="button" data-weight-period="year" role="tab" aria-selected="false" data-i18n="weight.periodYear">Year</button>
+      </div>
+      <div class="weightPeriodRange small" id="weightPeriodRange"></div>
+      <div class="grid weightStatsGrid">
+        <div class="metric"><div class="value weightValue" id="wPeriodStart">—</div><div class="label" data-i18n="weight.periodStart">Start</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodEnd">—</div><div class="label" data-i18n="weight.periodEnd">Latest</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodChange">—</div><div class="label" data-i18n="weight.periodChange">Change</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodAverage">—</div><div class="label" data-i18n="weight.average">Average</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodLow">—</div><div class="label" data-i18n="weight.lowest">Lowest</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodHigh">—</div><div class="label" data-i18n="weight.highest">Highest</div></div>
+      </div>
+    </div>
+    <div class="card weightChartWrap">
+      <h2 data-i18n="weight.trend">Weight trend</h2>
+      <div class="weightChartShell">
+        <canvas id="weightChartYAxis" class="weightChartYAxis" width="46" height="240" aria-hidden="true"></canvas>
+        <div id="weightChartScroller" class="weightChartScroller" aria-label="Scrollable weight trend" data-i18n-aria="a11y.weightChartScroller">
+          <div id="weightChartTrack" class="weightChartTrack">
+            <canvas id="weightChart" width="614" height="240" role="img" tabindex="0" aria-describedby="weightChartNote" aria-label="Weight trend chart" data-i18n-aria="a11y.weightChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="weightChartNavigator" role="group" aria-label="Weight history navigation" data-i18n-aria="a11y.weightChartNavigator">
+        <button id="weightChartOlderBtn" class="secondary" type="button" data-i18n="a11y.weightChartOlder">Older</button>
+        <input id="weightChartRange" type="range" min="0" max="0" step="1" value="0" aria-label="Browse weight history, oldest on the left and newest on the right" data-i18n-aria="a11y.weightChartRange" />
+        <button id="weightChartNewerBtn" class="secondary" type="button" data-i18n="a11y.weightChartNewer">Newer</button>
+      </div>
+      <div class="small" id="weightChartNote" data-i18n="weight.chartHelp">Daily shows individual measurements. Other views show one average point per calendar period. Tap a point for its value and time/period. Swipe horizontally or use the history navigator to browse older and newer data. All individual entries remain available below.</div>
+      <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
+      <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
+      <div id="weightChartData" class="chartDataList small" hidden></div>
+    </div>
+    <div class="card weightHistory"><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
+    <div class="card" id="deletedWeightsCard" style="margin-top:14px" hidden>
+      <div class="sectionHeader"><h2 data-i18n="weight.deletedTitle">Recently deleted weights</h2><span class="small" id="deletedWeightsCount"></span></div>
+      <div class="small" data-i18n="weight.deletedHelp">Deleted weight entries are excluded from charts, statistics and XP, but remain in JSON backups until restored or permanently deleted.</div>
+      <div class="bulkActionBar" id="deletedWeightBulkBar" hidden><button id="deletedWeightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="deletedWeightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="deletedWeightBulkRestoreBtn" class="secondary" type="button" data-i18n="bulk.restore">Restore selected</button><button id="deletedWeightBulkPurgeBtn" class="dangerText" type="button" data-i18n="bulk.purge">Delete permanently</button><span class="small" id="deletedWeightBulkCount"></span></div>
+      <div id="deletedWeightsList" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section id="stats" class="screen">
+    <div class="sectionHeader"><h1 data-i18n="nav.stats">Statistics</h1><button id="shareStatsBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
+    <div class="grid">
+      <div class="metric"><div class="value" id="mTotal">0</div><div class="label" data-i18n="stats.completed">Completed fasts</div></div>
+      <div class="metric"><div class="value" id="mAverage">0h</div><div class="label" data-i18n="stats.average">Average duration</div></div>
+      <div class="metric"><div class="value" id="mGoal">0</div><div class="label" data-i18n="stats.reached">Reached target</div></div>
+      <div class="metric"><div class="value" id="mLongest">0h</div><div class="label" data-i18n="stats.longest">Longest fast</div></div>
+      <div class="metric"><div class="value" id="mStreak">0</div><div class="label" data-i18n="fasting.targetStreak">Current target streak</div></div>
+      <div class="metric"><div class="value" id="mHours">0h</div><div class="label" data-i18n="stats.total">Total fasting</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="sectionHeader"><h2 data-i18n="stats.patterns">Fasting patterns</h2></div>
+      <div class="vizGroupSwitcher" id="statsVizGroupSwitcher" role="tablist" aria-label="Fasting pattern category" data-i18n-aria="stats.groupAria">
+        <button type="button" class="active" data-viz-group="overview" role="tab" aria-selected="true" data-i18n="stats.groupOverview">Overview</button>
+        <button type="button" data-viz-group="timing" role="tab" aria-selected="false" data-i18n="stats.groupTiming">Timing</button>
+        <button type="button" data-viz-group="goals" role="tab" aria-selected="false" data-i18n="stats.groupGoals">Goals</button>
+        <button type="button" data-viz-group="longterm" role="tab" aria-selected="false" data-i18n="stats.groupLongTerm">Long-term</button>
+      </div>
+      <div class="vizViewChooser">
+        <label for="statsVizSelect"><span class="vizViewLabel" data-i18n="stats.viewLabel">View</span>
+          <select id="statsVizSelect" aria-label="Fasting pattern view" data-i18n-aria="stats.viewAria">
+            <optgroup label="Overview" data-i18n-label="stats.groupOverview">
+              <option value="timeline" data-i18n="stats.vizTimeline">Timeline</option>
+              <option value="calendar" data-i18n="stats.vizCalendar">Calendar</option>
+              <option value="trend" data-i18n="stats.vizTrend">Trend</option>
+              <option value="weeks" data-i18n="stats.vizWeeks">Weeks</option>
+            </optgroup>
+            <optgroup label="Timing" data-i18n-label="stats.groupTiming">
+              <option value="startpattern" data-i18n="stats.vizStartPattern">Start times</option>
+              <option value="distribution" data-i18n="stats.vizDistribution">Durations</option>
+            </optgroup>
+            <optgroup label="Goals" data-i18n-label="stats.groupGoals">
+              <option value="success" data-i18n="stats.vizSuccess">Target success</option>
+              <option value="months" data-i18n="stats.vizMonths">Months</option>
+            </optgroup>
+            <optgroup label="Long-term" data-i18n-label="stats.groupLongTerm">
+              <option value="cumulative" data-i18n="stats.vizCumulative">Cumulative</option>
+            </optgroup>
+          </select>
+        </label>
+      </div>
+      <div class="statsRangeBar" id="statsRangeBar" hidden>
+        <label><span class="small" data-i18n="stats.rangeLabel">Chart range</span><select id="statsRangeSelect">
+          <option value="7d" data-i18n="stats.range7d">7 days</option>
+          <option value="30d" data-i18n="stats.range30d">30 days</option>
+          <option value="90d" data-i18n="stats.range90d">90 days</option>
+          <option value="6m" data-i18n="stats.range6m">6 months</option>
+          <option value="1y" data-i18n="stats.range1y">1 year</option>
+          <option value="all" data-i18n="stats.rangeAll">All</option>
+        </select></label>
+        <div class="small statsRangeSummary" id="statsRangeSummary"></div>
+      </div>
+      <div class="statsHistoryNavigator" id="statsHistoryNavigator" role="group" aria-label="Statistics history navigation" data-i18n-aria="a11y.weightChartNavigator" hidden>
+        <button id="statsHistoryOlderBtn" class="secondary" type="button" data-i18n="a11y.weightChartOlder">Older</button>
+        <input id="statsHistoryRange" type="range" min="0" max="0" step="1" value="0" aria-label="Browse statistics history, oldest on the left and newest on the right" data-i18n-aria="a11y.weightChartRange" />
+        <button id="statsHistoryNewerBtn" class="secondary" type="button" data-i18n="a11y.weightChartNewer">Newer</button>
+      </div>
+      <div id="statsSelectionLive" class="srOnly" role="status" aria-live="polite" aria-atomic="true"></div>
+      <div class="statsVizView" id="statsTimelineView">
+        <div class="timelineShell">
+          <div class="timelineAxis timelineAxisLeft" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
+          <div class="timelineScroller" id="timelineScroller">
+            <canvas id="chart" width="700" height="310" role="img" tabindex="0" aria-describedby="statsVizHelp" aria-label="Fasting timeline for all recorded fastings" data-i18n-aria="a11y.fastChart"></canvas>
+          </div>
+          <div class="timelineAxis timelineAxisRight" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
+        </div>
+      </div>
+      <div class="statsVizView" id="statsCalendarView" hidden>
+        <div class="calendarHeader">
+          <button id="calendarPrevBtn" class="secondary" type="button" aria-label="Previous month" data-i18n-aria="stats.prevMonth">‹</button>
+          <div class="calendarMonthTitle" id="calendarMonthTitle" aria-live="polite" aria-atomic="true"></div>
+          <button id="calendarNextBtn" class="secondary" type="button" aria-label="Next month" data-i18n-aria="stats.nextMonth">›</button>
+        </div>
+        <div class="calendarWeekdays" id="calendarWeekdays"></div>
+        <div class="fastCalendar" id="fastCalendar" role="group" aria-labelledby="calendarMonthTitle"></div>
+        <div class="vizLegend calendarNumericLegend" role="img" aria-label="Fasting hours per day: 0 hours, 1 to 5 hours, 6 to 11 hours, 12 to 17 hours, 18 hours or more"><span class="legendSwatch" aria-hidden="true">0h</span><span class="legendSwatch l1" aria-hidden="true">1–5h</span><span class="legendSwatch l2" aria-hidden="true">6–11h</span><span class="legendSwatch l3" aria-hidden="true">12–17h</span><span class="legendSwatch l4" aria-hidden="true">18h+</span></div>
+      </div>
+      <div class="statsVizView" id="statsTrendView" hidden>
+        <canvas id="fastTrendChart" width="660" height="260" role="img" tabindex="0" aria-label="Daily fasting hours trend for the last 30 days" data-i18n-aria="a11y.fastTrendChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsWeeksView" hidden>
+        <canvas id="fastWeeksChart" width="660" height="260" role="img" tabindex="0" aria-label="Weekly fasting hours for the last 8 weeks" data-i18n-aria="a11y.fastWeeksChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsMonthsView" hidden>
+        <canvas id="fastMonthsChart" width="660" height="260" role="img" tabindex="0" aria-label="Monthly fasting hours" data-i18n-aria="a11y.fastMonthsChart"></canvas>
+        <div class="small monthlyComparison" id="fastMonthsComparison"></div>
+      </div>
+      <div class="statsVizView" id="statsDistributionView" hidden>
+        <canvas id="fastDistributionChart" width="660" height="260" role="img" tabindex="0" aria-label="Distribution of completed fasting durations" data-i18n-aria="a11y.fastDistributionChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsSuccessView" hidden>
+        <canvas id="fastSuccessChart" width="660" height="260" role="img" tabindex="0" aria-label="Monthly target success rate for the last 12 months" data-i18n-aria="a11y.fastSuccessChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsStartPatternView" hidden>
+        <canvas id="fastStartPatternChart" width="660" height="260" role="img" tabindex="0" aria-label="Fasting start-time pattern" data-i18n-aria="a11y.fastStartPatternChart"></canvas>
+      </div>
+      <div class="statsVizView" id="statsCumulativeView" hidden>
+        <canvas id="fastCumulativeChart" width="660" height="260" role="img" tabindex="0" aria-label="Cumulative fasting hours" data-i18n-aria="a11y.fastCumulativeChart"></canvas>
+      </div>
+      <div class="notice" id="chartDetailBox" style="margin-top:10px;padding:12px 14px">
+        <strong id="chartDetailTitle" data-i18n="stats.chartDetailDefaultTitle">Chart details</strong>
+        <div class="small" id="chartDetailText" data-i18n="stats.chartDetailDefaultText" style="margin-top:6px">Tap a date, segment, point or week for details.</div>
+        <button id="statsDrilldownBtn" class="secondary" type="button" hidden style="margin-top:8px" data-i18n="stats.viewRecords">View records</button>
+      </div>
+      <div class="small" id="statsVizHelp" data-i18n="stats.timelineHelp">Timeline shows each day's 24 hours vertically: colored sections are fasting and gaps are eating/non-fasting time.</div>
+      <button id="statsChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
+      <div id="statsChartData" class="chartDataList small" tabindex="0" hidden></div>
+    </div>
+    <div class="card gamificationDetail" id="gamificationDetail" style="margin-top:14px">
+      <div class="sectionHeader"><h2 data-i18n="game.progress">Progress &amp; achievements</h2><span class="levelPill" id="gDetailLevel">Level 1</span></div>
+      <div class="grid" style="margin-top:10px">
+        <div class="metric"><div class="value" id="gXP">0</div><div class="label" data-i18n="game.xp">Consistency XP</div></div>
+        <div class="metric"><div class="value" id="gWeekly">—</div><div class="label" data-i18n="game.weekly">Target success rate this week</div></div>
+        <div class="metric"><div class="value" id="gWeightStreak">0</div><div class="label" data-i18n="game.weightStreak">Weekly weigh-in streak</div></div>
+      </div>
+      <div class="small" style="margin-top:12px" data-i18n="game.rule">10 XP per completed fast that reaches its chosen target + 2 XP per distinct day with a weight entry. Excused unavoidable interruptions are neutral for the target streak and earn no target XP. No extra XP is awarded for fasting past the target.</div>
+      <div class="scienceSources gameLevelGuide" style="margin-top:12px;padding:12px;border:2px solid var(--line);border-radius:12px"><h3 data-i18n="game.levelsExplainTitle" style="margin:0 0 8px">How levels work</h3><p class="small" style="margin-top:8px" data-i18n="game.levelsExplain">Levels measure consistency XP, not fasting duration. Earn 10 XP for each completed fast that meets your chosen target and 2 XP for each distinct day you log weight. Fasting beyond your target gives no extra XP.</p><ul class="small"><li data-i18n="game.levelsThresholds">Level 1: 0–49 XP. Level 2: 50–149 XP (100 more XP). Level 3: 150–349 XP (200 more XP). Level 4: 350+ XP.</li><li data-i18n="game.levelsPurpose">Later levels require more accumulated XP, so they mark sustained habits over time. Levels offer milestones and motivation only; they unlock no features and are not health scores or a reason to fast longer.</li></ul></div><div class="badgeGrid" id="achievementBadges"></div>
+    </div>
+  </section>
+
+  <section id="settings" class="screen">
+    <h1 data-i18n="nav.settings">Settings</h1>
+    <div class="settingsSearchWrap">
+      <input id="settingsSearchInput" type="search" autocomplete="off" spellcheck="false" placeholder="Search settings" data-i18n-placeholder="settings.searchPlaceholder" aria-label="Search settings" data-i18n-aria="settings.searchAria">
+      <button id="settingsSearchClearBtn" class="secondary settingsSearchClear" type="button" data-i18n="settings.searchClear" hidden>Clear</button>
+    </div>
+    <div class="small settingsSearchStatus" id="settingsSearchStatus" role="status" aria-live="polite"></div>
+    <details class="settingsGroup iconInstallationGroup" id="settingsGroupAppIcons" data-settings-group="settingsGroupAppIcons" open><summary><span class="settingsIconSectionLead"><span class="settingsIconSectionSymbol" aria-hidden="true">▦</span><span class="settingsIconSectionCopy"><strong data-i18n="settings.appIconDetails">App icons &amp; installation</strong><span class="small" data-i18n="settings.appIconSectionHelp">Choose your app icon and find the installation steps here.</span></span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary><div class="row" style="display:block">
+<div><strong data-i18n="settings.appIcon">App icon</strong><div class="small" data-i18n="settings.appIconHelp">Choose the icon used when you install Fasting Tracker on iPhone/iPad or Android.</div></div>
+<div aria-label="App icon" class="iconChoiceGrid" data-i18n-aria="settings.appIcon" id="iconChoiceGrid" role="radiogroup">
+          <button aria-checked="false" class="iconChoice" data-icon-choice="grayscale" role="radio" type="button"><img alt="" src="icons/grayscale/icon-192.png"/><span data-i18n="icon.grayscale">Grayscale</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="highcontrast" role="radio" type="button"><img alt="" src="icons/highcontrast/icon-192.png"/><span data-i18n="icon.highcontrast">High contrast</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="colorblind" role="radio" type="button"><img alt="" src="icons/colorblind/icon-192.png"/><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="plate" role="radio" type="button"><img alt="" src="icons/plate/icon-192.png"/><span data-i18n="icon.plate">Plate &amp; clock</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="moon" role="radio" type="button"><img alt="" src="icons/moon/icon-192.png"/><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="hourglass" role="radio" type="button"><img alt="" src="icons/hourglass/icon-192.png"/><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
+          <button aria-checked="false" class="iconChoice" data-icon-choice="timer" role="radio" type="button"><img alt="" src="icons/timer/icon-192.png"/><span data-i18n="icon.timer">F timer</span></button>
+        </div>
+<div class="platformNote"><strong data-i18n="settings.appIconIOSHeading">iPhone / iPad</strong><div class="small" data-i18n="settings.appIconIOSHelp">Choose the icon in Safari before using Add to Home Screen. An installed Home Screen web app cannot replace its icon in place.</div></div>
+<div class="platformNote"><strong data-i18n="settings.appIconAndroidHeading">Android</strong><div class="small" data-i18n="settings.appIconAndroidHelp">Choose the icon before using Install app or Add to Home screen. Some Android launchers also require reinstalling the web app before a changed icon appears.</div></div>
+<div class="platformNote iconSafetyNote"><strong data-i18n="settings.appIconSafetyHeading">Changing an installed icon safely</strong><div class="small" data-i18n="settings.appIconSafetyText">Removing or uninstalling the Home Screen web app can remove all of that installation's local data, persistent-storage status and internal recovery snapshots. They do not survive uninstall. Before removing the app, create an external backup. After reinstalling with the new icon, import that backup to restore your data and settings.</div><button class="secondary" data-i18n="settings.appIconPrepare" id="prepareIconChangeBtn" type="button">Back up &amp; prepare icon change</button><div class="reinstallLinkTools" hidden="" id="reinstallLinkTools"><label class="small" data-i18n="iconChange.linkLabel" for="reinstallLinkInput">Reinstall link</label><div class="reinstallLinkRow"><input aria-label="Reinstall link" autocomplete="off" data-i18n-aria="iconChange.linkLabel" id="reinstallLinkInput" readonly="" type="text"/><button class="secondary" data-i18n="iconChange.copyLink" id="copyReinstallLinkBtn" type="button">Copy reinstall link</button></div><div aria-live="polite" class="small" id="reinstallLinkStatus"></div></div></div>
+</div></details>
+<details class="settingsGroup" id="settingsGroupGeneral" data-settings-group="settingsGroupGeneral" open>
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.general">General</strong><span class="small" data-i18n="settings.group.generalHelp">Language, appearance, fasting target and achievements</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card">
+
+<div class="row" style="margin-top:12px">
+<div><strong data-i18n="setup.settingsTitle">Initial setup guide</strong><div class="small" data-i18n="setup.settingsHelp">Optional guided setup for Home Screen installation, storage protection, a first JSON backup, basic preferences and notifications.</div></div>
+<button class="secondary" data-i18n="setup.open" id="setupGuideBtn">Setup guide</button>
+</div>
+<div class="row">
+<div><strong data-i18n="settings.language">Interface language</strong><div class="small" data-i18n="settings.languageHelp">Use the device language automatically, or choose a language for this app.</div></div>
+<select aria-label="Interface language" data-i18n-aria="settings.language" id="languageSelect">
+<option value="system"></option>
+</select>
+</div>
+<div class="row">
+<div><strong data-i18n="settings.appearance">Appearance</strong><div class="small" data-i18n="settings.appearanceHelp">Follow the device appearance automatically, or choose light or dark mode for this app.</div></div>
+<select aria-label="Appearance" data-i18n-aria="settings.appearance" id="appearanceSelect">
+<option data-i18n="settings.appearanceSystem" value="system">System</option>
+<option data-i18n="settings.appearanceLight" value="light">Light</option>
+<option data-i18n="settings.appearanceDark" value="dark">Dark</option>
+<option data-i18n="settings.appearanceGrayscale" value="grayscale">Grayscale</option>
+<option data-i18n="settings.appearanceHighContrastLight" value="high-contrast-light">High contrast (light)</option>
+<option data-i18n="settings.appearanceHighContrastDark" value="high-contrast-dark">High contrast (dark)</option>
+<option data-i18n="settings.appearanceColorblind" value="colorblind">Colour-vision friendly</option>
+<option data-i18n="settings.appearanceProtanopia" value="protanopia">Protanopia palette</option>
+<option data-i18n="settings.appearanceDeuteranopia" value="deuteranopia">Deuteranopia palette</option>
+<option data-i18n="settings.appearanceTritanopia" value="tritanopia">Tritanopia palette</option>
+</select>
+</div>
+<div id="appearancePaletteHint" class="small" role="status" aria-live="polite" hidden></div>
+<div class="timeZoneSettings">
+  <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
+  <div class="timeZonePicker">
+    <label for="timeZoneSearch" class="small" data-i18n="settings.timeZoneSearchLabel">Find a time zone</label>
+    <input id="timeZoneSearch" type="search" autocomplete="off" data-i18n-placeholder="settings.timeZoneSearchPlaceholder" placeholder="City, country, continent, or time-zone name" aria-label="Find a time zone" data-i18n-aria="settings.timeZoneSearchLabel">
+    <label for="timeZoneSelect" class="small" data-i18n="settings.timeZoneResultsLabel">Matching locations</label>
+    <select id="timeZoneSelect" aria-label="Matching locations" data-i18n-aria="settings.timeZoneResultsLabel"><option value="system"></option></select>
+    <div id="timeZoneSearchStatus" class="small" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<div class="row">
+<div><strong data-i18n="settings.goal">Target fasting duration</strong><div class="small" data-i18n="settings.goalHelp">Any positive number of hours within the browser-supported date range. A fast keeps the target that was active when it started.</div></div>
+<div class="goalInputWrap"><input aria-label="Target fasting duration" autocomplete="off" class="numericInput" data-i18n-aria="settings.goal" id="goalHours" inputmode="decimal" type="text" value="16"/> <span id="goalUnit">h</span></div>
+</div>
+<div aria-label="Quick fasting targets" class="presetWrap" data-i18n-aria="settings.goal">
+<button class="chip" data-goal="12">12h</button>
+<button class="chip" data-goal="14">14h</button>
+<button class="chip" data-goal="16">16h</button>
+<button class="chip" data-goal="18">18h</button>
+<button class="chip" data-goal="20">20h</button>
+<button class="chip" data-goal="22">22h</button>
+<button class="chip" data-goal="23">23h</button>
+<button class="chip" data-goal="24">24h</button>
+<button class="chip" data-goal="36">36h</button>
+<button class="chip" data-goal="48">48h</button>
+<button class="chip" data-goal="72">72h</button>
+<button class="chip" data-goal="96">96h</button>
+<button class="chip" data-goal="120">120h</button>
+</div>
+<div class="small cycleHelp" id="goalCycleHelp"></div>
+<div class="row" style="margin-top:10px">
+<div><strong data-i18n="game.consistencyAchievements" id="gameToggleLabel">Consistency &amp; achievements</strong><div class="small" data-i18n="game.settingsHelp" id="gameToggleHelp">Optional gamification. Rewards meeting your own target and regular weight logging—not longer fasting.</div></div>
+<label class="toggleWrap"><input aria-describedby="gameToggleHelp" aria-labelledby="gameToggleLabel" checked="" id="gamificationToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+</div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupNotifications" data-settings-group="settingsGroupNotifications">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.notifications">Reminders &amp; notifications</strong><span class="small" data-i18n="settings.group.notificationsHelp">Fasting, backup and weigh-in reminders</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card" id="notificationsCard">
+<div class="sectionHeader"><h2 data-i18n="notifications.title">Notifications</h2><span class="levelPill" id="notificationPermissionBadge">Not enabled</span></div>
+<div class="small" data-i18n="notifications.intro">Optional device notifications. Fasting Tracker never asks for notification permission until you turn them on.</div>
+<div class="row">
+<div><strong data-i18n="notifications.master" id="notificationMasterLabel">Device notifications</strong><div class="small" data-i18n="notifications.masterHelp" id="notificationMasterHelp">Master switch for the notification types selected below.</div></div>
+<label class="toggleWrap"><input aria-describedby="notificationMasterHelp" aria-labelledby="notificationMasterLabel" id="notificationMasterToggle" type="checkbox"/><span aria-hidden="true" data-i18n="notifications.enable">Enable</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.targetReached" id="notificationTargetLabel">Target reached</strong><div class="small" data-i18n="notifications.targetReachedHelp">Notify once when the active fast reaches its selected target. It does not encourage continuing longer.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationTargetLabel" id="notificationTargetToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.backupDue" id="notificationBackupLabel">Backup reminder</strong><div class="small" data-i18n="notifications.backupDueHelp">Notify once when the 7-day external JSON backup reminder becomes due.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationBackupLabel" id="notificationBackupToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.longFastSafety" id="notificationSafetyLabel">Prolonged-fast safety reminder</strong><div class="small" data-i18n="notifications.longFastSafetyHelp">Notify once when an active fast reaches 24 hours, using neutral safety wording.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationSafetyLabel" id="notificationSafetyToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.weighIn" id="notificationWeighLabel">Weigh-in reminder</strong><div class="small" data-i18n="notifications.weighInHelp">Optional reminder after the selected interval has passed since the latest weight entry.</div></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><input id="notificationWeighCadence" type="hidden" value="weekly"/><div aria-label="Weigh-in reminder cadence" class="notificationCadenceToggle" data-i18n-aria="notifications.weighCadence" id="notificationWeighCadenceButtons" role="group"><button aria-pressed="false" data-i18n="notifications.daily" data-notification-cadence="daily" id="notificationWeighDailyBtn" type="button">Daily</button><button aria-pressed="true" class="active" data-i18n="notifications.weekly" data-notification-cadence="weekly" id="notificationWeighWeeklyBtn" type="button">Weekly</button></div><label class="toggleWrap"><input aria-labelledby="notificationWeighLabel" id="notificationWeighToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.cycleComplete" id="notificationCycleLabel">24-hour-cycle remainder completed</strong><div class="small" data-i18n="notifications.cycleCompleteHelp">Optional neutral timing notice when the mathematical remainder after a sub-24-hour fast reaches zero.</div></div>
+<label class="toggleWrap"><input aria-labelledby="notificationCycleLabel" id="notificationCycleToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.statusTitle">Device permission</strong><div aria-live="polite" class="small" id="notificationStatusText"></div></div>
+<button class="secondary" data-i18n="notifications.test" id="notificationTestBtn" type="button">Send test</button>
+</div>
+<div class="small" data-i18n="notifications.blockedHelp" hidden="" id="notificationBlockedHelp" style="margin-top:6px">On iPhone/iPad, check Settings → Notifications → Fasting Tracker. Home Screen web apps are managed there. If Fasting Tracker is absent there too, export a JSON backup before removing and reinstalling the Home Screen web app, then enable notifications when prompted.</div>
+<div class="small" data-i18n="notifications.deliveryLimit">Privacy-first limitation: this app has no push server. Notifications are checked while the app is running and when it is reopened; a fully closed or suspended PWA may not deliver them at the exact due time.</div>
+<div class="small" data-i18n="notifications.lockScreenPrivacy" style="margin-top:6px">Depending on your device settings, notification text may appear on the lock screen. Use the device's notification settings if you prefer to hide previews.</div>
+<div class="small" data-i18n="notifications.detailPolicy" style="margin-top:6px">Device notifications are intentionally brief. Full details stay inside Fasting Tracker until you dismiss them.</div>
+</div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupData" data-settings-group="settingsGroupData">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.data">Data &amp; backup</strong><span class="small" data-i18n="settings.group.dataHelp">Backups, recovery, import/export and storage protection</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="notice" data-i18n="settings.storageNotice">Your fasting and weight records are stored locally on this device. The app automatically keeps rolling internal JSON recovery snapshots and reminds you every 7 days to make an external backup.</div>
+    <div class="card">
+<div class="row" style="margin-top:10px">
+<div><strong data-i18n="backup.exportTitle">Export backup</strong><div class="small" data-i18n="backup.exportHelp">Save/share your data as one JSON backup file</div><div class="small" id="backupContentSummary"></div><div class="small backupState" id="backupFreshnessLabel"></div></div>
+<div class="csvActions"><button class="secondary" data-i18n="common.export" id="exportBtn">Export</button><button class="secondary" data-i18n="backup.exportEverything" id="exportEverythingBtn" type="button">Export everything</button></div><div class="small" id="backupExportExplanation" data-i18n="backup.exportExplanation" style="margin-top:8px">Export saves a restorable JSON backup. Export everything includes the same backup plus fasting and weight CSV tables for easier reading in Excel. Internal recovery snapshots remain on this device.</div>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.last">Last external backup</strong><div class="small" data-i18n="backup.lastHelp">A reminder appears after 7 days without one.</div></div>
+<div class="duration" data-i18n="common.never" id="lastBackupLabel">Never</div>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.nextReminder">Next external backup reminder</strong><div class="small" id="nextBackupLabel">Starts after your first fasting or weight record.</div></div>
+<button class="secondary" data-i18n="backup.now" id="settingsBackupNowBtn">Back up now</button>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.snapshots">Automatic internal JSON snapshots</strong><div class="small" id="snapshotStatus">Keeps recent, daily, weekly and monthly recovery points automatically.</div><div class="small" id="snapshotTransparency"></div></div>
+<button class="secondary" data-i18n="backup.browse" id="restoreSnapshotBtn">Browse</button>
+</div>
+<div class="row">
+<div><strong data-i18n="backup.importTitle">Import backup</strong><div class="small" data-i18n="backup.importHelp">Restore from an exported JSON file</div></div>
+<button class="secondary" data-i18n="common.import" id="importBtn">Import</button>
+<input accept="application/json,.json" hidden="" id="importFile" type="file"/>
+</div>
+<div class="row">
+<div><strong data-i18n="csv.title">CSV data export</strong><div class="small" data-i18n="csv.help">Human-readable exports for spreadsheets. CSV is not a restorable backup; keep JSON backups too.</div></div>
+<div class="csvActions"><button class="secondary" data-i18n="csv.fasts" id="exportFastCsvBtn" type="button">Fasting CSV</button><button class="secondary" data-i18n="csv.weights" id="exportWeightCsvBtn" type="button">Weight CSV</button></div>
+</div>
+<div class="row">
+<div><strong data-i18n="settings.deleteAll">Delete all data</strong><div class="small" data-i18n="settings.deleteHelp">Permanently clear fasting history, deleted-fast audit history, weight history and deleted-weight audit history on this device</div></div>
+<button class="dangerText" data-i18n="common.delete" id="resetBtn">Delete</button>
+</div>
+</div>
+    <details class="settingsSubgroup" id="settingsStorageDetails">
+      <summary data-i18n="settings.storageDetails">Storage protection & data locations</summary>
+      <div class="card" id="storageProtectionCard">
+<h2 data-i18n="storage.title">Storage protection</h2>
+<div class="row">
+<div><strong data-i18n="storage.checking" id="storageProtectionStatus">Checking storage protection…</strong><div class="small" data-i18n="storage.help" id="storageProtectionHelp">Persistent storage can reduce the chance that the browser removes local app data under storage pressure. External backups are still recommended.</div></div>
+<button class="secondary" data-i18n="storage.request" hidden="" id="storageProtectBtn">Request protection</button>
+</div>
+<div class="small" data-i18n="storage.usageUnknown" id="storageUsageLabel">Storage usage information is unavailable.</div>
+
+</div>
+      <div class="card" id="dataLocationsCard">
+<h2 data-i18n="storage.locationsTitle">Where your data lives</h2>
+<div class="dataLocationRow"><strong data-i18n="storage.currentDataTitle">Current data</strong><div class="small" data-i18n="storage.currentDataText">Your working fasting, weight, settings and audit records are stored locally in IndexedDB on this installation.</div></div>
+<div class="dataLocationRow"><strong data-i18n="storage.snapshotsTitle">Recovery snapshots</strong><div class="small" data-i18n="storage.snapshotsText">Automatic rollback points are also stored locally inside this installation. They are not cloud backups and can disappear if the app/site data is removed.</div></div>
+<div class="dataLocationRow"><strong data-i18n="storage.externalTitle">External JSON backup</strong><div class="small" data-i18n="storage.externalText">An exported JSON file is an independent copy you save outside the app. It is the safest recovery option after reinstalling or losing local storage.</div></div>
+</div>
+    </details></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupUpdates" data-settings-group="settingsGroupUpdates" open>
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.updates">Updates</strong><span class="small" data-i18n="settings.group.updatesHelp">Installed version and update checks</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card settingsCompactCard" id="settingsUpdatesCard"><div class="row" style="margin-top:10px">
+<div><strong data-i18n="help.appVersion">App version</strong><div class="small" data-i18n="help.versionHelp">Useful when checking which release is installed</div></div>
+<div class="duration" id="appVersionLabel" tabindex="0" role="button" aria-label="Reveal a small surprise">—</div>
+</div>
+<div id="patientTortoiseProgress" class="patientTortoiseProgress" hidden role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="patientTortoise" class="patientTortoise" hidden role="status" aria-live="polite" aria-atomic="true">
+  <svg class="patientTortoiseArt" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+    <path class="tortoiseGround" d="M8 81Q48 76 88 81"/>
+    <path class="tortoiseGround" d="M15 85l-4 2m70-2 4 2"/>
+    <g class="tortoiseGroundDash" fill="currentColor" opacity=".38"><circle cx="14" cy="73" r="1.5"/><circle cx="10" cy="69" r="1"/><path d="M77 73l5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></g>
+    <ellipse cx="48" cy="80" rx="28" ry="4" fill="currentColor" opacity=".1"/>
+    <g class="tortoiseBody">
+      <g class="tortoiseLeg tortoiseLegBack">
+        <path class="tortoiseLimb" d="M25 57q-8 2-9 11l-1 5q0 3 4 3h9q4-1 4-5l-1-12z"/>
+        <path class="tortoiseLimb" d="M59 57q7 2 9 10l2 5q1 4-3 5h-8q-4-1-4-5l1-12z"/>
+      </g>
+      <g class="tortoiseTail"><path d="M22 56l-9 4 7 5" fill="currentColor" fill-opacity=".4" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></g>
+      <path d="M23 54q-2 8 4 11h38q8-4 5-12z" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+      <path class="tortoiseShell" d="M20 55c-3-5-2-16 3-24 5-9 13-13 25-13s21 5 25 14c4 8 4 17 1 23-7 5-44 5-54 0z"/>
+      <path class="tortoiseShellPanel" d="M26 34l10-9 12 1 8 9-8 10-14-1zM48 26l13-2 9 10-4 11-10-1M25 35l-3 13 12 6 12-9M36 25l-1-5m13 6 1-8m8 16 13 0M34 53l-1 4m20-4 2 4"/>
+      <path class="tortoiseShellPanel" d="M38 36l10-1 4 8-8 6-8-4z" opacity=".45"/>
+      <g class="tortoiseHead">
+        <path class="tortoiseHeadShape" d="M65 42q8-7 16-1 8 5 6 13-2 8-11 8-10 0-13-9-2-6 2-11z"/>
+        <path d="M75 48q5-4 9 0" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".4"/>
+        <circle cx="80" cy="47" r="2.2" fill="currentColor"/>
+        <circle cx="80.7" cy="46.3" r=".65" fill="var(--card, white)"/>
+        <path class="tortoiseFaceLine" d="M78 56q4 3 7-1"/>
+        <path d="M72 54q2 2 3 0" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"/>
+      </g>
+      <g class="tortoiseLeg tortoiseLegFront">
+        <path class="tortoiseLimb" d="M35 58q-7 3-8 11l-1 5q0 3 4 3h8q4-1 4-5l-1-12z"/>
+        <path class="tortoiseLimb" d="M56 58q7 2 8 10l2 5q1 4-3 5h-8q-4-1-4-5l1-12z"/>
+      </g>
+    </g>
+    <path d="M20 71l-2 3m7-1-1 2m50-4 2 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+  </svg>
+  <div><div class="patientTortoiseMessage" data-i18n="easterEgg.patientTortoiseMessage">Steady is a pace, too.</div><button type="button" class="secondary" id="patientTortoiseDismiss" data-i18n="common.close">Close</button></div>
+</div>
+<div class="publicLinks" style="margin-top:8px"><a class="publicLink" data-i18n="public.changelogLink" href="changelog.html?return=settings" rel="noopener">Changelog</a></div><div class="row">
+<div><strong data-i18n="update.updates">Updates</strong><div class="small updateStatus" id="updateStatus">Checking for updates…</div></div>
+<button class="secondary" data-i18n="update.check" id="updateBtn">Check for new version</button>
+</div></div>
+    <details class="settingsSubgroup" id="settingsUpdateAdvanced">
+      <summary data-i18n="settings.updateAdvanced">Advanced update details</summary>
+      <div class="card settingsCompactCard"><div class="small" id="healthInstallState"></div><div class="small" id="healthServiceWorker"></div><div class="small" id="healthDeploymentStatus"></div><div class="small" id="healthDeploymentVersions"></div><div class="small" id="healthLastKnownGood"></div><div class="dataLocationRow" id="deploymentHistoryBlock"><strong data-i18n="deployment.historyTitle">Recent update history</strong><div class="small" id="deploymentHistoryList"></div></div></div>
+    </details></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupAccessibility" data-settings-group="settingsGroupAccessibility">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.accessibility">Accessibility</strong><span class="small" data-i18n="settings.group.accessibilityHelp">VoiceOver, large text, reduced motion and focus support</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card settingsCompactCard" id="accessibilitySettingsCard">
+      <div class="dataLocationRow"><strong data-i18n="settings.accessibilityVoiceOverTitle">VoiceOver & screen readers</strong><div class="small" data-i18n="settings.accessibilityVoiceOverText">Fasting Tracker keeps accessible labels, focus order and spoken announcements for changing status and chart selections. No switch is required.</div></div>
+      <div class="dataLocationRow"><strong data-i18n="settings.accessibilityTextTitle">Large text & reduced motion</strong><div class="small" data-i18n="settings.accessibilityTextText">The interface adapts to larger text and follows reduced-motion preferences where motion is used.</div></div>
+      <div class="dataLocationRow"><strong data-i18n="settings.accessibilityFocusTitle">Focus & chart access</strong><div class="small" data-i18n="settings.accessibilityFocusText">Interactive charts, dialogs and changing status messages include keyboard/focus and screen-reader support.</div></div>
+    </div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupAdvanced" data-settings-group="settingsGroupAdvanced">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.advanced">Advanced &amp; diagnostics</strong><span class="small" data-i18n="settings.group.advancedHelp">Integrity, storage health, benchmarks and repair tools</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="card" id="storageHealthCard">
+<div class="sectionHeader"><h2 data-i18n="storage.healthTitle">Data &amp; storage health</h2><button class="secondary" data-i18n="diagnostics.export" id="diagnosticExportBtn" type="button">Export diagnostics</button></div>
+<div class="grid" style="margin-top:10px">
+<div class="metric"><div class="value" id="healthRecordCount">—</div><div class="label" data-i18n="storage.healthRecords">Active records</div></div>
+<div class="metric"><div class="value" id="healthDeletedCount">—</div><div class="label" data-i18n="storage.healthDeleted">Deleted audit records</div></div>
+<div class="metric"><div class="value" id="healthSnapshotCount">—</div><div class="label" data-i18n="storage.healthSnapshots">Recovery snapshots</div></div>
+<div class="metric"><div class="value" id="healthBackupAge">—</div><div class="label" data-i18n="storage.healthBackup">External backup</div></div>
+</div>
+<div class="small" id="healthPersistence" style="margin-top:10px"></div>
+<div class="small" id="healthUsage"></div>
+<div class="small" id="healthLastSave"></div>
+<div class="small" id="healthProtection"></div>
+<div class="small" id="healthSnapshotDetail"></div>
+<div class="small" id="healthMigrationStatus"></div>
+<div aria-live="polite" class="small" id="healthIntegrityStatus"></div>
+
+
+
+
+
+
+<div class="small" id="healthDeletedStorage"></div>
+<div aria-atomic="true" aria-live="polite" class="small" id="healthPerformance" role="status"></div>
+<div aria-live="polite" class="small storagePressure" id="storagePressureWarning" role="status"></div>
+<div class="diagnosticActions">
+<button class="secondary" data-i18n="integrity.check" id="integrityCheckBtn" type="button">Check data integrity</button>
+<button class="secondary" data-i18n="backup.createSnapshot" id="createSnapshotBtn" type="button">Create recovery snapshot now</button>
+<button class="secondary" data-i18n="cache.repair" id="repairCacheBtn" type="button">Repair app cache</button>
+<button class="secondary" data-i18n="performance.run" id="performanceTestBtn" type="button">Run local benchmark</button>
+<button class="secondary" data-i18n="deviceChecks.run" id="deviceChecksBtn" type="button">Run device checks</button>
+<button class="secondary" data-i18n="derived.rebuild" id="rebuildDerivedBtn" type="button">Recalculate statistics &amp; charts</button>
+<button class="dangerText" data-i18n="deleted.empty" id="emptyDeletedBtn" type="button">Empty Recently Deleted</button>
+</div>
+<div aria-atomic="true" aria-live="polite" class="small" id="diagnosticActionFeedback" role="status" style="margin-top:8px;padding:8px 10px;border-left:4px solid transparent" hidden></div>
+</div></div>
+    </details>
+    <details class="settingsGroup" id="settingsGroupHelp" data-settings-group="settingsGroupHelp">
+      <summary><span class="settingsGroupTitle"><strong data-i18n="settings.group.help">About &amp; help</strong><span class="small" data-i18n="settings.group.helpHelp">Installation, privacy, safety and support information</span></span><span class="settingsGroupChevron" aria-hidden="true">›</span></summary>
+      <div class="settingsGroupBody"><div class="notice healthNotice">
+<strong data-i18n="public.healthTitle">Health &amp; safety</strong>
+<div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
+<div class="publicLinks"><a class="publicLink" data-i18n="public.healthLink" href="about.html?return=fasting#health" rel="noopener">Read health &amp; safety information</a></div>
+</div><div class="card" id="aboutHelp">
+<h2 data-i18n="help.title">About &amp; Help</h2>
+<div class="helpHeading" data-i18n="help.installIOS">Install on iPhone / iPad</div>
+<ol class="helpSteps small">
+<li data-i18n="help.installIOS1">Open the app's web address in Safari.</li>
+<li data-i18n-html="help.installIOS2">Tap Share, then <strong>Add to Home Screen</strong>.</li>
+<li data-i18n-html="help.installIOS3">Keep <strong>Open as Web App</strong> enabled if iOS shows that option, then tap Add.</li>
+</ol>
+<div class="helpHeading" data-i18n="help.installAndroid">Install on Android</div>
+<ol class="helpSteps small">
+<li data-i18n="help.installAndroid1">Open the app's web address in Chrome or another browser that supports PWA installation.</li>
+<li data-i18n-html="help.installAndroid2">Open the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+<li data-i18n="help.installAndroid3">Confirm the installation. Fasting Tracker will appear on the Home screen/app launcher and can work offline after its files are cached.</li>
+</ol>
+<div class="helpHeading" data-i18n="help.backup">Backup &amp; restore</div>
+<div class="small" data-i18n-html="help.backupText">The app reminds you every 7 days to use <strong>Export</strong> and save the JSON backup in Files, iCloud Drive, Google Drive, or another secure location. Before an app update, <strong>Backup &amp; Update</strong> creates an external backup first. Internal recovery snapshots are stored inside the installed web app and are lost if that installation is removed. The JSON file itself is the complete external backup; no companion text file is required. Before reinstalling to change the Home Screen icon, export an external backup; after reinstalling, use <strong>Import</strong> to restore it.</div>
+<div class="small" data-i18n="backup.unencrypted" style="margin-top:8px">Exported JSON backups are plain, unencrypted files. Store them somewhere you consider secure.</div>
+<div class="helpHeading" data-i18n="help.privacy">Privacy &amp; storage</div>
+<div class="small" data-i18n="help.privacyText">Your fasting and weight records stay in this device's local web-app storage. The hosted website contains only the app files and does not receive your fasting or weight history. Each user who installs the app has separate local data. Clearing browser or website data can remove local records, so keep a recent backup.</div>
+<div class="helpHeading" data-i18n="help.timeZoneTitle">Historical time zones</div>
+<div class="small" data-i18n="help.timeZoneText">Fasts and weight entries remember the time zone in which they were created, so historical clock times and calendar-day charts do not shift if you later travel to another time zone.</div>
+<div class="helpHeading" data-i18n="help.autophagy">Autophagy indicator</div>
+<div class="small" data-i18n="help.autophagyText">The science card deliberately does not claim that autophagy starts at a fixed hour. Autophagy occurs continuously at a basal level, and current human studies do not support a universal fasting-duration threshold. The card separates well-established metabolic timing from more uncertain autophagy evidence and links to the studies used.</div>
+<div class="helpHeading" data-i18n="help.consistency">Consistency system</div>
+<div class="small" data-i18n="help.consistencyText">Gamification is optional. A fast that reaches its chosen target earns 10 XP regardless of whether it ends exactly at the target or continues much longer. An excused unavoidable interruption does not break the target streak and does not earn target XP. Weight logging earns 2 XP per distinct calendar day. The system deliberately does not reward extreme fasting duration.</div>
+<div class="helpHeading" data-i18n="public.healthTitle">Health &amp; safety</div>
+<div class="small" data-i18n="public.healthText">Fasting Tracker is an informational self-tracking tool, not medical advice. It does not determine whether a fasting duration is safe for you and does not recommend extended fasting.</div>
+<div class="helpHeading" data-i18n="public.infoTitle">Public information</div>
+<div class="small" data-i18n="public.infoText">Read the full privacy information, health disclaimer and scientific-source notes.</div>
+<div class="publicLinks">
+<a class="publicLink" data-i18n="public.privacy" href="privacy.html?return=settings" rel="noopener">Privacy</a>
+<a class="publicLink" data-i18n="public.about" href="about.html?return=settings" rel="noopener">About &amp; sources</a>
+<a class="publicLink" data-i18n="public.license" href="license.html?return=settings" rel="noopener">MIT License</a>
+<a class="publicLink" data-i18n="public.branding" href="branding.html?return=settings" rel="noopener">Branding Policy</a>
+<a class="publicLink" data-i18n="public.support" href="{{ site.github.repository_url }}/issues" rel="noopener noreferrer" target="_blank">Support / report an issue</a>
+</div>
+<div class="small" data-i18n="public.supportWarning" style="margin-top:8px">GitHub Issues are public. Do not include fasting history, weight data, medical information or other personal data in a report.</div>
+
+
+</div></div>
+    </details>
+    <div class="version" id="appFooterVersion">Fasting Tracker</div>
+  </section>
+</main>
+
+
+<div class="modalBackdrop" id="setupModal" hidden>
+  <div class="modalCard setupModalCard" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <div class="setupTopRow"><div class="setupProgress" id="setupProgress">Step 1 of 6</div><button id="setupDismissBtn" type="button" class="secondary" data-i18n="setup.notNow">Not now</button></div>
+    <h2 id="setupTitle" data-i18n="setup.title">Recommended first setup</h2>
+
+    <div class="setupStep" id="setupStepInstall" data-setup-step="1">
+      <h3 data-i18n="setup.installTitle">1. Add Fasting Tracker to your Home Screen</h3>
+      <div class="setupStepText" data-i18n="setup.installIntro">For the most app-like and reliable mobile experience, install the app before you begin tracking.</div>
+      <div id="setupIconArea" class="setupIconGrid">
+        <strong data-i18n="setup.iconTitle">Choose the Home Screen icon first</strong>
+        <div class="small" data-i18n="setup.iconHelp">On iPhone/iPad the installed icon is chosen at installation. Changing it later can require a safe backup and reinstall.</div>
+        <div class="iconChoiceGrid" role="radiogroup" aria-label="App icon" data-i18n-aria="settings.appIcon">
+          <button type="button" class="iconChoice" data-icon-choice="grayscale" role="radio" aria-checked="false"><img src="icons/grayscale/icon-192.png" alt=""><span data-i18n="icon.grayscale">Grayscale</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="highcontrast" role="radio" aria-checked="false"><img src="icons/highcontrast/icon-192.png" alt=""><span data-i18n="icon.highcontrast">High contrast</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="colorblind" role="radio" aria-checked="false"><img src="icons/colorblind/icon-192.png" alt=""><span data-i18n="icon.colorblind">Colour-vision friendly</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="plate" role="radio" aria-checked="false"><img src="icons/plate/icon-192.png" alt=""><span data-i18n="icon.plate">Plate &amp; clock</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="moon" role="radio" aria-checked="false"><img src="icons/moon/icon-192.png" alt=""><span data-i18n="icon.moon">Moon &amp; utensils</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="hourglass" role="radio" aria-checked="false"><img src="icons/hourglass/icon-192.png" alt=""><span data-i18n="icon.hourglass">Hourglass &amp; leaf</span></button>
+          <button type="button" class="iconChoice" data-icon-choice="timer" role="radio" aria-checked="false"><img src="icons/timer/icon-192.png" alt=""><span data-i18n="icon.timer">F timer</span></button>
+        </div>
+      </div>
+      <div class="setupStatus" id="setupInstallStatus"></div>
+      <div class="setupActionRow" id="setupInstallActions">
+        <button id="setupContinueBrowserBtn" type="button" class="secondary" data-i18n="setup.continueBrowser" hidden>Continue in browser instead</button>
+        <button id="setupImportExistingBtn" type="button" class="secondary" data-i18n="setup.importExisting" hidden>Import existing JSON backup</button>
+        <button id="setupPreInstallBackupBtn" type="button" class="secondary" data-i18n="setup.preInstallBackup" hidden>Export browser backup first</button>
+      </div>
+      <div class="small" id="setupInstallExtra" style="margin-top:8px"></div>
+    </div>
+
+    <div class="setupStep" id="setupStepStorage" data-setup-step="2" hidden>
+      <h3 data-i18n="setup.storageTitle">2. Protect local storage</h3>
+      <div class="setupStepText" data-i18n="setup.storageIntro">Ask the browser to make this app's storage persistent. This reduces automatic eviction under storage pressure, but it does not protect against uninstalling the app, clearing website data, device loss or corruption.</div>
+      <div class="setupStatus" id="setupStorageStatus" data-i18n="storage.checking">Checking storage protection…</div>
+      <div class="small" data-i18n="setup.importBeforeBackup" style="margin-top:8px">If you moved from Safari/browser and made a JSON backup there, import it before creating the new backup in the next step.</div>
+      <div class="setupActionRow"><button id="setupProtectBtn" type="button" class="primary" data-i18n="setup.storageProtect">Protect storage</button><button id="setupStorageImportBtn" type="button" class="secondary" data-i18n="setup.importExisting">Import existing JSON backup</button></div>
+      <div class="small" id="setupStorageUsage" style="margin-top:8px"></div>
+    </div>
+
+    <div class="setupStep" id="setupStepBackup" data-setup-step="3" hidden>
+      <h3 data-i18n="setup.backupTitle">3. Make your first manual JSON backup</h3>
+      <div class="setupStepText" data-i18n="setup.backupIntro">Export one JSON file and save it outside the app, preferably in Files/iCloud Drive, Google Drive or another location you control.</div>
+      <div class="setupStatus" id="setupBackupStatus"></div>
+      <div class="setupActionRow"><button id="setupExportBtn" type="button" class="primary" data-i18n="setup.export">Export JSON backup</button></div>
+      <div class="small" data-i18n="setup.backupReminder" style="margin-top:8px">After you begin recording data, Fasting Tracker reminds you every 7 days to make another external backup.</div>
+    </div>
+
+    <div class="setupStep" id="setupStepBasics" data-setup-step="4" hidden>
+      <h3 data-i18n="setup.basicsTitle">4. Set the basics</h3>
+      <div class="setupStepText" data-i18n="setup.basicsIntro">Choose your default fasting target, weight unit and whether consistency gamification is enabled. You can change all of these later.</div>
+      <div class="setupBasicsGrid">
+        <div>
+          <label for="setupGoalInput" data-i18n="setup.goal">Default fasting target</label>
+          <input id="setupGoalInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Default fasting target" data-i18n-aria="setup.goal">
+          <div class="presetWrap" style="margin-top:8px">
+            <button type="button" class="chip" data-setup-goal="12">12h</button><button type="button" class="chip" data-setup-goal="14">14h</button><button type="button" class="chip" data-setup-goal="16">16h</button><button type="button" class="chip" data-setup-goal="18">18h</button><button type="button" class="chip" data-setup-goal="20">20h</button><button type="button" class="chip" data-setup-goal="22">22h</button><button type="button" class="chip" data-setup-goal="23">23h</button><button type="button" class="chip" data-setup-goal="24">24h</button>
+          </div>
+        </div>
+        <div>
+          <label data-i18n="setup.weightUnit">Weight unit</label>
+          <div class="setupUnitToggle" role="group" aria-label="Weight unit" data-i18n-aria="a11y.weightUnit"><button id="setupUnitKgBtn" type="button">kg</button><button id="setupUnitLbBtn" type="button">lb</button></div>
+        </div>
+        <label class="setupInlineToggle"><input id="setupGameToggle" type="checkbox"><span data-i18n="setup.gamification">Consistency gamification</span></label>
+        <div class="formError" id="setupBasicsError" hidden></div>
+      </div>
+    </div>
+
+    <div class="setupStep" id="setupStepNotifications" data-setup-step="5" hidden>
+      <h3 data-i18n="setup.notificationsTitle">5. Choose notifications</h3>
+      <div class="setupStepText" data-i18n="setup.notificationsIntro">Optional alerts can tell you when your fasting target is reached, remind you about backups, and provide selected safety or tracking reminders. Permission is requested only after you press Enable notifications.</div>
+      <div class="setupBasicsGrid" style="margin-top:12px">
+        <label class="setupInlineToggle"><input id="setupNotificationTargetToggle" type="checkbox"><span data-i18n="notifications.targetReached">Target reached</span></label>
+        <label class="setupInlineToggle"><input id="setupNotificationBackupToggle" type="checkbox"><span data-i18n="notifications.backupDue">Backup reminder</span></label>
+        <label class="setupInlineToggle"><input id="setupNotificationSafetyToggle" type="checkbox"><span data-i18n="notifications.longFastSafety">Prolonged-fast safety reminder</span></label>
+        <div class="row setupNotificationWeighRow">
+          <label class="setupInlineToggle"><input id="setupNotificationWeighToggle" type="checkbox"><span data-i18n="notifications.weighIn">Weigh-in reminder</span></label>
+          <input id="setupNotificationWeighCadence" type="hidden" value="weekly">
+          <div class="notificationCadenceToggle" id="setupNotificationWeighCadenceButtons" role="group" aria-label="Weigh-in reminder cadence" data-i18n-aria="notifications.weighCadence"><button id="setupNotificationWeighDailyBtn" type="button" data-setup-notification-cadence="daily" aria-pressed="false" data-i18n="notifications.daily">Daily</button><button id="setupNotificationWeighWeeklyBtn" type="button" data-setup-notification-cadence="weekly" aria-pressed="true" class="active" data-i18n="notifications.weekly">Weekly</button></div>
+        </div>
+        <label class="setupInlineToggle"><input id="setupNotificationCycleToggle" type="checkbox"><span data-i18n="notifications.cycleComplete">24-hour-cycle remainder completed</span></label>
+      </div>
+      <div class="setupStatus" id="setupNotificationStatus" style="margin-top:12px"></div>
+      <div class="setupActionRow"><button id="setupEnableNotificationsBtn" type="button" class="primary" data-i18n="setup.notificationsEnable">Enable notifications</button><button id="setupSkipNotificationsBtn" type="button" class="secondary" data-i18n="setup.notificationsSkip">Not now</button></div>
+      <div class="small" data-i18n="setup.notificationsLimit" style="margin-top:8px">Fasting Tracker has no push server. Alerts are checked while the app is running and when it is reopened, so exact background delivery cannot be guaranteed when the app is fully suspended.</div>
+    </div>
+
+    <div class="setupStep" id="setupStepReady" data-setup-step="6" hidden>
+      <h3 data-i18n="setup.readyTitle">6. Ready to track</h3>
+      <div class="setupStepText" data-i18n="setup.readyIntro">Use the Home Screen app when possible, keep external JSON backups, and review the health and safety guidance before fasting.</div>
+      <div class="setupChecklist" id="setupReadySummary"></div>
+      <div class="small" data-i18n="setup.readyBackupReminder" style="margin-top:10px">Internal recovery snapshots stay inside this installation. Keep external JSON backups because uninstalling, clearing website data or losing the device can remove local records.</div>
+    </div>
+
+    <div class="modalActions wrap">
+      <button id="setupBackBtn" type="button" class="secondary" data-i18n="setup.back">Back</button>
+      <button id="setupNextBtn" type="button" class="primary" data-i18n="setup.continue">Continue</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="backdateModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
+    <h2 id="backdateModalTitle" data-i18n="backdate.title">Start an ongoing fast</h2>
+    <div class="small" data-i18n="backdate.help">Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.</div>
+    <div class="formGroup">
+      <label for="backdateStart" data-i18n="backdate.start">Started at</label>
+      <input id="backdateStart" type="datetime-local" step="60" />
+      <div class="presetWrap" aria-label="Quick start times" data-i18n-aria="backdate.quickAria">
+        <button class="chip backdatePreset" type="button" data-hours="1" data-i18n="backdate.1h">1h ago</button>
+        <button class="chip backdatePreset" type="button" data-hours="2" data-i18n="backdate.2h">2h ago</button>
+        <button class="chip backdatePreset" type="button" data-hours="3" data-i18n="backdate.3h">3h ago</button>
+        <button class="chip backdatePreset" type="button" data-hours="4" data-i18n="backdate.4h">4h ago</button>
+        <button class="chip backdatePreset" type="button" data-hours="6" data-i18n="backdate.6h">6h ago</button>
+        <button class="chip backdatePreset" type="button" data-hours="12" data-i18n="backdate.12h">12h ago</button>
+      </div>
+    </div>
+    <div class="notice" id="backdateTargetSummary">—</div>
+    <div class="formError" id="backdateError" hidden></div>
+    <div class="backdateConflict" id="backdateConflict" hidden role="alert">
+      <strong id="backdateConflictTitle"></strong>
+      <div class="backdateConflictList" id="backdateConflictList"></div>
+      <div class="small" id="backdateConflictHint"></div>
+      <div class="backdateConflictActions">
+        <button id="backdateAdjustBtn" class="secondary" type="button"></button>
+        <button id="backdateEditConflictBtn" class="secondary" type="button" data-i18n="backdate.editConflict">Edit existing record</button>
+        <button id="backdateDeleteConflictBtn" class="dangerText" type="button" data-i18n="backdate.deleteConflict">Delete conflicting record &amp; start</button>
+      </div>
+    </div>
+    <div class="modalActions">
+      <button id="backdateCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="backdateStartBtn" class="primary" data-i18n="backdate.startFast">Start fast</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="activeTargetModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="activeTargetModalTitle">
+    <h2 id="activeTargetModalTitle" data-i18n="activeTarget.title">Change active fasting target</h2>
+    <div class="small" data-i18n="activeTarget.help">This changes the target for the current fast. When this fast is saved, that target becomes the default for the next fast.</div>
+    <div class="formGroup" style="margin-top:14px">
+      <label for="activeTargetInput" data-i18n="activeTarget.targetHours">Target hours</label>
+      <input id="activeTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
+    </div>
+    <div class="presetWrap" id="activeTargetPresets" aria-label="Quick active fasting targets" data-i18n-aria="activeTarget.quickAria">
+      <button type="button" class="chip" data-active-goal="12">12h</button>
+      <button type="button" class="chip" data-active-goal="14">14h</button>
+      <button type="button" class="chip" data-active-goal="16">16h</button>
+      <button type="button" class="chip" data-active-goal="18">18h</button>
+      <button type="button" class="chip" data-active-goal="20">20h</button>
+      <button type="button" class="chip" data-active-goal="22">22h</button>
+      <button type="button" class="chip" data-active-goal="23">23h</button>
+      <button type="button" class="chip" data-active-goal="24">24h</button>
+      <button type="button" class="chip" data-active-goal="36">36h</button>
+      <button type="button" class="chip" data-active-goal="48">48h</button>
+      <button type="button" class="chip" data-active-goal="72">72h</button>
+      <button type="button" class="chip" data-active-goal="96">96h</button>
+      <button type="button" class="chip" data-active-goal="120">120h</button>
+    </div>
+    <div class="small cycleHelp" id="activeGoalCycleHelp"></div>
+    <div class="formError" id="activeTargetError" hidden></div>
+    <div class="modalActions">
+      <button id="activeTargetCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="activeTargetSaveBtn" class="primary" data-i18n="common.save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="entryModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="entryModalTitle">
+    <h2 id="entryModalTitle" data-i18n="history.addTitle">Add fasting entry</h2>
+    <div class="formGroup">
+      <label for="entryStart" data-i18n="history.start">Start</label>
+      <input id="entryStart" type="datetime-local" step="60" />
+    </div>
+    <div class="formGroup">
+      <label for="entryEnd" data-i18n="history.end">End</label>
+      <input id="entryEnd" type="datetime-local" step="60" />
+    </div>
+    <div class="formGroup">
+      <label for="entryGoal" data-i18n="history.targetHours">Target hours</label>
+      <input id="entryGoal" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
+    </div>
+    <div class="formGroup" id="entryStopReasonGroup" hidden>
+      <label for="entryStopReason" data-i18n="fasting.earlyStopReasonEdit">Early-stop reason</label>
+      <select id="entryStopReason" style="width:100%;max-width:none">
+        <option value="" data-i18n="fasting.stopReasonUnspecified">Not classified</option>
+        <option value="personal" data-i18n="fasting.stopReasonPersonal">Personal choice</option>
+        <option value="business-social" data-i18n="fasting.stopReasonBusiness">Business / social obligation</option>
+        <option value="health-safety" data-i18n="fasting.stopReasonHealth">Health / safety reason</option>
+        <option value="travel-unexpected" data-i18n="fasting.stopReasonTravel">Travel / unexpected circumstances</option>
+        <option value="other-unavoidable" data-i18n="fasting.stopReasonOther">Other unavoidable reason</option>
+      </select>
+      <div class="small stopReasonHelp" data-i18n="fasting.stopReasonEditHelp">Only missed-target fasts can be classified. Unavoidable reasons are neutral for the consistency streak but do not count as target reached.</div>
+    </div>
+    <div class="small" data-i18n="history.overlapHelp">Manual entries cannot overlap another saved fast or the current active fast.</div>
+    <div class="small" id="entryAuditHelp" data-i18n="history.editAuditHelp" hidden>Corrections keep the same record ID. Previous values are retained in the edit audit history and included in JSON backups.</div>
+    <div class="formError" id="entryError" hidden></div>
+    <div class="modalActions">
+      <button id="entryCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="entrySaveBtn" class="primary" data-i18n="common.save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="weightModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="weightModalTitle">
+    <h2 id="weightModalTitle" data-i18n="weight.addTitle">Add weight</h2>
+    <div class="formGroup">
+      <label for="weightWhen" data-i18n="weight.dateTime">Date &amp; time</label>
+      <input id="weightWhen" type="datetime-local" step="60" />
+    </div>
+    <div class="formGroup">
+      <label for="weightValueInput"><span data-i18n="nav.weight">Weight</span> (<span id="weightModalUnit">kg</span>)</label>
+      <input id="weightValueInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
+    </div>
+    <div class="formError" id="weightError" hidden></div>
+    <div class="modalActions">
+      <button id="weightCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="weightSaveBtn" class="primary" data-i18n="common.save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="importPreviewModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="importPreviewTitle">
+    <h2 id="importPreviewTitle" data-i18n="import.previewTitle">Preview backup import</h2>
+    <div class="small" id="importPreviewMeta"></div>
+    <div class="small" id="importPreviewCounts" style="margin-top:8px"></div>
+    <div class="small" id="importPreviewRange" style="margin-top:6px"></div>
+    <div class="small" data-i18n="import.previewHelp" style="margin-top:8px">Replace overwrites this installation. Merge keeps both datasets, removes exact duplicates and stops if conflicting fasting records are detected.</div>
+    <div class="formError" id="importPreviewError" hidden></div>
+    <div class="modalActions wrap">
+      <button id="importPreviewCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button>
+      <button id="importPreviewMergeBtn" class="secondary" type="button" data-i18n="import.merge">Merge backup</button>
+      <button id="importPreviewReplaceBtn" class="primary" type="button" data-i18n="import.replace">Replace data</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="destructiveResetModal" hidden>
+  <div class="modalCard" role="alertdialog" aria-modal="true" aria-labelledby="destructiveResetTitle" aria-describedby="destructiveResetWarning destructiveResetBackupStatus">
+    <h2 id="destructiveResetTitle"></h2>
+    <p class="small" id="destructiveResetWarning"></p>
+    <p class="small" id="destructiveResetBackupStatus" role="status"></p>
+    <label class="shareOption" for="destructiveResetBackupAck">
+      <input id="destructiveResetBackupAck" type="checkbox"/>
+      <span id="destructiveResetBackupAckLabel"></span>
+    </label>
+    <div class="formGroup">
+      <label id="destructiveResetPhraseLabel" for="destructiveResetPhrase"></label>
+      <input id="destructiveResetPhrase" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="destructiveResetPhraseLabel"/>
+    </div>
+    <div class="modalActions wrap">
+      <button id="destructiveResetCancelBtn" type="button" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="destructiveResetConfirmBtn" type="button" class="dangerText" disabled></button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="updateModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
+    <h2 id="updateModalTitle" data-i18n="update.install">Install update</h2>
+    <div class="small" id="updateModalText">—</div>
+    <div class="modalActions wrap">
+      <button id="updateCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="updateWithoutBackupBtn" class="secondary" data-i18n="update.withoutBackup">Update without backup</button>
+      <button id="backupUpdateBtn" class="primary" data-i18n="update.backupUpdate">Backup &amp; Update</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="snapshotModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="snapshotModalTitle">
+    <h2 id="snapshotModalTitle" data-i18n="backup.snapshots">Internal recovery snapshots</h2>
+    <div class="small" data-i18n="backup.snapshotsHelp">These automatic JSON snapshots stay on this device only. The app keeps 5 recent, 7 daily, 4 weekly and 6 monthly recovery points when enough history exists. If local storage becomes limited, it may keep fewer snapshots and will warn you. They do not replace an external backup.</div>
+    <div class="snapshotSummary" id="snapshotModalSummary"></div>
+    <div class="healthActions"><button id="snapshotCreateNowBtn" class="secondary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button></div>
+    <div id="snapshotList" style="margin-top:10px"></div>
+    <div class="modalActions">
+      <button id="snapshotCloseBtn" class="secondary" data-i18n="common.close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="snapshotPreviewModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="snapshotPreviewTitle">
+    <h2 id="snapshotPreviewTitle" data-i18n="backup.previewTitle">Recovery snapshot preview</h2>
+    <div class="small" id="snapshotPreviewDate"></div>
+    <div class="small" id="snapshotPreviewReason" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewLabel" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewCounts" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewSize" style="margin-top:6px"></div>
+    <div class="small" id="snapshotPreviewComparison" style="margin-top:8px"></div>
+    <div class="modalActions wrap"><button id="snapshotPreviewCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="snapshotPreviewRestoreBtn" class="primary" type="button" data-i18n="common.restore">Restore</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="manualSnapshotModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="manualSnapshotTitle">
+    <h2 id="manualSnapshotTitle" data-i18n="backup.manualTitle">Create recovery snapshot</h2>
+    <div class="formGroup"><label for="manualSnapshotLabel" data-i18n="backup.manualLabel">Optional label</label><input id="manualSnapshotLabel" type="text" maxlength="80" autocomplete="off" placeholder="" data-i18n-placeholder="backup.manualPlaceholder"></div>
+    <div class="small" data-i18n="backup.manualHelp">A short label can help you recognize this recovery point later.</div>
+    <div aria-atomic="true" aria-live="polite" class="small" id="manualSnapshotFeedback" role="status" style="margin-top:8px;padding:8px 10px;border-left:4px solid transparent" hidden></div>
+    <div class="modalActions"><button id="manualSnapshotCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="manualSnapshotSaveBtn" class="primary" type="button" data-i18n="backup.createSnapshot">Create recovery snapshot now</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="integrityModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="integrityModalTitle">
+    <h2 id="integrityModalTitle" data-i18n="integrity.title">Data integrity check</h2>
+    <div id="integritySummary" class="small"></div>
+    <ul id="integrityIssueList" class="integrityList small"></ul>
+    <div id="integrityCopyStatus" class="small" role="status" aria-live="polite"></div>
+    <div class="modalActions"><button id="integrityCopyBtn" class="secondary" type="button" data-i18n="integrity.copy">Copy report</button><button id="integrityCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="deviceCheckModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="deviceCheckModalTitle">
+    <h2 id="deviceCheckModalTitle" data-i18n="deviceChecks.title">Device compatibility checks</h2>
+    <div class="small" data-i18n="deviceChecks.help">These checks run only on this device and do not upload your data.</div>
+    <div aria-atomic="true" aria-live="polite" class="small" id="deviceCheckSummary" role="status" style="margin-top:8px"></div>
+    <ul id="deviceCheckList" class="small" style="padding-left:22px"></ul>
+    <div class="modalActions"><button id="deviceCheckCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="editAuditModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editAuditTitle">
+    <h2 id="editAuditTitle" data-i18n="history.editHistoryTitle">Edit history</h2>
+    <div class="small" id="editAuditCurrent"></div>
+    <div id="editAuditList" style="margin-top:10px"></div>
+    <div class="modalActions"><button id="editAuditCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="statsDrilldownModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="statsDrilldownTitle">
+    <h2 id="statsDrilldownTitle" data-i18n="stats.drilldownTitle">Records in this chart value</h2>
+    <div class="small" id="statsDrilldownSummary"></div>
+    <div id="statsDrilldownList" class="drilldownList"></div>
+    <div class="modalActions"><button id="statsDrilldownCloseBtn" class="secondary" type="button" data-i18n="common.close">Close</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="longFastModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="longFastModalTitle">
+    <h2 id="longFastModalTitle" data-i18n="safety.longFastTitle">Extended fasting target</h2>
+    <div class="small" id="longFastModalText"></div>
+    <div class="publicLinks"><a class="publicLink" href="about.html?return=fasting#health" rel="noopener" data-i18n="public.healthLink">Read health &amp; safety information</a></div>
+    <div class="modalActions">
+      <button id="longFastCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
+      <button id="longFastContinueBtn" class="primary" data-i18n="safety.continue">Use this target</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="shareModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+    <h2 id="shareModalTitle" data-i18n="share.title">Share progress</h2>
+    <div class="small" data-i18n="share.help">Choose what to include. Fasting Tracker opens your device share sheet; the app itself does not upload this message.</div>
+    <div class="shareOptions">
+      <label class="shareOption"><input id="shareFastToggle" type="checkbox" checked><span class="shareOptionText"><strong data-i18n="share.fastOption">Current/latest fast</strong><span class="small" data-i18n="share.fastOptionHelp">Elapsed or latest completed fasting result.</span></span></label>
+      <label class="shareOption"><input id="shareStatsToggle" type="checkbox" checked><span class="shareOptionText"><strong data-i18n="share.statsOption">Fasting summary</strong><span class="small" data-i18n="share.statsOptionHelp">Completed fasts, average, total fasting and current streak.</span></span></label>
+      <label class="shareOption" id="shareConsistencyOption"><input id="shareConsistencyToggle" type="checkbox" checked><span class="shareOptionText"><strong data-i18n="share.consistencyOption">Consistency</strong><span class="small" data-i18n="share.consistencyOptionHelp">XP and current level when gamification is enabled.</span></span></label>
+      <label class="shareOption"><input id="shareWeightToggle" type="checkbox"><span class="shareOptionText"><strong data-i18n="share.weightOption">Weight progress</strong><span class="small" data-i18n="share.weightOptionHelp">Latest weight and change since your first entry. Off by default for privacy.</span></span></label>
+    </div>
+    <div class="small"><strong data-i18n="share.preview">Preview</strong></div>
+    <div class="sharePreview" id="sharePreview" aria-live="polite"></div>
+    <div class="shareInstallLink" id="shareInstallLink"></div>
+    <div class="shareStatus" id="shareStatus" aria-live="polite"></div>
+    <div class="modalActions wrap">
+      <button id="shareCancelBtn" class="secondary" type="button" data-i18n="common.cancel">Cancel</button>
+      <button id="shareCopyBtn" class="secondary" type="button" data-i18n="share.copy">Copy</button>
+      <button id="shareNativeBtn" class="primary" type="button" data-i18n="share.share">Share</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="stopFastModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="stopFastModalTitle">
+    <h2 id="stopFastModalTitle" data-i18n="fasting.stopModalTitle">Stop fasting?</h2>
+    <div class="stopConfirmText" id="stopFastModalText"></div>
+    <div class="formGroup" id="stopReasonGroup" hidden>
+      <label for="stopReasonSelect" data-i18n="fasting.earlyStopReason">Why are you stopping before your target?</label>
+      <select id="stopReasonSelect" style="width:100%;max-width:none">
+        <option value="personal" data-i18n="fasting.stopReasonPersonal">Personal choice</option>
+        <option value="business-social" data-i18n="fasting.stopReasonBusiness">Business / social obligation</option>
+        <option value="health-safety" data-i18n="fasting.stopReasonHealth">Health / safety reason</option>
+        <option value="travel-unexpected" data-i18n="fasting.stopReasonTravel">Travel / unexpected circumstances</option>
+        <option value="other-unavoidable" data-i18n="fasting.stopReasonOther">Other unavoidable reason</option>
+      </select>
+      <div class="small stopReasonHelp" data-i18n="fasting.stopReasonHelp">Unavoidable interruptions stay factual in your statistics but are neutral for the consistency streak and receive no target-completion XP.</div>
+    </div>
+    <div class="modalActions" id="stopFastModalActions">
+      <button id="continueOriginalTargetBtn" class="primary" type="button" data-i18n="fasting.shorterOfferOriginal" data-i18n-aria="fasting.shorterOfferOriginalAria" aria-label="Continue fasting to the original target" hidden>Continue to original target</button>
+      <button id="keepFastingBtn" class="secondary" type="button" data-i18n="fasting.keepFasting">Keep fasting</button>
+      <button id="stopAndSaveBtn" class="primary stop" type="button" data-i18n="fasting.stopAndSave">Stop &amp; save</button>
+    </div>
+  </div>
+</div>
+
+<div class="stopUndoBar" id="stopUndoBar" role="status" aria-live="assertive" hidden>
+  <div class="stopUndoText" id="stopUndoText" data-i18n="fasting.stoppedUndo">Fast stopped and saved.</div>
+  <span class="stopUndoCountdown" id="stopUndoCountdown" aria-hidden="true">10s</span>
+  <button id="stopUndoBtn" type="button" data-i18n="fasting.undo">Undo</button>
+</div>
+
+<div class="undoToast" id="undoToast" role="status" aria-live="polite" hidden><span id="undoToastText"></span><button id="undoToastBtn" type="button" data-i18n="common.undo">Undo</button></div>
+
+<nav>
+  <div class="tabs" role="tablist">
+    <button class="tab active" role="tab" data-screen="fasting" aria-current="page" aria-selected="true"><span class="ico">⏱</span><span data-i18n="nav.fasting">Fasting</span></button>
+    <button class="tab" role="tab" data-screen="history" aria-selected="false"><span class="ico">🗓</span><span data-i18n="nav.history">History</span></button>
+    <button class="tab" role="tab" data-screen="weight" aria-selected="false"><span class="ico">⚖︎</span><span data-i18n="nav.weight">Weight</span></button>
+    <button class="tab" role="tab" data-screen="stats" aria-selected="false"><span class="ico">▥</span><span data-i18n="nav.stats">Stats</span></button>
+    <button class="tab" role="tab" data-screen="settings" aria-selected="false"><span class="ico">⚙︎</span><span data-i18n="nav.settings">Settings</span></button>
+  </div>
+</nav>
+
+<script src="i18n/en.js"></script>
+<script src="i18n/bg.js"></script>
+<script src="i18n/es.js"></script>
+<script src="js/release-health.js"></script>
+<script src="js/fasting-visuals.js"></script>
+<script src="js/fasting-analytics.js"></script>
+<script src="js/platform-diagnostics.js"></script>
+<script src="js/time-zone-locations.js"></script>
+<script>@@FT_APP_JS@@</script>
+</body>
+</html>

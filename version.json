@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.32",
+  "version": "1.17.33",
   "released": "2026-11-07",
-  "notes": "Redesign and validate all four colour-vision palettes; add localized purpose hints in Settings; validate pairwise CIEDE2000, WCAG contrast and simulated CVD status separation.",
+  "notes": "Atomized app-shell source into six ordered JavaScript domain fragments and a separate stylesheet; added a reproducible builder and CI drift checks without changing runtime behaviour or stored data.",
   "entry": "./index.html",
   "shell": [
     "./",
