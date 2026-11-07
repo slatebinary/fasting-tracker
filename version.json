@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.26",
-  "released": "2026-11-06",
-  "notes": "Added keyboard arrow navigation and screen-reader announcements for the fasting calendar, with a single tab stop and visible focus.",
+  "version": "1.17.27",
+  "released": "2026-11-07",
+  "notes": "Normalize completed Calendar day totals within one second of a full local day; preserve elapsed-only current-day totals and true 23h/25h DST days.",
   "entry": "./index.html",
   "shell": [
     "./",

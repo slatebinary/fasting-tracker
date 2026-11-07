@@ -1,3 +1,7 @@
+## v1.17.27 — 7 November 2026
+- Corrected completed Calendar day totals that fall within one second of a full local day, so a full day displays 24h (or the actual 23h/25h on DST transition days) instead of 23h 59m.
+- Kept the current day unrounded while a fast is ongoing; the Calendar continues to show elapsed fasting time only. Added browser regression coverage for near-midnight boundaries, consecutive full days, DST days and active current-day totals.
+
 ## v1.17.26 — 6 November 2026
 - Added arrow-key navigation to the fasting calendar, including left/right day movement, up/down week movement and Home/End row navigation with one keyboard tab stop.
 - Added a visible focus indicator, a labelled calendar group and polite screen-reader announcements for month changes and selected-day details.

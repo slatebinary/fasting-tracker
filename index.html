@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.26" />
+  <meta name="ft-app-version" content="1.17.27" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1898,7 +1898,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.26';
+  const APP_VERSION = '1.17.27';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6184,6 +6184,16 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     return Array.from({length:7},(_,i)=>new Date(base.getTime()+i*86400000).toLocaleDateString(currentLocale(),{weekday:'narrow'}));
   }
 
+  // Completed days within one second of a full local day are treated as complete.
+  // The current day remains elapsed-only; DST days retain their real 23h/25h length.
+  function calendarDurationForDisplay(day, nowMs = Date.now()) {
+    const total = Math.max(0, Number(day?.totalFastMs) || 0);
+    const start = Number(day?.startMs), end = Number(day?.endMs);
+    const dayLength = end - start, shortfall = dayLength - total;
+    if (Number.isFinite(start) && Number.isFinite(end) && end <= nowMs && dayLength > 0 && total > 0 && shortfall >= 0 && shortfall <= 1000) return dayLength;
+    return total;
+  }
+
   function renderFastCalendar() {
     const title=el('calendarMonthTitle'), grid=el('fastCalendar'), heads=el('calendarWeekdays');
     if (!title || !grid || !heads) return;
@@ -6209,7 +6219,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     grid.replaceChildren();
     let firstEnabledButton=null, restoredFocusTarget=false;
     for (const {d,day} of calendarDays) {
-      const btn=document.createElement('button'); btn.type='button'; btn.className='calendarDay level'+calendarLevel(day.totalFastMs);
+      const displayFastMs=calendarDurationForDisplay(day,now.getTime());
+      const btn=document.createElement('button'); btn.type='button'; btn.className='calendarDay level'+calendarLevel(displayFastMs);
       const outside=d.getMonth()!==monthIndex, future=d.getTime()>now.getTime()+12*3600000;
       if (outside) btn.classList.add('outside'); if (future) btn.classList.add('future');
       if (statsDetailOverride?.dayKey===day.key) btn.classList.add('selected');
@@ -6218,12 +6229,12 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       if(!future&&!firstEnabledButton)firstEnabledButton=btn;
       if(btn.tabIndex===0)restoredFocusTarget=true;
       const n=document.createElement('span'); n.textContent=formatNumber(d.getDate());
-      const h=document.createElement('span'); h.className='calendarHours'; h.textContent=day.totalFastMs ? totalHoursDuration(day.totalFastMs) : '—';
+      const h=document.createElement('span'); h.className='calendarHours'; h.textContent=displayFastMs ? totalHoursDuration(displayFastMs) : '—';
       const clockInfo=dayClockChangeInfo(day);
       btn.append(n,h);
       if(clockInfo){const clock=document.createElement('span');clock.className='calendarClockChange';clock.textContent=clockInfo.label.replace(/^(Day|Offset)\s+/,'');clock.setAttribute('aria-hidden','true');btn.append(clock);btn.title=clockInfo.description;}
-      btn.setAttribute('aria-label',day.label+': '+totalHoursDuration(day.totalFastMs)+(clockInfo?'; '+clockInfo.description:''));
-      const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:totalHoursDuration(day.totalFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
+      btn.setAttribute('aria-label',day.label+': '+totalHoursDuration(displayFastMs)+(clockInfo?'; '+clockInfo.description:''));
+      const selectCalendarDay=()=>{ statsDetailOverride={dayKey:day.key,title:day.label,text:t('stats.detailTotal',{duration:totalHoursDuration(displayFastMs),count:formatNumber(day.fastCount)})}; grid.querySelectorAll('.calendarDay.selected').forEach(node=>node.classList.remove('selected')); btn.classList.add('selected'); renderChartDetailForMode(); };
       btn.addEventListener('pointerdown',event=>{ selectCalendarDay(); if(event.cancelable) event.preventDefault(); });
       btn.addEventListener('click',event=>{ if(event.detail===0) selectCalendarDay(); });
       grid.append(btn);

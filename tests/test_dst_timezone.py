@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression: global IANA zone selection, DST gaps/folds, and true elapsed durations."""
 import sys, json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
@@ -10,6 +12,13 @@ except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
 
 data=build_data(0)
+data['updatedAt']='2026-10-26T00:00:00.000Z'
+data['records']=[
+    {'id':'calendar-near-full-day','start':'2023-12-31T22:00:00.000Z','end':'2024-01-01T21:59:59.999Z','goalHours':24,'timeZone':'Europe/Sofia','createdAt':None,'modifiedAt':None,'stopReason':None,'editHistory':[]},
+    {'id':'calendar-two-full-days','start':'2024-01-01T22:00:00.000Z','end':'2024-01-03T22:00:00.000Z','goalHours':48,'timeZone':'Europe/Sofia','createdAt':None,'modifiedAt':None,'stopReason':None,'editHistory':[]},
+    {'id':'calendar-spring-dst-day','start':'2024-03-30T22:00:00.000Z','end':'2024-03-31T21:00:00.000Z','goalHours':23,'timeZone':'Europe/Sofia','createdAt':None,'modifiedAt':None,'stopReason':None,'editHistory':[]},
+    {'id':'calendar-autumn-dst-day','start':'2024-10-26T21:00:00.000Z','end':'2024-10-27T22:00:00.000Z','goalHours':25,'timeZone':'Europe/Sofia','createdAt':None,'modifiedAt':None,'stopReason':None,'editHistory':[]},
+]
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Sofia');errors=[];page.on('pageerror',lambda exc:errors.append(str(exc)))
@@ -109,8 +118,62 @@ with sync_playwright() as p:
         print('FAIL: Sofia autumn DST calendar should show 24h 8m after a 52m pause', pause_minutes, calendar_fast_minutes);sys.exit(1)
     source = open('index.html', encoding='utf-8').read()
     calendar_renderer = source[source.index('for (const {d,day} of calendarDays) {'):source.index('function buildSummaryChartDays')]
-    if calendar_renderer.count('totalHoursDuration(day.totalFastMs)') != 3 or 'compactDuration(day.totalFastMs)' in calendar_renderer:
-        print('FAIL: calendar tile, accessible label, and detail must show total hours without day-based truncation');sys.exit(1)
+    if calendar_renderer.count('totalHoursDuration(displayFastMs)') != 3 or 'compactDuration(day.totalFastMs)' in calendar_renderer:
+        print('FAIL: calendar tile, accessible label, and detail must show the normalized elapsed calendar duration');sys.exit(1)
+    if 'function calendarDurationForDisplay(day, nowMs = Date.now())' not in source:
+        print('FAIL: completed full calendar days need a millisecond-safe display duration');sys.exit(1)
+    # Completed full local days must display 24h, including a one-millisecond boundary shortfall.
+    # DST days retain their real 23h/25h elapsed lengths, while an active current day remains elapsed-only.
+    page.locator('.tab[data-screen="settings"]').click()
+    search_zone('Bulgaria','Europe/Sofia')
+    page.locator('.tab[data-screen="stats"]').click()
+    page.locator('#statsVizSelect').select_option('calendar')
+    page.wait_for_timeout(100)
+    def calendar_month(label):
+        for _ in range(36):
+            if page.locator('#calendarMonthTitle').inner_text().strip() == label:
+                return
+            page.locator('#calendarPrevBtn').click()
+            page.wait_for_timeout(10)
+        print('FAIL: could not navigate Calendar to',label,page.locator('#calendarMonthTitle').inner_text());sys.exit(1)
+    def calendar_day_duration(day_key, expected):
+        tile=page.locator(f'#fastCalendar button[data-day-key="{day_key}"]')
+        if not tile.count():
+            print('FAIL: calendar day missing',day_key);sys.exit(1)
+        visible=tile.locator('.calendarHours').inner_text().strip()
+        label=tile.get_attribute('aria-label') or ''
+        if visible != expected or expected not in label:
+            print('FAIL: calendar duration mismatch',day_key,'visible=',visible,'aria=',label,'expected=',expected);sys.exit(1)
+    calendar_month('October 2024')
+    calendar_day_duration('2024-10-27','25h 0m')
+    calendar_month('March 2024')
+    calendar_day_duration('2024-03-31','23h 0m')
+    calendar_month('January 2024')
+    calendar_day_duration('2024-01-01','24h 0m')
+    calendar_day_duration('2024-01-02','24h 0m')
+    calendar_day_duration('2024-01-03','24h 0m')
+    page.locator('.tab[data-screen="fasting"]').click()
+    page.locator('#toggleFast').click()
+    page.wait_for_timeout(1300)
+    today_total=page.locator('#todayTotal').inner_text().strip()
+    page.locator('.tab[data-screen="stats"]').click()
+    page.locator('#statsVizSelect').select_option('calendar')
+    page.wait_for_timeout(80)
+    for _ in range(36):
+        if not page.locator('#calendarNextBtn').is_enabled():
+            break
+        page.locator('#calendarNextBtn').click()
+    today_key=datetime.now(ZoneInfo('Europe/Sofia')).date().isoformat()
+    today_tile=page.locator(f'#fastCalendar button[data-day-key="{today_key}"]')
+    if not today_tile.count():
+        print('FAIL: current Sofia calendar day missing',today_key);sys.exit(1)
+    current_calendar_total=today_tile.locator('.calendarHours').inner_text().strip()
+    def duration_minutes(text):
+        import re
+        return sum(int(value) * {'d':1440,'h':60,'m':1}[unit]
+                   for value,unit in re.findall(r'(\\d+)\\s*(d|h|m)',text))
+    if duration_minutes(current_calendar_total) != duration_minutes(today_total) or duration_minutes(current_calendar_total) >= 1440:
+        print('FAIL: ongoing current day must show elapsed fasting time only',today_total,current_calendar_total);sys.exit(1)
     # Clock-change indicators must remain localized and explain actual elapsed-day length.
     app_source = open('index.html', encoding='utf-8').read()
     for required in ('function dayClockChangeInfo(day)', 'function clockChangeSummaryForRange',
