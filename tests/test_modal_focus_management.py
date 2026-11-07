@@ -60,6 +60,30 @@ with sync_playwright() as p:
     page.keyboard.press("Escape")
     page.wait_for_function("document.querySelector('#manualSnapshotModal').hidden")
     page.wait_for_function("document.activeElement?.id === 'createSnapshotBtn'")
+
+    # With every control disabled, initial focus and Tab fallback must land on
+    # the dialog container itself rather than leaving focus behind the overlay.
+    page.evaluate("""() => {
+      const modal = document.querySelector('#manualSnapshotModal');
+      modal.querySelectorAll('button, input, select, textarea, a[href], [contenteditable="true"], [tabindex]:not([tabindex="-1"])').forEach(node => {
+        if ('disabled' in node) node.disabled = true;
+        else node.setAttribute('tabindex', '-1');
+      });
+    }""")
+    # Open the dialog through its real UI action; the requested initial-focus
+    # field is disabled, so showModal must fall back to the dialog container.
+    page.locator("#createSnapshotBtn").evaluate("e => e.click()")
+    page.wait_for_function("!document.querySelector('#manualSnapshotModal').hidden")
+    page.wait_for_function("document.activeElement === document.querySelector('#manualSnapshotModal [role=dialog]')")
+    dialog = page.locator("#manualSnapshotModal [role=dialog]")
+    if dialog.get_attribute("tabindex") != "-1":
+        raise AssertionError("Dialog fallback did not become programmatically focusable")
+    page.keyboard.press("Tab")
+    if page.evaluate("document.activeElement === document.querySelector('#manualSnapshotModal [role=dialog]')") is not True:
+        raise AssertionError("Tab escaped a dialog with no enabled focusable controls")
+    page.keyboard.press("Shift+Tab")
+    if page.evaluate("document.activeElement === document.querySelector('#manualSnapshotModal [role=dialog]')") is not True:
+        raise AssertionError("Shift+Tab escaped a dialog with no enabled focusable controls")
     if errors:
         raise AssertionError("Browser errors: " + " | ".join(errors[:3]))
     browser.close()

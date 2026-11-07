@@ -7997,7 +7997,12 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     document.body.classList.add('modalOpen');
     setBackgroundInert(true);
     setTimeout(() => {
-      const target = (focusId ? el(focusId) : null) || modal.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+      let target = (focusId ? el(focusId) : null) || modal.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+      if (target?.matches(':disabled')) target = null;
+      if (!target) {
+        target = modal.querySelector('[role="dialog"], [role="alertdialog"]');
+        if (target && !target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      }
       target?.focus();
     }, 0);
   }
@@ -8800,7 +8805,12 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     }
     if (e.key === 'Tab' && modal) {
       const focusable = [...modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [contenteditable="true"], [tabindex]:not([tabindex="-1"])')].filter(node => !node.hidden && node.getAttribute('aria-hidden') !== 'true' && node.offsetParent !== null);
-      if (!focusable.length) { e.preventDefault(); modal.querySelector('[role="dialog"], [role="alertdialog"]')?.focus(); return; }
+      if (!focusable.length) {
+        e.preventDefault();
+        const dialog = modal.querySelector('[role="dialog"], [role="alertdialog"]');
+        if (dialog) { if (!dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1'); dialog.focus(); }
+        return;
+      }
       const first = focusable[0], last = focusable[focusable.length - 1];
       if (!modal.contains(document.activeElement)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
       else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }

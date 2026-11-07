@@ -1,3 +1,7 @@
+## v1.17.29 — 7 November 2026
+- Kept keyboard focus inside a modal when every control is disabled or unavailable by moving focus to the dialog container; added a programmatically focusable fallback for initial focus and Tab/Shift+Tab handling.
+- Added browser regression coverage for empty-focusable modal states.
+
 ## v1.17.28 — 7 November 2026
 - Corrected nested modal keyboard handling so Escape and Tab apply to the topmost dialog, not an underlying dialog.
 - Added stacked focus restoration when closing nested dialogs, improved focus containment when focus is moved outside a dialog, and included textarea/contenteditable controls in the focus cycle.
