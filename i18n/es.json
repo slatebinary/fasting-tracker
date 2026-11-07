@@ -1077,5 +1077,9 @@
   "fasting.shorterOfferOriginalAria": "Mantén el ayuno actual hasta alcanzar el objetivo original.",
   "settings.appearanceProtanopia": "Paleta para protanopía",
   "settings.appearanceDeuteranopia": "Paleta para deuteranopía",
-  "settings.appearanceTritanopia": "Paleta para tritanopía"
+  "settings.appearanceTritanopia": "Paleta para tritanopía",
+  "settings.paletteHint.colorblind": "Pensada para una accesibilidad amplia de la visión del color: utiliza distinciones entre azul, verde azulado y bermellón, sin depender únicamente de las diferencias entre rojo y verde.",
+  "settings.paletteHint.protanopia": "Pensada para ayudar a personas con protanopia (percepción reducida del rojo): prioriza distinciones entre violeta, cian y ocre, y refuerza los estados con etiquetas e iconos.",
+  "settings.paletteHint.deuteranopia": "Pensada para ayudar a personas con deuteranopia (percepción reducida del verde): utiliza distinciones entre verde azulado, azul y ciruela, en lugar de depender del contraste rojo-verde.",
+  "settings.paletteHint.tritanopia": "Pensada para ayudar a personas con tritanopia (dificultad para distinguir azul y amarillo): utiliza rosa, burdeos, verde y óxido, en lugar de depender del contraste azul-amarillo."
 }
