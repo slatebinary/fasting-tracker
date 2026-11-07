@@ -67,8 +67,13 @@ with sync_playwright() as p:
     # Changing an appearance preference may update general revision, but it
     # does NOT alter the fasting/weight dataset and should remain green.
     page.locator('[data-screen="settings"]').click()
+    page.wait_for_function("""()=>{
+      const screen=document.querySelector('#settings');
+      const label=document.querySelector('#lastBackupLabel')?.textContent||'';
+      return screen?.classList.contains('active') && /\\d{1,2}:\\d{2}/.test(label);
+    }""",timeout=5000)
     settings_backup=page.locator('#lastBackupLabel').inner_text()
-    assert __import__('re').search(r'\d{1,2}:\d{2}',settings_backup), settings_backup
+    print('SETTINGS_BACKUP_LABEL:',repr(settings_backup))
     page.select_option('#languageSelect', 'bg')
     page.select_option('#languageSelect', 'en')
     page.locator('[data-screen="fasting"]').click()
