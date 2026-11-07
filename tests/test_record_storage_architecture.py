@@ -26,7 +26,7 @@ with sync_playwright() as p:
           } catch { return false; }
         }""",timeout=15000)
     except Exception:
-        print('FAIL: legacy storage migration did not finish; app meta:',page.evaluate(\"localStorage.getItem('fastingTracker.appMeta')\"),'browser errors:',errors)
+        print('FAIL: legacy storage migration did not finish; app meta:',page.evaluate("localStorage.getItem('fastingTracker.appMeta')"),'browser errors:',errors)
         raise
     state=page.evaluate("""() => new Promise((resolve,reject)=>{
       const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{
