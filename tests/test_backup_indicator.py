@@ -56,6 +56,8 @@ with sync_playwright() as p:
     status(page,'never')  # cancelled download must not claim backup
     page.locator('#fastingBackupStatusBtn').click()
     status(page,'current')
+    chip_text=page.locator('#fastingBackupStatusText').inner_text()
+    assert ' — ' in chip_text and __import__('re').search(r'\d{1,2}:\d{2}',chip_text), chip_text
     # Green confirmation is temporary; the underlying Settings status persists.
     page.wait_for_timeout(7300)
     assert page.locator('#fastingBackupRow').is_hidden(), 'Green badge must disappear'
@@ -65,6 +67,8 @@ with sync_playwright() as p:
     # Changing an appearance preference may update general revision, but it
     # does NOT alter the fasting/weight dataset and should remain green.
     page.locator('[data-screen="settings"]').click()
+    settings_backup=page.locator('#lastBackupLabel').inner_text()
+    assert __import__('re').search(r'\d{1,2}:\d{2}',settings_backup), settings_backup
     page.select_option('#languageSelect', 'bg')
     page.select_option('#languageSelect', 'en')
     page.locator('[data-screen="fasting"]').click()
