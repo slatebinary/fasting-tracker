@@ -1,12 +1,3 @@
-  const timeUtils = window.FTTime.create({
-    pad,
-    currentLocale,
-    currentTimeZone,
-    normalizeTimeZone,
-    zonedParts,
-    timeZoneOffsetMs
-  });
-
   function exactDuration(ms) {
     ms = Math.max(0, ms);
     const totalSec = Math.floor(ms / 1000);
