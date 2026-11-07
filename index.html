@@ -1158,6 +1158,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 <option data-i18n="settings.appearanceTritanopia" value="tritanopia">Tritanopia palette</option>
 </select>
 </div>
+<div id="appearancePaletteHint" class="small" role="status" aria-live="polite" hidden></div>
 <div class="timeZoneSettings">
   <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
   <div class="timeZonePicker">
@@ -2123,6 +2124,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     let str = I18N[lang]?.[key] ?? I18N.en[key] ?? key;
     return String(str).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
   }
+  function updateAppearancePaletteHint() {
+    const select = document.getElementById('appearanceSelect');
+    const hint = document.getElementById('appearancePaletteHint');
+    if (!select || !hint) return;
+    const key = ({ colorblind:'settings.paletteHint.colorblind', protanopia:'settings.paletteHint.protanopia', deuteranopia:'settings.paletteHint.deuteranopia', tritanopia:'settings.paletteHint.tritanopia' })[select.value];
+    hint.hidden = !key;
+    if (key) hint.textContent = t(key);
+  }
   function pluralCategory(n) {
     try { return new Intl.PluralRules(currentLocale()).select(Number(n)); }
     catch { return Number(n) === 1 ? 'one' : 'other'; }
@@ -2195,6 +2204,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(node => { node.setAttribute('placeholder', t(node.dataset.i18nPlaceholder)); });
     document.querySelectorAll('[data-i18n-label]').forEach(node => { node.label = t(node.dataset.i18nLabel); });
+    updateAppearancePaletteHint();
     syncStatsVizNavigator();
     renderLanguageOptions();
     renderTimeZoneOptions();
@@ -8621,6 +8631,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     data.appearance = normalizeAppearance(el('appearanceSelect').value);
     if (!save({ invalidateDerived:false, dirtyViews:['settings'] })) { renderAll(); return; }
     applyAppearance();
+    updateAppearancePaletteHint();
     if (el('stats').classList.contains('active')) renderStatsVisualizations();
     if (el('weight').classList.contains('active')) drawWeightChart();
   });
