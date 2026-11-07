@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.31" />
+  <meta name="ft-app-version" content="1.17.32" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -123,8 +123,8 @@ layout: null
     html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#007f5f; --danger:#c44e00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#000; }
     /* Specialized palettes are starting points, not clinical guarantees. Keep status cues redundant. */
     html[data-theme="protanopia"] { color-scheme:light; --bg:#fff9e8; --card:#fff; --text:#202536; --muted:#465064; --line:#b9b49f; --accent:#164e9b; --good:#006f8b; --danger:#9a5700; --tab:#f4edcf; --primary-button-text:#fff; --danger-button-text:#fff; }
-    html[data-theme="deuteranopia"] { color-scheme:light; --bg:#f4f2ff; --card:#fff; --text:#211d33; --muted:#4b4561; --line:#b5afcc; --accent:#493b8f; --good:#006d9f; --danger:#a65c00; --tab:#eae6fa; --primary-button-text:#fff; --danger-button-text:#fff; }
-    html[data-theme="tritanopia"] { color-scheme:light; --bg:#fff4f7; --card:#fff; --text:#291b26; --muted:#55404d; --line:#c5aeb9; --accent:#8a315d; --good:#006653; --danger:#a33b3b; --tab:#f5e8ee; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="deuteranopia"] { color-scheme:light; /* Cool blue/teal and amber system; avoids relying on red/green separation. */ --bg:#EDF5FF; --card:#fff; --text:#101F35; --muted:#354B66; --line:#9FB4CC; --accent:#064E96; --good:#006B82; --danger:#A84B00; --tab:#DCEBFA; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="tritanopia"] { color-scheme:light; /* Warm rose/peach and earthy red/green system; deliberately unlike the cool Deuteranopia palette. */ --bg:#FFF1E7; --card:#fff; --text:#2A1718; --muted:#5A3C3B; --line:#CDB5A9; --accent:#8C263F; --good:#356B32; --danger:#9B3D12; --tab:#FBE2D4; --primary-button-text:#fff; --danger-button-text:#fff; }
     .primary { color:var(--primary-button-text, #fff); }
     .stop { color:var(--danger-button-text, #fff); }
     html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop, html[data-theme="colorblind"] .stop { color:#000; }
@@ -1900,7 +1900,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.31';
+  const APP_VERSION = '1.17.32';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
