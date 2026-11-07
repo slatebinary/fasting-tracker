@@ -50,6 +50,7 @@ with sync_playwright() as p:
     page.wait_for_function("document.querySelector('#deviceCheckModal').hidden")
     if page.locator("#manualSnapshotModal").is_hidden():
         raise AssertionError("Escape closed the parent instead of the topmost dialog")
+    page.wait_for_function("document.activeElement?.id === 'manualSnapshotLabel'")
     if page.evaluate("document.activeElement?.id") != "manualSnapshotLabel":
         raise AssertionError("Closing the child dialog did not restore focus to its parent opener")
 
