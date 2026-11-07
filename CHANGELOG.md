@@ -1,3 +1,9 @@
+## v1.17.37 — 7 November 2026
+- Extracted time-zone-aware calendar-day keys, fast UTC day keys, ISO-week start calculation, exact next-day boundaries and interval-to-day allocation into a dedicated time utility service.
+- Moved localized date, date-time and time labels behind the same service while preserving the existing application interfaces.
+- Added isolated regression coverage for leap-safe ISO week boundaries, UTC keys, Europe/Sofia 23-hour spring and 25-hour autumn days, multi-day allocation and localized labels.
+- No IndexedDB schema, fasting/weight record format, backup format or stored user data changes.
+
 ## v1.17.36 — 7 November 2026
 - Reduced the runtime of the exhaustive weight-chart regression by replacing fixed delays with state-based waits and batching Older/Newer navigation checks within the browser.
 - Retained full per-step monotonic-index, selected-detail, oldest/newest endpoint, range-navigator and raw-measurement assertions; no coverage thresholds or assertions were weakened.
