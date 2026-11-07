@@ -7998,6 +7998,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     setBackgroundInert(true);
     setTimeout(() => {
       let target = (focusId ? el(focusId) : null) || modal.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+      if (target?.matches(':disabled')) target = null;
       if (!target) {
         target = modal.querySelector('[role="dialog"], [role="alertdialog"]');
         if (target && !target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
