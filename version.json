@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.34",
+  "version": "1.17.35",
   "released": "2026-11-07",
-  "notes": "Extract storage-persistence capability checks into the platform diagnostics module; add isolated tests for unsupported, granted, already-persistent and failing storage APIs.",
+  "notes": "Fix initial rendering of localized colour-vision palette purpose hints; extract deterministic serialization and checksums into a dedicated integrity service; separate statistics summary calculation from DOM rendering with isolated tests.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -12,6 +12,7 @@
     "./i18n/bg.js",
     "./i18n/es.js",
     "./js/platform-diagnostics.js",
+    "./js/fasting-integrity.js",
     "./js/time-zone-locations.js",
     "./js/fasting-visuals.js",
     "./js/fasting-analytics.js",
