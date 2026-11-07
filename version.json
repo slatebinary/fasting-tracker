@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.27",
+  "version": "1.17.28",
   "released": "2026-11-07",
-  "notes": "Normalize completed Calendar day totals within one second of a full local day; preserve elapsed-only current-day totals and true 23h/25h DST days.",
+  "notes": "Fix nested modal keyboard handling and stacked focus restoration; keep Escape and Tab within the topmost dialog.",
   "entry": "./index.html",
   "shell": [
     "./",
