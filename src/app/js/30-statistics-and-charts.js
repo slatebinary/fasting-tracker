@@ -109,15 +109,11 @@
 
   function statsSummary() {
     if (statsSummaryCache) return statsSummaryCache;
-    const ms = data.records.map(recordMs), total = ms.reduce((a, b) => a + b, 0);
-    statsSummaryCache = {
-      count: ms.length,
-      total,
-      average: ms.length ? total / ms.length : 0,
-      longest: ms.length ? Math.max(...ms) : 0,
-      goalCount: data.records.filter(recordMetGoal).length,
+    statsSummaryCache = FTAnalytics.summarizeRecords(data.records, {
+      durationGetter: recordMs,
+      goalGetter: recordMetGoal,
       streak: currentStreak()
-    };
+    });
     return statsSummaryCache;
   }
 
