@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.33" />
+  <meta name="ft-app-version" content="1.17.34" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1901,7 +1901,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.33';
+  const APP_VERSION = '1.17.34';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -9526,28 +9526,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     return `${formatNumber(n / (1024 ** 3), 1, 1)} GB`;
   }
 
-  async function queryStorageProtection({ request = false } = {}) {
-    const result = { supported:false, persistent:null, requestSupported:false, attempted:!!request, used:null, quota:null, error:false };
-    if (!navigator.storage || typeof navigator.storage.persisted !== 'function') return result;
-    result.supported = true;
-    result.requestSupported = typeof navigator.storage.persist === 'function';
-    try {
-      let persistent = await navigator.storage.persisted();
-      if (request && !persistent && result.requestSupported) persistent = await navigator.storage.persist();
-      result.persistent = !!persistent;
-      if (typeof navigator.storage.estimate === 'function') {
-        try {
-          const est = await navigator.storage.estimate();
-          if (Number.isFinite(est?.usage)) result.used = est.usage;
-          if (Number.isFinite(est?.quota)) result.quota = est.quota;
-        } catch {}
-      }
-      return result;
-    } catch {
-      result.error = true;
-      result.persistent = null;
-      return result;
-    }
+  async function queryStorageProtection(options = {}) {
+    return FTPlatform.queryStorageProtection(options);
   }
 
   async function refreshStorageProtection({ request = false } = {}) {

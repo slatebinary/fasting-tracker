@@ -1140,28 +1140,8 @@
     return `${formatNumber(n / (1024 ** 3), 1, 1)} GB`;
   }
 
-  async function queryStorageProtection({ request = false } = {}) {
-    const result = { supported:false, persistent:null, requestSupported:false, attempted:!!request, used:null, quota:null, error:false };
-    if (!navigator.storage || typeof navigator.storage.persisted !== 'function') return result;
-    result.supported = true;
-    result.requestSupported = typeof navigator.storage.persist === 'function';
-    try {
-      let persistent = await navigator.storage.persisted();
-      if (request && !persistent && result.requestSupported) persistent = await navigator.storage.persist();
-      result.persistent = !!persistent;
-      if (typeof navigator.storage.estimate === 'function') {
-        try {
-          const est = await navigator.storage.estimate();
-          if (Number.isFinite(est?.usage)) result.used = est.usage;
-          if (Number.isFinite(est?.quota)) result.quota = est.quota;
-        } catch {}
-      }
-      return result;
-    } catch {
-      result.error = true;
-      result.persistent = null;
-      return result;
-    }
+  async function queryStorageProtection(options = {}) {
+    return FTPlatform.queryStorageProtection(options);
   }
 
   async function refreshStorageProtection({ request = false } = {}) {
