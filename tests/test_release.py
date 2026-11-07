@@ -252,7 +252,8 @@ def extract_func(name):
 fnames=['validDate','pad','numberSymbols','parseLocalizedNumber','safeTargetDate','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','zonedLocalToDate','dayKey','nextZonedDayBoundary','addIntervalToDayMap','compareVersions']
 try:
     extracted='\n'.join(extract_func(n) for n in fnames)
-    node_test='const fs=require("fs"),vm=require("vm"); const window={}; vm.runInNewContext(fs.readFileSync("js/fasting-time.js","utf8"),{window});\nconst MAX_DATE_MS=8.64e15;\nconst numberSymbolsCache=new Map(); const timeZoneValidityCache=new Map(); const zonedFormatterCache=new Map();\nfunction currentLocale(){return "en-US"}\n'+extracted+r'''\nconst timeUtils=window.FTTime.create({pad,currentLocale,currentTimeZone,normalizeTimeZone,zonedParts,timeZoneOffsetMs});
+    node_test='const fs=require("fs"),vm=require("vm"); const window={}; vm.runInNewContext(fs.readFileSync("js/fasting-time.js","utf8"),{window});\nconst MAX_DATE_MS=8.64e15;\nconst numberSymbolsCache=new Map(); const timeZoneValidityCache=new Map(); const zonedFormatterCache=new Map();\nfunction currentLocale(){return "en-US"}\n'+extracted+r'''
+const timeUtils=window.FTTime.create({pad,currentLocale,currentTimeZone,normalizeTimeZone,zonedParts,timeZoneOffsetMs});
 function assert(c,m){if(!c)throw new Error(m)}
 assert(validDate(null)===null,'null date must not become Unix epoch');
 assert(validDate('')===null,'empty date must be invalid');
