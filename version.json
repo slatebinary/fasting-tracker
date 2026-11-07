@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.17.32",
   "released": "2026-11-07",
-  "notes": "Redesign all four colour-vision palettes with distinct perceptual identities; validate all six pairwise combinations using CIEDE2000, WCAG contrast and simulated CVD status separation.",
+  "notes": "Redesign and validate all four colour-vision palettes; add localized purpose hints in Settings; validate pairwise CIEDE2000, WCAG contrast and simulated CVD status separation.",
   "entry": "./index.html",
   "shell": [
     "./",
