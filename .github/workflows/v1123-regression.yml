@@ -24,10 +24,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify atomized app-shell sources
-        run: python3 tools/build_app_shell.py --check
+      - name: Build and verify atomized app-shell sources
+        run: |
+          python3 tools/build_app_shell.py
+          python3 tools/build_app_shell.py --check
       - name: Build consistent localization and release assets in runner
         run: |
+          python3 tools/build_app_shell.py
           python3 tools/build_i18n_runtime.py
           python3 tools/export_i18n_source.py
           python3 tools/build_release.py
@@ -43,6 +46,7 @@ jobs:
           python3 tests/test_accessibility_theme_contrast.py
           python3 tests/test_release_health_metadata.py
           python3 tests/test_changelog_unique_versions.py
+          python3 tests/test_palette_hint_initialization.py
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
@@ -102,6 +106,8 @@ jobs:
         run: |
           node tests/v1123-regression.cjs
           node tests/test_platform_diagnostics.cjs
+          node tests/test_integrity_primitives.cjs
+          node tests/test_analytics.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
