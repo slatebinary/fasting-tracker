@@ -1,7 +1,7 @@
 ## v1.17.35 — 7 November 2026
 - Fixed the palette-purpose hint initialization order: the saved appearance is now applied before the selected palette's localized hint is refreshed. Language changes continue to refresh the hint.
 - Extracted deterministic JSON serialization, FNV-1a-64 fallback hashing and SHA-256 checksum handling into a dedicated integrity service used by backup creation, verification and comparison.
-- Separated the Statistics summary data model from DOM rendering; added isolated tests for analytics summaries, serialization, Unicode, key ordering and checksum fallback.
+- Separated the Statistics summary data model and monthly period aggregation from DOM rendering; added isolated tests for summary calculations, period cutoffs, serialization, Unicode, key ordering and checksum fallback.
 - No IndexedDB schema, fasting/weight record format, backup format or stored user data changes.
 
 ## v1.17.34 — 7 November 2026
