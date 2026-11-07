@@ -10,6 +10,7 @@ on:
       - fix/timezone-picker-weight-units-v1.13.3
       - fix/timezone-search-selection-v1.13.4
       - feat/dst-change-indicators-v1.13.5
+      - fix/palette-hints-integrity-stats-v1.17.35
       - main
   pull_request:
     branches: [main]
@@ -153,6 +154,7 @@ jobs:
           python-version: '3.12'
       - name: Rebuild committed localization and release metadata
         run: |
+          python3 tools/build_app_shell.py
           python3 tools/build_i18n_runtime.py
           python3 tools/export_i18n_source.py
           python3 tools/build_release.py
