@@ -76,6 +76,9 @@ for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorbl
     assert contrast(tokens["text"], tokens["bg"]) >= 7, f"{theme} normal text must meet 7:1 contrast"
     assert contrast(tokens["muted"], tokens["bg"]) >= 4.5, f"{theme} secondary text must meet 4.5:1 contrast"
     assert contrast(tokens["accent"], tokens["bg"]) >= 4.5, f"{theme} accent must meet 4.5:1 contrast"
+    for token in ("good", "danger"):
+        assert token in tokens, f"{theme} is missing --{token}"
+        assert contrast(tokens[token], tokens["bg"]) >= 4.5, f"{theme} {token} status text must meet 4.5:1 contrast"
 
 # Navigation must provide a non-colour-only selected state and monochrome symbols.
 for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind", "protanopia", "deuteranopia", "tritanopia"):
@@ -208,3 +211,76 @@ for theme, thresholds in specialist_expectations.items():
         f"{theme} success and danger colours converge under its deficiency simulation "
         f"(Delta E {separation:.1f})"
     )
+
+
+# Compare all four options pairwise in CIEDE2000 (Delta E 00), a perceptually
+# weighted Lab colour-difference formula. The minimums enforce a distinct surface
+# and accent identity across all six combinations.
+import itertools
+import math
+
+def _delta_e_2000(first, second):
+    L1, a1, b1 = _lab(first)
+    L2, a2, b2 = _lab(second)
+    C1, C2 = math.hypot(a1, b1), math.hypot(a2, b2)
+    Cbar = (C1 + C2) / 2
+    G = 0.5 * (1 - math.sqrt(Cbar ** 7 / (Cbar ** 7 + 25 ** 7)))
+    ap1, ap2 = (1 + G) * a1, (1 + G) * a2
+    cp1, cp2 = math.hypot(ap1, b1), math.hypot(ap2, b2)
+    def hue(a, b):
+        value = math.degrees(math.atan2(b, a))
+        return value + 360 if value < 0 else value
+    hp1, hp2 = hue(ap1, b1), hue(ap2, b2)
+    dL, dC = L2 - L1, cp2 - cp1
+    dh = hp2 - hp1
+    if cp1 * cp2 == 0: dh = 0
+    elif dh > 180: dh -= 360
+    elif dh < -180: dh += 360
+    dH = 2 * math.sqrt(cp1 * cp2) * math.sin(math.radians(dh / 2))
+    Lbar, cpbar = (L1 + L2) / 2, (cp1 + cp2) / 2
+    if cp1 * cp2 == 0: hpbar = hp1 + hp2
+    elif abs(hp1 - hp2) <= 180: hpbar = (hp1 + hp2) / 2
+    elif hp1 + hp2 < 360: hpbar = (hp1 + hp2 + 360) / 2
+    else: hpbar = (hp1 + hp2 - 360) / 2
+    T = (1 - 0.17 * math.cos(math.radians(hpbar - 30))
+         + 0.24 * math.cos(math.radians(2 * hpbar))
+         + 0.32 * math.cos(math.radians(3 * hpbar + 6))
+         - 0.20 * math.cos(math.radians(4 * hpbar - 63)))
+    dtheta = 30 * math.exp(-((hpbar - 275) / 25) ** 2)
+    Rc = 2 * math.sqrt(cpbar ** 7 / (cpbar ** 7 + 25 ** 7))
+    Sl = 1 + 0.015 * (Lbar - 50) ** 2 / math.sqrt(20 + (Lbar - 50) ** 2)
+    Sc, Sh = 1 + 0.045 * cpbar, 1 + 0.015 * cpbar * T
+    Rt = -math.sin(math.radians(2 * dtheta)) * Rc
+    return math.sqrt((dL / Sl) ** 2 + (dC / Sc) ** 2 + (dH / Sh) ** 2
+                     + Rt * (dC / Sc) * (dH / Sh))
+
+theme_names = ("colorblind", "protanopia", "deuteranopia", "tritanopia")
+for first_name, second_name in itertools.combinations(theme_names, 2):
+    first, second = _palette_tokens(first_name), _palette_tokens(second_name)
+    for token, minimum in (("bg", 8.0), ("accent", 18.0)):
+        distance = _delta_e_2000(_rgb_from_hex(first[token]), _rgb_from_hex(second[token]))
+        assert distance >= minimum, (
+            f"{first_name} and {second_name} --{token} are too similar "
+            f"(Delta E 00 {distance:.1f}, expected at least {minimum:.1f})"
+        )
+
+print("All four colour-vision palettes pass six pairwise CIEDE2000 comparisons.")
+
+
+
+# Each colour-vision palette must explain its intended accessibility purpose
+# in the selected interface language, and the hint must update with the selector.
+assert 'id="appearancePaletteHint"' in html
+assert 'function updateAppearancePaletteHint()' in html
+assert "updateAppearancePaletteHint();" in html
+for language in ("en", "bg", "es"):
+    dictionary = json.loads((root / "i18n" / f"{language}.json").read_text(encoding="utf-8"))
+    runtime = (root / "i18n" / f"{language}.js").read_text(encoding="utf-8")
+    for palette in ("colorblind", "protanopia", "deuteranopia", "tritanopia"):
+        key = f"settings.paletteHint.{palette}"
+        assert dictionary.get(key), f"Missing {language} purpose hint for {palette}"
+        assert dictionary[key] in runtime, f"Runtime bundle missing {language} purpose hint for {palette}"
+source = json.loads((root / "i18n-source.json").read_text(encoding="utf-8"))
+for palette in ("colorblind", "protanopia", "deuteranopia", "tritanopia"):
+    assert source["strings"].get(f"settings.paletteHint.{palette}")
+print("All four palette purpose hints are present in English, Bulgarian and Spanish.")

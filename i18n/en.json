@@ -1077,5 +1077,9 @@
   "fasting.shorterOfferOriginalAria": "Keep the current fast running until the original fasting target.",
   "settings.appearanceProtanopia": "Protanopia palette",
   "settings.appearanceDeuteranopia": "Deuteranopia palette",
-  "settings.appearanceTritanopia": "Tritanopia palette"
+  "settings.appearanceTritanopia": "Tritanopia palette",
+  "settings.paletteHint.colorblind": "Intended for broad colour-vision accessibility: uses blue, bluish-green and vermilion distinctions, while avoiding reliance on red–green differences alone.",
+  "settings.paletteHint.protanopia": "Intended to support protanopia (reduced red perception): prioritises violet, cyan and ochre distinctions, with status meaning reinforced by labels and icons.",
+  "settings.paletteHint.deuteranopia": "Intended to support deuteranopia (reduced green perception): uses teal, blue and plum distinctions rather than relying on red–green contrasts.",
+  "settings.paletteHint.tritanopia": "Intended to support tritanopia (reduced blue–yellow discrimination): uses rose, burgundy, green and rust distinctions rather than relying on blue–yellow contrasts."
 }

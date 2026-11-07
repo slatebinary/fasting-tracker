@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.31",
+  "version": "1.17.32",
   "released": "2026-11-07",
-  "notes": "Include the last external JSON export timestamp directly in the current-backup status using the device timezone; fit all non-empty weekly and broader weight chart periods in one viewport without horizontal scrolling.",
+  "notes": "Redesign and validate all four colour-vision palettes; add localized purpose hints in Settings; validate pairwise CIEDE2000, WCAG contrast and simulated CVD status separation.",
   "entry": "./index.html",
   "shell": [
     "./",

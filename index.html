@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.31" />
+  <meta name="ft-app-version" content="1.17.32" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -120,14 +120,14 @@ layout: null
     html[data-theme="grayscale"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#555; --accent:#000; --good:#000; --danger:#000; --tab:#f0f0f0; --primary-button-text:#fff; --danger-button-text:#fff; }
     html[data-theme="high-contrast-light"] { color-scheme: light; --bg:#fff; --card:#fff; --text:#000; --muted:#222; --line:#000; --accent:#0037b3; --good:#005a00; --danger:#b00020; --tab:#fff; --primary-button-text:#fff; --danger-button-text:#fff; }
     html[data-theme="high-contrast-dark"] { color-scheme: dark; --bg:#000; --card:#000; --text:#fff; --muted:#f0f0f0; --line:#fff; --accent:#80dfff; --good:#a8ff9e; --danger:#ff9eaa; --tab:#000; --primary-button-text:#000; --danger-button-text:#000; }
-    html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue/orange distinction. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#007f5f; --danger:#c44e00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#000; }
+    html[data-theme="colorblind"] { color-scheme: light; /* Okabe–Ito-inspired blue, bluish-green and vermilion palette. */ --bg:#f3f7fb; --card:#fff; --text:#132238; --muted:#36465c; --line:#9caec2; --accent:#005a9c; --good:#006f55; --danger:#c04a00; --tab:#eaf2f8; --primary-button-text:#fff; --danger-button-text:#fff; }
     /* Specialized palettes are starting points, not clinical guarantees. Keep status cues redundant. */
-    html[data-theme="protanopia"] { color-scheme:light; --bg:#fff9e8; --card:#fff; --text:#202536; --muted:#465064; --line:#b9b49f; --accent:#164e9b; --good:#006f8b; --danger:#9a5700; --tab:#f4edcf; --primary-button-text:#fff; --danger-button-text:#fff; }
-    html[data-theme="deuteranopia"] { color-scheme:light; --bg:#f4f2ff; --card:#fff; --text:#211d33; --muted:#4b4561; --line:#b5afcc; --accent:#493b8f; --good:#006d9f; --danger:#a65c00; --tab:#eae6fa; --primary-button-text:#fff; --danger-button-text:#fff; }
-    html[data-theme="tritanopia"] { color-scheme:light; --bg:#fff4f7; --card:#fff; --text:#291b26; --muted:#55404d; --line:#c5aeb9; --accent:#8a315d; --good:#006653; --danger:#a33b3b; --tab:#f5e8ee; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="protanopia"] { color-scheme:light; /* Warm ivory, violet, cyan and ochre; never relies on red/green alone. */ --bg:#fff1c2; --card:#fff; --text:#202536; --muted:#465064; --line:#c7b98f; --accent:#5b3c88; --good:#006c78; --danger:#8b5700; --tab:#f8e8b8; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="deuteranopia"] { color-scheme:light; /* Sea-glass, deep teal, blue and plum; status reinforced by labels and icons. */ --bg:#D8F0E9; --card:#fff; --text:#142C32; --muted:#38545A; --line:#9BBDB5; --accent:#005B5B; --good:#006D9C; --danger:#8B3F5D; --tab:#C7E7DE; --primary-button-text:#fff; --danger-button-text:#fff; }
+    html[data-theme="tritanopia"] { color-scheme:light; /* Rose-peach, burgundy, forest green and rust; avoids blue/yellow as primary distinction. */ --bg:#FFE1D5; --card:#fff; --text:#2A1718; --muted:#5A3C3B; --line:#CDB5A9; --accent:#8C263F; --good:#356B32; --danger:#9B3D12; --tab:#F8D2C4; --primary-button-text:#fff; --danger-button-text:#fff; }
     .primary { color:var(--primary-button-text, #fff); }
     .stop { color:var(--danger-button-text, #fff); }
-    html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop, html[data-theme="colorblind"] .stop { color:#000; }
+    html[data-theme="high-contrast-dark"] .primary, html[data-theme="high-contrast-dark"] .stop { color:#000; }
     /* Force accessible button pairs after widget styles, which previously overrode theme colors. */
     html[data-theme="high-contrast-light"] button:not(.primary):not(.stop):not(.dangerText):not(.secondary) { background:#fff !important; color:#000 !important; border:2px solid #000 !important; font-weight:700; }
     html[data-theme="high-contrast-light"] button.secondary { background:#e6e6e6 !important; color:#000 !important; border:2px solid #000 !important; }
@@ -1158,6 +1158,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 <option data-i18n="settings.appearanceTritanopia" value="tritanopia">Tritanopia palette</option>
 </select>
 </div>
+<div id="appearancePaletteHint" class="small" role="status" aria-live="polite" hidden></div>
 <div class="timeZoneSettings">
   <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
   <div class="timeZonePicker">
@@ -1900,7 +1901,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.31';
+  const APP_VERSION = '1.17.32';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2123,6 +2124,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     let str = I18N[lang]?.[key] ?? I18N.en[key] ?? key;
     return String(str).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
   }
+  function updateAppearancePaletteHint() {
+    const select = document.getElementById('appearanceSelect');
+    const hint = document.getElementById('appearancePaletteHint');
+    if (!select || !hint) return;
+    const key = ({ colorblind:'settings.paletteHint.colorblind', protanopia:'settings.paletteHint.protanopia', deuteranopia:'settings.paletteHint.deuteranopia', tritanopia:'settings.paletteHint.tritanopia' })[select.value];
+    hint.hidden = !key;
+    if (key) hint.textContent = t(key);
+  }
   function pluralCategory(n) {
     try { return new Intl.PluralRules(currentLocale()).select(Number(n)); }
     catch { return Number(n) === 1 ? 'one' : 'other'; }
@@ -2195,6 +2204,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(node => { node.setAttribute('placeholder', t(node.dataset.i18nPlaceholder)); });
     document.querySelectorAll('[data-i18n-label]').forEach(node => { node.label = t(node.dataset.i18nLabel); });
+    updateAppearancePaletteHint();
     syncStatsVizNavigator();
     renderLanguageOptions();
     renderTimeZoneOptions();
@@ -8621,6 +8631,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     data.appearance = normalizeAppearance(el('appearanceSelect').value);
     if (!save({ invalidateDerived:false, dirtyViews:['settings'] })) { renderAll(); return; }
     applyAppearance();
+    updateAppearancePaletteHint();
     if (el('stats').classList.contains('active')) renderStatsVisualizations();
     if (el('weight').classList.contains('active')) drawWeightChart();
   });
