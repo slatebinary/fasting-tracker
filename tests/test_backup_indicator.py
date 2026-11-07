@@ -145,8 +145,10 @@ with sync_playwright() as p:
     for tz_page in (utc_page,sofia_page):
         tz_page.locator('[data-screen="settings"]').click()
         tz_page.wait_for_function("document.querySelector('#lastBackupLabel')?.textContent.includes(':')")
-    utc_label=utc_page.locator('#lastBackupLabel').inner_text()
-    sofia_label=sofia_page.locator('#lastBackupLabel').inner_text()
+    # The backup summary lives inside a collapsible Settings group. Read its
+    # rendered text node content without requiring the group to be expanded.
+    utc_label=utc_page.locator('#lastBackupLabel').text_content() or ''
+    sofia_label=sofia_page.locator('#lastBackupLabel').text_content() or ''
     assert utc_label != sofia_label, f'Backup timestamp did not follow device timezone: UTC={utc_label!r}, Sofia={sofia_label!r}'
     assert ':' in utc_label and ':' in sofia_label, f'Backup timestamp is missing local time: UTC={utc_label!r}, Sofia={sofia_label!r}'
     assert not errors2, errors2[:5]
