@@ -112,7 +112,7 @@ with sync_playwright() as p:
     page.wait_for_function("""expected=>(
         document.querySelector('#chartDetailTitle')?.textContent?.trim()===expected.title &&
         document.querySelector('#chartDetailText')?.textContent?.trim()===expected.detail
-    )""",{'title':selected_title,'detail':selected_detail},timeout=5000)
+    )""",arg={'title':selected_title,'detail':selected_detail},timeout=5000)
     if page.locator('#chartDetailText').inner_text()!=selected_detail:
         raise AssertionError('Timeline details were not restored after returning from Weight')
 
