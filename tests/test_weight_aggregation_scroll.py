@@ -57,15 +57,14 @@ with sync_playwright() as p:
     page.locator('[data-weight-period="daily"]').click()
     page.wait_for_function("document.querySelector('#weightChartScroller')?.dataset.period === 'daily'",timeout=5000)
     chart=page.locator('#weightChart'); chart.focus()
-    before_keyboard_index=int(page.locator('#weightChartRange').input_value())
+    before_keyboard_detail=page.locator('#weightChartDetail').inner_text()
     page.keyboard.press('ArrowRight')
-    page.wait_for_function("(previous) => Number(document.querySelector('#weightChartRange')?.value) !== previous",arg=before_keyboard_index,timeout=5000)
+    page.wait_for_function("(previous) => document.querySelector('#weightChartDetail')?.innerText !== previous",arg=before_keyboard_detail,timeout=5000)
     latest_detail=page.locator('#weightChartDetail').inner_text()
     if not latest_detail.strip():
         print('FAIL: keyboard navigation did not reveal a selected Daily weight value'); sys.exit(1)
-    before_keyboard_index=int(page.locator('#weightChartRange').input_value())
     page.keyboard.press('ArrowLeft')
-    page.wait_for_function("(previous) => Number(document.querySelector('#weightChartRange')?.value) !== previous",arg=before_keyboard_index,timeout=5000)
+    page.wait_for_function("(previous) => document.querySelector('#weightChartDetail')?.innerText !== previous",arg=latest_detail,timeout=5000)
     previous_detail=page.locator('#weightChartDetail').inner_text()
     if not previous_detail.strip() or previous_detail == latest_detail:
         print('FAIL: left/right keyboard navigation did not move between Daily weight values',latest_detail,previous_detail); sys.exit(1)
