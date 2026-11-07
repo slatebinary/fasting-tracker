@@ -2,6 +2,10 @@
 
 A privacy-focused Progressive Web App (PWA) for tracking intermittent and extended fasting, weight, progress, and personal goals.
 
+## App-shell source layout
+
+The committed `index.html` is generated from `src/app/index.template.html`, `src/app/styles.css`, and six ordered JavaScript source fragments in `src/app/js/`. Edit the source fragments, then run `python3 tools/build_app_shell.py` to regenerate the app shell. The fragments are concatenated into the same classic script at build time, preserving the existing shared lexical scope and runtime execution order. CI checks that the generated shell is reproducible.
+
 - **[Changelog](CHANGELOG.md)** — release history is also available inside the app from Settings → Updates → Changelog.
 
 Fasting Tracker is designed to work locally on your device, including offline after installation. It does not require an account and does not use an application backend to store your fasting or weight records.

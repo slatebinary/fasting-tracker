@@ -24,6 +24,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify atomized app-shell sources
+        run: python3 tools/build_app_shell.py --check
       - name: Build consistent localization and release assets in runner
         run: |
           python3 tools/build_i18n_runtime.py
@@ -34,6 +36,7 @@ jobs:
       - name: Run release integrity and data safeguards regression
         run: |
           git diff --exit-code -- tests
+          python3 tests/test_app_shell_atomization.py
           python3 tests/test_release.py
           python3 tests/test_release_protocol_v11717.py
           python3 tests/test_timeline_month_axis.py
