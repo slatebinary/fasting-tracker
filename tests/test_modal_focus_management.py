@@ -33,8 +33,10 @@ with sync_playwright() as p:
         timeout=20000,
     )
     page.locator('.tab[data-screen="settings"]').click()
+    page.locator("#settingsGroupAdvanced > summary").click()
 
-    # Open a parent dialog, then open a second dialog while it remains active.
+    # Open a parent dialog from a keyboard-focused page control, then open a second dialog.
+    page.locator("#createSnapshotBtn").focus()
     page.locator("#createSnapshotBtn").evaluate("e => e.click()")
     page.wait_for_function("!document.querySelector('#manualSnapshotModal').hidden")
     page.wait_for_function("document.activeElement?.id === 'manualSnapshotLabel'")
