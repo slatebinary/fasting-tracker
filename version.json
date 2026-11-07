@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.35",
+  "version": "1.17.36",
   "released": "2026-11-07",
-  "notes": "Fix initial rendering of localized colour-vision palette purpose hints; extract deterministic serialization and checksums into a dedicated integrity service; separate statistics summary calculation from DOM rendering with isolated tests.",
+  "notes": "Reduced weight-chart regression runtime by replacing fixed sleeps with state-based waits and batching exhaustive Older/Newer endpoint traversal while retaining per-step selection, ordering, detail and boundary assertions.",
   "entry": "./index.html",
   "shell": [
     "./",
