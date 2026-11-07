@@ -7319,7 +7319,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const last = validDate(backupMeta.lastExternalBackupAt);
     label.textContent = last ? localDateTimeLabel(last) : t('backup.noneYet');
     const freshness=backupFreshnessState();
-    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?t('backup.current'):freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last)}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
