@@ -1,3 +1,8 @@
+## v1.17.28 — 7 November 2026
+- Corrected nested modal keyboard handling so Escape and Tab apply to the topmost dialog, not an underlying dialog.
+- Added stacked focus restoration when closing nested dialogs, improved focus containment when focus is moved outside a dialog, and included textarea/contenteditable controls in the focus cycle.
+- Added regression coverage for nested-dialog Escape/Tab behaviour and focus restoration to the parent and original page control.
+
 ## v1.17.27 — 7 November 2026
 - Corrected completed Calendar day totals that fall within one second of a full local day, so a full day displays 24h (or the actual 23h/25h on DST transition days) instead of 23h 59m.
 - Kept the current day unrounded while a fast is ongoing; the Calendar continues to show elapsed fasting time only. Added browser regression coverage for near-midnight boundaries, consecutive full days, DST days and active current-day totals.
