@@ -22,7 +22,7 @@ with sync_playwright() as p:
         page.wait_for_function("""() => {
           try {
             const meta=JSON.parse(localStorage.getItem('fastingTracker.appMeta')||'{}');
-            return meta.lastStorageMigration?.fromGeneration===1 && meta.lastStorageMigration?.toGeneration===3;
+            return meta.lastStorageMigration?.fromGeneration===2 && meta.lastStorageMigration?.toGeneration===3;
           } catch { return false; }
         }""",timeout=15000)
     except Exception:
