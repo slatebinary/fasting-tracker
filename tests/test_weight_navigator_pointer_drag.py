@@ -37,6 +37,7 @@ with sync_playwright() as p:
     slider = page.locator("#weightChartRange")
     page.wait_for_function("document.querySelector('#weightChartRange')?.max === '89'")
     assert slider.is_visible(), "Weight history range navigator is not visible"
+    slider.scroll_into_view_if_needed()
     bounds = slider.bounding_box()
     assert bounds and bounds["width"] >= 140, bounds
     minimum, maximum = 0, int(slider.get_attribute("max"))
