@@ -1,3 +1,8 @@
+## v1.17.36 — 7 November 2026
+- Reduced the runtime of the exhaustive weight-chart regression by replacing fixed delays with state-based waits and batching Older/Newer navigation checks within the browser.
+- Retained full per-step monotonic-index, selected-detail, oldest/newest endpoint, range-navigator and raw-measurement assertions; no coverage thresholds or assertions were weakened.
+- No application runtime, IndexedDB schema, backup format, fasting/weight record format or stored user data changes.
+
 ## v1.17.35 — 7 November 2026
 - Fixed the palette-purpose hint initialization order: the saved appearance is now applied before the selected palette's localized hint is refreshed. Language changes continue to refresh the hint.
 - Extracted deterministic JSON serialization, FNV-1a-64 fallback hashing and SHA-256 checksum handling into a dedicated integrity service used by backup creation, verification and comparison.
