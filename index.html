@@ -6218,7 +6218,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     }
     grid.replaceChildren();
     let firstEnabledButton=null, restoredFocusTarget=false;
-    for (const {d,day} of calendarDays) {\n      const displayFastMs=calendarDurationForDisplay(day,now.getTime());
+    for (const {d,day} of calendarDays) {
+      const displayFastMs=calendarDurationForDisplay(day,now.getTime());
       const btn=document.createElement('button'); btn.type='button'; btn.className='calendarDay level'+calendarLevel(displayFastMs);
       const outside=d.getMonth()!==monthIndex, future=d.getTime()>now.getTime()+12*3600000;
       if (outside) btn.classList.add('outside'); if (future) btn.classList.add('future');
