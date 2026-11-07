@@ -143,8 +143,18 @@ with sync_playwright() as p:
     boot(utc_page,timezone_meta)
     boot(sofia_page,timezone_meta)
     for tz_page in (utc_page,sofia_page):
+        tz_page.on('dialog', lambda dialog: dialog.accept())
+        # Export now so the test checks the exact current-backup status, not
+        # merely the separate historical timestamp field.
+        with tz_page.expect_download(timeout=15000):
+            tz_page.locator('#fastingBackupStatusBtn').click()
+        tz_page.wait_for_function("document.querySelector('#backupFreshnessLabel')?.textContent.includes('—')",timeout=5000)
         tz_page.locator('[data-screen="settings"]').click()
         tz_page.wait_for_function("document.querySelector('#lastBackupLabel')?.textContent.includes(':')",timeout=5000)
+    utc_status=utc_page.locator('#backupFreshnessLabel').text_content() or ''
+    sofia_status=sofia_page.locator('#backupFreshnessLabel').text_content() or ''
+    assert ':' in utc_status and ':' in sofia_status, f'Current-backup status omits export time: UTC={utc_status!r}, Sofia={sofia_status!r}'
+    assert utc_status != sofia_status, f'Current-backup status did not follow device timezone: UTC={utc_status!r}, Sofia={sofia_status!r}'
     # The backup summary lives inside a collapsible Settings group. Read its
     # rendered text node content without requiring the group to be expanded.
     utc_label=utc_page.locator('#lastBackupLabel').text_content() or ''

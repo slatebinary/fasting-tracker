@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: Daily preserves raw points; aggregate modes bucket by period and all scroll newest-first."""
+"""Regression: aggregate weight periods fit the viewport without empty-gap scrolling."""
 import sys, datetime, json
 from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
@@ -34,24 +34,21 @@ with sync_playwright() as p:
             print('FAIL: mode did not produce multiple points despite enough data',mode,info); sys.exit(1)
         if mode == 'daily' and info['d'] != 800:
             print('FAIL: Daily must preserve every individual measurement',info); sys.exit(1)
-        if info['max'] > 1 and abs(info['left']-info['max']) > 2:
-            print('FAIL: chart did not open on newest/right side',mode,info); sys.exit(1)
+        if mode != 'daily' and (info['max'] > 1 or info['b'] != info['d']):
+            print('FAIL: aggregate view retained empty periods or requires horizontal scrolling',mode,info); sys.exit(1)
+        if mode == 'daily' and info['max'] > 1 and abs(info['left']-info['max']) > 2:
+            print('FAIL: Daily chart did not open on newest/right side',mode,info); sys.exit(1)
 
     if not (counts['daily'] > counts['week'] > counts['month'] > counts['quarter'] > counts['halfyear'] > counts['year']):
         print('FAIL: aggregate granularity counts are unexpected',counts); sys.exit(1)
 
-    # Manual historical scrolling must remain where the user leaves it rather
-    # than snapping back to newest on each redraw.
-    page.locator('[data-weight-period="month"]').click(); page.wait_for_timeout(100)
-    page.locator('#weightChartScroller').evaluate("e=>{e.scrollLeft=0}"); page.wait_for_timeout(150)
-    left=page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
-    if left > 2:
-        print('FAIL: chart could not be manually scrolled to older periods',left); sys.exit(1)
-    # A normal redraw (unit toggle) must not destroy the manual scroll position.
-    page.locator('#unitLbBtn').click(); page.wait_for_timeout(150)
-    left_after=page.locator('#weightChartScroller').evaluate("e=>e.scrollLeft")
-    if left_after > 2:
-        print('FAIL: ordinary redraw snapped chart back to newest',left_after); sys.exit(1)
+    # Aggregate modes must show every non-empty period in one viewport.
+    # Empty weeks/months are omitted rather than becoming blank scroll columns.
+    for mode in ('week','month','quarter','halfyear','year'):
+        page.locator(f'[data-weight-period="{mode}"]').click(); page.wait_for_timeout(80)
+        aggregate=page.locator('#weightChartScroller').evaluate("e=>({left:e.scrollLeft,max:e.scrollWidth-e.clientWidth,width:e.clientWidth,track:getComputedStyle(document.querySelector('#weightChartTrack')).width})")
+        if aggregate['max'] > 1 or aggregate['left'] > 1:
+            print('FAIL: aggregate chart should fit the full history without horizontal scrolling',mode,aggregate); sys.exit(1)
 
     # Daily chart values can be browsed point-by-point with the keyboard.
     page.locator('[data-weight-period="daily"]').click(); page.wait_for_timeout(120)
@@ -144,4 +141,4 @@ with sync_playwright() as p:
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: Daily raw points, calendar aggregation, newest-first loading, historical scrolling and raw-entry retention')
+print('PASS: Daily raw points, dense aggregate periods without horizontal scrolling, navigator traversal and raw-entry retention')

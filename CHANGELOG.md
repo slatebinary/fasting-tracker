@@ -1,3 +1,8 @@
+## v1.17.31 — 7 November 2026
+- Added the last external JSON export date and time directly to the “Backup current” status message, formatted in the device's current timezone.
+- Added browser regression coverage for the status message itself and timezone changes.
+- Made weekly, monthly, quarterly, half-year and yearly weight charts display every period containing measurements in a single viewport, removing empty time buckets and horizontal scrolling while preserving the actual period averages.
+
 ## v1.17.30 — 7 November 2026
 - Restored the selected Timeline section's timestamp and duration details when returning to Statistics after visiting another screen; stale selections are cleared if their underlying day is no longer available.
 - Disabled accidental text selection on the Weight and Statistics Older/Newer navigation buttons while preserving native button and keyboard operation.

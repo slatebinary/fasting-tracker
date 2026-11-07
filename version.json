@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.30",
+  "version": "1.17.31",
   "released": "2026-11-07",
-  "notes": "Restore selected Timeline details after screen navigation; prevent accidental text selection on Older/Newer controls; show the recorded local date and time of the last external JSON export.",
+  "notes": "Include the last external JSON export timestamp directly in the current-backup status using the device timezone; fit all non-empty weekly and broader weight chart periods in one viewport without horizontal scrolling.",
   "entry": "./index.html",
   "shell": [
     "./",
