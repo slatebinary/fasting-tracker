@@ -76,6 +76,9 @@ for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorbl
     assert contrast(tokens["text"], tokens["bg"]) >= 7, f"{theme} normal text must meet 7:1 contrast"
     assert contrast(tokens["muted"], tokens["bg"]) >= 4.5, f"{theme} secondary text must meet 4.5:1 contrast"
     assert contrast(tokens["accent"], tokens["bg"]) >= 4.5, f"{theme} accent must meet 4.5:1 contrast"
+    for token in ("good", "danger"):
+        assert token in tokens, f"{theme} is missing --{token}"
+        assert contrast(tokens[token], tokens["bg"]) >= 4.5, f"{theme} {token} status text must meet 4.5:1 contrast"
 
 # Navigation must provide a non-colour-only selected state and monochrome symbols.
 for theme in ("grayscale", "high-contrast-light", "high-contrast-dark", "colorblind", "protanopia", "deuteranopia", "tritanopia"):
