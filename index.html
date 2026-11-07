@@ -2024,7 +2024,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   let editingWeightTimeZone = null;
   let pendingLongFastGoal = null;
   let pendingLongFastScope = 'default';
-  let lastModalFocus = null;
+  const modalFocusStack = [];
   let pendingSnapshotRestoreId = null;
   let completedDayMapCache = null;
   let currentStreakCache = null;
@@ -7976,7 +7976,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   }
 
   function visibleModal() {
-    return [...document.querySelectorAll('.modalBackdrop')].find(modal => !modal.hidden) || null;
+    return [...document.querySelectorAll('.modalBackdrop')].reverse().find(modal => !modal.hidden) || null;
   }
 
   function setBackgroundInert(inert) {
@@ -7991,12 +7991,13 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   function showModal(id, focusId = null) {
     const modal = el(id);
     if (!modal) return;
-    lastModalFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const restore = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    modalFocusStack.push({ id, restore });
     modal.hidden = false;
     document.body.classList.add('modalOpen');
     setBackgroundInert(true);
     setTimeout(() => {
-      const target = focusId ? el(focusId) : modal.querySelector('button, input, select, a[href], [tabindex]:not([tabindex="-1"])');
+      const target = (focusId ? el(focusId) : null) || modal.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
       target?.focus();
     }, 0);
   }
@@ -8004,14 +8005,24 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   function hideModal(id) {
     const modal = el(id);
     if (modal) modal.hidden = true;
-    if (!visibleModal()) {
+    let restore = null;
+    for (let i = modalFocusStack.length - 1; i >= 0; i--) {
+      if (modalFocusStack[i].id === id) {
+        restore = modalFocusStack[i].restore;
+        modalFocusStack.splice(i, 1);
+        break;
+      }
+    }
+    const nextModal = visibleModal();
+    if (!nextModal) {
       document.body.classList.remove('modalOpen');
       setBackgroundInert(false);
       if (recoveryMode) applyRecoveryMode();
+      modalFocusStack.length = 0;
     }
-    const restore = lastModalFocus;
-    lastModalFocus = null;
-    if (restore && document.contains(restore)) setTimeout(() => restore.focus(), 0);
+    if (restore && document.contains(restore) && !restore.closest('[hidden]') && (!nextModal || nextModal.contains(restore))) {
+      setTimeout(() => restore.focus(), 0);
+    }
   }
 
   function closeSnapshotModal() {
@@ -8778,6 +8789,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       else if (modal.id === 'snapshotPreviewModal') { pendingSnapshotRestoreId=null; hideModal('snapshotPreviewModal'); }
       else if (modal.id === 'manualSnapshotModal') hideModal('manualSnapshotModal');
       else if (modal.id === 'integrityModal') hideModal('integrityModal');
+      else if (modal.id === 'deviceCheckModal') hideModal('deviceCheckModal');
       else if (modal.id === 'editAuditModal') hideModal('editAuditModal');
       else if (modal.id === 'statsDrilldownModal') hideModal('statsDrilldownModal');
       else if (modal.id === 'importPreviewModal') el('importPreviewCancelBtn').click();
@@ -8787,10 +8799,11 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       return;
     }
     if (e.key === 'Tab' && modal) {
-      const focusable = [...modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')].filter(node => !node.hidden && node.offsetParent !== null);
-      if (!focusable.length) return;
+      const focusable = [...modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [contenteditable="true"], [tabindex]:not([tabindex="-1"])')].filter(node => !node.hidden && node.getAttribute('aria-hidden') !== 'true' && node.offsetParent !== null);
+      if (!focusable.length) { e.preventDefault(); modal.querySelector('[role="dialog"], [role="alertdialog"]')?.focus(); return; }
       const first = focusable[0], last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      if (!modal.contains(document.activeElement)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+      else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
   });
