@@ -18,17 +18,16 @@ with sync_playwright() as p:
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.19',seenAt:new Date().toISOString()})); }",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
-    page.wait_for_function("""() => new Promise(resolve => {
-      const open=indexedDB.open('FastingTrackerDB',2);
-      open.onerror=()=>resolve(false);
-      open.onsuccess=()=>{
-        const db=open.result;
-        if(!db.objectStoreNames.contains('state')){db.close();resolve(false);return;}
-        const tx=db.transaction('state','readonly'),request=tx.objectStore('state').get('primary');
-        request.onsuccess=()=>{const retired=request.result==null;db.close();resolve(retired);};
-        request.onerror=()=>{db.close();resolve(false);};
-      };
-    })""",timeout=15000)
+    try:
+        page.wait_for_function("""() => {
+          try {
+            const meta=JSON.parse(localStorage.getItem('fastingTracker.appMeta')||'{}');
+            return meta.lastStorageMigration?.fromGeneration===1 && meta.lastStorageMigration?.toGeneration===3;
+          } catch { return false; }
+        }""",timeout=15000)
+    except Exception:
+        print('FAIL: legacy storage migration did not finish; browser errors:',errors)
+        raise
     state=page.evaluate("""() => new Promise((resolve,reject)=>{
       const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{
         const db=q.result,names=['state','records','deletedFasts','weights','deletedWeights','snapshotPayload'];
