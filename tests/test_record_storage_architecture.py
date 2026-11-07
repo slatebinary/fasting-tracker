@@ -18,7 +18,16 @@ with sync_playwright() as p:
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.8.19',seenAt:new Date().toISOString()})); }",data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{CURRENT_VERSION}'",timeout=20000)
-    page.wait_for_timeout(300)
+    try:
+        page.wait_for_function("""() => {
+          try {
+            const meta=JSON.parse(localStorage.getItem('fastingTracker.appMeta')||'{}');
+            return meta.lastStorageMigration?.toGeneration===3;
+          } catch { return false; }
+        }""",timeout=15000)
+    except Exception:
+        print('FAIL: legacy storage migration did not finish; app meta:',page.evaluate("localStorage.getItem('fastingTracker.appMeta')"),'browser errors:',errors)
+        raise
     state=page.evaluate("""() => new Promise((resolve,reject)=>{
       const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{
         const db=q.result,names=['state','records','deletedFasts','weights','deletedWeights','snapshotPayload'];

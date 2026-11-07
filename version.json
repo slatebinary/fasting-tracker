@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.36",
+  "version": "1.17.37",
   "released": "2026-11-07",
-  "notes": "Reduced weight-chart regression runtime by replacing fixed sleeps with state-based waits and batching exhaustive Older/Newer endpoint traversal while retaining per-step selection, ordering, detail and boundary assertions.",
+  "notes": "Extracted time-zone-aware calendar-day keys, ISO-week starts, exact zoned-day boundaries, interval-to-day allocation and localized date/time labels into a dedicated time utility service with isolated DST regression tests.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -13,6 +13,7 @@
     "./i18n/es.js",
     "./js/platform-diagnostics.js",
     "./js/fasting-integrity.js",
+    "./js/fasting-time.js",
     "./js/time-zone-locations.js",
     "./js/fasting-visuals.js",
     "./js/fasting-analytics.js",

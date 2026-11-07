@@ -139,6 +139,17 @@
   const el = id => document.getElementById(id);
   let uiReady = false;
   loadUpdateStatusMeta();
+  // Initialise shared time primitives before the first async storage migration.
+  // Function declarations below are hoisted within this single app-shell scope.
+  const timeUtils = window.FTTime.create({
+    pad,
+    currentLocale,
+    currentTimeZone,
+    normalizeTimeZone,
+    zonedParts,
+    timeZoneOffsetMs
+  });
+
   const versionTransitionSnapshotOK = await initializePersistentStorage();
   if (versionTransitionSnapshotOK && !recoveryMode) rememberCurrentAppVersion();
 
