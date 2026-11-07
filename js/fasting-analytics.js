@@ -30,7 +30,16 @@
     const a=new Date(earliest),b=new Date(nowMs);return Math.max(1,Math.min(1200,(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth())+1));
   }
   function relativeChange(current,previous){current=Number(current)||0;previous=Number(previous)||0;if(Math.abs(previous)<1e-9)return null;return (current-previous)/Math.abs(previous)*100;}
+  function summarizeRecords(records,{durationGetter=r=>Math.max(0,Date.parse(r&&r.end)-Date.parse(r&&r.start)),goalGetter=()=>false,streak=0}={}){
+    const list=safeRecords(records);let total=0,longest=0,goalCount=0;
+    for(const record of list){
+      const duration=Math.max(0,Number(durationGetter(record))||0);
+      total+=duration;if(duration>longest)longest=duration;
+      if(goalGetter(record))goalCount++;
+    }
+    return {count:list.length,total,average:list.length?total/list.length:0,longest,goalCount,streak:Math.max(0,Number(streak)||0)};
+  }
   function durationBucketKey(hours){hours=Math.max(0,Number(hours)||0);if(hours<12)return'under12';if(hours<16)return'12to16';if(hours<18)return'16to18';if(hours<20)return'18to20';if(hours<24)return'20to24';if(hours<48)return'24to48';return'48plus';}
   function startBucketKey(hour){hour=Number(hour);return Number.isFinite(hour)&&hour>=0&&hour<24?String(Math.floor(hour/3)):null;}
-  global.FTAnalytics=Object.freeze({rangeDays,cutoffMs,filterRecords,rollingAverage,cumulative,monthSpan,relativeChange,durationBucketKey,startBucketKey});
+  global.FTAnalytics=Object.freeze({rangeDays,cutoffMs,filterRecords,rollingAverage,cumulative,monthSpan,relativeChange,summarizeRecords,durationBucketKey,startBucketKey});
 })(window);
