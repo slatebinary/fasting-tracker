@@ -69,8 +69,10 @@ with sync_playwright() as p:
         if ('disabled' in node) node.disabled = true;
         else node.setAttribute('tabindex', '-1');
       });
-      showModal('manualSnapshotModal');
     }""")
+    # Open the dialog through its real UI action; the requested initial-focus
+    # field is disabled, so showModal must fall back to the dialog container.
+    page.locator("#createSnapshotBtn").evaluate("e => e.click()")
     page.wait_for_function("!document.querySelector('#manualSnapshotModal').hidden")
     page.wait_for_function("document.activeElement === document.querySelector('#manualSnapshotModal [role=dialog]')")
     dialog = page.locator("#manualSnapshotModal [role=dialog]")
