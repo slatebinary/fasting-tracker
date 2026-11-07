@@ -1,6 +1,7 @@
 ## v1.17.32 — 7 November 2026
-- Redesigned the Deuteranopia and Tritanopia palettes with clearly different cool blue/amber and warm rose/earthy colour systems, making the two final appearance options easier to distinguish.
-- Added pairwise perceptual-distance checks between the specialist palettes while retaining WCAG text contrast, simulated colour-vision status separation and non-colour status cues.
+- Redesigned all four colour-vision-friendly palettes as distinct systems: Okabe–Ito-inspired blue/green/vermilion, protanopia-focused ivory/violet/cyan/ochre, deuteranopia-focused sea-glass/teal/blue/plum, and tritanopia-focused rose/peach/burgundy/green/rust.
+- Added six pairwise CIEDE2000 (Delta E 00) comparisons across all four palettes, alongside WCAG contrast and simulated colour-vision status-separation checks.
+- Retained redundant text, icon and shape cues so status is never communicated by colour alone.
 
 ## v1.17.31 — 7 November 2026
 - Added the last external JSON export date and time directly to the “Backup current” status message, formatted in the device's current timezone.
