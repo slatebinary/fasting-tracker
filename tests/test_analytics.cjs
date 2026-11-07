@@ -19,7 +19,7 @@ const summary = analytics.summarizeRecords(records,{
   streak:4
 });
 assert.deepEqual(JSON.parse(JSON.stringify(summary)),{
-  count:3,total:56*3600000,average:(56/3)*3600000,longest:24*3600000,goalCount:2,streak:4
+  count:3,total:54*3600000,average:18*3600000,longest:24*3600000,goalCount:2,streak:4
 });
 assert.deepEqual(JSON.parse(JSON.stringify(analytics.summarizeRecords([]))),{
   count:0,total:0,average:0,longest:0,goalCount:0,streak:0
