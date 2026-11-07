@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.31",
+  "version": "1.17.32",
   "released": "2026-11-07",
-  "notes": "Include the last external JSON export timestamp directly in the current-backup status using the device timezone; fit all non-empty weekly and broader weight chart periods in one viewport without horizontal scrolling.",
+  "notes": "Make the Deuteranopia and Tritanopia palettes perceptually distinct with cool blue/amber versus warm rose/earthy colour systems; retain WCAG contrast and simulated status separation.",
   "entry": "./index.html",
   "shell": [
     "./",
