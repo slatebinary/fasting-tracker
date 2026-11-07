@@ -31,6 +31,7 @@ assert.equal(analytics.relativeChange(100,0),null);
 assert.equal(analytics.durationBucketKey(24),'24to48');
 assert.equal(analytics.startBucketKey(21),'7');
 assert.equal(analytics.startBucketKey(24),null);
+
 const monthBuckets=[{key:'2026-01',label:'Jan'},{key:'2026-02',label:'Feb'}];
 const dailyTotals=new Map([
   ['2026-01-31',3600000],
@@ -41,8 +42,10 @@ const dailyTotals=new Map([
 const monthly=analytics.aggregateDailyTotalsByPeriod(monthBuckets,dailyTotals,{
   cutoff:Date.parse('2026-02-15T00:00:00Z')
 });
+// Cutoff retains daily totals within its one-day boundary and later entries;
+// January and February 13 are excluded, February 14 and 20 are retained.
 assert.deepEqual(JSON.parse(JSON.stringify(monthly)),[
-  {key:'2026-01',label:'Jan',totalMs:3600000,hours:1},
+  {key:'2026-01',label:'Jan',totalMs:0,hours:0},
   {key:'2026-02',label:'Feb',totalMs:25200000,hours:7}
 ]);
 assert.deepEqual(JSON.parse(JSON.stringify(monthBuckets)),[
