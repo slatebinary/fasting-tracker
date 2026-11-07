@@ -42,8 +42,8 @@ with sync_playwright() as p:
     assert bounds and bounds["width"] >= 140, bounds
     minimum, maximum = 0, int(slider.get_attribute("max"))
     y = bounds["y"] + bounds["height"] / 2
-    left = bounds["x"] + 10
-    right = bounds["x"] + bounds["width"] - 10
+    left = bounds["x"] + 2
+    right = bounds["x"] + bounds["width"] - 2
 
     def drag(start_x, end_x):
         page.mouse.move(start_x, y)
