@@ -252,7 +252,7 @@ def extract_func(name):
 fnames=['validDate','pad','numberSymbols','parseLocalizedNumber','safeTargetDate','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','zonedLocalToDate','dayKey','nextZonedDayBoundary','addIntervalToDayMap','compareVersions']
 try:
     extracted='\n'.join(extract_func(n) for n in fnames)
-    node_test='const MAX_DATE_MS=8.64e15;\nconst numberSymbolsCache=new Map(); const timeZoneValidityCache=new Map(); const zonedFormatterCache=new Map();\n'+extracted+r'''
+    node_test='const fs=require("fs"),vm=require("vm"); const window={}; vm.runInNewContext(fs.readFileSync("js/fasting-time.js","utf8"),{window});\nconst MAX_DATE_MS=8.64e15;\nconst numberSymbolsCache=new Map(); const timeZoneValidityCache=new Map(); const zonedFormatterCache=new Map();\nfunction currentLocale(){return "en-US"}\n'+extracted+r'''\nconst timeUtils=window.FTTime.create({pad,currentLocale,currentTimeZone,normalizeTimeZone,zonedParts,timeZoneOffsetMs});
 function assert(c,m){if(!c)throw new Error(m)}
 assert(validDate(null)===null,'null date must not become Unix epoch');
 assert(validDate('')===null,'empty date must be invalid');
@@ -483,15 +483,17 @@ ok('calendarNumericLegend' in index and all(label in index for label in ['0h','1
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
 try:
-    compat_names=['pad','normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','dayKey','dayKeyFast','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','normalizeDeletedWeight','normalizeStopReason','normalizeFastEditAuditEntry','normalizeFastEditHistory','migrateData','normalizeRecord','normalizeDeletedFast','normalizeNotificationPreferences','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
+    compat_names=['pad','normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','dayKey','dayKeyFast','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','normalizeDeletedWeight','normalizeStopReason','normalizeFastEditAuditEntry','normalizeFastEditHistory','migrateData','normalizeRecord','normalizeDeletedFast','normalizeNotificationPreferences','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
     compat_funcs='\n'.join(extract_func(n) for n in compat_names)
     compat_test=r'''
+const fs=require('fs'),vm=require('vm'); const window={}; vm.runInNewContext(fs.readFileSync('js/fasting-time.js','utf8'),{window});
 const DATA_VERSION=1, SUPPORTED_LANGUAGES=['en','bg','es'];
 const FUTURE_TOLERANCE_MS=60*1000, MAX_SAFE_GOAL_HOURS=2_000_000_000;
 const MAX_IMPORT_FASTS=100000, MAX_IMPORT_DELETED_FASTS=100000, MAX_IMPORT_WEIGHTS=100000, MAX_FAST_EDIT_AUDIT=100;
 const numberSymbolsCache=new Map(), timeZoneValidityCache=new Map(), zonedFormatterCache=new Map();
 function currentLocale(){return 'en-US'}
 '''+compat_funcs+r'''
+const timeUtils=window.FTTime.create({pad,currentLocale,currentTimeZone,normalizeTimeZone,zonedParts,timeZoneOffsetMs});
 function assert(c,m){if(!c)throw new Error(m)}
 const legacy={dataVersion:'1',revision:'bad',updatedAt:'not-a-date',goalHours:'16',activeStart:null,activeGoalHours:16,activeTimeZone:'Bad/Zone',records:[{id:'dup',start:'2026-09-25T06:00:00Z',end:'2026-09-25T22:00:00Z',goalHours:null,timeZone:''},{id:'dup',start:'2026-09-25T20:00:00Z',end:'2026-09-26T12:00:00Z',goalHours:'16',timeZone:'Bad/Zone'}],weights:[{id:'dupw',when:'2026-09-25T08:00:00Z',kg:'80,5',timeZone:''},{id:'dupw',when:'2026-09-26T08:00:00Z',kg:80.2,timeZone:'Bad/Zone'}],weightUnit:'stones',targetWeightKg:'n/a',gamificationEnabled:'yes',language:123,appearance:'auto',iconChoice:'default'};
 const result=validateCompatibleData(legacy),d=result.data;
