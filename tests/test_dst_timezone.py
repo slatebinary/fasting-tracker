@@ -168,7 +168,11 @@ with sync_playwright() as p:
     if not today_tile.count():
         print('FAIL: current Sofia calendar day missing',today_key);sys.exit(1)
     current_calendar_total=today_tile.locator('.calendarHours').inner_text().strip()
-    if current_calendar_total != today_total or current_calendar_total == '24h 0m':
+    def duration_minutes(text):
+        import re
+        return sum(int(value) * {'d':1440,'h':60,'m':1}[unit]
+                   for value,unit in re.findall(r'(\\d+)\\s*(d|h|m)',text))
+    if duration_minutes(current_calendar_total) != duration_minutes(today_total) or duration_minutes(current_calendar_total) >= 1440:
         print('FAIL: ongoing current day must show elapsed fasting time only',today_total,current_calendar_total);sys.exit(1)
     # Clock-change indicators must remain localized and explain actual elapsed-day length.
     app_source = open('index.html', encoding='utf-8').read()
