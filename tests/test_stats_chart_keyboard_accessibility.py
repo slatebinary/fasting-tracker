@@ -59,7 +59,7 @@ with sync_playwright() as p:
         raise AssertionError("Keyboard disclosure should expose chart data rows")
 
     # Each chart mode should have a text alternative through the same disclosure.
-    for mode in ["trend", "weeks", "months", "distribution", "success", "startPattern", "cumulative"]:
+    for mode in ["trend", "weeks", "months", "distribution", "success", "startpattern", "cumulative"]:
         page.locator("#statsVizSelect").select_option(mode)
         page.wait_for_timeout(80)
         page.locator("#statsChartDataBtn").focus()
