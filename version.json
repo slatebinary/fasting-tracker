@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.29",
+  "version": "1.17.30",
   "released": "2026-11-07",
-  "notes": "Keep keyboard focus within dialogs when no enabled focusable controls are available; provide a programmatically focusable dialog fallback.",
+  "notes": "Restore selected Timeline details when returning to Statistics and prevent accidental text selection on Older/Newer navigation buttons.",
   "entry": "./index.html",
   "shell": [
     "./",
