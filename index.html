@@ -6924,7 +6924,10 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   function drawWeightChart(asc = null) {
     const c = el('weightChart'), scroller = el('weightChartScroller'), track = el('weightChartTrack');
     if (!c || !scroller || !track) return;
-    const buckets = buildWeightAggregateBuckets(Array.isArray(asc) ? asc : null, weightPeriodMode);
+    const aggregatedBuckets = buildWeightAggregateBuckets(Array.isArray(asc) ? asc : null, weightPeriodMode);
+    // Aggregate views omit empty calendar intervals. Empty weeks/months create
+    // blank columns and force scrolling when only a few periods contain data.
+    const buckets = weightPeriodMode === 'daily' ? aggregatedBuckets : aggregatedBuckets.filter(bucket => bucket.count > 0);
     weightChartBuckets = buckets;
     const viewportW = Math.max(220, scroller.clientWidth || 614), cssH = 240;
     const ratio = window.devicePixelRatio || 1;
@@ -6968,12 +6971,10 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const dailySpacing=buckets.length<=30
       ? Math.max(1,plotW/Math.max(1,buckets.length-1))
       : Math.max(10,Math.min(22,plotW/29));
-    const pointSpacing=weightPeriodMode==='daily'
-      ? dailySpacing
-      : (buckets.length<=5?Math.max(1,plotW/Math.max(1,buckets.length-1)):68);
-    const virtualPlotW=(weightPeriodMode==='daily' || buckets.length>5)
-      ? Math.max(plotW,(buckets.length-1)*pointSpacing)
-      : plotW;
+    // Daily retains its fine-grained, scrollable history. Weekly and broader
+    // aggregates distribute all non-empty periods across the available width.
+    const pointSpacing=weightPeriodMode==='daily' ? dailySpacing : plotW/Math.max(1,buckets.length-1);
+    const virtualPlotW=weightPeriodMode==='daily' ? Math.max(plotW,(buckets.length-1)*pointSpacing) : plotW;
     const trackW=Math.ceil(left+virtualPlotW+right);
     track.style.width=`${Math.max(viewportW,trackW)}px`;
     scroller.dataset.period = weightPeriodMode;
@@ -7056,7 +7057,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   function weightChartPointSpacing(){
     const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
     if(weightPeriodMode==='daily')return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
-    return buckets.length<=5?Math.max(1,plotW/Math.max(1,buckets.length-1)):68;
+    return plotW/Math.max(1,buckets.length-1);
   }
   function syncWeightChartNavigator(){
     const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
@@ -7319,7 +7320,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const last = validDate(backupMeta.lastExternalBackupAt);
     label.textContent = last ? localDateTimeLabel(last) : t('backup.noneYet');
     const freshness=backupFreshnessState();
-    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?t('backup.current'):freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last)}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
