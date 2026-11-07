@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.28",
+  "version": "1.17.29",
   "released": "2026-11-07",
-  "notes": "Fix nested modal keyboard handling and stacked focus restoration; keep Escape and Tab within the topmost dialog.",
+  "notes": "Keep keyboard focus within dialogs when no enabled focusable controls are available; provide a programmatically focusable dialog fallback.",
   "entry": "./index.html",
   "shell": [
     "./",
