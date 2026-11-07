@@ -99,7 +99,9 @@ jobs:
           python3 tests/test_lifetime_performance.py
           python3 tests/test_repository_cleanliness_v1115.py
       - name: Check application JavaScript and document navigation
-        run: node tests/v1123-regression.cjs
+        run: |
+          node tests/v1123-regression.cjs
+          node tests/test_platform_diagnostics.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'

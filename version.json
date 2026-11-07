@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.33",
+  "version": "1.17.34",
   "released": "2026-11-07",
-  "notes": "Atomized app-shell source into six ordered JavaScript domain fragments and a separate stylesheet; added a reproducible builder and CI drift checks without changing runtime behaviour or stored data.",
+  "notes": "Extract storage-persistence capability checks into the platform diagnostics module; add isolated tests for unsupported, granted, already-persistent and failing storage APIs.",
   "entry": "./index.html",
   "shell": [
     "./",

@@ -15,5 +15,29 @@
   function shareCapabilities(){
     return {webShare:typeof navigator.share==='function',fileShare:typeof navigator.canShare==='function',downloads:'download' in HTMLAnchorElement.prototype};
   }
-  global.FTPlatform=Object.freeze({errorCategory,shareCapabilities});
+  async function queryStorageProtection({request=false}={}){
+    const result={supported:false,persistent:null,requestSupported:false,attempted:!!request,used:null,quota:null,error:false};
+    const storage=typeof navigator!=='undefined'?navigator.storage:null;
+    if(!storage||typeof storage.persisted!=='function')return result;
+    result.supported=true;
+    result.requestSupported=typeof storage.persist==='function';
+    try{
+      let persistent=await storage.persisted();
+      if(request&&!persistent&&result.requestSupported)persistent=await storage.persist();
+      result.persistent=!!persistent;
+      if(typeof storage.estimate==='function'){
+        try{
+          const estimate=await storage.estimate();
+          if(Number.isFinite(estimate?.usage))result.used=estimate.usage;
+          if(Number.isFinite(estimate?.quota))result.quota=estimate.quota;
+        }catch{}
+      }
+      return result;
+    }catch{
+      result.error=true;
+      result.persistent=null;
+      return result;
+    }
+  }
+  global.FTPlatform=Object.freeze({errorCategory,shareCapabilities,queryStorageProtection});
 })(window);

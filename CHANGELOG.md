@@ -1,3 +1,8 @@
+## v1.17.34 — 7 November 2026
+- Moved the browser storage-persistence capability query into the dedicated platform diagnostics module, keeping the Settings interface as a thin caller.
+- Added isolated tests for unsupported storage APIs, persistence requests, already-persistent storage, quota estimates and error handling.
+- No fasting, weight, backup, IndexedDB schema or stored-data changes.
+
 ## v1.17.33 — 7 November 2026
 - Atomized the app-shell source into six ordered JavaScript domain fragments and a separate stylesheet, with a reproducible build step that preserves the existing single-script runtime and lexical scope.
 - Added CI verification to detect generated app-shell drift before release.
