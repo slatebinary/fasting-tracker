@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.29" />
+  <meta name="ft-app-version" content="1.17.30" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -551,6 +551,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .statsHistoryNavigator { display:grid; grid-template-columns:auto minmax(60px,1fr) auto; align-items:center; gap:8px; margin:-4px 0 12px; }
     .statsHistoryNavigator[hidden] { display:none !important; }
     .statsHistoryNavigator button { min-height:42px; padding:9px 12px; white-space:nowrap; }
+    /* Keep Older/Newer labels from becoming accidental text selections on touch devices. */
+    .weightChartNavigator button, .statsHistoryNavigator button { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
     .statsHistoryNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
     .statsHistoryNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     @media (max-width:360px) { .statsHistoryNavigator { grid-template-columns:auto minmax(40px,1fr) auto; gap:5px; } .statsHistoryNavigator button { padding:8px 9px; } }
@@ -1898,7 +1900,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.29';
+  const APP_VERSION = '1.17.30';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5928,7 +5930,16 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const title = el('chartDetailTitle'), text = el('chartDetailText');
     if (!title || !text) return;
     let detail = statsDetailOverride;
-    if (!detail && statsVizMode === 'timeline' && days) detail = chartSelectionDetail(days);
+    if (!detail && statsVizMode === 'timeline') {
+      // Timeline selection is retained while the user visits another screen.
+      // Rebuild its detail from the last rendered day model when Statistics returns.
+      const availableDays = Array.isArray(days) && days.length ? days : timelineChartDays;
+      if (chartSelectedTarget && availableDays.length) {
+        detail = chartSelectionDetail(availableDays);
+        // Do not leave a stale highlight if a range/data change removed the target.
+        if (!detail) chartSelectedTarget = null;
+      }
+    }
     title.textContent = detail?.title || t('stats.chartDetailDefaultTitle');
     const clockNote=detail?clockChangeNoteForDetail(detail,statsVizMode):'';
     text.textContent = [detail?.text,clockNote].filter(Boolean).join(' ');
@@ -7280,7 +7291,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const status = t(labelKey);
     const explanation = t(descriptionKey, {date});
     button.dataset.state=state;
-    if (text.textContent!==status) text.textContent=status;
+    const visibleStatus = freshness.last ? `${status} — ${date}` : status;
+    if (text.textContent!==visibleStatus) text.textContent=visibleStatus;
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
     button.setAttribute('aria-label', status + '. ' + explanation + ' ' + action);
@@ -7305,7 +7317,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const freshnessLabel=el('backupFreshnessLabel');
     if (!label || !banner || !textBox) return;
     const last = validDate(backupMeta.lastExternalBackupAt);
-    label.textContent = last ? localDateLabel(last) : t('backup.noneYet');
+    label.textContent = last ? localDateTimeLabel(last) : t('backup.noneYet');
     const freshness=backupFreshnessState();
     if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?t('backup.current'):freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
@@ -8527,7 +8539,12 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   }
 
   function renderScreen(screen = activeScreenId(), { force = false } = {}) {
-    if (!force && !viewDirty[screen]) return;
+    if (!force && !viewDirty[screen]) {
+      // Backup metadata is time-sensitive and can change while a clean Settings
+      // screen is hidden (e.g. after an export or a timezone/device change).
+      if (screen === 'settings') renderBackupStatus();
+      return;
+    }
     if (screen === 'fasting') { updateTimer(); renderGamificationSummary(); }
     else if (screen === 'history') renderHistory();
     else if (screen === 'weight') renderWeight();

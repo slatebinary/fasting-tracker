@@ -1,3 +1,9 @@
+## v1.17.30 — 7 November 2026
+- Restored the selected Timeline section's timestamp and duration details when returning to Statistics after visiting another screen; stale selections are cleared if their underlying day is no longer available.
+- Disabled accidental text selection on the Weight and Statistics Older/Newer navigation buttons while preserving native button and keyboard operation.
+- Added browser regression coverage for Timeline detail restoration and navigation-button text selection.
+- Displayed the recorded local date and time of the last external JSON export in the backup status and Settings summary.
+
 ## v1.17.29 — 7 November 2026
 - Kept keyboard focus inside a modal when every control is disabled or unavailable by moving focus to the dialog container; added a programmatically focusable fallback for initial focus and Tab/Shift+Tab handling.
 - Added browser regression coverage for empty-focusable modal states.
