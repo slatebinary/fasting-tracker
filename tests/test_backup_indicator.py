@@ -144,7 +144,7 @@ with sync_playwright() as p:
     boot(sofia_page,timezone_meta)
     for tz_page in (utc_page,sofia_page):
         tz_page.locator('[data-screen="settings"]').click()
-        tz_page.wait_for_function("document.querySelector('#lastBackupLabel')?.textContent.includes(':')")
+        tz_page.wait_for_function("document.querySelector('#lastBackupLabel')?.textContent.includes(':')",timeout=5000)
     # The backup summary lives inside a collapsible Settings group. Read its
     # rendered text node content without requiring the group to be expanded.
     utc_label=utc_page.locator('#lastBackupLabel').text_content() or ''
