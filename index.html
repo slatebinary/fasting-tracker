@@ -8539,7 +8539,12 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   }
 
   function renderScreen(screen = activeScreenId(), { force = false } = {}) {
-    if (!force && !viewDirty[screen]) return;
+    if (!force && !viewDirty[screen]) {
+      // Backup metadata is time-sensitive and can change while a clean Settings
+      // screen is hidden (e.g. after an export or a timezone/device change).
+      if (screen === 'settings') renderBackupStatus();
+      return;
+    }
     if (screen === 'fasting') { updateTimer(); renderGamificationSummary(); }
     else if (screen === 'history') renderHistory();
     else if (screen === 'weight') renderWeight();
