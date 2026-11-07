@@ -1,4 +1,3 @@
-
   function getStoredDataRaw() {
     // Primary history moved to IndexedDB in v1.8.0. This legacy key is read only
     // during one-time migration from older releases.
@@ -1432,3 +1431,4 @@
       return false;
     }
   }
+

@@ -1139,3 +1139,4 @@
   let pendingDestructiveReset = null;
   let destructiveResetBusy = false;
   function destructiveResetPhrase(kind) { return kind === 'recovery' ? 'RESET DATA' : 'DELETE ALL'; }
+

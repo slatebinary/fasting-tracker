@@ -1,4 +1,3 @@
-
   function updateDestructiveResetGuard() {
     const phrase = destructiveResetPhrase(pendingDestructiveReset);
     el('destructiveResetConfirmBtn').disabled = destructiveResetBusy || !pendingDestructiveReset ||

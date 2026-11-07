@@ -582,4 +582,6 @@
 
   function formatGoal(hours) {
     const n = sanitizeGoal(hours, 16);
-    return `${n.toLocaleString(currentLocale(), { maximumFractionDigits: 3 })} ${t(pluralKey('unit.hour', 
+    return `${n.toLocaleString(currentLocale(), { maximumFractionDigits: 3 })} ${t(pluralKey('unit.hour', n))}`;
+  }
+

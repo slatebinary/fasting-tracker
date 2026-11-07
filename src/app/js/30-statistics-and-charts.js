@@ -1,4 +1,3 @@
-
   function weightWeekStreak() {
     const weeks = new Set(data.weights.map(w => weekKeyFromDayString(weightCalendarDay(w))).filter(Boolean));
     if (!weeks.size) return 0;

@@ -1,4 +1,3 @@
-
   function exactDuration(ms) {
     ms = Math.max(0, ms);
     const totalSec = Math.floor(ms / 1000);
@@ -1343,3 +1342,4 @@
     }
     return total ? Math.round((reached/total)*100) : null;
   }
+
