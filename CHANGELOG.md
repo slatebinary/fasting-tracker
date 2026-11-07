@@ -1,3 +1,7 @@
+## v1.17.32 — 7 November 2026
+- Redesigned the Deuteranopia and Tritanopia palettes with clearly different cool blue/amber and warm rose/earthy colour systems, making the two final appearance options easier to distinguish.
+- Added pairwise perceptual-distance checks between the specialist palettes while retaining WCAG text contrast, simulated colour-vision status separation and non-colour status cues.
+
 ## v1.17.31 — 7 November 2026
 - Added the last external JSON export date and time directly to the “Backup current” status message, formatted in the device's current timezone.
 - Added browser regression coverage for the status message itself and timezone changes.
