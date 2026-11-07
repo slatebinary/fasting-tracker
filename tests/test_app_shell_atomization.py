@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify the generated app shell is reproducible from its atomized sources."""
 from pathlib import Path
+import json
 import subprocess
 import sys
 
@@ -10,7 +11,8 @@ index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
 assert len(parts) == 6, f"Expected six ordered app fragments, found {len(parts)}"
-assembled_js = "".join(path.read_text(encoding="utf-8") for path in parts)
+version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
+assembled_js = "".join(path.read_text(encoding="utf-8") for path in parts).replace("@@FT_APP_VERSION@@", version)
 style = index.split("<style>", 1)[1].split("</style>", 1)[0]
 scripts = [part.split("</script>", 1)[0] for part in index.split("<script>")[1:]]
 main_js = next((item for item in scripts if "const APP_VERSION" in item), None)
