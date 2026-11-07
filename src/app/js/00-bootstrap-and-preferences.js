@@ -365,6 +365,9 @@
     else document.documentElement.setAttribute('data-theme', pref);
     const sel = document.getElementById('appearanceSelect');
     if (sel) sel.value = pref;
+    // The initial language pass runs before the saved appearance is restored.
+    // Refresh the purpose hint after the select reflects the persisted palette.
+    updateAppearancePaletteHint();
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = effectiveAppearance() === 'dark' ? '#000000' : '#ffffff';
   }

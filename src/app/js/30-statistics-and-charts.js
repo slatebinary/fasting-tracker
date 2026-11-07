@@ -109,15 +109,11 @@
 
   function statsSummary() {
     if (statsSummaryCache) return statsSummaryCache;
-    const ms = data.records.map(recordMs), total = ms.reduce((a, b) => a + b, 0);
-    statsSummaryCache = {
-      count: ms.length,
-      total,
-      average: ms.length ? total / ms.length : 0,
-      longest: ms.length ? Math.max(...ms) : 0,
-      goalCount: data.records.filter(recordMetGoal).length,
+    statsSummaryCache = FTAnalytics.summarizeRecords(data.records, {
+      durationGetter: recordMs,
+      goalGetter: recordMetGoal,
       streak: currentStreak()
-    };
+    });
     return statsSummaryCache;
   }
 
@@ -1159,17 +1155,19 @@
   function buildMonthSummaries(mode='months'){
     if(mode==='months'&&monthSummariesCache)return monthSummariesCache;if(mode==='success'&&targetSuccessCache)return targetSuccessCache;
     const range=chartRange(mode),records=chartRangeRecords(mode),months=FTAnalytics.monthSpan(range,records,Date.now(),r=>new Date(r.end).getTime());
-    const buckets=FTVisuals.monthBuckets(records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),by=new Map(buckets.map(x=>[x.key,x]));
-    for(const x of buckets){x.totalMs=0;x.hours=0;}
     const cutoff=FTAnalytics.cutoffMs(range,records,Date.now(),r=>new Date(r.end).getTime());
-    for(const [day,totalMs] of completedFastingByStoredCalendarDay()){const midday=Date.parse(`${day}T12:00:00Z`);if(range!=='all'&&Number.isFinite(midday)&&midday<cutoff-86400000)continue;const b=by.get(String(day).slice(0,7));if(b){b.totalMs+=Number(totalMs)||0;b.hours=b.totalMs/3600000;}}
+    const buckets=FTAnalytics.aggregateDailyTotalsByPeriod(
+      FTVisuals.monthBuckets(records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),
+      completedFastingByStoredCalendarDay(),
+      {cutoff:range==='all'?-Infinity:cutoff}
+    );
     if(mode==='months')monthSummariesCache=buckets;else targetSuccessCache=buckets;return buckets;
   }
   function buildDurationDistribution(){if(!durationDistributionCache)durationDistributionCache=FTVisuals.durationDistribution(chartRangeRecords('distribution'),{recordMs});return durationDistributionCache;}
   function buildTargetSuccessSummaries(){return buildMonthSummaries('success');}
   function buildStartPattern(){if(!startPatternCache)startPatternCache=FTVisuals.startTimeBuckets(chartRangeRecords('startpattern'),{partsForRecord:r=>zonedParts(r.start,r.timeZone)});return startPatternCache;}
   function buildCumulativeDays(){if(cumulativeDaysCache)return cumulativeDaysCache;const n=FTAnalytics.rangeDays(chartRange('cumulative'),data.records,Date.now(),r=>new Date(r.start).getTime()),days=buildSummaryChartDays(n),values=FTAnalytics.cumulative(days,d=>(d.totalFastMs||0)/3600000);days.forEach((d,i)=>d.cumulativeHours=values[i]);cumulativeDaysCache=days;return days;}
-  function fullMonthBuckets(months=14){const buckets=FTVisuals.monthBuckets(data.records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),by=new Map(buckets.map(x=>[x.key,x]));for(const x of buckets){x.totalMs=0;x.hours=0;}for(const [day,totalMs] of completedFastingByStoredCalendarDay()){const b=by.get(String(day).slice(0,7));if(b){b.totalMs+=Number(totalMs)||0;b.hours=b.totalMs/3600000;}}return buckets;}
+  function fullMonthBuckets(months=14){return FTAnalytics.aggregateDailyTotalsByPeriod(FTVisuals.monthBuckets(data.records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),completedFastingByStoredCalendarDay());}
   function monthComparisonSummary(){const items=fullMonthBuckets(14),cur=items.at(-1),prev=items.at(-2),year=items.at(-13);if(!cur)return'';const mom=FTAnalytics.relativeChange(cur.hours,prev?.hours),yoy=FTAnalytics.relativeChange(cur.hours,year?.hours);const change=(now,old,pct)=>old?`${now>=old?'+':''}${formatNumber(now-old,0,1)} ${t('unit.h')}${pct==null?'':` (${pct>=0?'+':''}${formatNumber(pct,0,0)}%)`}`:t('stats.comparisonNoBaseline');return t('stats.monthComparison',{month:cur.label,mom:change(cur.hours,prev?.hours||0,mom),yoy:change(cur.hours,year?.hours||0,yoy)});}
 
   function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false,integerScale=false}={}){
