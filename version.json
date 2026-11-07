@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.17.32",
   "released": "2026-11-07",
-  "notes": "Make the Deuteranopia and Tritanopia palettes perceptually distinct with cool blue/amber versus warm rose/earthy colour systems; retain WCAG contrast and simulated status separation.",
+  "notes": "Redesign all four colour-vision palettes with distinct perceptual identities; validate all six pairwise combinations using CIEDE2000, WCAG contrast and simulated CVD status separation.",
   "entry": "./index.html",
   "shell": [
     "./",
