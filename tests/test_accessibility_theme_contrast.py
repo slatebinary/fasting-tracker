@@ -266,3 +266,21 @@ for first_name, second_name in itertools.combinations(theme_names, 2):
 
 print("All four colour-vision palettes pass six pairwise CIEDE2000 comparisons.")
 
+
+
+# Each colour-vision palette must explain its intended accessibility purpose
+# in the selected interface language, and the hint must update with the selector.
+assert 'id="appearancePaletteHint"' in html
+assert 'function updateAppearancePaletteHint()' in html
+assert "updateAppearancePaletteHint();" in html
+for language in ("en", "bg", "es"):
+    dictionary = json.loads((root / "i18n" / f"{language}.json").read_text(encoding="utf-8"))
+    runtime = (root / "i18n" / f"{language}.js").read_text(encoding="utf-8")
+    for palette in ("colorblind", "protanopia", "deuteranopia", "tritanopia"):
+        key = f"settings.paletteHint.{palette}"
+        assert dictionary.get(key), f"Missing {language} purpose hint for {palette}"
+        assert dictionary[key] in runtime, f"Runtime bundle missing {language} purpose hint for {palette}"
+source = json.loads((root / "i18n-source.json").read_text(encoding="utf-8"))
+for palette in ("colorblind", "protanopia", "deuteranopia", "tritanopia"):
+    assert source["strings"].get(f"settings.paletteHint.{palette}")
+print("All four palette purpose hints are present in English, Bulgarian and Spanish.")
