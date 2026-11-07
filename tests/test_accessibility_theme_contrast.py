@@ -208,3 +208,21 @@ for theme, thresholds in specialist_expectations.items():
         f"{theme} success and danger colours converge under its deficiency simulation "
         f"(Delta E {separation:.1f})"
     )
+
+
+# The final two specialist options must be perceptually distinct from each other,
+# not merely different from the general colour-vision palette.
+deuteranopia = _palette_tokens("deuteranopia")
+tritanopia = _palette_tokens("tritanopia")
+pairwise_minimums = {"bg": 10.0, "accent": 40.0, "good": 30.0, "danger": 10.0}
+for token, minimum in pairwise_minimums.items():
+    distance = _delta_e(
+        _rgb_from_hex(deuteranopia[token]),
+        _rgb_from_hex(tritanopia[token]),
+    )
+    assert distance >= minimum, (
+        f"Deuteranopia and Tritanopia --{token} are too similar "
+        f"(Delta E {distance:.1f}, expected at least {minimum:.1f})"
+    )
+
+print("Deuteranopia and Tritanopia palettes are perceptually distinct.")
