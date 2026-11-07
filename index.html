@@ -7291,7 +7291,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const status = t(labelKey);
     const explanation = t(descriptionKey, {date});
     button.dataset.state=state;
-    if (text.textContent!==status) text.textContent=status;
+    const visibleStatus = freshness.last ? `${status} — ${date}` : status;
+    if (text.textContent!==visibleStatus) text.textContent=visibleStatus;
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
     button.setAttribute('aria-label', status + '. ' + explanation + ' ' + action);
@@ -7316,7 +7317,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     const freshnessLabel=el('backupFreshnessLabel');
     if (!label || !banner || !textBox) return;
     const last = validDate(backupMeta.lastExternalBackupAt);
-    label.textContent = last ? localDateLabel(last) : t('backup.noneYet');
+    label.textContent = last ? localDateTimeLabel(last) : t('backup.noneYet');
     const freshness=backupFreshnessState();
     if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?t('backup.current'):freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
