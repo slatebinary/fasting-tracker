@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.17.30",
   "released": "2026-11-07",
-  "notes": "Restore selected Timeline details when returning to Statistics and prevent accidental text selection on Older/Newer navigation buttons.",
+  "notes": "Restore selected Timeline details after screen navigation; prevent accidental text selection on Older/Newer controls; show the recorded local date and time of the last external JSON export.",
   "entry": "./index.html",
   "shell": [
     "./",
