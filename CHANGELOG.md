@@ -1,6 +1,7 @@
 ## v1.17.32 — 7 November 2026
 - Redesigned all four colour-vision-friendly palettes as distinct systems: Okabe–Ito-inspired blue/green/vermilion, protanopia-focused ivory/violet/cyan/ochre, deuteranopia-focused sea-glass/teal/blue/berry, and tritanopia-focused rose/peach/burgundy/green/rust.
 - Added six pairwise CIEDE2000 (Delta E 00) comparisons across all four palettes, alongside WCAG contrast and simulated colour-vision status-separation checks.
+- Added a live, localized purpose hint for each of the four palettes in Settings (English, Bulgarian and Spanish), explaining the colour-vision need each palette is intended to support.
 - Retained redundant text, icon and shape cues so status is never communicated by colour alone.
 
 ## v1.17.31 — 7 November 2026
