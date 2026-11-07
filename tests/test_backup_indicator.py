@@ -139,5 +139,23 @@ with sync_playwright() as p:
     page2.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=30000)
     status(page2,'aged')
     assert not errors2, errors2[:5]
+
+    # The export timestamp is an absolute instant. Rendering it after the
+    # device timezone changes must use the new device timezone, not an offset
+    # captured when the export was made.
+    timezone_meta=dict(meta)
+    timezone_meta['lastExternalBackupAt']='2026-01-15T12:34:00.000Z'
+    utc_page=browser.new_page(viewport={'width':390,'height':844},timezone_id='UTC')
+    sofia_page=browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Sofia')
+    boot(utc_page,timezone_meta)
+    boot(sofia_page,timezone_meta)
+    for tz_page in (utc_page,sofia_page):
+        tz_page.locator('[data-screen="settings"]').click()
+        tz_page.wait_for_function("document.querySelector('#lastBackupLabel')?.textContent.includes(':')")
+    utc_label=utc_page.locator('#lastBackupLabel').inner_text()
+    sofia_label=sofia_page.locator('#lastBackupLabel').inner_text()
+    assert utc_label != sofia_label, f'Backup timestamp did not follow device timezone: UTC={utc_label!r}, Sofia={sofia_label!r}'
+    assert '12:34' in utc_label and '14:34' in sofia_label, f'Unexpected timezone conversion: UTC={utc_label!r}, Sofia={sofia_label!r}'
+    assert not errors2, errors2[:5]
     browser.close()
-print('PASS: backup indicator red/green/amber, cancel safety, preference isolation, active fast and weight change, accessible button')
+print('PASS: backup indicator red/green/amber, cancel safety, preference isolation, active fast and weight change, timestamp in current device timezone, accessible button')
