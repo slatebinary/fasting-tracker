@@ -39,7 +39,18 @@
     }
     return {count:list.length,total,average:list.length?total/list.length:0,longest,goalCount,streak:Math.max(0,Number(streak)||0)};
   }
+  function aggregateDailyTotalsByPeriod(buckets,dailyTotals,{cutoff=-Infinity,periodKeyForDay=day=>String(day).slice(0,7)}={}){
+    const result=(buckets||[]).map(bucket=>({...bucket,totalMs:0,hours:0}));
+    const byKey=new Map(result.map(bucket=>[String(bucket.key),bucket]));
+    for(const [day,totalMs] of dailyTotals||[]){
+      const midday=Date.parse(`${day}T12:00:00Z`);
+      if(Number.isFinite(cutoff)&&Number.isFinite(midday)&&midday<cutoff-DAY)continue;
+      const bucket=byKey.get(String(periodKeyForDay(day)));
+      if(bucket){bucket.totalMs+=Number(totalMs)||0;bucket.hours=bucket.totalMs/3600000;}
+    }
+    return result;
+  }
   function durationBucketKey(hours){hours=Math.max(0,Number(hours)||0);if(hours<12)return'under12';if(hours<16)return'12to16';if(hours<18)return'16to18';if(hours<20)return'18to20';if(hours<24)return'20to24';if(hours<48)return'24to48';return'48plus';}
   function startBucketKey(hour){hour=Number(hour);return Number.isFinite(hour)&&hour>=0&&hour<24?String(Math.floor(hour/3)):null;}
-  global.FTAnalytics=Object.freeze({rangeDays,cutoffMs,filterRecords,rollingAverage,cumulative,monthSpan,relativeChange,summarizeRecords,durationBucketKey,startBucketKey});
+  global.FTAnalytics=Object.freeze({rangeDays,cutoffMs,filterRecords,rollingAverage,cumulative,monthSpan,relativeChange,summarizeRecords,aggregateDailyTotalsByPeriod,durationBucketKey,startBucketKey});
 })(window);
