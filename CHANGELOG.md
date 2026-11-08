@@ -1,3 +1,8 @@
+## v1.17.53 — 2026-11-08
+
+- Extracted fasting-interval normalization, timezone-aware day summaries, and accessible statistics chart data into a dedicated ordered JavaScript fragment.
+- Preserved interval boundaries, local-day grouping, DST handling, and screen-reader chart details; expanded app-shell atomization regression.
+
 ## v1.17.52 — 2026-11-08
 
 - Moved backup-data eligibility, backup clock-skew normalization, initial backup tracking, and dataset-signature cache state into the dedicated backup/update source fragment.
