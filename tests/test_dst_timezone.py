@@ -117,7 +117,7 @@ with sync_playwright() as p:
     if pause_minutes != 52 or calendar_fast_minutes != 24 * 60 + 8:
         print('FAIL: Sofia autumn DST calendar should show 24h 8m after a 52m pause', pause_minutes, calendar_fast_minutes);sys.exit(1)
     source = open('index.html', encoding='utf-8').read()
-    calendar_renderer = source[source.index('for (const {d,day} of calendarDays) {'):source.index('function buildSummaryChartDays')]
+    calendar_renderer = source[source.index('function renderFastCalendar()'):source.index('function handleCalendarGridKeydown')]
     if calendar_renderer.count('totalHoursDuration(displayFastMs)') != 3 or 'compactDuration(day.totalFastMs)' in calendar_renderer:
         print('FAIL: calendar tile, accessible label, and detail must show the normalized elapsed calendar duration');sys.exit(1)
     if 'function calendarDurationForDisplay(day, nowMs = Date.now())' not in source:
