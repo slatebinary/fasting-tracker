@@ -10,7 +10,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 8, f"Expected eight ordered app fragments, found {len(parts)}"
+assert len(parts) == 9, f"Expected nine ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -18,6 +18,10 @@ assert (source / "js" / "32-weight-chart-interaction.js").is_file()
 weight_chart = (source / "js" / "32-weight-chart-interaction.js").read_text(encoding="utf-8")
 assert "function drawWeightChart" in weight_chart and "function handleWeightChartScroll" in weight_chart
 assert "function drawWeightChart" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
+assert (source / "js" / "33-statistics-generic-chart.js").is_file()
+generic_chart = (source / "js" / "33-statistics-generic-chart.js").read_text(encoding="utf-8")
+assert "function drawGenericBarChart" in generic_chart and "function handleGenericChartPointer" in generic_chart
+assert "function drawGenericBarChart" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 assembled_js = "".join(path.read_text(encoding="utf-8") for path in parts).replace("@@FT_APP_VERSION@@", version)
