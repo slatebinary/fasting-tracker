@@ -20,7 +20,8 @@ def function_body(name, next_marker):
     end = source.index(next_marker, start)
     return source[start:end]
 
-storage_service = (ROOT / "js" / "fasting-storage-db.js").read_text(encoding="utf-8")\nopen_db = storage_service[storage_service.index("  function openAppDb() {"):storage_service.index("  function idbRequest(")]
+storage_service = (ROOT / "js" / "fasting-storage-db.js").read_text(encoding="utf-8")
+open_db = storage_service[storage_service.index("  function openAppDb() {"):storage_service.index("  function idbRequest(")]
 snapshot = function_body("  async function loadRecordBasedSnapshot() {", "  async function loadCompatibleStorageSource()")
 restore = function_body("  async function persistResolvedDataAtomic(candidate) {", "  function persistResolvedData(candidate) {")
 
