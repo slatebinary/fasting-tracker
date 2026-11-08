@@ -139,6 +139,11 @@
   const el = id => document.getElementById(id);
   let uiReady = false;
   loadUpdateStatusMeta();
+  // Initialise IndexedDB helpers before the first async storage migration.
+  // This binding must precede initializePersistentStorage() below.
+  const storageDB = window.FTStorageDB.create({IDB_NAME, IDB_VERSION, noteDiagnosticError});
+  const {openAppDb, idbRequest, idbGet, idbGetAll, idbPut, idbDelete, idbClear, idbClearStoresAtomic} = storageDB;
+
   // Initialise shared time primitives before the first async storage migration.
   // Function declarations below are hoisted within this single app-shell scope.
   const timeUtils = window.FTTime.create({
