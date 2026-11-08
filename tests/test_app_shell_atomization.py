@@ -10,7 +10,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 10, f"Expected ten ordered app fragments, found {len(parts)}"
+assert len(parts) == 11, f"Expected eleven ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -26,6 +26,11 @@ assert (source / "js" / "34-weight-period-analytics.js").is_file()
 weight_analytics = (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
 assert "function buildWeightAggregateBuckets" in weight_analytics and "function renderWeightPeriodAnalytics" in weight_analytics
 assert "function buildWeightAggregateBuckets" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
+assert (source / "js" / "35-gamification-achievements.js").is_file()
+gamification = (source / "js" / "35-gamification-achievements.js").read_text(encoding="utf-8")
+assert "function achievementDefinitions" in gamification and "function renderGamificationDetail" in gamification
+assert "function achievementDefinitions" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
+assert "function renderGamificationDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 assembled_js = "".join(path.read_text(encoding="utf-8") for path in parts).replace("@@FT_APP_VERSION@@", version)
