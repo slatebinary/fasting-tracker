@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.17.47",
   "released": "2026-11-08",
-  "notes": "Extracted calendar rendering, keyboard navigation and daylight-saving clock-change annotations into a dedicated source fragment.",
+  "notes": "Extracted calendar rendering, keyboard navigation and daylight-saving clock-change annotations; restored v1.17.43–v1.17.46 changelog entries in all locales and added release-history regression coverage.",
   "entry": "./index.html",
   "shell": [
     "./",
