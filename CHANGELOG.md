@@ -1,3 +1,8 @@
+## v1.17.47 — 2026-11-08
+
+- Extracted calendar date modeling, daylight-saving clock-change annotations, calendar rendering, and keyboard navigation into a dedicated ordered JavaScript fragment.
+- Expanded app-shell atomization regression to verify the fourteen-fragment assembly and calendar/DST function ownership.
+
 ## v1.17.46 — 2026-11-08
 
 - Extracted statistics visualization preferences, group navigation, mode switching, and render scheduling/orchestration into a dedicated ordered JavaScript fragment.
