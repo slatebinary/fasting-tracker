@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.38",
+  "version": "1.17.39",
   "released": "2026-11-08",
-  "notes": "Extracted IndexedDB connection, request and transaction primitives into a dedicated storage service; persistence policy and atomic history safeguards remain in the app layer.",
+  "notes": "Added the extracted IndexedDB service to the integrity-protected update shell; corrected release asset coverage.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -14,6 +14,7 @@
     "./js/platform-diagnostics.js",
     "./js/fasting-integrity.js",
     "./js/fasting-time.js",
+    "./js/fasting-storage-db.js",
     "./js/time-zone-locations.js",
     "./js/fasting-visuals.js",
     "./js/fasting-analytics.js",
