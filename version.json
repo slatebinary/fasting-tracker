@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.39",
+  "version": "1.17.40",
   "released": "2026-11-08",
-  "notes": "Added the extracted IndexedDB service to the integrity-protected update shell; corrected release asset coverage.",
+  "notes": "Split the oversized statistics and charts source into ordered core and visualization fragments; runtime behavior unchanged.",
   "entry": "./index.html",
   "shell": [
     "./",
