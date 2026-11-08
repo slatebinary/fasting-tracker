@@ -63,7 +63,7 @@ for language in ("en", "bg", "es"):
         re.DOTALL,
     )
     assert section, f"Missing {language} changelog section"
-    release_versions = re.findall(r"<h2>v(\\d+\\.\\d+\\.\\d+)</h2>", section.group(1))
+    release_versions = re.findall(r"<h2>v(\d+\.\d+\.\d+)</h2>", section.group(1))
     assert all(release_versions.count(item) == 1 for item in expected_recent_releases), (
         f"{language} changelog must retain each of the five latest releases: "
         f"{expected_recent_releases}"
