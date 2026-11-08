@@ -1,3 +1,8 @@
+## v1.17.40 — 2026-11-08
+
+- Extracted Timeline hit-testing, selection details, pointer interaction and scroll-to-latest behavior into a dedicated ordered source fragment without changing the public UI or selection state.
+- Expanded app-shell atomization regression checks for the new fragment and its moved interaction functions.
+
 ## v1.17.39 — 2026-11-08
 
 - Added `js/fasting-storage-db.js` to the SHA-256-protected release shell so service updates are integrity-checked and precached with the app.
