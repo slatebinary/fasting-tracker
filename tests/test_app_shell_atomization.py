@@ -10,7 +10,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 11, f"Expected eleven ordered app fragments, found {len(parts)}"
+assert len(parts) == 12, f"Expected twelve ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -31,6 +31,12 @@ gamification = (source / "js" / "35-gamification-achievements.js").read_text(enc
 assert "function achievementDefinitions" in gamification and "function renderGamificationDetail" in gamification
 assert "function achievementDefinitions" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert "function renderGamificationDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
+assert (source / "js" / "36-statistics-history-drilldown.js").is_file()
+history_drilldown = (source / "js" / "36-statistics-history-drilldown.js").read_text(encoding="utf-8")
+assert "function statsHistoryNavigationItems" in history_drilldown and "function selectStatsHistoryIndex" in history_drilldown
+assert "function openStatsDrilldown" in history_drilldown and "function renderChartDetailForMode" in history_drilldown
+main_stats = (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
+assert "function statsHistoryNavigationItems" not in main_stats and "function openStatsDrilldown" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 assembled_js = "".join(path.read_text(encoding="utf-8") for path in parts).replace("@@FT_APP_VERSION@@", version)
