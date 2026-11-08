@@ -1,3 +1,8 @@
+## v1.17.48 — 2026-11-08
+
+- Extracted interactive fasting-chart day modeling, continuation-segment construction, and primary canvas rendering into a dedicated ordered JavaScript fragment.
+- Preserved the existing chart selection, cross-midnight continuation, month boundaries, DST annotations, and scrolling behavior; expanded app-shell atomization regression.
+
 ## v1.17.47 — 2026-11-08
 
 - Extracted calendar date modeling, daylight-saving clock-change annotations, calendar rendering, and keyboard navigation into a dedicated ordered JavaScript fragment.
