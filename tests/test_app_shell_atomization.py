@@ -2,6 +2,7 @@
 """Verify the generated app shell is reproducible from its atomized sources."""
 from pathlib import Path
 import json
+import re
 import subprocess
 import sys
 
@@ -49,6 +50,29 @@ assert "function handleCalendarGridKeydown" in calendar_dst
 assert "function dayClockChangeInfo" not in main_stats and "function renderFastCalendar" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
+version_major, version_minor, version_patch = (int(part) for part in version.split("."))
+expected_recent_releases = [
+    f"{version_major}.{version_minor}.{patch}"
+    for patch in range(version_patch, max(-1, version_patch - 5), -1)
+]
+changelog_html = (ROOT / "changelog.html").read_text(encoding="utf-8")
+for language in ("en", "bg", "es"):
+    section = re.search(
+        rf'<section data-lang="{language}">(.*?)</section>',
+        changelog_html,
+        re.DOTALL,
+    )
+    assert section, f"Missing {language} changelog section"
+    release_versions = re.findall(r"<h2>v(\\d+\\.\\d+\\.\\d+)</h2>", section.group(1))
+    assert all(release_versions.count(item) == 1 for item in expected_recent_releases), (
+        f"{language} changelog must retain each of the five latest releases: "
+        f"{expected_recent_releases}"
+    )
+    positions = [release_versions.index(item) for item in expected_recent_releases]
+    assert positions == sorted(positions), (
+        f"{language} changelog must list the latest releases in descending order"
+    )
+
 assembled_js = "".join(path.read_text(encoding="utf-8") for path in parts).replace("@@FT_APP_VERSION@@", version)
 style = index.split("<style>", 1)[1].split("</style>", 1)[0]
 scripts = [part.split("</script>", 1)[0] for part in index.split("<script>")[1:]]
