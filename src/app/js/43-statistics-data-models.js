@@ -66,3 +66,14 @@
     if(!ul.children.length){const li=document.createElement('li');li.textContent=t('a11y.noChartData');ul.append(li);} box.append(ul);
   }
 
+
+  function statsSummary() {
+    if (statsSummaryCache) return statsSummaryCache;
+    statsSummaryCache = FTAnalytics.summarizeRecords(data.records, {
+      durationGetter: recordMs,
+      goalGetter: recordMetGoal,
+      streak: currentStreak()
+    });
+    return statsSummaryCache;
+  }
+
