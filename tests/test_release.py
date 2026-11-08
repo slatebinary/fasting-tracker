@@ -361,8 +361,9 @@ ok("el('appFooterVersion').textContent = `Fasting Tracker v${APP_VERSION}`;" in 
 ok('Fasting Tracker v1.2.0' not in index and '>v1.2.0<' not in index, 'stale hard-coded v1.2.0 label remains')
 
 # IndexedDB lifetime-storage and recovery-snapshot regression checks
-ok("const IDB_NAME = 'FastingTrackerDB';" in index and "indexedDB.open(IDB_NAME, IDB_VERSION)" in index, 'IndexedDB primary storage layer missing')
-ok("createObjectStore('state'" in index and "createObjectStore('snapshotMeta'" in index and "createObjectStore('snapshotPayload'" in index, 'IndexedDB stores missing')
+storage_db=(ROOT/'js/fasting-storage-db.js').read_text()
+ok("const IDB_NAME = 'FastingTrackerDB';" in index and "indexedDB.open(IDB_NAME, IDB_VERSION)" in storage_db, 'IndexedDB primary storage layer missing')
+ok("createObjectStore('state'" in storage_db and "createObjectStore('snapshotMeta'" in storage_db and "createObjectStore('snapshotPayload'" in storage_db, 'IndexedDB stores missing')
 ok("localStorage.removeItem(DATA_KEY)" in index and "localStorage.removeItem(SNAPSHOT_KEY)" in index, 'legacy large localStorage payloads are not removed after migration')
 ok('const STORAGE_GENERATION = 3;' in index and 'const MIN_DIRECT_STORAGE_GENERATION = Math.max(1, STORAGE_GENERATION - 2);' in index, 'bounded rolling storage compatibility policy missing')
 ok("storageGeneration:STORAGE_GENERATION" in index and "minimumDirectStorageGeneration:MIN_DIRECT_STORAGE_GENERATION" in index, 'storage generation is not stamped/exported in diagnostics')
