@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.43",
+  "version": "1.17.44",
   "released": "2026-11-08",
-  "notes": "Extracted weight period date bucketing, aggregation and analytics into a dedicated source fragment.",
+  "notes": "Extracted gamification streak, achievement and summary rendering into a dedicated source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
