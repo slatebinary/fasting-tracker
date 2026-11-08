@@ -1,3 +1,8 @@
+## v1.17.50 — 2026-11-08
+
+- Extracted manual fasting-record creation and editing, audit validation, and weight-entry modal workflows into a dedicated ordered JavaScript fragment.
+- Preserved validation, record identity, audit metadata, timezone-local inputs, responsive modal actions, and save/render scheduling; expanded app-shell atomization regression.
+
 ## v1.17.49 — 2026-11-08
 
 - Extracted trend, weekly, monthly, distribution, target-success, start-pattern, and cumulative chart models, drawing routines, and pointer interactions into a dedicated ordered JavaScript fragment.
