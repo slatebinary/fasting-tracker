@@ -70,7 +70,7 @@ assert "function setWeightPeriodMode" in weight_history and "function renderWeig
 assert "function softDeleteWeightById" in weight_history and "function renderWeightChartData" in weight_history
 assert "function setWeightUnit" in weight_history and "function setTargetWeightFromInput" in weight_history
 assert "function renderWeight" not in main_stats and "function setWeightUnit" not in main_stats
-assert "function renderStatsChartData" in main_stats
+assert "function renderStatsChartData" not in main_stats
 backup_module = (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
 assert "function hasBackupWorthyData" in backup_module
 assert "function normalizeBackupClockSkew" in backup_module and "function ensureBackupTrackingStarted" in backup_module
