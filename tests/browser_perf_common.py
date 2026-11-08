@@ -41,11 +41,11 @@ def inlined_html():
     for rel in ('js/release-health.js','js/fasting-visuals.js','js/fasting-analytics.js','js/platform-diagnostics.js','js/fasting-integrity.js','js/fasting-time.js','js/time-zone-locations.js'):
         runtime = (ROOT / rel).read_text(encoding='utf-8')
         html = html.replace(f'<script src="{rel}"></script>', f'<script>{runtime}</script>')
-    # index.html is the source harness and does not carry generated external script tags.
-    # Load the extracted DB service before the app's inline bootstrap code.
-    if 'FTStorageDB' not in html:
-        storage_runtime = (ROOT / 'js' / 'fasting-storage-db.js').read_text(encoding='utf-8')
-        html = html.replace('</head>', f'<script>{storage_runtime}</script>\\n</head>')
+    # Load the extracted DB service unconditionally before the app's inline bootstrap.
+    # The app source itself contains the identifier FTStorageDB, so checking for that
+    # text would incorrectly mistake a reference for an already-loaded service.
+    storage_runtime = (ROOT / 'js' / 'fasting-storage-db.js').read_text(encoding='utf-8')
+    html = html.replace('</head>', f'<script>{storage_runtime}</script>\\n</head>')
     return html
 
 
