@@ -1,3 +1,8 @@
+## v1.17.39 — 2026-11-08
+
+- Added `js/fasting-storage-db.js` to the SHA-256-protected release shell so service updates are integrity-checked and precached with the app.
+- Corrected release asset coverage for the IndexedDB extraction introduced in v1.17.38.
+
 ## v1.17.38 — 2026-11-08
 
 - Extracted IndexedDB connection management, request wrappers, CRUD operations and atomic multi-store clearing into a dedicated storage service.
