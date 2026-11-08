@@ -4,9 +4,6 @@
     try { return localStorage.getItem(DATA_KEY); } catch { return null; }
   }
 
-  const storageDB = window.FTStorageDB.create({IDB_NAME, IDB_VERSION, noteDiagnosticError});
-  const {openAppDb, idbRequest, idbGet, idbGetAll, idbPut, idbDelete, idbClear, idbClearStoresAtomic} = storageDB;
-
   async function persistFullResetAtomic(empty) {
     // Clear every record and internal snapshot in ONE IndexedDB transaction.
     // If it aborts, the existing data remains intact instead of being partially erased.
