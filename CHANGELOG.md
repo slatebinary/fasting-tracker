@@ -1,3 +1,8 @@
+## v1.17.40 — 2026-11-08
+
+- Split the oversized statistics and charts source into ordered core and visualization fragments to improve maintainability without changing runtime behavior.
+- Extended app-shell atomization regression to verify the seven-fragment assembly.
+
 ## v1.17.39 — 2026-11-08
 
 - Added `js/fasting-storage-db.js` to the SHA-256-protected release shell so service updates are integrity-checked and precached with the app.
