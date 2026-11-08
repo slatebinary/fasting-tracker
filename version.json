@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.48",
+  "version": "1.17.49",
   "released": "2026-11-08",
-  "notes": "Extracted primary interactive fasting chart day modeling and canvas rendering into a dedicated source fragment.",
+  "notes": "Extracted specialized statistics chart models, drawing routines and pointer interactions into a dedicated source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
