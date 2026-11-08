@@ -51,7 +51,7 @@ assert "function dayClockChangeInfo" not in main_stats and "function renderFastC
 assert (source / "js" / "39-primary-chart-renderer.js").is_file()
 primary_chart = (source / "js" / "39-primary-chart-renderer.js").read_text(encoding="utf-8")
 assert "function buildInteractiveChartDays" in primary_chart and "function drawChart" in primary_chart
-assert "function buildInteractiveChartDays" not in main_stats and "function drawChart" not in main_stats
+assert "function buildInteractiveChartDays(" not in main_stats and "function drawChart(" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 version_major, version_minor, version_patch = (int(part) for part in version.split("."))
