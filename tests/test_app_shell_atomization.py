@@ -81,6 +81,12 @@ stats_data = (source / "js" / "43-statistics-data-models.js").read_text(encoding
 assert "function allFastingIntervals" in stats_data and "function currentZoneDaySummaries" in stats_data
 assert "function renderStatsChartData" in stats_data
 assert "function allFastingIntervals" not in main_stats and "function renderStatsChartData" not in main_stats
+assert "function statsSummary" in stats_data and "function statsSummary" not in main_stats
+gamification = (source / "js" / "35-gamification-achievements.js").read_text(encoding="utf-8")
+assert "function scheduleStatsGamificationDetail" in gamification
+assert "let statsGamificationRenderToken = 0" in gamification
+assert "function scheduleStatsGamificationDetail" not in main_stats
+assert "function renderStats" in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 version_major, version_minor, version_patch = (int(part) for part in version.split("."))
