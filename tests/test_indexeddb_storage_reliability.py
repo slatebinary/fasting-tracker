@@ -74,14 +74,14 @@ if sync_playwright:
         transactions = page.evaluate("window.__idbTransactions")
         assert not errors, (
             "Browser errors during storage startup: " + " | ".join(errors[:8])
-            + f"; service_loaded={page.evaluate('!!window.FTStorageDB')}; transactions={transactions}"
+            + f"; service_loaded={page.evaluate('!!window.FTStorageDB')}; open_calls={page.evaluate('window.__idbOpenCalls')}; transactions={transactions}"
             + "; console_errors=" + " | ".join(console_errors[:8])
         )
         expected = {"state", "records", "deletedFasts", "weights", "deletedWeights"}
         atomic_reads = [tx for tx in transactions if tx["mode"] == "readonly" and expected.issubset(set(tx["stores"]))]
         assert atomic_reads, (
             "App did not load all record stores in one readonly transaction: "
-            + f"{transactions}; service_loaded={page.evaluate('!!window.FTStorageDB')}; "
+            + f"{transactions}; service_loaded={page.evaluate('!!window.FTStorageDB')}; open_calls={page.evaluate('window.__idbOpenCalls')}; "
             + f"page_errors={errors[:8]}; console_errors={console_errors[:8]}"
         )
         browser.close()
