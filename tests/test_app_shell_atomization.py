@@ -66,6 +66,7 @@ expected_recent_releases = [
     for patch in range(version_patch, max(-1, version_patch - 5), -1)
 ]
 changelog_html = (ROOT / "changelog.html").read_text(encoding="utf-8")
+assert "</ul><li>" not in changelog_html, "Localized changelog contains a list item outside its release list"
 for language in ("en", "bg", "es"):
     section = re.search(
         rf'<section data-lang="{language}">(.*?)</section>',
