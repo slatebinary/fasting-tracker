@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.50",
+  "version": "1.17.51",
   "released": "2026-11-08",
-  "notes": "Extracted manual fasting-record and weight-entry workflows into a dedicated ordered source fragment.",
+  "notes": "Extracted weight-history management, rendering, accessible chart data and unit/target controls into a dedicated ordered source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
