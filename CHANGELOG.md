@@ -1,3 +1,8 @@
+## v1.17.49 — 2026-11-08
+
+- Extracted trend, weekly, monthly, distribution, target-success, start-pattern, and cumulative chart models, drawing routines, and pointer interactions into a dedicated ordered JavaScript fragment.
+- Expanded app-shell atomization regression to verify the sixteen-fragment assembly and specialized-chart function ownership.
+
 ## v1.17.48 — 2026-11-08
 
 - Extracted interactive fasting-chart day modeling, continuation-segment construction, and primary canvas rendering into a dedicated ordered JavaScript fragment.
