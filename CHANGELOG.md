@@ -1,3 +1,8 @@
+## v1.17.44 — 2026-11-08
+
+- Extracted weight-streak calculations, achievement definitions, and gamification summary/detail rendering into a dedicated ordered JavaScript fragment while preserving existing state, localization, and behavior.
+- Expanded app-shell atomization regression to verify the eleven-fragment assembly and gamification ownership.
+
 ## v1.17.43 — 2026-11-08
 
 - Extracted weight period date bucketing, aggregation, and analytics into a dedicated ordered JavaScript fragment while preserving existing functions and behavior.
