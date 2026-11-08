@@ -1,3 +1,8 @@
+## v1.17.43 — 2026-11-08
+
+- Extracted weight period date bucketing, aggregation, and analytics into a dedicated ordered JavaScript fragment while preserving existing functions and behavior.
+- Expanded app-shell atomization regression to verify the ten-fragment assembly and weight analytics ownership.
+
 ## v1.17.42 — 2026-11-08
 
 - Extracted generic statistics bar-chart rendering and selection handling into a dedicated ordered JavaScript fragment, preserving existing chart behavior and shared state.
