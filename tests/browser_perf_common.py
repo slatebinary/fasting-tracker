@@ -64,6 +64,7 @@ STORAGE_SHIM = r"""() => {
 
   const databases = new Map();
   window.__idbTransactions = [];
+  window.__idbOpenCalls = [];
   const makeDb = () => {
     const db={stores:new Map(),version:0};
     db.objectStoreNames={contains:n=>db.stores.has(n)};
@@ -113,6 +114,7 @@ STORAGE_SHIM = r"""() => {
   };
   Object.defineProperty(window,'indexedDB',{value:{
     open(name,version){
+      window.__idbOpenCalls.push({name,version});
       const r={onsuccess:null,onerror:null,onupgradeneeded:null,onblocked:null,result:null,error:null};
       setTimeout(()=>{
         try {
