@@ -41,6 +41,11 @@ def inlined_html():
     for rel in ('js/release-health.js','js/fasting-visuals.js','js/fasting-analytics.js','js/platform-diagnostics.js','js/fasting-integrity.js','js/fasting-time.js','js/time-zone-locations.js'):
         runtime = (ROOT / rel).read_text(encoding='utf-8')
         html = html.replace(f'<script src="{rel}"></script>', f'<script>{runtime}</script>')
+    # Load the extracted DB service unconditionally before the app's inline bootstrap.
+    # The app source itself contains the identifier FTStorageDB, so checking for that
+    # text would incorrectly mistake a reference for an already-loaded service.
+    storage_runtime = (ROOT / 'js' / 'fasting-storage-db.js').read_text(encoding='utf-8')
+    html = html.replace('</head>', f'<script>{storage_runtime}</script>\\n</head>')
     return html
 
 
@@ -59,6 +64,7 @@ STORAGE_SHIM = r"""() => {
 
   const databases = new Map();
   window.__idbTransactions = [];
+  window.__idbOpenCalls = [];
   const makeDb = () => {
     const db={stores:new Map(),version:0};
     db.objectStoreNames={contains:n=>db.stores.has(n)};
@@ -108,6 +114,7 @@ STORAGE_SHIM = r"""() => {
   };
   Object.defineProperty(window,'indexedDB',{value:{
     open(name,version){
+      window.__idbOpenCalls.push({name,version});
       const r={onsuccess:null,onerror:null,onupgradeneeded:null,onblocked:null,result:null,error:null};
       setTimeout(()=>{
         try {

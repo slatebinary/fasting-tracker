@@ -1,3 +1,10 @@
+## v1.17.38 — 2026-11-08
+
+- Extracted IndexedDB connection management, request wrappers, CRUD operations and atomic multi-store clearing into a dedicated storage service.
+- Kept persistence policy, migration decisions, record validation, history-loss safeguards and recovery orchestration in the application layer.
+- Preserved existing IndexedDB store names, schema version, transaction boundaries and stored data formats.
+- Updated the browser regression harness to load the extracted service and enabled CI for this refactoring branch.
+
 ## v1.17.37 — 7 November 2026
 - Extracted time-zone-aware calendar-day keys, fast UTC day keys, ISO-week start calculation, exact next-day boundaries and interval-to-day allocation into a dedicated time utility service.
 - Moved localized date, date-time and time labels behind the same service while preserving the existing application interfaces.

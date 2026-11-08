@@ -20,7 +20,8 @@ def function_body(name, next_marker):
     end = source.index(next_marker, start)
     return source[start:end]
 
-open_db = function_body("  function openAppDb() {", "  function idbRequest(")
+storage_service = (ROOT / "js" / "fasting-storage-db.js").read_text(encoding="utf-8")
+open_db = storage_service[storage_service.index("  function openAppDb() {"):storage_service.index("  function idbRequest(")]
 snapshot = function_body("  async function loadRecordBasedSnapshot() {", "  async function loadCompatibleStorageSource()")
 restore = function_body("  async function persistResolvedDataAtomic(candidate) {", "  function persistResolvedData(candidate) {")
 
@@ -49,18 +50,39 @@ if sync_playwright:
         browser = p.chromium.launch(executable_path="/usr/bin/chromium", headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
         page = browser.new_page(viewport={"width": 390, "height": 844})
         errors = []
+        console_errors = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
-        page.evaluate(STORAGE_SHIM)
-        page.evaluate("""data => {
-          __seedFastingDbV2(data, []);
-          localStorage.setItem("fastingTracker.appMeta", JSON.stringify({lastAppVersion: data.appVersion}));
-        }""", {**data, "appVersion": version})
-        page.set_content(inlined_html(), wait_until="domcontentloaded")
-        page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
+        page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
+        seeded_data = {**data, "appVersion": version}
+        bootstrap = (
+            "<script>(" + STORAGE_SHIM + ")();"
+            + "window.__seedFastingDbV2(" + json.dumps(seeded_data) + ", []);"
+            + "localStorage.setItem('fastingTracker.appMeta', "
+            + json.dumps(json.dumps({"lastAppVersion": version})) + ");"
+            + "</script>"
+        )
+        html = inlined_html().replace("<head>", "<head>" + bootstrap, 1)
+        page.set_content(html, wait_until="domcontentloaded")
+        try:
+            page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
+        except Exception as exc:
+            label = page.locator("#appVersionLabel").text_content() if page.locator("#appVersionLabel").count() else "<missing>"
+            raise AssertionError(
+                f"App startup did not publish version v{version}; label={label!r}; "
+                f"page_errors={errors[:8]}; console_errors={console_errors[:8]}"
+            ) from exc
         transactions = page.evaluate("window.__idbTransactions")
+        assert not errors, (
+            "Browser errors during storage startup: " + " | ".join(errors[:8])
+            + f"; service_loaded={page.evaluate('!!window.FTStorageDB')}; open_calls={page.evaluate('window.__idbOpenCalls')}; transactions={transactions}"
+            + "; console_errors=" + " | ".join(console_errors[:8])
+        )
         expected = {"state", "records", "deletedFasts", "weights", "deletedWeights"}
         atomic_reads = [tx for tx in transactions if tx["mode"] == "readonly" and expected.issubset(set(tx["stores"]))]
-        assert atomic_reads, f"App did not load all record stores in one readonly transaction: {transactions}"
-        assert not errors, "Browser errors during storage startup: " + " | ".join(errors[:3])
+        assert atomic_reads, (
+            "App did not load all record stores in one readonly transaction: "
+            + f"{transactions}; service_loaded={page.evaluate('!!window.FTStorageDB')}; open_calls={page.evaluate('window.__idbOpenCalls')}; "
+            + f"page_errors={errors[:8]}; console_errors={console_errors[:8]}"
+        )
         browser.close()
     print("PASS: browser startup uses one readonly IndexedDB transaction for all authoritative record stores")
