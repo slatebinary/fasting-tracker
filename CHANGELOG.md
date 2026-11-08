@@ -1,3 +1,8 @@
+## v1.17.41 — 2026-11-08
+
+- Extracted weight chart drawing, point hit-testing, viewport navigation, and pointer/scroll interaction into a dedicated ordered JavaScript fragment; preserved the existing shared state and runtime behavior.
+- Expanded app-shell atomization regression to verify the new weight-chart fragment.
+
 ## v1.17.40 — 2026-11-08
 
 - Extracted Timeline hit-testing, selection details, pointer interaction and scroll-to-latest behavior into a dedicated ordered source fragment without changing the public UI or selection state.
