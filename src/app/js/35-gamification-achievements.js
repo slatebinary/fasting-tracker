@@ -107,3 +107,20 @@
     renderGamificationDetail();
   }
 
+
+  let statsGamificationRenderToken = 0;
+  let statsGamificationRenderTimer = 0;
+
+  function scheduleStatsGamificationDetail() {
+    const token = ++statsGamificationRenderToken;
+    if (statsGamificationRenderTimer) { clearTimeout(statsGamificationRenderTimer); statsGamificationRenderTimer = 0; }
+    requestAnimationFrame(() => {
+      if (token !== statsGamificationRenderToken) return;
+      statsGamificationRenderTimer = setTimeout(() => {
+        statsGamificationRenderTimer = 0;
+        if (token !== statsGamificationRenderToken || !el('stats').classList.contains('active')) return;
+        renderGamificationDetail();
+      }, 0);
+    });
+  }
+
