@@ -1,3 +1,8 @@
+## v1.17.42 — 2026-11-08
+
+- Extracted generic statistics bar-chart rendering and selection handling into a dedicated ordered JavaScript fragment, preserving existing chart behavior and shared state.
+- Expanded app-shell atomization regression to verify the generic-chart fragment.
+
 ## v1.17.41 — 2026-11-08
 
 - Extracted weight chart drawing, point hit-testing, viewport navigation, and pointer/scroll interaction into a dedicated ordered JavaScript fragment; preserved the existing shared state and runtime behavior.
