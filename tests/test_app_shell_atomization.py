@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 15, f"Expected fifteen ordered app fragments, found {len(parts)}"
+assert len(parts) == 16, f"Expected sixteen ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -52,6 +52,12 @@ assert (source / "js" / "39-primary-chart-renderer.js").is_file()
 primary_chart = (source / "js" / "39-primary-chart-renderer.js").read_text(encoding="utf-8")
 assert "function buildInteractiveChartDays" in primary_chart and "function drawChart" in primary_chart
 assert "function buildInteractiveChartDays(" not in main_stats and "function drawChart(" not in main_stats
+assert (source / "js" / "40-specialized-statistics-charts.js").is_file()
+specialized_charts = (source / "js" / "40-specialized-statistics-charts.js").read_text(encoding="utf-8")
+assert "function buildSummaryChartDays" in specialized_charts and "function drawFastTrendChart" in specialized_charts
+assert "function buildDurationDistribution" in specialized_charts and "function drawFastCumulativeChart" in specialized_charts
+assert "function handleTrendPointer" in specialized_charts and "function cancelCumulativePointer" in specialized_charts
+assert "function buildSummaryChartDays" not in main_stats and "function drawFastTrendChart" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 version_major, version_minor, version_patch = (int(part) for part in version.split("."))
