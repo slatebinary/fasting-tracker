@@ -1,3 +1,8 @@
+## v1.17.54 — 2026-11-08
+
+- Moved cached fasting-statistics summary calculation into the statistics data-model fragment and deferred gamification-detail scheduling/state into the gamification module.
+- Kept the main statistics fragment as the view orchestrator; preserved summary caching, render-token cancellation, active-screen checks, and deferred detail rendering.
+
 ## v1.17.53 — 2026-11-08
 
 - Extracted fasting-interval normalization, timezone-aware day summaries, and accessible statistics chart data into a dedicated ordered JavaScript fragment.
