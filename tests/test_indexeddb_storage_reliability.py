@@ -53,12 +53,16 @@ if sync_playwright:
         console_errors = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
-        page.evaluate(STORAGE_SHIM)
-        page.evaluate("""data => {
-          __seedFastingDbV2(data, []);
-          localStorage.setItem("fastingTracker.appMeta", JSON.stringify({lastAppVersion: data.appVersion}));
-        }""", {**data, "appVersion": version})
-        page.set_content(inlined_html(), wait_until="domcontentloaded")
+        seeded_data = {**data, "appVersion": version}
+        bootstrap = (
+            "<script>(" + STORAGE_SHIM + ")();"
+            + "window.__seedFastingDbV2(" + json.dumps(seeded_data) + ", []);"
+            + "localStorage.setItem('fastingTracker.appMeta', "
+            + json.dumps(json.dumps({"lastAppVersion": version})) + ");"
+            + "</script>"
+        )
+        html = inlined_html().replace("<head>", "<head>" + bootstrap, 1)
+        page.set_content(html, wait_until="domcontentloaded")
         try:
             page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
         except Exception as exc:
