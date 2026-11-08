@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.37",
-  "released": "2026-11-07",
-  "notes": "Extracted time-zone-aware calendar-day keys, ISO-week starts, exact zoned-day boundaries, interval-to-day allocation and localized date/time labels into a dedicated time utility service with isolated DST regression tests.",
+  "version": "1.17.38",
+  "released": "2026-11-08",
+  "notes": "Extracted IndexedDB connection, request and transaction primitives into a dedicated storage service; persistence policy and atomic history safeguards remain in the app layer.",
   "entry": "./index.html",
   "shell": [
     "./",
