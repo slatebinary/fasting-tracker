@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 18, f"Expected eighteen ordered app fragments, found {len(parts)}"
+assert len(parts) == 19, f"Expected nineteen ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -70,12 +70,17 @@ assert "function setWeightPeriodMode" in weight_history and "function renderWeig
 assert "function softDeleteWeightById" in weight_history and "function renderWeightChartData" in weight_history
 assert "function setWeightUnit" in weight_history and "function setTargetWeightFromInput" in weight_history
 assert "function renderWeight" not in main_stats and "function setWeightUnit" not in main_stats
-assert "function renderStatsChartData" in main_stats
+assert "function renderStatsChartData" not in main_stats
 backup_module = (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
 assert "function hasBackupWorthyData" in backup_module
 assert "function normalizeBackupClockSkew" in backup_module and "function ensureBackupTrackingStarted" in backup_module
 assert "let backupDatasetSignatureCache = null" in backup_module
 assert "function hasBackupWorthyData" not in main_stats and "function ensureBackupTrackingStarted" not in main_stats
+assert (source / "js" / "43-statistics-data-models.js").is_file()
+stats_data = (source / "js" / "43-statistics-data-models.js").read_text(encoding="utf-8")
+assert "function allFastingIntervals" in stats_data and "function currentZoneDaySummaries" in stats_data
+assert "function renderStatsChartData" in stats_data
+assert "function allFastingIntervals" not in main_stats and "function renderStatsChartData" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 version_major, version_minor, version_patch = (int(part) for part in version.split("."))

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.52",
+  "version": "1.17.53",
   "released": "2026-11-08",
-  "notes": "Moved backup tracking initialization and dataset-signature cache state into the dedicated backup/update source fragment.",
+  "notes": "Extracted fasting interval normalization, timezone-aware day summaries and accessible statistics chart data into a dedicated source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
