@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.41" />
+  <meta name="ft-app-version" content="1.17.42" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1904,7 +1904,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.41';
+  const APP_VERSION = '1.17.42';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6090,19 +6090,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   function fullMonthBuckets(months=14){return FTAnalytics.aggregateDailyTotalsByPeriod(FTVisuals.monthBuckets(data.records,{months,locale:currentLocale(),dayKeyForRecord:r=>dayKeyFast(r.end,r.timeZone),recordMs,recordMetGoal}),completedFastingByStoredCalendarDay());}
   function monthComparisonSummary(){const items=fullMonthBuckets(14),cur=items.at(-1),prev=items.at(-2),year=items.at(-13);if(!cur)return'';const mom=FTAnalytics.relativeChange(cur.hours,prev?.hours),yoy=FTAnalytics.relativeChange(cur.hours,year?.hours);const change=(now,old,pct)=>old?`${now>=old?'+':''}${formatNumber(now-old,0,1)} ${t('unit.h')}${pct==null?'':` (${pct>=0?'+':''}${formatNumber(pct,0,0)}%)`}`:t('stats.comparisonNoBaseline');return t('stats.monthComparison',{month:cur.label,mom:change(cur.hours,prev?.hours||0,mom),yoy:change(cur.hours,year?.hours||0,yoy)});}
 
-  function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false,integerScale=false}={}){
-    const c=el(canvasId),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=c.clientHeight||220;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
-    const top=18,bottom=44,left=44,right=10,w=cssW-left-right,h=cssH-top-bottom,rawPeak=Math.max(percent?100:1,maxValue==null?FTVisuals.maxValue(items,valueKey,1):maxValue),peak=integerScale?Math.max(2,Math.ceil(rawPeak)):rawPeak;
-    const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim(),card=style.getPropertyValue('--card').trim(),textColor=style.getPropertyValue('--text').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
-    [0,.5,1].forEach(fr=>{const y=top+h-h*fr,tickValue=integerScale?Math.round(peak*fr):peak*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(tickValue,0,percent||integerScale?0:1)}${valueSuffix}`,left-5,y+3);});
-    const n=Math.max(1,items.length),gap=n>80?0.25:Math.max(2,Math.min(10,w/(n*5))),bw=Math.max(.35,(w-gap*(n-1))/n),centers=items.map((_,i)=>left+i*(bw+gap)+bw/2);genericChartHitLayout=[];
-    ctx.font='9px -apple-system';const axisLabels=FTVisuals.axisLabelPlan(items,{positions:centers,measureText:text=>ctx.measureText(String(text)).width,maxLabels:12,minGap:7}),axisByIndex=new Map(axisLabels.map(x=>[x.index,x.text]));
-    let selectedGeometry=null;
-    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.min(4,Math.max(1,bw));ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));selectedGeometry={item,value,x:x+bw/2,y};}if(axisByIndex.has(i)){const text=axisByIndex.get(i),tw=ctx.measureText(String(text)).width,tx=Math.max(left+tw/2,Math.min(cssW-right-tw/2,x+bw/2));ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(text,tx,cssH-15);}genericChartHitLayout.push({item,x,y:top,w:Math.max(bw,3),h,canvasId,detailBuilder});});
-    if(selectedGeometry){const valueText=`${formatNumber(selectedGeometry.value,0,percent||integerScale?0:1)}${valueSuffix}`;drawChartCallout(ctx,{x:selectedGeometry.x,y:selectedGeometry.y,primary:valueText,secondary:selectedGeometry.item.label||selectedGeometry.item.key,canvasW:cssW,canvasH:cssH,accent,card,textColor,muted});}
-    renderChartDetailForMode();
-  }
-  function handleGenericChartPointer(event){const c=event.currentTarget,rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=genericChartHitLayout.find(h=>h.canvasId===c.id&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);if(!hit)return;genericChartSelectedKey=hit.item.key;statsDetailOverride=hit.detailBuilder?hit.detailBuilder(hit.item):null;renderStatsVisualizationMode(statsVizMode);renderStatsChartData();}
+
   function drawFastMonthsChart(){const items=buildMonthSummaries('months'),source=chartRangeRecords('months');drawGenericBarChart('fastMonthsChart',items,'hours',{valueSuffix:t('unit.h'),selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailMonth',{duration:compactDuration(x.totalMs),count:formatNumber(x.count)}),records:recordsContributingMonth(x.key,source)})});const cmp=el('fastMonthsComparison');if(cmp)cmp.textContent=monthComparisonSummary();}
   function drawFastDistributionChart(){const items=buildDurationDistribution(),source=chartRangeRecords('distribution');drawGenericBarChart('fastDistributionChart',items,'count',{integerScale:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailDistribution',{count:formatNumber(x.count),hours:formatNumber(x.totalHours,0,1)}),records:recordsForDurationBucket(x.key,source)})});}
   function drawFastSuccessChart(){const items=buildTargetSuccessSummaries(),source=chartRangeRecords('success');drawGenericBarChart('fastSuccessChart',items,'successRate',{maxValue:100,valueSuffix:'%',percent:true,selectedKey:genericChartSelectedKey,detailBuilder:x=>({dayKey:x.key,title:x.label,text:t('stats.detailSuccess',{rate:formatNumber(x.successRate,0,0),reached:formatNumber(x.reached),count:formatNumber(x.count)}),records:recordsEndingInMonth(x.key,source)})});}
@@ -7083,7 +7071,19 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
     });
   }
-  function backupDatasetSignature(sourceData = data) {
+  function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false,integerScale=false}={}){
+    const c=el(canvasId),ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1,cssW=c.clientWidth||660,cssH=c.clientHeight||220;c.width=Math.floor(cssW*ratio);c.height=Math.floor(cssH*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
+    const top=18,bottom=44,left=44,right=10,w=cssW-left-right,h=cssH-top-bottom,rawPeak=Math.max(percent?100:1,maxValue==null?FTVisuals.maxValue(items,valueKey,1):maxValue),peak=integerScale?Math.max(2,Math.ceil(rawPeak)):rawPeak;
+    const style=getComputedStyle(document.documentElement),line=style.getPropertyValue('--line').trim(),accent=style.getPropertyValue('--accent').trim(),muted=style.getPropertyValue('--muted').trim(),card=style.getPropertyValue('--card').trim(),textColor=style.getPropertyValue('--text').trim();ctx.strokeStyle=line;ctx.lineWidth=1;
+    [0,.5,1].forEach(fr=>{const y=top+h-h*fr,tickValue=integerScale?Math.round(peak*fr):peak*fr;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(cssW-right,y);ctx.stroke();ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='right';ctx.fillText(`${formatNumber(tickValue,0,percent||integerScale?0:1)}${valueSuffix}`,left-5,y+3);});
+    const n=Math.max(1,items.length),gap=n>80?0.25:Math.max(2,Math.min(10,w/(n*5))),bw=Math.max(.35,(w-gap*(n-1))/n),centers=items.map((_,i)=>left+i*(bw+gap)+bw/2);genericChartHitLayout=[];
+    ctx.font='9px -apple-system';const axisLabels=FTVisuals.axisLabelPlan(items,{positions:centers,measureText:text=>ctx.measureText(String(text)).width,maxLabels:12,minGap:7}),axisByIndex=new Map(axisLabels.map(x=>[x.index,x.text]));
+    let selectedGeometry=null;
+    items.forEach((item,i)=>{const value=Math.max(0,Number(item[valueKey])||0),bh=(Math.min(peak,value)/peak)*h,x=left+i*(bw+gap),y=top+h-bh;ctx.fillStyle=accent;ctx.globalAlpha=.86;ctx.fillRect(x,y,bw,bh);ctx.globalAlpha=1;if(selectedKey===item.key){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.min(4,Math.max(1,bw));ctx.strokeRect(x-2,Math.max(top,y-2),bw+4,Math.min(h,bh+4));ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(x,Math.max(top,y),bw,Math.min(h,bh));selectedGeometry={item,value,x:x+bw/2,y};}if(axisByIndex.has(i)){const text=axisByIndex.get(i),tw=ctx.measureText(String(text)).width,tx=Math.max(left+tw/2,Math.min(cssW-right-tw/2,x+bw/2));ctx.fillStyle=muted;ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(text,tx,cssH-15);}genericChartHitLayout.push({item,x,y:top,w:Math.max(bw,3),h,canvasId,detailBuilder});});
+    if(selectedGeometry){const valueText=`${formatNumber(selectedGeometry.value,0,percent||integerScale?0:1)}${valueSuffix}`;drawChartCallout(ctx,{x:selectedGeometry.x,y:selectedGeometry.y,primary:valueText,secondary:selectedGeometry.item.label||selectedGeometry.item.key,canvasW:cssW,canvasH:cssH,accent,card,textColor,muted});}
+    renderChartDetailForMode();
+  }
+  function handleGenericChartPointer(event){const c=event.currentTarget,rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=genericChartHitLayout.find(h=>h.canvasId===c.id&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);if(!hit)return;genericChartSelectedKey=hit.item.key;statsDetailOverride=hit.detailBuilder?hit.detailBuilder(hit.item):null;renderStatsVisualizationMode(statsVizMode);renderStatsChartData();}  function backupDatasetSignature(sourceData = data) {
     const revision = Number(sourceData.revision) || 0;
     if (sourceData === data && backupDatasetSignatureCache &&
         backupDatasetSignatureCache.source === data && backupDatasetSignatureCache.revision === revision)
