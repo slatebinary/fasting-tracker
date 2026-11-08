@@ -1,3 +1,8 @@
+## v1.17.45 — 2026-11-08
+
+- Extracted statistics range controls, history navigation, chart selection details, and record drilldown helpers into a dedicated ordered JavaScript fragment.
+- Expanded app-shell atomization regression to verify the twelve-fragment assembly and statistics history/drilldown ownership.
+
 ## v1.17.44 — 2026-11-08
 
 - Extracted weight-streak calculations, achievement definitions, and gamification summary/detail rendering into a dedicated ordered JavaScript fragment while preserving existing state, localization, and behavior.
