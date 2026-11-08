@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.49",
+  "version": "1.17.50",
   "released": "2026-11-08",
-  "notes": "Extracted specialized statistics chart models, drawing routines and pointer interactions into a dedicated source fragment.",
+  "notes": "Extracted manual fasting-record and weight-entry workflows into a dedicated ordered source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
