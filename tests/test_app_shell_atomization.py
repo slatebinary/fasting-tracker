@@ -71,6 +71,11 @@ assert "function softDeleteWeightById" in weight_history and "function renderWei
 assert "function setWeightUnit" in weight_history and "function setTargetWeightFromInput" in weight_history
 assert "function renderWeight" not in main_stats and "function setWeightUnit" not in main_stats
 assert "function renderStatsChartData" in main_stats
+backup_module = (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
+assert "function hasBackupWorthyData" in backup_module
+assert "function normalizeBackupClockSkew" in backup_module and "function ensureBackupTrackingStarted" in backup_module
+assert "let backupDatasetSignatureCache = null" in backup_module
+assert "function hasBackupWorthyData" not in main_stats and "function ensureBackupTrackingStarted" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 version_major, version_minor, version_patch = (int(part) for part in version.split("."))

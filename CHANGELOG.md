@@ -1,3 +1,8 @@
+## v1.17.52 — 2026-11-08
+
+- Moved backup-data eligibility, backup clock-skew normalization, initial backup tracking, and dataset-signature cache state into the dedicated backup/update source fragment.
+- Preserved external-backup timestamps, future-clock correction, and the distinction between local change detection and proof of an external backup; expanded atomization regression.
+
 ## v1.17.51 — 2026-11-08
 
 - Extracted weight-history management, rendering, accessible chart data, period selection, and unit/target controls into a dedicated ordered JavaScript fragment.

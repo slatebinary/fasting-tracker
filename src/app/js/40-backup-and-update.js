@@ -1119,3 +1119,44 @@
   let destructiveResetBusy = false;
   function destructiveResetPhrase(kind) { return kind === 'recovery' ? 'RESET DATA' : 'DELETE ALL'; }
 
+
+  function hasBackupWorthyData() {
+    return !!data.activeStart || data.records.length > 0 || data.deletedFasts.length > 0 || data.weights.length > 0 || data.deletedWeights.length > 0;
+  }
+
+  function normalizeBackupClockSkew() {
+    const nowMs = Date.now();
+    let changed = false;
+    for (const key of ['firstDataAt','lastExternalBackupAt']) {
+      const d = validDate(backupMeta[key]);
+      if (d && d.getTime() > nowMs + FUTURE_TOLERANCE_MS) {
+        backupMeta[key] = new Date(nowMs).toISOString();
+        changed = true;
+      }
+    }
+    if (changed) saveBackupMeta();
+  }
+
+  function ensureBackupTrackingStarted() {
+    normalizeBackupClockSkew();
+    if (!hasBackupWorthyData()) {
+      if (backupMeta.firstDataAt) {
+        backupMeta.firstDataAt = null;
+        saveBackupMeta();
+      }
+      return null;
+    }
+    let firstData = validDate(backupMeta.firstDataAt);
+    if (!firstData) {
+      firstData = new Date();
+      backupMeta.firstDataAt = firstData.toISOString();
+      saveBackupMeta();
+    }
+    return firstData;
+  }
+
+  // This is a local change detector, NOT proof that an external backup file exists.
+  // Track the actual records and active fasting state; ordinary setting changes
+  // (such as language, colors or notification settings) must not falsely mark
+  // an otherwise current fasting/weight backup as outdated.
+  let backupDatasetSignatureCache = null;

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.51",
+  "version": "1.17.52",
   "released": "2026-11-08",
-  "notes": "Extracted weight-history management, rendering, accessible chart data and unit/target controls into a dedicated ordered source fragment.",
+  "notes": "Moved backup tracking initialization and dataset-signature cache state into the dedicated backup/update source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
