@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.53" />
+  <meta name="ft-app-version" content="1.17.54" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1904,7 +1904,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.53';
+  const APP_VERSION = '1.17.54';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5072,32 +5072,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     return total ? Math.round((reached/total)*100) : null;
   }
 
-  function statsSummary() {
-    if (statsSummaryCache) return statsSummaryCache;
-    statsSummaryCache = FTAnalytics.summarizeRecords(data.records, {
-      durationGetter: recordMs,
-      goalGetter: recordMetGoal,
-      streak: currentStreak()
-    });
-    return statsSummaryCache;
-  }
-
-  let statsGamificationRenderToken = 0;
-  let statsGamificationRenderTimer = 0;
-
-  function scheduleStatsGamificationDetail() {
-    const token = ++statsGamificationRenderToken;
-    if (statsGamificationRenderTimer) { clearTimeout(statsGamificationRenderTimer); statsGamificationRenderTimer = 0; }
-    requestAnimationFrame(() => {
-      if (token !== statsGamificationRenderToken) return;
-      statsGamificationRenderTimer = setTimeout(() => {
-        statsGamificationRenderTimer = 0;
-        if (token !== statsGamificationRenderToken || !el('stats').classList.contains('active')) return;
-        renderGamificationDetail();
-      }, 0);
-    });
-  }
-
   function renderStats() {
     const summary = statsSummary();
     el('mTotal').textContent = formatNumber(summary.count);
@@ -5798,6 +5772,23 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   function renderGamification() {
     renderGamificationSummary();
     renderGamificationDetail();
+  }
+
+
+  let statsGamificationRenderToken = 0;
+  let statsGamificationRenderTimer = 0;
+
+  function scheduleStatsGamificationDetail() {
+    const token = ++statsGamificationRenderToken;
+    if (statsGamificationRenderTimer) { clearTimeout(statsGamificationRenderTimer); statsGamificationRenderTimer = 0; }
+    requestAnimationFrame(() => {
+      if (token !== statsGamificationRenderToken) return;
+      statsGamificationRenderTimer = setTimeout(() => {
+        statsGamificationRenderTimer = 0;
+        if (token !== statsGamificationRenderToken || !el('stats').classList.contains('active')) return;
+        renderGamificationDetail();
+      }, 0);
+    });
   }
 
   const RANGE_MODES=new Set(['trend','months','distribution','success','startpattern','cumulative']);
@@ -8203,6 +8194,17 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     else if(statsVizMode==='cumulative'){for(const d of [...buildCumulativeDays()].reverse()){const li=document.createElement('li');const clockNote=clockChangeNoteForDetail({dayKey:d.key},'cumulative');li.textContent=`${d.label||d.key||''} — ${formatNumber(d.cumulativeHours||0,0,1)} ${t('unit.h')}${clockNote?' • '+clockNote:''}`;ul.append(li);}}
     else { const month=el('calendarMonthTitle')?.textContent||''; const li=document.createElement('li'); li.textContent=t('a11y.calendarDataHint',{month}); ul.append(li); }
     if(!ul.children.length){const li=document.createElement('li');li.textContent=t('a11y.noChartData');ul.append(li);} box.append(ul);
+  }
+
+
+  function statsSummary() {
+    if (statsSummaryCache) return statsSummaryCache;
+    statsSummaryCache = FTAnalytics.summarizeRecords(data.records, {
+      durationGetter: recordMs,
+      goalGetter: recordMetGoal,
+      streak: currentStreak()
+    });
+    return statsSummaryCache;
   }
 
   function updateDestructiveResetGuard() {
