@@ -50,14 +50,23 @@ if sync_playwright:
         browser = p.chromium.launch(executable_path="/usr/bin/chromium", headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
         page = browser.new_page(viewport={"width": 390, "height": 844})
         errors = []
+        console_errors = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
+        page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         page.evaluate(STORAGE_SHIM)
         page.evaluate("""data => {
           __seedFastingDbV2(data, []);
           localStorage.setItem("fastingTracker.appMeta", JSON.stringify({lastAppVersion: data.appVersion}));
         }""", {**data, "appVersion": version})
         page.set_content(inlined_html(), wait_until="domcontentloaded")
-        page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
+        try:
+            page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
+        except Exception as exc:
+            label = page.locator("#appVersionLabel").text_content() if page.locator("#appVersionLabel").count() else "<missing>"
+            raise AssertionError(
+                f"App startup did not publish version v{version}; label={label!r}; "
+                f"page_errors={errors[:8]}; console_errors={console_errors[:8]}"
+            ) from exc
         transactions = page.evaluate("window.__idbTransactions")
         expected = {"state", "records", "deletedFasts", "weights", "deletedWeights"}
         atomic_reads = [tx for tx in transactions if tx["mode"] == "readonly" and expected.issubset(set(tx["stores"]))]
