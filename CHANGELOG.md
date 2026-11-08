@@ -1,6 +1,7 @@
 ## v1.17.47 — 2026-11-08
 
 - Extracted calendar date modeling, daylight-saving clock-change annotations, calendar rendering, and keyboard navigation into a dedicated ordered JavaScript fragment.
+- Restored the v1.17.43–v1.17.46 release-history entries in English, Bulgarian and Spanish, and added a regression check that preserves the five latest releases in every locale.
 - Expanded app-shell atomization regression to verify the fourteen-fragment assembly and calendar/DST function ownership.
 
 ## v1.17.46 — 2026-11-08
