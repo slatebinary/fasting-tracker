@@ -10,7 +10,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 12, f"Expected twelve ordered app fragments, found {len(parts)}"
+assert len(parts) == 13, f"Expected thirteen ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -37,6 +37,11 @@ assert "function statsHistoryNavigationItems" in history_drilldown and "function
 assert "function openStatsDrilldown" in history_drilldown and "function renderChartDetailForMode" in history_drilldown
 main_stats = (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert "function statsHistoryNavigationItems" not in main_stats and "function openStatsDrilldown" not in main_stats
+assert (source / "js" / "37-statistics-visualization-controls.js").is_file()
+viz_controls = (source / "js" / "37-statistics-visualization-controls.js").read_text(encoding="utf-8")
+assert "function setStatsVizGroup" in viz_controls and "function renderStatsVisualizations" in viz_controls
+assert "function verifyStatsVisualizationAfterLayout" in viz_controls
+assert "function setStatsVizGroup" not in main_stats and "function renderStatsVisualizations" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 assembled_js = "".join(path.read_text(encoding="utf-8") for path in parts).replace("@@FT_APP_VERSION@@", version)

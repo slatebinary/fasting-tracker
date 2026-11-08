@@ -1,3 +1,8 @@
+## v1.17.46 — 2026-11-08
+
+- Extracted statistics visualization preferences, group navigation, mode switching, and render scheduling/orchestration into a dedicated ordered JavaScript fragment.
+- Expanded app-shell atomization regression to verify the thirteen-fragment assembly and visualization-control ownership.
+
 ## v1.17.45 — 2026-11-08
 
 - Extracted statistics range controls, history navigation, chart selection details, and record drilldown helpers into a dedicated ordered JavaScript fragment.
