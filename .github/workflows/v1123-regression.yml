@@ -11,6 +11,7 @@ on:
       - fix/timezone-search-selection-v1.13.4
       - feat/dst-change-indicators-v1.13.5
       - fix/palette-hints-integrity-stats-v1.17.35
+      - refactor/storage-recovery-service-v1.17.38
       - main
   pull_request:
     branches: [main]
