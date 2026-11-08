@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 16, f"Expected sixteen ordered app fragments, found {len(parts)}"
+assert len(parts) == 17, f"Expected seventeen ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -58,6 +58,12 @@ assert "function buildSummaryChartDays" in specialized_charts and "function draw
 assert "function buildDurationDistribution" in specialized_charts and "function drawFastCumulativeChart" in specialized_charts
 assert "function handleTrendPointer" in specialized_charts and "function cancelCumulativePointer" in specialized_charts
 assert "function buildSummaryChartDays" not in main_stats and "function drawFastTrendChart" not in main_stats
+assert (source / "js" / "41-record-entry-workflows.js").is_file()
+record_entry = (source / "js" / "41-record-entry-workflows.js").read_text(encoding="utf-8")
+assert "function openEntryModal" in record_entry and "function saveManualEntry" in record_entry
+assert "function openWeightModal" in record_entry and "function saveWeightEntry" in record_entry
+assert "function bindResponsiveAction" in record_entry and "function bindReliableModalAction" in record_entry
+assert "function saveManualEntry" not in main_stats and "function saveWeightEntry" not in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 version_major, version_minor, version_patch = (int(part) for part in version.split("."))
