@@ -1,3 +1,8 @@
+## v1.17.48 — 2026-11-08
+
+- Extracted trend, weekly, monthly, distribution, target-success, start-pattern, and cumulative chart models, drawing routines, and pointer interactions into a dedicated ordered JavaScript fragment.
+- Expanded app-shell atomization regression to verify the fifteen-fragment assembly and specialized-chart function ownership.
+
 ## v1.17.47 — 2026-11-08
 
 - Extracted calendar date modeling, daylight-saving clock-change annotations, calendar rendering, and keyboard navigation into a dedicated ordered JavaScript fragment.
