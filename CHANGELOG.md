@@ -1,3 +1,8 @@
+## v1.17.51 — 2026-11-08
+
+- Extracted weight-history management, rendering, accessible chart data, period selection, and unit/target controls into a dedicated ordered JavaScript fragment.
+- Preserved soft-delete/restore/permanent-delete safeguards, filters, history rendering, unit conversion, and target validation; expanded app-shell atomization regression.
+
 ## v1.17.50 — 2026-11-08
 
 - Extracted manual fasting-record creation and editing, audit validation, and weight-entry modal workflows into a dedicated ordered JavaScript fragment.
