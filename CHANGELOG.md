@@ -1,3 +1,8 @@
+## v1.17.56 — 2026-11-09
+
+- Extracted Settings group expansion persistence, localized search filtering, and disclosure/search event wiring into a dedicated ordered JavaScript fragment.
+- Preserved default-open groups, user disclosure preferences, search result behavior, and storage-health refresh triggers; expanded source-ownership regression checks.
+
 ## v1.17.55 — 2026-11-09
 
 - Extracted the first-run installation/setup guide, install-target detection, setup-state persistence, step rendering, notification choices, backup status and setup completion flow into a dedicated ordered JavaScript fragment.
