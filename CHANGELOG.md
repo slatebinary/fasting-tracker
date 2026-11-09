@@ -1,6 +1,7 @@
 ## v1.17.56 — 2026-11-09
 
 - Extracted Settings group expansion persistence, localized search filtering, and disclosure/search event wiring into a dedicated ordered JavaScript fragment.
+- Release asset manifest retained in version metadata.
 - Preserved default-open groups, user disclosure preferences, search result behavior, and storage-health refresh triggers; expanded source-ownership regression checks.
 
 ## v1.17.55 — 2026-11-09
