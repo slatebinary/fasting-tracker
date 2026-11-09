@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.54",
-  "released": "2026-11-08",
-  "notes": "Separated statistics summary data and deferred gamification scheduling from the main statistics view orchestrator.",
+  "version": "1.17.55",
+  "released": "2026-11-09",
+  "notes": "Extracted the first-run installation/setup guide and its state, step and notification workflows into a dedicated source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",

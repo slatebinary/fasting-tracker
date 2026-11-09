@@ -1,3 +1,8 @@
+## v1.17.55 — 2026-11-09
+
+- Extracted the first-run installation/setup guide, install-target detection, setup-state persistence, step rendering, notification choices, backup status and setup completion flow into a dedicated ordered JavaScript fragment.
+- Preserved setup progression, standalone-install resumption, backup/notification choices and existing settings interactions; expanded app-shell atomization checks.
+
 ## v1.17.54 — 2026-11-08
 
 - Moved cached fasting-statistics summary calculation into the statistics data-model fragment and deferred gamification-detail scheduling/state into the gamification module.

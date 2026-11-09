@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 19, f"Expected nineteen ordered app fragments, found {len(parts)}"
+assert len(parts) == 20, f"Expected twenty ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -88,6 +88,12 @@ assert "let statsGamificationRenderToken = 0" in gamification
 assert "function scheduleStatsGamificationDetail" not in main_stats
 assert "function renderStats" in main_stats
 assert "function chartSelectionDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
+assert (source / "js" / "49-installation-setup-guide.js").is_file()
+setup_guide = (source / "js" / "49-installation-setup-guide.js").read_text(encoding="utf-8")
+assert "function renderSetupGuide" in setup_guide and "function setSetupGuideStep" in setup_guide
+assert "function setupInstallInstructions" in setup_guide and "function renderSetupBackupStatus" in setup_guide
+assert "function applySetupBasics" in setup_guide and "function maybeAutoOpenSetupGuide" in setup_guide
+assert "function renderSetupGuide" not in (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 version_major, version_minor, version_patch = (int(part) for part in version.split("."))
 expected_recent_releases = [
