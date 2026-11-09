@@ -132,7 +132,7 @@ result = subprocess.run([sys.executable, str(ROOT / "tools" / "build_app_shell.p
 assert result.returncode == 0, result.stdout + result.stderr
 print("PASS: app-shell CSS and JavaScript atomization is reproducible.")
 
-settings_disclosure = (source / "js" / "51-settings-disclosure.js").read_text(encoding="utf-8")
+settings_disclosure = (source / "js" / "49-settings-disclosure.js").read_text(encoding="utf-8")
 assert "function settingsGroups" in settings_disclosure and "function applySettingsSearch" in settings_disclosure
 assert "function initSettingsDisclosure" in settings_disclosure and "function restoreSettingsGroupState" in settings_disclosure
 settings_startup = (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
