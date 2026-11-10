@@ -1,3 +1,8 @@
+## v1.17.71 — 2026-11-10
+
+- Extracted screen activation, render scheduling, preference refresh, document return navigation, keyboard navigation, and goal-change orchestration into a dedicated ordered JavaScript fragment.
+- Preserved the existing shared application scope and event wiring; added source-ownership regression assertions.
+
 ## v1.17.70 — 2026-11-10
 
 - Extracted import date-range calculation, stable record comparison, ID/fingerprint duplicate detection, and conflict-safe import merge validation into a dedicated ordered JavaScript fragment.

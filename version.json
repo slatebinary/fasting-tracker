@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.70",
+  "version": "1.17.71",
   "released": "2026-11-10",
-  "notes": "Extracted import date-range, stable-record comparison, ID/fingerprint deduplication, and safe merge validation into a dedicated JavaScript fragment; added source-ownership regression assertions.",
+  "notes": "Extracted screen navigation, render scheduling, document return handling, and goal-change orchestration into a dedicated ordered JavaScript fragment; added source-ownership regression assertions.",
   "entry": "./index.html",
   "shell": [
     "./",
