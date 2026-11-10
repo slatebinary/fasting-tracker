@@ -43,6 +43,7 @@ jobs:
           git diff --exit-code -- tests
           python3 tests/test_app_shell_atomization.py
           python3 tests/test_release.py
+          python3 tests/test_pages_artifact_attempt_names.py
           python3 tests/test_release_protocol_v11717.py
           python3 tests/test_timeline_month_axis.py
           python3 tests/test_accessibility_theme_contrast.py
