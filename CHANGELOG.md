@@ -1,3 +1,8 @@
+## v1.17.69 — 2026-11-10
+
+- Extracted storage-protection status formatting, capability querying, persistence refresh, emergency-boot repair, and final service-worker registration/update orchestration into a dedicated ordered JavaScript fragment.
+- Preserved the original startup execution order and shared lexical scope; added source-ownership regression assertions.
+
 ## v1.17.68 — 2026-11-10
 
 - Extracted app-update availability checks, version comparison, update-status persistence, service-worker refresh, and installation workflows into a dedicated ordered JavaScript fragment.

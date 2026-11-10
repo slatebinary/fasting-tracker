@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.68",
+  "version": "1.17.69",
   "released": "2026-11-10",
-  "notes": "Separated app-update checks, service-worker refresh, update status persistence, and installation workflows into a dedicated ordered JavaScript fragment; retained backup/recovery ownership and added source-boundary regression assertions.",
+  "notes": "Separated storage-protection UI and final service-worker/emergency-startup orchestration into a dedicated ordered JavaScript fragment; preserved initialization order and added source-boundary regression assertions.",
   "entry": "./index.html",
   "shell": [
     "./",

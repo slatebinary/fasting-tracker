@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 32, f"Expected thirty-two ordered app fragments, found {len(parts)}"
+assert len(parts) == 33, f"Expected thirty-three ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -262,3 +262,14 @@ assert "genericChartPointerStamp<700" in generic_chart
 startup = (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
 assert "el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('click',handleGenericChartClick)" in startup
 assert "fastDistributionChart" in startup and "fastStartPatternChart" in startup
+ 
+# Storage-protection UI and final service-worker startup live in the final startup fragment.
+assert (source / "js" / "51-startup-storage-protection.js").is_file()
+startup_storage = (source / "js" / "51-startup-storage-protection.js").read_text(encoding="utf-8")
+assert "function formatBytes(bytes)" in startup_storage
+assert "async function queryStorageProtection" in startup_storage
+assert "async function refreshStorageProtection" in startup_storage
+assert "async function repairEmergencyBoot" in startup_storage
+assert "navigator.serviceWorker.register('./sw.js'" in startup_storage
+assert "function formatBytes(bytes)" not in (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
+assert "async function refreshStorageProtection" not in (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
