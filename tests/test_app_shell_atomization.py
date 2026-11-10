@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 34, f"Expected thirty-four ordered app fragments, found {len(parts)}"
+assert len(parts) == 35, f"Expected thirty-five ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -263,6 +263,13 @@ startup = (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf
 assert "el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('click',handleGenericChartClick)" in startup
 assert "fastDistributionChart" in startup and "fastStartPatternChart" in startup
  
+
+# Screen navigation and render scheduling are isolated from settings event wiring.
+screen_navigation = (source / "js" / "46-screen-navigation-and-rendering.js").read_text(encoding="utf-8")
+for owned_function in ("activeScreenId", "applyPreferencesIfChanged", "queueStorageProtectionRefresh", "renderScreen", "renderAll", "applyGoalValue", "longFastNoticeSeen", "requestGoalChange", "rememberDocumentReturn", "activateScreen", "installArrowKeyNavigation"):
+    assert f"function {owned_function}" in screen_navigation, f"{owned_function} must remain in screen navigation fragment"
+    assert f"function {owned_function}" not in startup, f"{owned_function} must not remain in settings/startup fragment"
+
 # Storage-protection UI and final service-worker startup live in the final startup fragment.
 assert (source / "js" / "51-startup-storage-protection.js").is_file()
 startup_storage = (source / "js" / "51-startup-storage-protection.js").read_text(encoding="utf-8")
