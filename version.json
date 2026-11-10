@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.65",
+  "version": "1.17.66",
   "released": "2026-11-10",
-  "notes": "Extracted duration formatting, timezone-aware calendar keys, interval aggregation, daily fasting totals, and week-boundary helpers into a dedicated ordered JavaScript fragment; preserved DST-aware calculations and calendar totals. Made Pages artifacts attempt-specific to prevent duplicate-artifact failures on deployment retries.",
+  "notes": "Extracted notification delivery, scheduling, permission handling, maintenance reminders, and notification settings into a dedicated ordered JavaScript fragment; preserved deduplication, runtime-state persistence, and permission safeguards.",
   "entry": "./index.html",
   "shell": [
     "./",

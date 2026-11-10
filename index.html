@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.65" />
+  <meta name="ft-app-version" content="1.17.66" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1904,7 +1904,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.65';
+  const APP_VERSION = '1.17.66';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4099,84 +4099,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
   }
 
-  function recordMs(r) { return Math.max(0, new Date(r.end) - new Date(r.start)); }
-  function goalMs(hours = data.goalHours) { return sanitizeGoal(hours, data.goalHours) * 3600000; }
-  function recordMetGoal(r) { return recordMs(r) >= goalMs(r.goalHours ?? data.goalHours); }
-  function activeTargetHours() { return data.activeStart ? sanitizeGoal(data.activeGoalHours, data.goalHours) : data.goalHours; }
-
-  function updateGoalChips() {
-    document.querySelectorAll('.chip[data-goal]').forEach(chip => {
-      const active = Number(chip.dataset.goal) === data.goalHours; chip.classList.toggle('active', active); chip.setAttribute('aria-pressed', String(active));
-    });
-    updateCycleHelpers();
-  }
-
-
-  function cycleHelperText(hours) {
-    const target = sanitizeGoal(hours, data.goalHours);
-    if (target < 24) {
-      const nonFastingMs = Math.max(0, (24 - target) * 3600000);
-      return t('settings.cycleUnder24', {fast: formatGoal(target), nonfast: friendlyDuration(nonFastingMs)});
-    }
-    if (target === 24) return t('settings.cycle24');
-    return t('settings.cycleExtended');
-  }
-
-  function updateCycleHelpers() {
-    const goalHelp = el('goalCycleHelp');
-    if (goalHelp) goalHelp.textContent = cycleHelperText(data.goalHours);
-    const activeHelp = el('activeGoalCycleHelp');
-    if (activeHelp) {
-      const parsed = parseLocalizedNumber(el('activeTargetInput')?.value);
-      activeHelp.textContent = cycleHelperText(Number.isFinite(parsed) && parsed > 0 ? parsed : activeTargetHours());
-    }
-  }
-
-  function latestCompletedFast() {
-    if (latestCompletedFastCache !== undefined) return latestCompletedFastCache;
-    let latest = null, latestEnd = -Infinity;
-    for (const record of data.records) {
-      const endMs = new Date(record.end).getTime();
-      if (Number.isFinite(endMs) && endMs > latestEnd) { latest = record; latestEnd = endMs; }
-    }
-    latestCompletedFastCache = latest;
-    return latest;
-  }
-
-  function nextFastCycleInfo(nowMs = Date.now()) {
-    if (data.activeStart) return null;
-    const record = latestCompletedFast();
-    if (!record) return null;
-    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
-    const durationMs = endMs - startMs;
-    const dayMs = 24 * 3600000;
-    if (durationMs >= dayMs) return null;
-    const suggestedStartMs = startMs + dayMs;
-    const remainingMs = suggestedStartMs - nowMs;
-    if (remainingMs <= 0) return null;
-    return { record, durationMs, nonFastingMs: dayMs - durationMs, suggestedStartMs, remainingMs };
-  }
-
-  function updateNextFastCountdown() {
-    const card = el('nextFastCard');
-    if (!card) return;
-    const info = nextFastCycleInfo();
-    card.hidden = !info;
-    if (!info) return;
-    el('nextFastCountdown').textContent = exactDuration(info.remainingMs);
-    el('nextFastAt').textContent = t('fasting.nextAt', {date: localDateTimeLabel(info.suggestedStartMs, info.record.timeZone)});
-    // Derive both displayed parts from the same completed whole-minute value so
-    // the visible arithmetic always adds up to exactly 24h. The countdown itself
-    // remains second-accurate.
-    const fastMinutes = Math.max(0, Math.min(1439, Math.floor(info.durationMs / 60000)));
-    const nonFastMinutes = 1440 - fastMinutes;
-    el('nextFastBasis').textContent = t('fasting.nextBasis', {
-      fasted: totalHoursDuration(fastMinutes * 60000),
-      nonfast: totalHoursDuration(nonFastMinutes * 60000)
-    });
-  }
-
   function nativeNotificationsSupported() {
     return typeof Notification !== 'undefined' && typeof Notification.requestPermission === 'function';
   }
@@ -4401,6 +4323,84 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   async function sendTestNotification() {
     if (!notificationPrefs().enabled || notificationPermissionState() !== 'granted') { renderNotificationSettings(); return; }
     await sendDeviceNotification('test', t('notifications.testTitle'), t('notifications.testBodyShort'), {screen:'settings',tag:'fasting-tracker-test'});
+  }
+
+  function recordMs(r) { return Math.max(0, new Date(r.end) - new Date(r.start)); }
+  function goalMs(hours = data.goalHours) { return sanitizeGoal(hours, data.goalHours) * 3600000; }
+  function recordMetGoal(r) { return recordMs(r) >= goalMs(r.goalHours ?? data.goalHours); }
+  function activeTargetHours() { return data.activeStart ? sanitizeGoal(data.activeGoalHours, data.goalHours) : data.goalHours; }
+
+  function updateGoalChips() {
+    document.querySelectorAll('.chip[data-goal]').forEach(chip => {
+      const active = Number(chip.dataset.goal) === data.goalHours; chip.classList.toggle('active', active); chip.setAttribute('aria-pressed', String(active));
+    });
+    updateCycleHelpers();
+  }
+
+
+  function cycleHelperText(hours) {
+    const target = sanitizeGoal(hours, data.goalHours);
+    if (target < 24) {
+      const nonFastingMs = Math.max(0, (24 - target) * 3600000);
+      return t('settings.cycleUnder24', {fast: formatGoal(target), nonfast: friendlyDuration(nonFastingMs)});
+    }
+    if (target === 24) return t('settings.cycle24');
+    return t('settings.cycleExtended');
+  }
+
+  function updateCycleHelpers() {
+    const goalHelp = el('goalCycleHelp');
+    if (goalHelp) goalHelp.textContent = cycleHelperText(data.goalHours);
+    const activeHelp = el('activeGoalCycleHelp');
+    if (activeHelp) {
+      const parsed = parseLocalizedNumber(el('activeTargetInput')?.value);
+      activeHelp.textContent = cycleHelperText(Number.isFinite(parsed) && parsed > 0 ? parsed : activeTargetHours());
+    }
+  }
+
+  function latestCompletedFast() {
+    if (latestCompletedFastCache !== undefined) return latestCompletedFastCache;
+    let latest = null, latestEnd = -Infinity;
+    for (const record of data.records) {
+      const endMs = new Date(record.end).getTime();
+      if (Number.isFinite(endMs) && endMs > latestEnd) { latest = record; latestEnd = endMs; }
+    }
+    latestCompletedFastCache = latest;
+    return latest;
+  }
+
+  function nextFastCycleInfo(nowMs = Date.now()) {
+    if (data.activeStart) return null;
+    const record = latestCompletedFast();
+    if (!record) return null;
+    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
+    const durationMs = endMs - startMs;
+    const dayMs = 24 * 3600000;
+    if (durationMs >= dayMs) return null;
+    const suggestedStartMs = startMs + dayMs;
+    const remainingMs = suggestedStartMs - nowMs;
+    if (remainingMs <= 0) return null;
+    return { record, durationMs, nonFastingMs: dayMs - durationMs, suggestedStartMs, remainingMs };
+  }
+
+  function updateNextFastCountdown() {
+    const card = el('nextFastCard');
+    if (!card) return;
+    const info = nextFastCycleInfo();
+    card.hidden = !info;
+    if (!info) return;
+    el('nextFastCountdown').textContent = exactDuration(info.remainingMs);
+    el('nextFastAt').textContent = t('fasting.nextAt', {date: localDateTimeLabel(info.suggestedStartMs, info.record.timeZone)});
+    // Derive both displayed parts from the same completed whole-minute value so
+    // the visible arithmetic always adds up to exactly 24h. The countdown itself
+    // remains second-accurate.
+    const fastMinutes = Math.max(0, Math.min(1439, Math.floor(info.durationMs / 60000)));
+    const nonFastMinutes = 1440 - fastMinutes;
+    el('nextFastBasis').textContent = t('fasting.nextBasis', {
+      fasted: totalHoursDuration(fastMinutes * 60000),
+      nonfast: totalHoursDuration(nonFastMinutes * 60000)
+    });
   }
 
   const SCIENCE_STAGES = [

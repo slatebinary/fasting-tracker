@@ -1,3 +1,8 @@
+## v1.17.66 — 2026-11-10
+
+- Extracted notification delivery, scheduling, permission handling, maintenance reminders, and notification settings into a dedicated ordered JavaScript fragment.
+- Preserved notification deduplication, runtime-state persistence, permission safeguards, localized notification details, and existing settings interactions; expanded source-ownership regression checks.
+
 ## v1.17.65 — 2026-11-10
 
 - Extracted duration formatting, timezone-aware calendar keys, interval aggregation, daily fasting totals, and week-boundary helpers into a dedicated ordered JavaScript fragment.

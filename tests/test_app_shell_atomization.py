@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 30, f"Expected thirty ordered app fragments, found {len(parts)}"
+assert len(parts) == 31, f"Expected thirty-one ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -218,3 +218,24 @@ for owned_function in (
 assert "return timeUtils.dayKey(dateLike, timeZone)" in time_calendar
 assert "return timeUtils.nextZonedDayBoundary(ms, timeZone, knownKey)" in time_calendar
 assert "function startFast" in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
+
+
+notification_runtime = (source / "js" / "19-notification-runtime-and-settings.js").read_text(encoding="utf-8")
+for owned_function in (
+    "nativeNotificationsSupported", "notificationPermissionState",
+    "notificationPrefs", "notificationEnabledFor", "sendDeviceNotification",
+    "maybeNotifyTargetReached", "maybeNotifyLongFastSafety",
+    "maybeNotifyCycleComplete", "backupDueToken", "maybeNotifyBackupDue",
+    "latestWeightRecord", "maybeNotifyWeighIn", "checkFastNotifications",
+    "checkMaintenanceNotifications", "notificationDiagnosticState",
+    "notificationStatusKey", "renderWeighCadenceButtons",
+    "setSettingsWeighCadence", "renderNotificationSettings",
+    "setNotificationMasterEnabled", "saveNotificationOption",
+    "sendTestNotification",
+):
+    assert f"function {owned_function}" in notification_runtime or f"async function {owned_function}" in notification_runtime, f"{owned_function} must remain in notification runtime fragment"
+    assert f"function {owned_function}" not in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in time/fast lifecycle fragment"
+assert "if (notificationPermissionState() !== 'granted') return false;" in notification_runtime
+assert "recordNotificationDetail(kind" in notification_runtime
+assert "saveNotificationRuntimeState()" in notification_runtime
+assert "function updateTimer" in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
