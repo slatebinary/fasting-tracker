@@ -1,3 +1,8 @@
+## v1.17.70 — 2026-11-10
+
+- Extracted import date-range calculation, stable record comparison, ID/fingerprint duplicate detection, and conflict-safe import merge validation into a dedicated ordered JavaScript fragment.
+- Preserved import preview and replace/merge behavior; added source-ownership regression assertions.
+
 ## v1.17.69 — 2026-11-10
 
 - Extracted storage-protection status formatting, capability querying, persistence refresh, emergency-boot repair, and final service-worker registration/update orchestration into a dedicated ordered JavaScript fragment.
