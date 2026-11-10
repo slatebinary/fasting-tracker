@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 25, f"Expected twenty-five ordered app fragments, found {len(parts)}"
+assert len(parts) == 26, f"Expected twenty-six ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -151,6 +151,13 @@ assert "function markLastKnownGood" in migration_state and "function deploymentH
 storage_recovery = (source / "js" / "10-storage-and-recovery.js").read_text(encoding="utf-8")
 assert "function beginPendingMigration" not in storage_recovery and "function markLastKnownGood" not in storage_recovery
 assert "function snapshotCoverageStats" not in storage_recovery and "function createInternalSnapshotAsync" not in storage_recovery
+assert "function normalizeNotificationPreferences" not in storage_recovery
+assert "function renderNotificationDetails" not in storage_recovery
+notification_state = (source / "js" / "13-notification-state.js").read_text(encoding="utf-8")
+assert "function normalizeNotificationPreferences" in notification_state
+assert "function loadNotificationRuntimeState" in notification_state and "function saveNotificationRuntimeState" in notification_state
+assert "function normalizeNotificationDetailItems" in notification_state
+assert "function recordNotificationDetail" in notification_state and "function renderNotificationDetails" in notification_state
 
 fast_history = (source / "js" / "21-fast-history-management.js").read_text(encoding="utf-8")
 assert "function historyFilterSpec" in fast_history and "function renderHistory" in fast_history

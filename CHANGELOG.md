@@ -1,3 +1,8 @@
+## v1.17.61 — 2026-11-10
+
+- Extracted notification preference normalization, runtime-state persistence, notification-detail history, and detail rendering into a dedicated ordered JavaScript fragment.
+- Preserved notification settings, TTL/duplicate filtering, localized detail content, and add-weight/dismiss actions; expanded source-ownership regression checks.
+
 ## v1.17.60 — 2026-11-10
 
 - Extracted backup freshness/status, integrity-envelope creation and verification, JSON/CSV export, and share/download workflows into a dedicated ordered JavaScript fragment.

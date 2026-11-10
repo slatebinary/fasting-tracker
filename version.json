@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.60",
+  "version": "1.17.61",
   "released": "2026-11-10",
-  "notes": "Separated backup status, integrity envelope, JSON/CSV export, and share/download workflows into a dedicated ordered JavaScript fragment.",
+  "notes": "Extracted notification preference normalization, runtime-state persistence, and notification-detail history/rendering into a dedicated ordered JavaScript fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
