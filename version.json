@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.67",
+  "version": "1.17.68",
   "released": "2026-11-10",
-  "notes": "Restored reliable click selection for Timing duration/start-time bars with a deduplicated click fallback alongside pointer selection; added interaction regression assertions.",
+  "notes": "Separated app-update checks, service-worker refresh, update status persistence, and installation workflows into a dedicated ordered JavaScript fragment; retained backup/recovery ownership and added source-boundary regression assertions.",
   "entry": "./index.html",
   "shell": [
     "./",
