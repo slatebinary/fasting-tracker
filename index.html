@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.57" />
+  <meta name="ft-app-version" content="1.17.58" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1904,7 +1904,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.57';
+  const APP_VERSION = '1.17.58';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4787,6 +4787,57 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     undoToastTimer=setTimeout(clearUndoToast,UNDO_WINDOW_MS);
   }
 
+  function startOfWeek(dateLike = new Date()) {
+    const d = new Date(dateLike);
+    d.setHours(0, 0, 0, 0);
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+
+  function weekKey(dateLike, timeZone = currentTimeZone()) {
+    const p=zonedParts(dateLike,timeZone); const d=new Date(Date.UTC(p.year,p.month-1,p.day));
+    const day=d.getUTCDay(), diff=day===0?-6:1-day; d.setUTCDate(d.getUTCDate()+diff);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+  }
+
+  function successfulFastCount() {
+    return data.records.filter(recordMetGoal).length;
+  }
+
+  function distinctWeightLoggingDays() {
+    return new Set(data.weights.map(weightCalendarDay).filter(Boolean)).size;
+  }
+
+  function gamificationXP() {
+    return successfulFastCount() * 10 + distinctWeightLoggingDays() * 2;
+  }
+
+  function levelForXP(xp) {
+    if (xp >= 350) return { number: 4, nameKey: 'game.level4', min: 350, next: null };
+    if (xp >= 150) return { number: 3, nameKey: 'game.level3', min: 150, next: 350 };
+    if (xp >= 50) return { number: 2, nameKey: 'game.level2', min: 50, next: 150 };
+    return { number: 1, nameKey: 'game.level1', min: 0, next: 50 };
+  }
+
+  function weeklyTargetSuccessRate() {
+    const currentWeek = weekKey(new Date(), currentTimeZone());
+    let total=0, reached=0;
+    // Only the current week matters. Scan newest-first and stop once records are
+    // clearly older than the week rather than converting a lifetime of dates.
+    const sorted=sortedRecordsDesc();
+    for(const r of sorted){
+      const day=dayKeyFast(r.end,r.timeZone||currentTimeZone());
+      const wk=weekKeyFromDayString(day);
+      if(wk===currentWeek){ total++; if(recordMetGoal(r)) reached++; continue; }
+      // Records are newest-first. Once we are older than the current week,
+      // no later record in this loop can belong to the current week.
+      if(wk && wk<currentWeek) break;
+    }
+    return total ? Math.round((reached/total)*100) : null;
+  }
+
   function historyFilterSpec() {
     const numberOrNull=id=>{const v=parseFloat(el(id)?.value||'');return Number.isFinite(v)&&v>=0?v:null;};
     return {
@@ -5022,57 +5073,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     }
     if(visible.length<filtered.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:filtered.length-visible.length});more.addEventListener('click',()=>{historyVisibleCount+=HISTORY_PAGE_SIZE;renderHistory();});wrap.append(more);box.append(wrap);}
     renderDeletedFasts();updateBulkActionBars();
-  }
-
-  function startOfWeek(dateLike = new Date()) {
-    const d = new Date(dateLike);
-    d.setHours(0, 0, 0, 0);
-    const day = d.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diff);
-    return d;
-  }
-
-  function weekKey(dateLike, timeZone = currentTimeZone()) {
-    const p=zonedParts(dateLike,timeZone); const d=new Date(Date.UTC(p.year,p.month-1,p.day));
-    const day=d.getUTCDay(), diff=day===0?-6:1-day; d.setUTCDate(d.getUTCDate()+diff);
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
-  }
-
-  function successfulFastCount() {
-    return data.records.filter(recordMetGoal).length;
-  }
-
-  function distinctWeightLoggingDays() {
-    return new Set(data.weights.map(weightCalendarDay).filter(Boolean)).size;
-  }
-
-  function gamificationXP() {
-    return successfulFastCount() * 10 + distinctWeightLoggingDays() * 2;
-  }
-
-  function levelForXP(xp) {
-    if (xp >= 350) return { number: 4, nameKey: 'game.level4', min: 350, next: null };
-    if (xp >= 150) return { number: 3, nameKey: 'game.level3', min: 150, next: 350 };
-    if (xp >= 50) return { number: 2, nameKey: 'game.level2', min: 50, next: 150 };
-    return { number: 1, nameKey: 'game.level1', min: 0, next: 50 };
-  }
-
-  function weeklyTargetSuccessRate() {
-    const currentWeek = weekKey(new Date(), currentTimeZone());
-    let total=0, reached=0;
-    // Only the current week matters. Scan newest-first and stop once records are
-    // clearly older than the week rather than converting a lifetime of dates.
-    const sorted=sortedRecordsDesc();
-    for(const r of sorted){
-      const day=dayKeyFast(r.end,r.timeZone||currentTimeZone());
-      const wk=weekKeyFromDayString(day);
-      if(wk===currentWeek){ total++; if(recordMetGoal(r)) reached++; continue; }
-      // Records are newest-first. Once we are older than the current week,
-      // no later record in this loop can belong to the current week.
-      if(wk && wk<currentWeek) break;
-    }
-    return total ? Math.round((reached/total)*100) : null;
   }
 
   function renderStats() {
