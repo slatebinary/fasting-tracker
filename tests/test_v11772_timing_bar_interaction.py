@@ -62,8 +62,8 @@ with sync_playwright() as p:
       canvas.dispatchEvent(new PointerEvent('pointerdown',init));
     }""")
     page.wait_for_function(
-        "document.querySelector('#chartDetailTitle')?.textContent?.trim() !== '' && "
-        "document.querySelector('#chartDetailTitle')?.textContent !== arguments[0]",
+        "expected => document.querySelector('#chartDetailTitle')?.textContent?.trim() !== '' && "
+        "document.querySelector('#chartDetailTitle')?.textContent !== expected",
         arg=default_title,
         timeout=5000,
     )
@@ -91,7 +91,7 @@ with sync_playwright() as p:
       }));
     }""")
     page.wait_for_function(
-        "document.querySelector('#chartDetailTitle')?.textContent !== arguments[0]",
+        "expected => document.querySelector('#chartDetailTitle')?.textContent !== expected",
         arg=start_default,
         timeout=5000,
     )
