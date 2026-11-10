@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 24, f"Expected twenty-four ordered app fragments, found {len(parts)}"
+assert len(parts) == 25, f"Expected twenty-five ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -71,7 +71,7 @@ assert "function softDeleteWeightById" in weight_history and "function renderWei
 assert "function setWeightUnit" in weight_history and "function setTargetWeightFromInput" in weight_history
 assert "function renderWeight" not in main_stats and "function setWeightUnit" not in main_stats
 assert "function renderStatsChartData" not in main_stats
-backup_module = (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
+backup_export = (source / "js" / "40-backup-export.js").read_text(encoding="utf-8")\nassert "function backupDatasetSignature" in backup_export and "async function exportBackup" in backup_export\nassert "async function exportFastingCsv" in backup_export and "async function exportWeightCsv" in backup_export\nassert "function backupDatasetSignature" not in (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")\nbackup_module = (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
 assert "function hasBackupWorthyData" in backup_module
 assert "function normalizeBackupClockSkew" in backup_module and "function ensureBackupTrackingStarted" in backup_module
 assert "let backupDatasetSignatureCache = null" in backup_module
