@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 26, f"Expected twenty-six ordered app fragments, found {len(parts)}"
+assert len(parts) == 27, f"Expected twenty-seven ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -158,6 +158,14 @@ assert "function normalizeNotificationPreferences" in notification_state
 assert "function loadNotificationRuntimeState" in notification_state and "function saveNotificationRuntimeState" in notification_state
 assert "function normalizeNotificationDetailItems" in notification_state
 assert "function recordNotificationDetail" in notification_state and "function renderNotificationDetails" in notification_state
+
+data_validation = (source / "js" / "14-data-validation.js").read_text(encoding="utf-8")
+assert "function migrateData" in data_validation and "function normalizeRecord" in data_validation
+assert "function normalizeData" in data_validation and "function prepareCompatibleData" in data_validation
+assert "function validateCompatibleData" in data_validation and "function validateImportedData" in data_validation
+storage_validation_source = (source / "js" / "10-storage-and-recovery.js").read_text(encoding="utf-8")
+for owned_function in ("migrateData", "normalizeRecord", "normalizeData", "prepareCompatibleData", "validateCompatibleData", "validateImportedData"):
+    assert f"function {owned_function}" not in storage_validation_source, f"{owned_function} must remain in data-validation fragment"
 
 fast_history = (source / "js" / "21-fast-history-management.js").read_text(encoding="utf-8")
 assert "function historyFilterSpec" in fast_history and "function renderHistory" in fast_history
