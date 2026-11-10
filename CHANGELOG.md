@@ -1,3 +1,8 @@
+## v1.17.58 — 2026-11-10
+
+- Extracted fasting-history filtering, CSV export, bulk actions, deletion audit, restore/purge operations, and history rendering into a dedicated ordered JavaScript fragment.
+- Preserved history filtering, reversible deletion, audit records, and rendering behavior; expanded source-atomization assertions.
+
 ## v1.17.57 — 2026-11-10
 
 - Extracted recovery snapshot retention, coverage, tiering, and rolling-snapshot lifecycle into a dedicated ordered JavaScript fragment.
