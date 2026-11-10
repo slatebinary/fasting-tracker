@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.63",
+  "version": "1.17.64",
   "released": "2026-11-10",
-  "notes": "Extracted backdated-fast creation, overlap detection, conflict resolution, and modal handling into a dedicated ordered JavaScript fragment; preserved conflict safeguards and fast-start behavior.",
+  "notes": "Extracted active-fast target editing, preset synchronization, validation, and long-fast notice routing into a dedicated ordered JavaScript fragment; preserved target persistence and safety confirmation.",
   "entry": "./index.html",
   "shell": [
     "./",
