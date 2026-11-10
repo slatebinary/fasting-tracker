@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.64" />
+  <meta name="ft-app-version" content="1.17.65" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1904,7 +1904,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.64';
+  const APP_VERSION = '1.17.65';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4073,11 +4073,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return map;
   }
 
-  function recordMs(r) { return Math.max(0, new Date(r.end) - new Date(r.start)); }
-  function goalMs(hours = data.goalHours) { return sanitizeGoal(hours, data.goalHours) * 3600000; }
-  function recordMetGoal(r) { return recordMs(r) >= goalMs(r.goalHours ?? data.goalHours); }
-  function activeTargetHours() { return data.activeStart ? sanitizeGoal(data.activeGoalHours, data.goalHours) : data.goalHours; }
-
   function fastingMsForDay(dayDate) {
     const key = dayKey(dayDate, currentTimeZone());
     let total = completedFastingByStoredCalendarDay().get(key) || 0;
@@ -4088,6 +4083,26 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     }
     return total;
   }
+
+  function startOfWeek(dateLike = new Date()) {
+    const d = new Date(dateLike);
+    d.setHours(0, 0, 0, 0);
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+
+  function weekKey(dateLike, timeZone = currentTimeZone()) {
+    const p=zonedParts(dateLike,timeZone); const d=new Date(Date.UTC(p.year,p.month-1,p.day));
+    const day=d.getUTCDay(), diff=day===0?-6:1-day; d.setUTCDate(d.getUTCDate()+diff);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+  }
+
+  function recordMs(r) { return Math.max(0, new Date(r.end) - new Date(r.start)); }
+  function goalMs(hours = data.goalHours) { return sanitizeGoal(hours, data.goalHours) * 3600000; }
+  function recordMetGoal(r) { return recordMs(r) >= goalMs(r.goalHours ?? data.goalHours); }
+  function activeTargetHours() { return data.activeStart ? sanitizeGoal(data.activeGoalHours, data.goalHours) : data.goalHours; }
 
   function updateGoalChips() {
     document.querySelectorAll('.chip[data-goal]').forEach(chip => {
@@ -4788,21 +4803,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const toast=el('undoToast'), text=el('undoToastText'); if(!toast||!text)return;
     text.textContent=message; undoToastAction=typeof action==='function'?action:null; toast.hidden=false;
     undoToastTimer=setTimeout(clearUndoToast,UNDO_WINDOW_MS);
-  }
-
-  function startOfWeek(dateLike = new Date()) {
-    const d = new Date(dateLike);
-    d.setHours(0, 0, 0, 0);
-    const day = d.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diff);
-    return d;
-  }
-
-  function weekKey(dateLike, timeZone = currentTimeZone()) {
-    const p=zonedParts(dateLike,timeZone); const d=new Date(Date.UTC(p.year,p.month-1,p.day));
-    const day=d.getUTCDay(), diff=day===0?-6:1-day; d.setUTCDate(d.getUTCDate()+diff);
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
   }
 
   function successfulFastCount() {

@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 29, f"Expected twenty-nine ordered app fragments, found {len(parts)}"
+assert len(parts) == 30, f"Expected thirty ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -202,3 +202,19 @@ assert "parsed <= 0 || parsed > MAX_SAFE_GOAL_HOURS" in active_target_workflows
 assert "next >= LONG_FAST_NOTICE_HOURS && !longFastNoticeSeen()" in active_target_workflows
 assert "pendingLongFastScope = 'active';" in active_target_workflows
 assert "save({ invalidateDerived:false, dirtyViews:['fasting','settings'] })" in active_target_workflows
+
+
+time_calendar = (source / "js" / "17-time-calendar-primitives.js").read_text(encoding="utf-8")
+for owned_function in (
+    "exactDuration", "friendlyDuration", "compactDuration", "totalHoursDuration",
+    "dayKey", "dayKeyFast", "weekKeyFromDayString", "weightCalendarDay",
+    "localDateLabel", "localDateTimeLabel", "localTimeLabel",
+    "nextZonedDayBoundary", "addIntervalToDayMap",
+    "completedFastingByStoredCalendarDay", "fastingByStoredCalendarDay",
+    "fastingMsForDay", "startOfWeek", "weekKey",
+):
+    assert f"function {owned_function}" in time_calendar, f"{owned_function} must remain in time/calendar primitives"
+    assert f"function {owned_function}" not in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in time/fast lifecycle fragment"
+assert "return timeUtils.dayKey(dateLike, timeZone)" in time_calendar
+assert "return timeUtils.nextZonedDayBoundary(ms, timeZone, knownKey)" in time_calendar
+assert "function startFast" in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
