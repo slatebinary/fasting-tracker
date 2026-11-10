@@ -1,3 +1,8 @@
+## v1.17.68 — 2026-11-10
+
+- Extracted app-update availability checks, version comparison, update-status persistence, service-worker refresh, and installation workflows into a dedicated ordered JavaScript fragment.
+- Kept backup and recovery responsibilities in their existing module; expanded source-ownership tests to prevent update workflow functions from drifting back into it.
+
 ## v1.17.67 — 2026-11-10
 
 - Restored reliable click selection for Timing duration and start-time bars with a deduplicated completed-click fallback alongside pointer selection.
