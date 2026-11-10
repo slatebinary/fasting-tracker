@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 33, f"Expected thirty-three ordered app fragments, found {len(parts)}"
+assert len(parts) == 34, f"Expected thirty-four ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -273,3 +273,9 @@ assert "async function repairEmergencyBoot" in startup_storage
 assert "navigator.serviceWorker.register('./sw.js'" in startup_storage
 assert "function formatBytes(bytes)" not in (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
 assert "async function refreshStorageProtection" not in (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
+
+# Import merge primitives are isolated from settings/startup orchestration.
+import_merge = (source / "js" / "45-import-merge-workflows.js").read_text(encoding="utf-8")
+for owned_function in ("backupDateRange", "stableRecordString", "mergeByIdAndFingerprint", "mergeImportedData"):
+    assert f"function {owned_function}" in import_merge, f"{owned_function} must remain in import merge fragment"
+    assert f"function {owned_function}" not in (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in settings/startup fragment"
