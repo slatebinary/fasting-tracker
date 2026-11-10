@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.58" />
+  <meta name="ft-app-version" content="1.17.59" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -2930,7 +2930,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     }
   }
 
-
+  // App-version and deployment-migration metadata is owned by 12-app-migration-state.js.
 
   function normalizeRecord(r) {
     if (!r || typeof r !== 'object') return null;
@@ -3805,8 +3805,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   function rememberCurrentAppVersion() {
     const meta = readAppMeta(); meta.lastAppVersion = APP_VERSION; meta.seenAt = new Date().toISOString(); writeAppMeta(meta);
   }
-
-
   function exactDuration(ms) {
     ms = Math.max(0, ms);
     const totalSec = Math.floor(ms / 1000);
