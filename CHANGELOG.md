@@ -1,3 +1,8 @@
+## v1.17.64 — 2026-11-10
+
+- Extracted active-fast target editing, preset synchronization, validation, and long-fast notice routing into a dedicated ordered JavaScript fragment.
+- Preserved target persistence, long-fast safety confirmation, active-target bounds, and existing timer behavior; expanded source-ownership regression checks.
+
 ## v1.17.63 — 2026-11-10
 
 - Extracted backdated-fast creation, overlap detection, conflict resolution, and modal handling into a dedicated ordered JavaScript fragment.
