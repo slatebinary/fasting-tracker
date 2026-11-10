@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 22, f"Expected twenty-two ordered app fragments, found {len(parts)}"
+assert len(parts) == 23, f"Expected twenty-three ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -143,3 +143,9 @@ assert "function snapshotCoverageStats" in recovery_snapshots and "function snap
 assert "function createInternalSnapshotAsync" in recovery_snapshots and "function scheduleRollingSnapshot" in recovery_snapshots
 storage_recovery = (source / "js" / "10-storage-and-recovery.js").read_text(encoding="utf-8")
 assert "function snapshotCoverageStats" not in storage_recovery and "function createInternalSnapshotAsync" not in storage_recovery
+
+fast_history = (source / "js" / "21-fast-history-management.js").read_text(encoding="utf-8")
+assert "function historyFilterSpec" in fast_history and "function renderHistory" in fast_history
+assert "function bulkDeleteFasts" in fast_history and "function restoreDeletedFast" in fast_history
+time_fast = (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
+assert "function historyFilterSpec" not in time_fast and "function renderHistory" not in time_fast
