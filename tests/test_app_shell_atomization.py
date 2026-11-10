@@ -258,7 +258,8 @@ generic_chart = (source / "js" / "33-statistics-generic-chart.js").read_text(enc
 assert "function selectGenericChartItem(event)" in generic_chart
 assert "function handleGenericChartPointer(event)" in generic_chart
 assert "function handleGenericChartClick(event)" in generic_chart
-assert "genericChartPointerStamp<700" in generic_chart
+assert "const genericChartPointerStamps=new WeakMap()" in generic_chart
+assert "genericChartPointerStamps.get(canvas)" in generic_chart and "genericChartPointerStamps.delete(canvas)" in generic_chart
 startup = (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
 assert "el(id).addEventListener('pointerdown',handleGenericChartPointer);el(id).addEventListener('click',handleGenericChartClick)" in startup
 assert "fastDistributionChart" in startup and "fastStartPatternChart" in startup
