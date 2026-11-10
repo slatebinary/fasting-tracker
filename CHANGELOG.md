@@ -1,3 +1,8 @@
+## v1.17.67 — 2026-11-10
+
+- Restored reliable click selection for Timing duration and start-time bars with a deduplicated completed-click fallback alongside pointer selection.
+- Added regression assertions for generic chart selection and the event bindings used by Duration Bars.
+
 ## v1.17.66 — 2026-11-10
 
 - Extracted notification delivery, scheduling, permission handling, maintenance reminders, and notification settings into a dedicated ordered JavaScript fragment.
