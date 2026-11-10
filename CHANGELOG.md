@@ -1,3 +1,8 @@
+## v1.17.67 — 2026-11-10
+
+- Extracted update availability, release-status comparison, service-worker refresh, and installation workflows into a dedicated ordered JavaScript fragment.
+- Preserved version safeguards, migration-aware update status, controller refresh, and the existing update/rollback flow; expanded source-ownership regression checks.
+
 ## v1.17.66 — 2026-11-10
 
 - Extracted notification delivery, scheduling, permission handling, maintenance reminders, and notification settings into a dedicated ordered JavaScript fragment.
