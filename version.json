@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.62",
+  "version": "1.17.63",
   "released": "2026-11-10",
-  "notes": "Extracted legacy data normalization, compatibility migration, and imported-data validation into a dedicated ordered JavaScript fragment; preserved storage and import safeguards.",
+  "notes": "Extracted backdated-fast creation, overlap detection, conflict resolution, and modal handling into a dedicated ordered JavaScript fragment; preserved conflict safeguards and fast-start behavior.",
   "entry": "./index.html",
   "shell": [
     "./",
