@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.56",
-  "released": "2026-11-09",
-  "notes": "Extracted Settings disclosure/search subsystem into an ordered source fragment.",
+  "version": "1.17.57",
+  "released": "2026-11-10",
+  "notes": "Extracted recovery snapshot retention, coverage, and rolling-snapshot lifecycle into an ordered source fragment.",
   "entry": "./index.html",
   "shell": [
     "./",

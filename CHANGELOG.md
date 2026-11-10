@@ -1,3 +1,8 @@
+## v1.17.57 — 2026-11-10
+
+- Extracted recovery snapshot retention, coverage, tiering, and rolling-snapshot lifecycle into a dedicated ordered JavaScript fragment.
+- Preserved snapshot retention tiers, atomic IndexedDB persistence, quota handling, and recovery behavior; expanded source-ownership regression checks.
+
 ## v1.17.56 — 2026-11-09
 
 - Extracted Settings group expansion persistence, localized search filtering, and disclosure/search event wiring into a dedicated ordered JavaScript fragment.
