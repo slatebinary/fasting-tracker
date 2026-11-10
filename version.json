@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.71",
+  "version": "1.17.72",
   "released": "2026-11-10",
-  "notes": "Extracted screen navigation, render scheduling, document return handling, and goal-change orchestration into a dedicated ordered JavaScript fragment; added source-ownership regression assertions.",
+  "notes": "Fixed per-canvas Timing chart click-fallback deduplication and added browser regression coverage for Duration Bars and Start-time Bars interactions.",
   "entry": "./index.html",
   "shell": [
     "./",
