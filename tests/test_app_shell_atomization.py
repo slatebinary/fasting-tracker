@@ -196,3 +196,9 @@ for owned_function in (
     assert f"function {owned_function}" in active_target_workflows, f"{owned_function} must remain in active-target workflow fragment"
     assert f"function {owned_function}" not in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in time/fast lifecycle fragment"
 assert "function startFast" in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
+
+assert "if (!data.activeStart || recoveryMode) return;" in active_target_workflows
+assert "parsed <= 0 || parsed > MAX_SAFE_GOAL_HOURS" in active_target_workflows
+assert "next >= LONG_FAST_NOTICE_HOURS && !longFastNoticeSeen()" in active_target_workflows
+assert "pendingLongFastScope = 'active';" in active_target_workflows
+assert "save({ invalidateDerived:false, dirtyViews:['fasting','settings'] })" in active_target_workflows
