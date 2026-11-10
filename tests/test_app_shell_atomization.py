@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 28, f"Expected twenty-eight ordered app fragments, found {len(parts)}"
+assert len(parts) == 29, f"Expected twenty-nine ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -183,5 +183,16 @@ for owned_function in (
     "deleteBackdateConflictAndStart",
 ):
     assert f"function {owned_function}" in backdate_workflows, f"{owned_function} must remain in backdate workflow fragment"
+    assert f"function {owned_function}" not in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in time/fast lifecycle fragment"
+assert "function startFast" in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
+
+
+active_target_workflows = (source / "js" / "16-active-target-workflows.js").read_text(encoding="utf-8")
+for owned_function in (
+    "showActiveTargetError", "syncActiveTargetPresetState",
+    "openActiveTargetModal", "closeActiveTargetModal",
+    "applyActiveGoalValue", "requestActiveGoalChange",
+):
+    assert f"function {owned_function}" in active_target_workflows, f"{owned_function} must remain in active-target workflow fragment"
     assert f"function {owned_function}" not in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in time/fast lifecycle fragment"
 assert "function startFast" in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
