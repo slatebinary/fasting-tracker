@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.59",
+  "version": "1.17.60",
   "released": "2026-11-10",
-  "notes": "Extracted app-version transition, migration outcome, and deployment-history state into a dedicated ordered JavaScript fragment.",
+  "notes": "Separated backup status, integrity envelope, JSON/CSV export, and share/download workflows into a dedicated ordered JavaScript fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
