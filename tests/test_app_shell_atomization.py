@@ -71,7 +71,11 @@ assert "function softDeleteWeightById" in weight_history and "function renderWei
 assert "function setWeightUnit" in weight_history and "function setTargetWeightFromInput" in weight_history
 assert "function renderWeight" not in main_stats and "function setWeightUnit" not in main_stats
 assert "function renderStatsChartData" not in main_stats
-backup_export = (source / "js" / "40-backup-export.js").read_text(encoding="utf-8")\nassert "function backupDatasetSignature" in backup_export and "async function exportBackup" in backup_export\nassert "async function exportFastingCsv" in backup_export and "async function exportWeightCsv" in backup_export\nassert "function backupDatasetSignature" not in (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")\nbackup_module = (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
+backup_export = (source / "js" / "40-backup-export.js").read_text(encoding="utf-8")
+assert "function backupDatasetSignature" in backup_export and "async function exportBackup" in backup_export
+assert "async function exportFastingCsv" in backup_export and "async function exportWeightCsv" in backup_export
+assert "function backupDatasetSignature" not in (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
+backup_module = (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
 assert "function hasBackupWorthyData" in backup_module
 assert "function normalizeBackupClockSkew" in backup_module and "function ensureBackupTrackingStarted" in backup_module
 assert "let backupDatasetSignatureCache = null" in backup_module
