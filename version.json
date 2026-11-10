@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.66",
+  "version": "1.17.67",
   "released": "2026-11-10",
-  "notes": "Extracted notification delivery, scheduling, permission handling, maintenance reminders, and notification settings into a dedicated ordered JavaScript fragment; preserved deduplication, runtime-state persistence, and permission safeguards.",
+  "notes": "Restored reliable click selection for Timing duration/start-time bars with a deduplicated click fallback alongside pointer selection; added interaction regression assertions.",
   "entry": "./index.html",
   "shell": [
     "./",
