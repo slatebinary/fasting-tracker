@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 31, f"Expected thirty-one ordered app fragments, found {len(parts)}"
+assert len(parts) == 32, f"Expected thirty-two ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -239,3 +239,17 @@ assert "if (notificationPermissionState() !== 'granted') return false;" in notif
 assert "recordNotificationDetail(kind" in notification_runtime
 assert "saveNotificationRuntimeState()" in notification_runtime
 assert "function updateTimer" in (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
+
+
+app_update_workflows = (source / "js" / "44-app-update-workflows.js").read_text(encoding="utf-8")
+for owned_function in (
+    "openUpdateModal", "closeUpdateModal", "compareVersions", "setUpdateUI",
+    "saveUpdateStatusMeta", "loadUpdateStatusMeta", "fetchLiveReleaseStatus",
+    "checkForUpdates", "getCurrentServiceWorkerController",
+    "requestShellRefresh", "installUpdate",
+):
+    assert f"function {owned_function}" in app_update_workflows or f"async function {owned_function}" in app_update_workflows, f"{owned_function} must remain in app-update workflow fragment"
+    assert f"function {owned_function}" not in (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in backup/recovery fragment"
+assert "async function installUpdate" in app_update_workflows
+assert "async function requestShellRefresh" in app_update_workflows
+assert "function renderStorageHealth" in (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8")
