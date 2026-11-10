@@ -2,6 +2,7 @@
 
 - Extracted duration formatting, timezone-aware calendar keys, interval aggregation, daily fasting totals, and week-boundary helpers into a dedicated ordered JavaScript fragment.
 - Preserved DST-aware date boundaries, stored calendar-day totals, active-fast interval aggregation, and existing week grouping; expanded source-ownership regression checks.
+- Made GitHub Pages artifact names unique per workflow attempt and added a regression test to prevent duplicate-artifact failures during deployment retries.
 
 ## v1.17.64 — 2026-11-10
 
