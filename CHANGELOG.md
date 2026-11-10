@@ -1,3 +1,8 @@
+## v1.17.63 — 2026-11-10
+
+- Extracted backdated-fast creation, overlap detection, conflict resolution, and modal handling into a dedicated ordered JavaScript fragment.
+- Preserved the existing validation, overlap safeguards, conflict edit/delete confirmation, rollback-on-save-failure, and fast-start behavior; expanded source-ownership regression checks.
+
 ## v1.17.62 — 2026-11-10
 
 - Extracted legacy data normalization, compatibility migration, and imported-data validation into a dedicated ordered JavaScript fragment.
