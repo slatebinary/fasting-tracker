@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.58",
+  "version": "1.17.59",
   "released": "2026-11-10",
-  "notes": "Extracted fasting history filters, CSV export, bulk actions, deletion audit, restore, and history rendering into a dedicated ordered JavaScript fragment.",
+  "notes": "Extracted app-version transition, migration outcome, and deployment-history state into a dedicated ordered JavaScript fragment.",
   "entry": "./index.html",
   "shell": [
     "./",
