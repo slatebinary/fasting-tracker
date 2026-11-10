@@ -1,3 +1,8 @@
+## v1.17.72 — 2026-11-10
+
+- Fixed Timing chart click-fallback deduplication by tracking recent pointer activation per canvas, preventing one chart's pointer event from suppressing a click on another chart and allowing the first click after load.
+- Added browser-level regression coverage for Duration Bars pointer selection and Start-time Bars click-only fallback, including detail-panel updates.
+
 ## v1.17.71 — 2026-11-10
 
 - Extracted screen activation, render scheduling, preference refresh, document return navigation, keyboard navigation, and goal-change orchestration into a dedicated ordered JavaScript fragment.

@@ -10,15 +10,22 @@
     if(selectedGeometry){const valueText=`${formatNumber(selectedGeometry.value,0,percent||integerScale?0:1)}${valueSuffix}`;drawChartCallout(ctx,{x:selectedGeometry.x,y:selectedGeometry.y,primary:valueText,secondary:selectedGeometry.item.label||selectedGeometry.item.key,canvasW:cssW,canvasH:cssH,accent,card,textColor,muted});}
     renderChartDetailForMode();
   }
-  let genericChartPointerStamp=0;
-  function handleGenericChartPointer(event){genericChartPointerStamp=performance.now();selectGenericChartItem(event);}
+  // Track pointer activation per canvas. A single global timestamp can
+  // incorrectly suppress a completed-click fallback on another chart, and a
+  // zero-initialized timestamp can suppress the first click shortly after load.
+  const genericChartPointerStamps=new WeakMap();
+  function handleGenericChartPointer(event){
+    if(event.button!=null&&event.button!==0)return;
+    genericChartPointerStamps.set(event.currentTarget,performance.now());
+    selectGenericChartItem(event);
+  }
   function handleGenericChartClick(event){
     // Pointer-capable browsers already select on pointerdown. A completed click
-    // is a fallback for touch/browser implementations that omit pointerdown;
-    // suppress its duplicate after pointer selection. Keyboard clicks remain
-    // available to the existing chart-data action.
-    if(event.detail!==0&&performance.now()-genericChartPointerStamp<700)return;
+    // remains the fallback for touch/browser implementations that omit it.
+    // Deduplicate only against a recent pointer event on this same canvas.
     if(event.detail===0)return;
+    const canvas=event.currentTarget,stamp=genericChartPointerStamps.get(canvas);
+    if(stamp!=null&&performance.now()-stamp<700){genericChartPointerStamps.delete(canvas);return;}
     selectGenericChartItem(event);
   }
   function selectGenericChartItem(event){const c=event.currentTarget,rect=c.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;const hit=genericChartHitLayout.find(h=>h.canvasId===c.id&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);if(!hit)return;genericChartSelectedKey=hit.item.key;statsDetailOverride=hit.detailBuilder?hit.detailBuilder(hit.item):null;renderStatsVisualizationMode(statsVizMode);renderStatsChartData();}
