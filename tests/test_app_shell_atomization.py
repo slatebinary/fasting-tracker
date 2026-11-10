@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 23, f"Expected twenty-three ordered app fragments, found {len(parts)}"
+assert len(parts) == 24, f"Expected twenty-four ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -141,7 +141,11 @@ assert "function settingsGroups" not in settings_startup and "function applySett
 recovery_snapshots = (source / "js" / "11-recovery-snapshots.js").read_text(encoding="utf-8")
 assert "function snapshotCoverageStats" in recovery_snapshots and "function snapshotTierKeys" in recovery_snapshots
 assert "function createInternalSnapshotAsync" in recovery_snapshots and "function scheduleRollingSnapshot" in recovery_snapshots
+migration_state = (source / "js" / "12-app-migration-state.js").read_text(encoding="utf-8")
+assert "function beginPendingMigration" in migration_state and "function finalizePendingMigrationSuccess" in migration_state
+assert "function markLastKnownGood" in migration_state and "function deploymentHistoryMeta" in migration_state
 storage_recovery = (source / "js" / "10-storage-and-recovery.js").read_text(encoding="utf-8")
+assert "function beginPendingMigration" not in storage_recovery and "function markLastKnownGood" not in storage_recovery
 assert "function snapshotCoverageStats" not in storage_recovery and "function createInternalSnapshotAsync" not in storage_recovery
 
 fast_history = (source / "js" / "21-fast-history-management.js").read_text(encoding="utf-8")

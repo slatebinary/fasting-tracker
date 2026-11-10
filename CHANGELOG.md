@@ -1,3 +1,8 @@
+## v1.17.59 — 2026-11-10
+
+- Extracted app-version transition, migration outcome, last-known-good release, and deployment-history metadata helpers into a dedicated ordered JavaScript fragment.
+- Preserved migration metadata keys, update success/failure handling, deployment-history limits, and timestamps; expanded source-atomization regression assertions.
+
 ## v1.17.58 — 2026-11-10
 
 - Extracted fasting-history filtering, CSV export, bulk actions, deletion audit, restore/purge operations, and history rendering into a dedicated ordered JavaScript fragment.
