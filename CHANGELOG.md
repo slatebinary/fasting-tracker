@@ -1,3 +1,8 @@
+## v1.17.60 — 2026-11-10
+
+- Extracted backup freshness/status, integrity-envelope creation and verification, JSON/CSV export, and share/download workflows into a dedicated ordered JavaScript fragment.
+- Kept update/deployment checks, service-worker repair, diagnostics, recovery, and restore workflows in the update/recovery fragment; expanded source-ownership regression checks.
+
 ## v1.17.59 — 2026-11-10
 
 - Extracted app-version transition, migration outcome, last-known-good release, and deployment-history metadata helpers into a dedicated ordered JavaScript fragment.
