@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.61",
+  "version": "1.17.62",
   "released": "2026-11-10",
-  "notes": "Extracted notification preference normalization, runtime-state persistence, and notification-detail history/rendering into a dedicated ordered JavaScript fragment.",
+  "notes": "Extracted legacy data normalization, compatibility migration, and imported-data validation into a dedicated ordered JavaScript fragment; preserved storage and import safeguards.",
   "entry": "./index.html",
   "shell": [
     "./",

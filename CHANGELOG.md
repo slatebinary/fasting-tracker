@@ -1,3 +1,8 @@
+## v1.17.62 — 2026-11-10
+
+- Extracted legacy data normalization, compatibility migration, and imported-data validation into a dedicated ordered JavaScript fragment.
+- Preserved existing data-version handling, record/weight validation, duplicate and overlap checks, recovery compatibility, and import safeguards; expanded source-ownership regression checks.
+
 ## v1.17.61 — 2026-11-10
 
 - Extracted notification preference normalization, runtime-state persistence, notification-detail history, and detail rendering into a dedicated ordered JavaScript fragment.
