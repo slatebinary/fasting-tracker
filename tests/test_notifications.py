@@ -105,6 +105,15 @@ with sync_playwright() as p:
     page.locator('#notificationMasterToggle').click()  # off
     page.locator('#notificationMasterToggle').click()  # on; rechecks due weigh-in
     page.wait_for_function("document.querySelectorAll('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]').length === 1",timeout=5000)
+    # Several foreground notifications arriving together must not produce a
+    # second device reminder for the same overdue weigh-in.
+    page.evaluate("""() => {
+      for (let i=0;i<6;i++) document.dispatchEvent(new Event('visibilitychange'));
+    }""")
+    page.wait_for_timeout(250)
+    weigh_notifications=page.evaluate("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-weigh-')).length")
+    if weigh_notifications != 1:
+        print('FAIL: concurrent foreground checks produced duplicate weigh-in notifications:',weigh_notifications); sys.exit(1)
     weigh_card=page.locator('#notificationDetailStack [data-notification-detail-id^="fasting-weigh-"]')
     if weigh_card.locator('.notificationDetailAddWeight').count()!=1 or weigh_card.locator('.notificationDetailDismiss').count()!=1:
         print('FAIL: weigh-in reminder must offer both Add and Dismiss'); sys.exit(1)
