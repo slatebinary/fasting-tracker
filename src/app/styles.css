@@ -687,6 +687,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 
     .notificationDetailSnoozeDuration { min-height:40px; max-width:130px; }
     @media (max-width:520px) {
-      .notificationDetailHeader { flex-wrap:wrap; }
-      .notificationDetailActions { flex:1 1 100%; justify-content:flex-start; }
+      .notificationDetailHeader { display:block; }
+      .notificationDetailActions { width:100%; margin-top:8px; flex:0 0 auto; justify-content:flex-start; }
+      .notificationDetailActions select { min-height:40px; max-width:130px; }
     }
