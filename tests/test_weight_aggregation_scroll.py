@@ -174,8 +174,17 @@ with sync_playwright() as p:
 
     # Raw measurements are still present in the editable history list rather
     # than being replaced by aggregates.
-    if page.locator('#weightHistoryList .historyRow').count() < 1 or page.locator('#weightHistoryList .loadMoreWrap').count() != 1:
-        print('FAIL: individual weight history is not retained'); sys.exit(1)
+    history_rows = page.locator('#weightHistoryList .historyRow')
+    if history_rows.count() != 7:
+        print('FAIL: compact weight history should initially show seven newest measurements', history_rows.count()); sys.exit(1)
+    history_more = page.locator('#weightHistoryMoreBtn')
+    history_range = page.locator('#weightHistoryRange')
+    history_more.click()
+    if not history_range.is_visible():
+        print('FAIL: older-history range selector did not open'); sys.exit(1)
+    history_range.select_option('all')
+    if history_rows.count() != 800:
+        print('FAIL: all individual weight measurements are not available through All history', history_rows.count()); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()

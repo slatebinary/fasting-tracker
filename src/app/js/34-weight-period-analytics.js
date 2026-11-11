@@ -126,7 +126,7 @@
     return ({week:7,month:30,quarter:90,halfyear:180,year:365})[mode] || 0;
   }
   function buildWeightAggregateBuckets(asc = null, mode = weightPeriodMode) {
-    const key = `${Number(data.revision)||0}|${mode}`;
+    const key = `${Number(data.revision)||0}|${mode}|${weightChartStyle}`;
     if (weightAggregateCache.has(key)) return weightAggregateCache.get(key);
     if (weightAggregateCache.size > 10) weightAggregateCache.clear();
     const entries = Array.isArray(asc) ? asc : sortedWeightsAsc();
@@ -137,6 +137,10 @@
     // Calendar-period aggregates remain available for context. The plotted
     // series samples trailing rolling averages only on dates with real entries.
     const calendarBuckets = buildWeightCalendarBuckets(entries,mode);
+    if (weightChartStyle === 'fixed') {
+      const fixed = [...calendarBuckets.values()].map(bucket => ({...bucket,key:bucket.key,calendarDay:bucket.key,rollingWindowDays:0}));
+      weightAggregateCache.set(key,fixed); return fixed;
+    }
     const windowDays = weightRollingWindowDays(mode);
     const ordered = entries.map(entry => {
       const day = weightEntryCalendarDay(entry), match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
@@ -171,6 +175,16 @@
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(endDay));
     if (!match) return weightPeriodBounds(mode);
     const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+    if (weightChartStyle === 'fixed' && mode !== 'daily') {
+      const start = new Date(year, month - 1, day);
+      const end = new Date(start);
+      if (mode === 'week') end.setDate(end.getDate()+6);
+      else if (mode === 'month') end.setMonth(end.getMonth()+1,0);
+      else if (mode === 'quarter') end.setMonth(end.getMonth()+3,0);
+      else if (mode === 'halfyear') end.setMonth(end.getMonth()+6,0);
+      else end.setFullYear(end.getFullYear()+1,0,0);
+      end.setHours(23,59,59,999); start.setHours(0,0,0,0); return {start,end};
+    }
     const end = new Date(year, month - 1, day, 23, 59, 59, 999);
     const days = mode === 'daily' ? 30 : weightRollingWindowDays(mode);
     const start = new Date(year, month - 1, day);
@@ -181,6 +195,7 @@
 
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
     if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'daily';
+    document.querySelectorAll('#weightChartStyleSwitcher [data-weight-style]').forEach(btn=>{const active=btn.dataset.weightStyle===weightChartStyle;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
     document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => {
       const active = btn.dataset.weightPeriod === weightPeriodMode;
       btn.classList.toggle('active', active);

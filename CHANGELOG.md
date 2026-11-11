@@ -1,3 +1,11 @@
+## v1.17.80 — 2026-11-11
+
+- Add clearly visible Rolling / Fixed periods controls to the Weight trend card. Rolling uses trailing averages; Fixed uses calendar-aligned weekly, monthly, quarterly, half-year and yearly buckets.
+- Persist the selected chart mode across app launches.
+- Change the default weigh-in reminder snooze from 1 day to 1 hour; the fasting reminder default remains 1 hour.
+- Add English, Bulgarian and Spanish labels and regression coverage for mode selection and the reminder default.
+- Limit the Weight history list to the seven newest measurements by default; add a compact Older/More control with 1-month, 6-month, 1-year and all-history ranges, preserving existing filters and bulk-selection behaviour.
+
 ## v1.17.79 — 2026-11-11
 
 - Make the Weight period date range, measurement count and summary metrics follow the selected chart date, including older/newer navigation and chart scrolling, rather than remaining anchored to the current date.

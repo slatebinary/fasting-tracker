@@ -1097,5 +1097,17 @@
   "notifications.weightSnoozeDefault": "Отлагане на напомнянето за тегло по подразбиране",
   "notifications.weightSnoozeHelp": "Интервалът по подразбиране при отлагане на напомняне за измерване на теглото.",
   "notifications.fastingSnoozeDefault": "Отлагане на напомнянията за гладуване по подразбиране",
-  "notifications.fastingSnoozeHelp": "Интервалът по подразбиране при отлагане на напомняне за цел, безопасност или цикъл на гладуване."
+  "notifications.fastingSnoozeHelp": "Интервалът по подразбиране при отлагане на напомняне за цел, безопасност или цикъл на гладуване.",
+  "weight.modeRolling": "Плъзгащ прозорец",
+  "weight.modeFixed": "Фиксирани периоди",
+  "weight.historyMore": "Още…",
+  "weight.historyClose": "Затвори",
+  "weight.historyRecent": "Последни 7",
+  "weight.historyRangeAria": "Период за по-старите измервания на теглото",
+  "weight.historyRangePrompt": "Период",
+  "weight.historyRange.month": "1 м.",
+  "weight.historyRange.halfyear": "6 м.",
+  "weight.historyRange.year": "1 г.",
+  "weight.historyRange.all": "Всички",
+  "weight.historyRangeEmpty": "Няма измервания за този период."
 }

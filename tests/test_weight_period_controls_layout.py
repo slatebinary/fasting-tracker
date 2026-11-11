@@ -2,13 +2,14 @@
 """Regression: weight period controls sit with the chart and remain fully visible."""
 # Check both the visual grouping and responsive accessibility behavior.
 import json
+import time
 from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
-DATA = build_data(80)
+DATA = build_data(80, base=int(time.time() * 1000))
 
 with sync_playwright() as p:
     browser = p.chromium.launch(
@@ -41,6 +42,61 @@ with sync_playwright() as p:
             "document.querySelector('#weight.screen')?.classList.contains('active')",
             timeout=5000,
         )
+
+        # The list starts with the seven newest measurements. Older history
+        # is revealed through a compact button and a period dropdown.
+        history_rows = page.locator("#weightHistoryList .historyRow")
+        page.wait_for_function(
+            "document.querySelectorAll('#weightHistoryList .historyRow').length === 7",
+            timeout=10000,
+        )
+        assert history_rows.count() == 7
+        history_button = page.locator("#weightHistoryMoreBtn")
+        history_range = page.locator("#weightHistoryRange")
+        assert history_button.is_visible()
+        assert history_button.inner_text() == "More…"
+        assert history_range.is_hidden()
+        history_button.click()
+        assert history_range.is_visible()
+        assert history_button.inner_text() == "Close"
+        history_range.select_option("month")
+        assert 27 <= history_rows.count() <= 32, history_rows.count()
+        assert history_button.inner_text() == "Last 7"
+        history_range.select_option("halfyear")
+        assert history_rows.count() == 80
+        history_range.select_option("year")
+        assert history_rows.count() == 80
+        history_range.select_option("all")
+        assert history_rows.count() == 80
+        history_button.click()
+        assert history_rows.count() == 7
+        assert history_range.is_hidden()
+        assert history_button.inner_text() == "More…"
+
+        style_switcher=page.locator("#weightChartStyleSwitcher")
+        assert style_switcher.is_visible(), "Rolling/fixed mode buttons must be visible above the weight period selector"
+        assert style_switcher.locator("button").count()==2
+        assert style_switcher.locator('[data-weight-style="rolling"]').get_attribute("aria-pressed")=="true"
+        style_switcher.locator('[data-weight-style="fixed"]').click()
+        assert style_switcher.locator('[data-weight-style="fixed"]').get_attribute("aria-pressed")=="true"
+        assert page.evaluate("localStorage.getItem('fastingTracker.weightChartStyle')")=="fixed"
+        style_switcher.locator('[data-weight-style="rolling"]').click()
+
+        # The chart-data disclosure must keep its label, ARIA state and actual
+        # visibility synchronized in both directions.
+        data_button = page.locator("#weightChartDataBtn")
+        data_box = page.locator("#weightChartData")
+        assert data_button.get_attribute("aria-expanded") == "false"
+        assert data_box.is_hidden()
+        assert data_button.inner_text() == "Show chart data"
+        data_button.click()
+        assert data_button.get_attribute("aria-expanded") == "true"
+        assert data_box.is_visible(), "Show chart data must reveal the chart data"
+        assert data_button.inner_text() == "Hide chart data"
+        data_button.click()
+        assert data_button.get_attribute("aria-expanded") == "false"
+        assert data_box.is_hidden(), "Hide chart data must conceal the chart data"
+        assert data_button.inner_text() == "Show chart data"
 
         selector = page.locator("#weightPeriodSwitcher")
         assert selector.is_visible(), "Period selector must be visible"

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.79",
+  "version": "1.17.80",
   "released": "2026-11-11",
-  "notes": "Make weight period summaries follow the selected rolling chart date; add per-reminder snooze durations with independent weight and fasting defaults and automatic reappearance.",
+  "notes": "Add visible rolling/fixed weight chart modes and set weight reminder snooze default to 1 hour.",
   "entry": "./index.html",
   "shell": [
     "./",

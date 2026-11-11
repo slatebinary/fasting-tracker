@@ -131,10 +131,12 @@
   for (const id of ['entryStart','entryEnd','entryGoal']) el(id)?.addEventListener('change', refreshEntryStopReasonVisibility);
   el('entryModal').addEventListener('click', e => { if (e.target === el('entryModal')) closeEntryModal(); });
   bindResponsiveAction(el('addWeightBtn'), () => openWeightModal());
-  for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightVisibleCount=HISTORY_PAGE_SIZE;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
+  for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightHistoryRange='recent7';weightHistoryMenuOpen=false;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
+  el('weightHistoryMoreBtn')?.addEventListener('click',()=>{if(weightHistoryRange!=='recent7'){weightHistoryRange='recent7';weightHistoryMenuOpen=false;}else{weightHistoryMenuOpen=!weightHistoryMenuOpen;}selectedWeightIds.clear();renderWeight();});
+  el('weightHistoryRange')?.addEventListener('change',()=>{const value=el('weightHistoryRange').value;if(!['month','halfyear','year','all'].includes(value))return;weightHistoryRange=value;weightHistoryMenuOpen=true;selectedWeightIds.clear();renderWeight();});
   el('weightClearFiltersBtn')?.addEventListener('click',clearWeightFilters);
   el('weightBulkModeBtn')?.addEventListener('click',()=>{weightBulkMode=!weightBulkMode;if(!weightBulkMode){selectedWeightIds.clear();selectedDeletedWeightIds.clear();}renderWeight();});
-  el('weightSelectVisibleBtn')?.addEventListener('click',()=>{sortedWeightsAsc().slice().reverse().filter(w=>weightPassesFilter(w)).slice(0,weightVisibleCount).forEach(w=>selectedWeightIds.add(w.id));renderWeight();});
+  el('weightSelectVisibleBtn')?.addEventListener('click',()=>{visibleWeightHistoryRecords().forEach(w=>selectedWeightIds.add(w.id));renderWeight();});
   el('weightBulkExportBtn')?.addEventListener('click',()=>exportWeightRecordsCsv(data.weights.filter(w=>selectedWeightIds.has(w.id))));
   el('weightBulkDeleteBtn')?.addEventListener('click',()=>bulkDeleteWeights());
   el('deletedWeightSelectVisibleBtn')?.addEventListener('click',()=>{data.deletedWeights.filter(w=>weightPassesFilter(w)).slice(0,HISTORY_PAGE_SIZE).forEach(w=>selectedDeletedWeightIds.add(w.id));renderWeight();});
@@ -146,6 +148,7 @@
   el('weightModal').addEventListener('click', e => { if (e.target === el('weightModal')) closeWeightModal(); });
   el('unitKgBtn').addEventListener('click', () => setWeightUnit('kg'));
   el('unitLbBtn').addEventListener('click', () => setWeightUnit('lb'));
+  document.querySelectorAll('#weightChartStyleSwitcher [data-weight-style]').forEach(btn => bindResponsiveAction(btn, () => setWeightChartStyle(btn.dataset.weightStyle)));
   document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => bindResponsiveAction(btn, () => setWeightPeriodMode(btn.dataset.weightPeriod)));
   el('weightTargetInput').addEventListener('change', setTargetWeightFromInput);
   el('weightTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') { el('weightTargetInput').blur(); setTargetWeightFromInput(); } });
@@ -309,7 +312,7 @@
   el('weightChartRange').addEventListener('input',()=>navigateWeightChartToIndex(Number(el('weightChartRange').value)));
   el('weightChartOlderBtn').addEventListener('click',()=>shiftWeightChartViewport(-1));
   el('weightChartNewerBtn').addEventListener('click',()=>shiftWeightChartViewport(1));
-  el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
+  el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');const expanded=btn.getAttribute('aria-expanded')!=='true';box.hidden=!expanded;btn.setAttribute('aria-expanded',String(expanded));btn.textContent=expanded?t('a11y.hideChartData'):t('a11y.showChartData');if(expanded){renderWeightChartData();box.setAttribute('tabindex','0');}});
   el('weightChart').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(!weightChartBuckets.length)return;e.preventDefault();const valid=weightChartBuckets.filter(b=>b.count>0),current=valid.findIndex(b=>b.key===weightChartSelectedId),base=current<0?(e.key==='ArrowRight'?valid.length-1:0):current,next=Math.max(0,Math.min(valid.length-1,base+(current<0?0:(e.key==='ArrowRight'?1:-1))));const bucket=valid[next];if(bucket){weightChartSelectedId=bucket.key;const visible=weightChartHitPoints.some(p=>p.id===bucket.key);if(!visible){const scroller=el('weightChartScroller');const index=weightChartBuckets.findIndex(b=>b.key===bucket.key);const spacing=weightChartPointSpacing();scroller.scrollLeft=Math.max(0,16+index*spacing-scroller.clientWidth/2);}drawWeightChart();}return;}if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
   el('statsHistoryOlderBtn')?.addEventListener('click',()=>shiftStatsHistory(-1));
   el('statsHistoryNewerBtn')?.addEventListener('click',()=>shiftStatsHistory(1));

@@ -489,6 +489,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightChartNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
     .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
+    .weightChartStyleSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; max-width:360px; margin:2px 0 8px; }
+    .weightChartStyleSwitcher button { min-width:0; width:100%; padding:9px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; }
+    .weightChartStyleSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
     .weightPeriodSwitcher { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:7px; overflow:visible; padding:4px 0 8px; margin:2px 0 10px; }
     .weightPeriodSwitcher button { min-width:0; width:100%; padding:10px 7px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; line-height:1.1; white-space:nowrap; }
     @media (max-width:520px) { .weightPeriodSwitcher { grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -556,6 +559,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .weightValue { font-variant-numeric: tabular-nums; }
     .weightHistory { margin-top: 14px; }
+    .weightHistoryControls { display:flex; align-items:center; gap:8px; margin:0 0 10px; }
+    .weightHistoryControls select { min-width:88px; max-width:140px; }
     .weightTargetRow { flex-wrap:wrap; align-items:center; }
     .weightTargetRow > div:first-child { flex:1 1 160px; min-width:0; }
     .weightTargetWrap { display:flex; align-items:center; gap:7px; flex:0 0 auto; min-width:max-content; }

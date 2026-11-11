@@ -29,7 +29,7 @@
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 38;
+  const I18N_SOURCE_REVISION = 39;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
@@ -184,7 +184,8 @@
   let currentStreakCache = null;
   let historyVisibleCount = HISTORY_PAGE_SIZE;
   let deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
-  let weightVisibleCount = HISTORY_PAGE_SIZE;
+  let weightHistoryRange = 'recent7';
+  let weightHistoryMenuOpen = false;
   let fastActionLocked = false;
   let suppressFastToggleUntil = 0;
   let pendingStopUndo = null;
@@ -203,6 +204,7 @@
   let weightAggregateCache = new Map();
   let weightChartScaleCache = null;
   let weightPeriodMode = 'daily';
+  let weightChartStyle = (()=>{try{return localStorage.getItem('fastingTracker.weightChartStyle')==='fixed'?'fixed':'rolling';}catch{return 'rolling';}})();
   let chartInteractiveLayout = [];
   let timelineChartGeometry = null;
   let timelineChartDays = [];
