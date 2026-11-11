@@ -104,10 +104,11 @@
     const active = notificationDetailItems();
     for (const item of due) {
       if (active.some(entry => entry.id === item.id)) continue;
+      const snoozedUntilMs = validDate(item.snoozedUntil)?.getTime() || nowMs;
       const restored = {id:String(item.id),kind:String(item.kind),screen:APP_SCREENS.includes(item.screen)?item.screen:'fasting',createdAt:new Date(nowMs).toISOString(),params:item.params&&typeof item.params==='object'?item.params:{}};
       active.unshift(restored);
       const copy = notificationDetailCopy(restored.kind, restored.params);
-      void sendDeviceNotification(restored.kind, copy.title, copy.body, {screen:restored.screen,tag:`fasting-snooze-${restored.id}-${until.getTime()}`,detailParams:restored.params,recordDetail:false});
+      void sendDeviceNotification(restored.kind, copy.title, copy.body, {screen:restored.screen,tag:`fasting-snooze-${restored.id}-${snoozedUntilMs}`,detailParams:restored.params,recordDetail:false});
     }
     notificationRuntimeState.snoozedDetails = remaining;
     notificationRuntimeState.details = active.slice(0, NOTIFICATION_DETAIL_LIMIT);
