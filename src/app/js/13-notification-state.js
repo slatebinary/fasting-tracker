@@ -154,18 +154,21 @@
         const add=document.createElement('button'); add.type='button'; add.className='primary notificationDetailAddWeight'; add.textContent=t('notifications.addWeightAction'); add.setAttribute('aria-label',t('notifications.addWeightAria')); add.addEventListener('click',()=>{ openWeightModal(); dismissNotificationDetail(item.id); });
         actions.append(add);
       }
+      const dismiss=document.createElement('button'); dismiss.type='button'; dismiss.className='secondary notificationDetailDismiss'; dismiss.textContent=t('common.dismiss'); dismiss.setAttribute('aria-label',t('notifications.detailsDismissAria',{title:copy.title})); dismiss.addEventListener('click',()=>dismissNotificationDetail(item.id));
+      actions.append(dismiss);
+      header.append(heading,actions);
+      const body=document.createElement('div'); body.className='notificationDetailBody'; body.textContent=copy.body;
+      card.append(header,body);
       if (notificationSnoozeCategory(item.kind)) {
+        const snoozeRow=document.createElement('div'); snoozeRow.className='notificationDetailSnoozeRow';
         const duration=document.createElement('select'); duration.className='notificationDetailSnoozeDuration'; duration.setAttribute('aria-label',t('notifications.snoozeDurationAria',{title:copy.title}));
         for (const minutes of NOTIFICATION_SNOOZE_MINUTES) { const option=document.createElement('option'); option.value=String(minutes); option.textContent=notificationSnoozeDurationLabel(minutes); duration.append(option); }
         duration.value=String(notificationSnoozeDefaultMinutes(item.kind));
         const snooze=document.createElement('button'); snooze.type='button'; snooze.className='secondary notificationDetailSnooze'; snooze.textContent=t('notifications.snoozeAction'); snooze.setAttribute('aria-label',t('notifications.detailsSnoozeAria',{title:copy.title}));
         snooze.addEventListener('click',()=>snoozeNotificationDetail(item.id,duration.value));
-        actions.append(duration,snooze);
+        snoozeRow.append(duration,snooze);
+        card.append(snoozeRow);
       }
-      const dismiss=document.createElement('button'); dismiss.type='button'; dismiss.className='secondary notificationDetailDismiss'; dismiss.textContent=t('common.dismiss'); dismiss.setAttribute('aria-label',t('notifications.detailsDismissAria',{title:copy.title})); dismiss.addEventListener('click',()=>dismissNotificationDetail(item.id));
-      actions.append(dismiss);
-      header.append(heading,actions);
-      const body=document.createElement('div'); body.className='notificationDetailBody'; body.textContent=copy.body;
-      card.append(header,body); stack.append(card);
+      stack.append(card);
     }
   }
