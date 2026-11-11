@@ -74,6 +74,7 @@
   }
   function weightBucketLongLabel(bucket, mode = weightPeriodMode) {
     if (mode === 'daily' && bucket?.entry) return localDateTimeLabel(bucket.entry.when, bucket.entry.timeZone);
+    if (bucket?.rollingWindowDays && bucket.calendarDay) return weightBucketDate(bucket.calendarDay).toLocaleDateString(currentLocale(),{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
     const d = weightBucketDate(bucket.key);
     const locale = currentLocale();
     const year = d.getUTCFullYear(), month = d.getUTCMonth();
@@ -84,6 +85,7 @@
     return String(year);
   }
   function weightBucketShortLabel(bucket, mode = weightPeriodMode) {
+    if (bucket?.rollingWindowDays && bucket.calendarDay) return weightBucketDate(bucket.calendarDay).toLocaleDateString(currentLocale(),{day:'numeric',month:'short',timeZone:'UTC'});
     if (mode === 'daily' && bucket?.entry) {
       const d = new Date(bucket.entry.when), tz = bucket.entry.timeZone || currentTimeZone();
       return d.toLocaleDateString(currentLocale(), {day:'numeric',month:'short',year:'2-digit',timeZone:tz});
@@ -104,45 +106,59 @@
     }
     return weightBucketLongLabel(bucket, mode);
   }
+  function buildWeightCalendarBuckets(entries, mode) {
+    const map = new Map();
+    for (const entry of entries) {
+      const bucketKey = weightBucketKeyForDay(weightEntryCalendarDay(entry), mode);
+      if (!bucketKey) continue;
+      let bucket = map.get(bucketKey);
+      if (!bucket) bucket = {key:bucketKey,count:0,sumKg:0,averageKg:null,lowKg:entry.kg,highKg:entry.kg,first:entry,latest:entry};
+      bucket.count += 1; bucket.sumKg += entry.kg;
+      bucket.lowKg = Math.min(bucket.lowKg,entry.kg); bucket.highKg = Math.max(bucket.highKg,entry.kg);
+      if (String(entry.when) < String(bucket.first.when)) bucket.first = entry;
+      if (String(entry.when) > String(bucket.latest.when)) bucket.latest = entry;
+      map.set(bucketKey,bucket);
+    }
+    for (const bucket of map.values()) bucket.averageKg = bucket.sumKg / bucket.count;
+    return map;
+  }
+  function weightRollingWindowDays(mode) {
+    return ({week:7,month:30,quarter:90,halfyear:180,year:365})[mode] || 0;
+  }
   function buildWeightAggregateBuckets(asc = null, mode = weightPeriodMode) {
     const key = `${Number(data.revision)||0}|${mode}`;
     if (weightAggregateCache.has(key)) return weightAggregateCache.get(key);
     if (weightAggregateCache.size > 10) weightAggregateCache.clear();
     const entries = Array.isArray(asc) ? asc : sortedWeightsAsc();
     if (mode === 'daily') {
-      const result = entries.map(entry => ({
-        key:`entry:${entry.id}`, count:1, sumKg:entry.kg, averageKg:entry.kg,
-        lowKg:entry.kg, highKg:entry.kg, first:entry, latest:entry, entry
-      }));
-      weightAggregateCache.set(key, result);
-      return result;
+      const result = entries.map(entry => ({key:`entry:${entry.id}`,count:1,sumKg:entry.kg,averageKg:entry.kg,lowKg:entry.kg,highKg:entry.kg,first:entry,latest:entry,entry}));
+      weightAggregateCache.set(key,result); return result;
     }
-    const map = new Map();
-    for (const entry of entries) {
-      const bucketKey = weightBucketKeyForDay(weightEntryCalendarDay(entry), mode);
-      if (!bucketKey) continue;
-      let bucket = map.get(bucketKey);
-      if (!bucket) {
-        bucket = {key:bucketKey,count:0,sumKg:0,averageKg:null,lowKg:entry.kg,highKg:entry.kg,first:entry,latest:entry};
-        map.set(bucketKey,bucket);
+    // Calendar-period aggregates remain available for context. The plotted
+    // series samples trailing rolling averages only on dates with real entries.
+    const calendarBuckets = buildWeightCalendarBuckets(entries,mode);
+    const windowDays = weightRollingWindowDays(mode);
+    const ordered = entries.map(entry => {
+      const day = weightEntryCalendarDay(entry), match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
+      if (!match) return null;
+      return {entry,day,dayNumber:Math.floor(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))/86400000)};
+    }).filter(Boolean).sort((x,y)=>x.dayNumber-y.dayNumber||String(x.entry.when).localeCompare(String(y.entry.when)));
+    const days = [...new Set(ordered.map(item=>item.dayNumber))], result = [];
+    let end=0,start=0;
+    for (const dayNumber of days) {
+      while(end<ordered.length&&ordered[end].dayNumber<=dayNumber) end++;
+      const firstDay=dayNumber-windowDays+1;
+      while(start<end&&ordered[start].dayNumber<firstDay) start++;
+      let sumKg=0,lowKg=Infinity,highKg=-Infinity,firstEntry=null,latestEntry=null;
+      for(let i=start;i<end;i++){
+        const entry=ordered[i].entry;sumKg+=entry.kg;lowKg=Math.min(lowKg,entry.kg);highKg=Math.max(highKg,entry.kg);
+        if(!firstEntry||String(entry.when)<String(firstEntry.when))firstEntry=entry;
+        if(!latestEntry||String(entry.when)>String(latestEntry.when))latestEntry=entry;
       }
-      bucket.count += 1;
-      bucket.sumKg += entry.kg;
-      bucket.lowKg = Math.min(bucket.lowKg, entry.kg);
-      bucket.highKg = Math.max(bucket.highKg, entry.kg);
-      if (String(entry.when) < String(bucket.first.when)) bucket.first = entry;
-      if (String(entry.when) > String(bucket.latest.when)) bucket.latest = entry;
+      const calendarDay=ordered[end-1].day,calendarKey=weightBucketKeyForDay(calendarDay,mode),calendarBucket=calendarBuckets.get(calendarKey)||null,count=end-start;
+      result.push({key:`rolling:${mode}:${calendarDay}`,calendarDay,rollingWindowDays:windowDays,windowStartDay:new Date(firstDay*86400000).toISOString().slice(0,10),windowEndDay:calendarDay,count,sumKg,averageKg:count?sumKg/count:null,lowKg:Number.isFinite(lowKg)?lowKg:null,highKg:Number.isFinite(highKg)?highKg:null,first:firstEntry,latest:latestEntry,calendarBucket});
     }
-    const keys = [...map.keys()].sort();
-    if (!keys.length) { weightAggregateCache.set(key, []); return []; }
-    const result = [];
-    for (let cursor = keys[0], last = keys[keys.length-1], guard = 0; cursor <= last && guard < 20000; cursor = nextWeightBucketKey(cursor, mode), guard++) {
-      const bucket = map.get(cursor);
-      if (bucket) bucket.averageKg = bucket.sumKg / bucket.count;
-      result.push(bucket || {key:cursor,count:0,sumKg:0,averageKg:null,lowKg:null,highKg:null,first:null,latest:null});
-    }
-    weightAggregateCache.set(key, result);
-    return result;
+    weightAggregateCache.set(key,result); return result;
   }
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
     if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'daily';
