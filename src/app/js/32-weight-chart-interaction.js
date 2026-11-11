@@ -26,7 +26,7 @@
     const ctx = c.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,viewportW,cssH);
 
     const chartNote = el('weightChartNote');
-    if (chartNote) chartNote.textContent = weightPeriodMode === 'daily' ? t('weight.chartHelp') : t('weight.rollingChartHelp',{days:weightRollingWindowDays(weightPeriodMode)});
+    if (chartNote) chartNote.textContent = weightPeriodMode === 'daily' ? t('weight.chartHelp') : weightChartStyle === 'fixed' ? t('weight.fixedChartHelp') : t('weight.rollingChartHelp',{days:weightRollingWindowDays(weightPeriodMode)});
     const detail = el('weightChartDetail');
     weightChartHitPoints = [];
     const style = getComputedStyle(document.documentElement);
@@ -124,8 +124,32 @@
       scroller.dataset.selectedWindowCount = String(bucket.count);
       scroller.dataset.selectedCalendarCount = String(bucket.calendarBucket?.count || 0);
       if(detail){
+        detail.replaceChildren();
         if(weightPeriodMode==='daily'&&bucket.entry) detail.textContent=t('weight.pointDetail',{weight:formatWeight(bucket.entry.kg,unit),date:localDateTimeLabel(bucket.entry.when,bucket.entry.timeZone)});
-        else {const count=bucket.count,calendar=bucket.calendarBucket;detail.textContent=t('weight.rollingPointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),days:bucket.rollingWindowDays,count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,unit):'—',calendarCount:calendar?formatNumber(calendar.count):'0',calendarMeasurementWord:calendar?t(pluralKey('weight.measurement',calendar.count)):t(pluralKey('weight.measurement',0))});}
+        else {
+          const addDetailGroup=(kind,title,value,meta)=>{
+            const group=document.createElement('div');group.className='weightPointDetailGroup '+kind;
+            const heading=document.createElement('div');heading.className='weightPointDetailHeading';
+            const label=document.createElement('strong');label.textContent=title;
+            const amount=document.createElement('span');amount.className='weightPointDetailValue';amount.textContent=value;
+            heading.append(label,amount);group.append(heading);
+            if(meta){const note=document.createElement('div');note.className='weightPointDetailMeta';note.textContent=meta;group.append(note);}
+            detail.append(group);
+          };
+          const count=bucket.count,measurementWord=t(pluralKey('weight.measurement',count));
+          const periodName=t('weight.periodName.'+weightPeriodMode);
+          const calendar=bucket.calendarBucket;
+          if(weightChartStyle==='fixed'){
+            addDetailGroup('primary',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(bucket.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(bucket,weightPeriodMode),count:formatNumber(count),measurementWord}));
+          }else{
+            addDetailGroup('primary',t('weight.rollingAverageTitle',{days:bucket.rollingWindowDays}),formatWeight(bucket.averageKg,unit),t('weight.rollingAverageMeta',{date:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord,days:bucket.rollingWindowDays}));
+            if(calendar&&calendar.count){
+              addDetailGroup('context',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(calendar.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(calendar,weightPeriodMode),count:formatNumber(calendar.count),measurementWord:t(pluralKey('weight.measurement',calendar.count))}));
+            }else{
+              const empty=document.createElement('div');empty.className='weightPointDetailMeta weightPointDetailContext';empty.textContent=t('weight.noCalendarMeasurements');detail.append(empty);
+            }
+          }
+        }
         detail.hidden=false;
       }
     } else if(detail){detail.hidden=true;detail.textContent='';}
