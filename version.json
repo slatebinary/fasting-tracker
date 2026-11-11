@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.82",
+  "version": "1.17.83",
   "released": "2026-11-11",
-  "notes": "Clarify rolling and fixed weight averages with separate period labels, dates and measurement counts.",
+  "notes": "Fill gaps in Rolling weight charts with daily trailing-average samples.",
   "entry": "./index.html",
   "shell": [
     "./",

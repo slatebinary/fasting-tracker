@@ -147,20 +147,23 @@
       if (!match) return null;
       return {entry,day,dayNumber:Math.floor(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))/86400000)};
     }).filter(Boolean).sort((x,y)=>x.dayNumber-y.dayNumber||String(x.entry.when).localeCompare(String(y.entry.when)));
-    const days = [...new Set(ordered.map(item=>item.dayNumber))], result = [];
+    const firstDayNumber=ordered[0].dayNumber,lastDayNumber=ordered[ordered.length-1].dayNumber,result=[];
     let end=0,start=0;
-    for (const dayNumber of days) {
-      while(end<ordered.length&&ordered[end].dayNumber<=dayNumber) end++;
+    // Sample once per calendar day, not only on measurement days. A rolling
+    // average therefore remains a continuous daily series when measurements
+    // are several days apart; each point is still based exclusively on real
+    // entries inside its trailing window.
+    for(let dayNumber=firstDayNumber;dayNumber<=lastDayNumber;dayNumber++){
+      while(end<ordered.length&&ordered[end].dayNumber<=dayNumber)end++;
       const firstDay=dayNumber-windowDays+1;
-      while(start<end&&ordered[start].dayNumber<firstDay) start++;
-      let sumKg=0,lowKg=Infinity,highKg=-Infinity,firstEntry=null,latestEntry=null;
-      for(let i=start;i<end;i++){
-        const entry=ordered[i].entry;sumKg+=entry.kg;lowKg=Math.min(lowKg,entry.kg);highKg=Math.max(highKg,entry.kg);
-        if(!firstEntry||String(entry.when)<String(firstEntry.when))firstEntry=entry;
-        if(!latestEntry||String(entry.when)>String(latestEntry.when))latestEntry=entry;
-      }
-      const calendarDay=ordered[end-1].day,calendarKey=weightBucketKeyForDay(calendarDay,mode),calendarBucket=calendarBuckets.get(calendarKey)||null,count=end-start;
-      result.push({key:`rolling:${mode}:${calendarDay}`,calendarDay,rollingWindowDays:windowDays,windowStartDay:new Date(firstDay*86400000).toISOString().slice(0,10),windowEndDay:calendarDay,count,sumKg,averageKg:count?sumKg/count:null,lowKg:Number.isFinite(lowKg)?lowKg:null,highKg:Number.isFinite(highKg)?highKg:null,first:firstEntry,latest:latestEntry,calendarBucket});
+      while(start<end&&ordered[start].dayNumber<firstDay)start++;
+      const count=end-start;
+      if(!count)continue;
+      let sumKg=0,lowKg=Infinity,highKg=-Infinity;
+      for(let i=start;i<end;i++){const kg=ordered[i].entry.kg;sumKg+=kg;lowKg=Math.min(lowKg,kg);highKg=Math.max(highKg,kg);}
+      const calendarDay=new Date(dayNumber*86400000).toISOString().slice(0,10);
+      const calendarKey=weightBucketKeyForDay(calendarDay,mode),calendarBucket=calendarBuckets.get(calendarKey)||null;
+      result.push({key:`rolling:${mode}:${calendarDay}`,calendarDay,rollingWindowDays:windowDays,windowStartDay:new Date(firstDay*86400000).toISOString().slice(0,10),windowEndDay:calendarDay,count,sumKg,averageKg:sumKg/count,lowKg,highKg,first:ordered[start].entry,latest:ordered[end-1].entry,calendarBucket});
     }
     weightAggregateCache.set(key,result); return result;
   }
