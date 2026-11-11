@@ -458,11 +458,11 @@
   "weight.pointDetail": "{weight} • {date}",
   "weight.statistics": "Weight statistics",
   "weight.periodDaily": "Daily",
-  "weight.periodWeek": "week",
-  "weight.periodMonth": "month",
-  "weight.periodQuarter": "quarter",
+  "weight.periodWeek": "Week",
+  "weight.periodMonth": "Month",
+  "weight.periodQuarter": "Quarter",
   "weight.periodHalfYear": "6 months",
-  "weight.periodYear": "year",
+  "weight.periodYear": "Year",
   "weight.periodStart": "Start",
   "weight.periodEnd": "Latest",
   "weight.periodChange": "Change",
@@ -1127,6 +1127,5 @@
   "weight.rollingAverageMeta": "Ending {date} · {count} {measurementWord} in this window",
   "weight.calendarAverageTitle": "Calendar {period} average",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
-  "weight.noCalendarMeasurements": "No measurements in this calendar period.",
-  "weight.periodHalfyear": "half-year"
+  "weight.noCalendarMeasurements": "No measurements in this calendar period."
 }
