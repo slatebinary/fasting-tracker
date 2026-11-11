@@ -53,8 +53,8 @@ with sync_playwright() as p:
     page.locator('#weightChart').click(position={'x':pos['x'],'y':pos['y']})
     page.wait_for_function("!document.querySelector('#weightChartDetail')?.hidden",timeout=5000)
     detail=page.locator('#weightChartDetail').inner_text()
-    if 'Average' not in detail or 'kg' not in detail or '5 measurements' not in detail:
-        print('FAIL: aggregate weight point did not show average/count detail:', detail); sys.exit(1)
+    if 'Average' not in detail or 'kg' not in detail or '5 measurements' not in detail or '{calendarMeasurementWord}' in detail:
+        print('FAIL: aggregate weight point did not show a complete average/count/calendar detail:', detail); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
