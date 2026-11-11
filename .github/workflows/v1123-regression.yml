@@ -101,6 +101,7 @@ jobs:
           python3 tests/test_migration_matrix.py
           python3 tests/test_datetime_edges_v1111.py
           python3 tests/test_chart_accessibility.py
+          python3 tests/test_palette_runtime_switch.py
           python3 tests/test_stats_chart_keyboard_accessibility.py
           python3 tests/test_v11772_timing_bar_interaction.py
           python3 tests/test_modal_focus_management.py
