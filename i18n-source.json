@@ -1,5 +1,5 @@
 {
-  "sourceRevision": 38,
+  "sourceRevision": 39,
   "appVersion": "1.17.78",
   "language": "en",
   "strings": {
@@ -965,7 +965,7 @@
     "notifications.detailsReceived": "Received {date}",
     "notifications.detailsDismissAria": "Dismiss notification details: {title}",
     "notifications.detailsFallback": "Open the relevant Fasting Tracker screen for more information.",
-    "notifications.detailPolicy": "Device notifications are intentionally brief. Full details stay inside Fasting Tracker until you dismiss them.",
+    "notifications.detailPolicy": "Device notifications are intentionally brief. Full details stay inside Fasting Tracker until you dismiss or snooze them.",
     "backup.exportExplanation": "Export saves a restorable JSON backup. Export everything includes the same backup plus fasting and weight CSV tables for easier reading in Excel. Internal recovery snapshots remain on this device.",
     "public.license": "MIT License",
     "public.branding": "Branding Policy",
@@ -1088,6 +1088,19 @@
     "settings.paletteHint.tritanopia": "Intended to support tritanopia (reduced blue–yellow discrimination): uses rose, burgundy, green and rust distinctions rather than relying on blue–yellow contrasts.",
     "weight.rollingChartHelp": "Each point is a {days}-day rolling average ending on a day with a saved measurement. Missing days are not estimated.",
     "weight.rollingPointDetail": "{days}-day rolling average ending {period}: {weight} • {count} {measurementWord} in the window. Calendar {calendarPeriod} average: {calendarAverage} ({calendarCount} {calendarMeasurementWord}).",
-    "weight.rollingDataRow": "{period} — {weight} rolling average over {days} days • {count} {measurementWord} in window • calendar {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
+    "weight.rollingDataRow": "{period} — {weight} rolling average over {days} days • {count} {measurementWord} in window • calendar {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+    "unit.minute.one": "minute",
+    "unit.minute.other": "minutes",
+    "unit.minute.zero": "minutes",
+    "unit.minute.two": "minutes",
+    "unit.minute.few": "minutes",
+    "unit.minute.many": "minutes",
+    "notifications.snoozeAction": "Remind me again",
+    "notifications.snoozeDurationAria": "Choose when to show this reminder again",
+    "notifications.detailsSnoozeAria": "Snooze notification details: {title}",
+    "notifications.weightSnoozeDefault": "Default weigh-in snooze",
+    "notifications.weightSnoozeHelp": "Default delay when you snooze a weigh-in reminder.",
+    "notifications.fastingSnoozeDefault": "Default fasting reminder snooze",
+    "notifications.fastingSnoozeHelp": "Default delay when you snooze a fasting target, safety or cycle reminder."
   }
 }
