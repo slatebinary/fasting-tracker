@@ -29,6 +29,14 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
+    page.evaluate("""() => {
+      window.__ftNotifications=[];
+      const MockNotification={permission:'granted',requestPermission:async()=> 'granted'};
+      Object.defineProperty(window,'Notification',{value:MockNotification,configurable:true});
+      const registration={showNotification:async(title,options)=>window.__ftNotifications.push({title,options})};
+      const sw={ready:Promise.resolve(registration),register:async()=>({}),addEventListener:()=>{},controller:null};
+      Object.defineProperty(navigator,'serviceWorker',{value:sw,configurable:true});
+    }""")
     page.evaluate("""arg => {
       __seedFastingDbV2(arg.data, []);
       localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:arg.version,seenAt:new Date().toISOString()}));
@@ -72,6 +80,12 @@ with sync_playwright() as p:
         print('FAIL: due reminder remained in snoozed queue:',restored.get('snoozedDetails')); sys.exit(1)
     if not any(x.get('id')=='fasting-weigh-snooze-test' for x in restored.get('details',[])):
         print('FAIL: due reminder did not return to notification details'); sys.exit(1)
+    device_notifications=page.evaluate("window.__ftNotifications")
+    if len(device_notifications)!=1:
+        print('FAIL: due reminder should emit one device notification:',device_notifications); sys.exit(1)
+    notice=device_notifications[0]
+    if len(notice['options']['body'])>72 or notice['options']['tag']!='fasting-weigh-snooze-test' or notice['options']['data']['detailId']!='fasting-weigh-snooze-test':
+        print('FAIL: snoozed device reminder is too long or does not link to its detail:',notice); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:4])); sys.exit(1)
     browser.close()
