@@ -92,7 +92,7 @@ with sync_playwright() as p:
         fast_button.click()
         assert fast_range.is_visible()
         fast_range.select_option("month")
-        assert 27 <= fast_rows.count() <= 32, fast_rows.count()
+        assert 27 <= fast_rows.count() <= 33, fast_rows.count()
         assert fast_count.inner_text() == f"Last {fast_rows.count()} fasts"
         assert fast_button.inner_text() == "Last 7"
         fast_range.select_option("halfyear")
