@@ -146,6 +146,7 @@
   el('weightModal').addEventListener('click', e => { if (e.target === el('weightModal')) closeWeightModal(); });
   el('unitKgBtn').addEventListener('click', () => setWeightUnit('kg'));
   el('unitLbBtn').addEventListener('click', () => setWeightUnit('lb'));
+  document.querySelectorAll('#weightChartStyleSwitcher [data-weight-style]').forEach(btn => bindResponsiveAction(btn, () => setWeightChartStyle(btn.dataset.weightStyle)));
   document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => bindResponsiveAction(btn, () => setWeightPeriodMode(btn.dataset.weightPeriod)));
   el('weightTargetInput').addEventListener('change', setTargetWeightFromInput);
   el('weightTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') { el('weightTargetInput').blur(); setTargetWeightFromInput(); } });
