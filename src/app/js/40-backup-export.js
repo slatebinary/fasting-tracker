@@ -42,23 +42,20 @@
     return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
   }
 
-  let backupSuccessVisibleUntil = 0;
-  let backupSuccessHideTimer = 0;
   function renderFastingBackupIndicator(freshness, due) {
     const row=el('fastingBackupRow'), header=el('fasting')?.querySelector('.fastingSectionHeader');
     const button=el('fastingBackupStatusBtn'), text=el('fastingBackupStatusText');
     if (!row || !header || !button || !text) return;
     const age = freshness.last ? Date.now() - freshness.last.getTime() : 0;
     const state = freshness.state === 'current' && age >= BACKUP_REMINDER_MS ? 'aged' : freshness.state;
-    const visible = state === 'stale' || state === 'never' || state === 'aged' ||
-      (state === 'current' && Date.now() < backupSuccessVisibleUntil);
+    const visible = state !== 'empty';
     const labelKey = 'backupChip.' + state;
     const descriptionKey = 'backupChip.' + state + 'Help';
-    const date = freshness.last ? localDateTimeLabel(freshness.last) : '';
+    const date = freshness.last ? localDateTimeLabel(freshness.last, deviceTimeZone()) : '';
     const status = t(labelKey);
     const explanation = t(descriptionKey, {date});
     button.dataset.state=state;
-    const visibleStatus = freshness.last ? `${status} — ${date}` : status;
+    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : freshness.last ? `${status} — ${date}` : status;
     if (text.textContent!==visibleStatus) text.textContent=visibleStatus;
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
@@ -84,9 +81,9 @@
     const freshnessLabel=el('backupFreshnessLabel');
     if (!label || !banner || !textBox) return;
     const last = validDate(backupMeta.lastExternalBackupAt);
-    label.textContent = last ? localDateTimeLabel(last) : t('backup.noneYet');
+    label.textContent = last ? localDateTimeLabel(last, deviceTimeZone()) : t('backup.noneYet');
     const freshness=backupFreshnessState();
-    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last)}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
@@ -168,9 +165,6 @@
   async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.snapshotRunning'),'info');try{if(!(await allowStorageIntensiveOperation())){announceDiagnosticAction(t('actionFeedback.cancelled'),'warning');return;}const ok=await createManualRecoverySnapshot(input?.value||'');if(ok){hideModal('manualSnapshotModal');alert(t('actionFeedback.snapshotCreated'));}}catch(err){noteDiagnosticError('snapshot.manual');announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');alert(t('backup.snapshotFailed'));}finally{if(btn)btn.disabled=false;}}
 
   function markExternalBackupNow(exportedData = data) {
-    backupSuccessVisibleUntil = Date.now() + 7000;
-    if (backupSuccessHideTimer) clearTimeout(backupSuccessHideTimer);
-    backupSuccessHideTimer = setTimeout(() => { backupSuccessHideTimer = 0; renderBackupStatus(); }, 7000);
     backupMeta.lastExternalBackupAt = new Date().toISOString();
     backupMeta.lastExternalBackupRevision = Math.max(0,Number(exportedData.revision)||0);
     backupMeta.lastExternalBackupDataUpdatedAt = validDate(exportedData.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
