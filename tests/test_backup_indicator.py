@@ -59,7 +59,7 @@ with sync_playwright() as p:
     chip_text=page.locator('#fastingBackupStatusText').inner_text()
     assert ' — ' in chip_text and __import__('re').search(r'\d{1,2}:\d{2}',chip_text), chip_text
     assert 'no changes since the last external JSON backup' in chip_text.lower(), chip_text
-    # Green confirmation is temporary; the underlying Settings status persists.
+    # The green current-backup status must remain visible after the initial confirmation window.
     page.wait_for_timeout(7300)
     assert page.locator('#fastingBackupRow').is_visible(), 'Current backup status must remain visible after the temporary confirmation period'
     assert page.locator('#shareProgressBtn').is_visible(), 'Share action must remain available'
