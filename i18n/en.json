@@ -1099,5 +1099,15 @@
   "notifications.fastingSnoozeDefault": "Default fasting reminder snooze",
   "notifications.fastingSnoozeHelp": "Default delay when you snooze a fasting target, safety or cycle reminder.",
   "weight.modeRolling": "Rolling",
-  "weight.modeFixed": "Fixed periods"
+  "weight.modeFixed": "Fixed periods",
+  "weight.historyMore": "More…",
+  "weight.historyClose": "Close",
+  "weight.historyRecent": "Last 7",
+  "weight.historyRangeAria": "Older weight history range",
+  "weight.historyRangePrompt": "Period",
+  "weight.historyRange.month": "1 mo",
+  "weight.historyRange.halfyear": "6 mo",
+  "weight.historyRange.year": "1 yr",
+  "weight.historyRange.all": "All",
+  "weight.historyRangeEmpty": "No measurements in this period."
 }
