@@ -559,8 +559,11 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .weightValue { font-variant-numeric: tabular-nums; }
     .weightHistory { margin-top: 14px; }
-    .weightHistoryControls { display:flex; align-items:center; gap:8px; margin:0 0 10px; }
-    .weightHistoryControls select { min-width:88px; max-width:140px; }
+    .historyListControls { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 10px; }
+    .historyVisibleCount { font-variant-numeric:tabular-nums; }
+    .historyRangeActions { display:flex; align-items:center; gap:8px; margin-left:auto; }
+    .historyRangeActions[hidden] { display:none !important; }
+    .historyRangeActions select { min-width:88px; max-width:140px; }
     .weightTargetRow { flex-wrap:wrap; align-items:center; }
     .weightTargetRow > div:first-child { flex:1 1 160px; min-width:0; }
     .weightTargetWrap { display:flex; align-items:center; gap:7px; flex:0 0 auto; min-width:max-content; }

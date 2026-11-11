@@ -1109,5 +1109,17 @@
   "weight.historyRange.halfyear": "6 mo",
   "weight.historyRange.year": "1 yr",
   "weight.historyRange.all": "All",
-  "weight.historyRangeEmpty": "No measurements in this period."
+  "weight.historyRangeEmpty": "No measurements in this period.",
+  "history.rangeMore": "More…",
+  "history.rangeClose": "Close",
+  "history.rangeRecent": "Last 7",
+  "history.rangeAria": "Older fasting history range",
+  "history.rangePrompt": "Period",
+  "history.range.month": "1 mo",
+  "history.range.halfyear": "6 mo",
+  "history.range.year": "1 yr",
+  "history.range.all": "All",
+  "history.rangeEmpty": "No fasts in this period.",
+  "history.lastCount": "Last {n} fasts",
+  "weight.historyLastCount": "Last {n} measurements"
 }

@@ -29,7 +29,7 @@
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 39;
+  const I18N_SOURCE_REVISION = 40;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
@@ -183,6 +183,8 @@
   let completedDayMapCache = null;
   let currentStreakCache = null;
   let historyVisibleCount = HISTORY_PAGE_SIZE;
+  let historyRange = 'recent7';
+  let historyRangeMenuOpen = false;
   let deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
   let weightHistoryRange = 'recent7';
   let weightHistoryMenuOpen = false;
