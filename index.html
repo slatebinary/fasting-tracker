@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.80" />
+  <meta name="ft-app-version" content="1.17.81" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -639,8 +639,11 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .weightValue { font-variant-numeric: tabular-nums; }
     .weightHistory { margin-top: 14px; }
-    .weightHistoryControls { display:flex; align-items:center; gap:8px; margin:0 0 10px; }
-    .weightHistoryControls select { min-width:88px; max-width:140px; }
+    .historyListControls { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 10px; }
+    .historyVisibleCount { font-variant-numeric:tabular-nums; }
+    .historyRangeActions { display:flex; align-items:center; gap:8px; margin-left:auto; }
+    .historyRangeActions[hidden] { display:none !important; }
+    .historyRangeActions select { min-width:88px; max-width:140px; }
     .weightTargetRow { flex-wrap:wrap; align-items:center; }
     .weightTargetRow > div:first-child { flex:1 1 160px; min-width:0; }
     .weightTargetWrap { display:flex; align-items:center; gap:7px; flex:0 0 auto; min-width:max-content; }
@@ -910,6 +913,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </details>
     <div class="card">
       <div class="bulkActionBar" id="historyBulkBar" hidden><button id="historySelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="historyBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="historyBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="historyBulkCount"></span></div>
+      <div class="historyListControls" id="fastHistoryControls"><span class="small historyVisibleCount" id="historyVisibleCount" aria-live="polite"></span><div class="historyRangeActions"><button id="historyMoreBtn" class="secondary" type="button" aria-expanded="false" aria-controls="historyRange" data-i18n="history.rangeMore">More…</button><select id="historyRange" aria-label="Older fasting history range" data-i18n-aria="history.rangeAria" hidden><option value="" selected disabled data-i18n="history.rangePrompt">Period</option><option value="month" data-i18n="history.range.month">1 mo</option><option value="halfyear" data-i18n="history.range.halfyear">6 mo</option><option value="year" data-i18n="history.range.year">1 yr</option><option value="all" data-i18n="history.range.all">All</option></select></div></div>
       <div id="historyList"></div>
     </div>
     <div class="card" id="deletedFastsCard" style="margin-top:14px" hidden>
@@ -988,7 +992,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
       <div id="weightChartData" class="chartDataList small" hidden></div>
     </div>
-    <div class="card weightHistory"><div class="weightHistoryControls" id="weightHistoryControls" hidden><button id="weightHistoryMoreBtn" class="secondary" type="button" aria-expanded="false" aria-controls="weightHistoryRange" data-i18n="weight.historyMore">More…</button><select id="weightHistoryRange" aria-label="Older weight history range" data-i18n-aria="weight.historyRangeAria" hidden><option value="" selected disabled data-i18n="weight.historyRangePrompt">Period</option><option value="month" data-i18n="weight.historyRange.month">1 mo</option><option value="halfyear" data-i18n="weight.historyRange.halfyear">6 mo</option><option value="year" data-i18n="weight.historyRange.year">1 yr</option><option value="all" data-i18n="weight.historyRange.all">All</option></select></div><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
+    <div class="card weightHistory"><div class="historyListControls weightHistoryControls" id="weightHistoryControls"><span class="small historyVisibleCount" id="weightHistoryVisibleCount" aria-live="polite"></span><div class="historyRangeActions"><button id="weightHistoryMoreBtn" class="secondary" type="button" aria-expanded="false" aria-controls="weightHistoryRange" data-i18n="history.rangeMore">More…</button><select id="weightHistoryRange" aria-label="Older weight history range" data-i18n-aria="weight.historyRangeAria" hidden><option value="" selected disabled data-i18n="history.rangePrompt">Period</option><option value="month" data-i18n="history.range.month">1 mo</option><option value="halfyear" data-i18n="history.range.halfyear">6 mo</option><option value="year" data-i18n="history.range.year">1 yr</option><option value="all" data-i18n="history.range.all">All</option></select></div></div><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
     <div class="card" id="deletedWeightsCard" style="margin-top:14px" hidden>
       <div class="sectionHeader"><h2 data-i18n="weight.deletedTitle">Recently deleted weights</h2><span class="small" id="deletedWeightsCount"></span></div>
       <div class="small" data-i18n="weight.deletedHelp">Deleted weight entries are excluded from charts, statistics and XP, but remain in JSON backups until restored or permanently deleted.</div>
@@ -1915,14 +1919,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 39;
+  const I18N_SOURCE_REVISION = 40;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.80';
+  const APP_VERSION = '1.17.81';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2069,6 +2073,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   let completedDayMapCache = null;
   let currentStreakCache = null;
   let historyVisibleCount = HISTORY_PAGE_SIZE;
+  let historyRange = 'recent7';
+  let historyRangeMenuOpen = false;
   let deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
   let weightHistoryRange = 'recent7';
   let weightHistoryMenuOpen = false;
@@ -5019,6 +5025,35 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   function weightFilterActive(spec=weightFilterSpec()) { return !!(spec.from||spec.to); }
   function weightPassesFilter(record,spec=weightFilterSpec()){const key=dayKey(record.when,record.timeZone);return !(spec.from&&key<spec.from)&&!(spec.to&&key>spec.to);}
 
+  function fastHistoryRangeCutoff(range) {
+    const months = ({month:1,halfyear:6,year:12})[range];
+    if (!months) return null;
+    const now = new Date();
+    const cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+    cutoff.setMonth(cutoff.getMonth() - months);
+    const day = Math.min(now.getDate(), new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0).getDate());
+    cutoff.setDate(day);
+    cutoff.setHours(0, 0, 0, 0);
+    return cutoff.getTime();
+  }
+
+  function fastHistoryRecordsForDisplay(sortedDesc) {
+    if (historyRange === 'recent7') return sortedDesc.slice(0, 7);
+    if (historyRange === 'all') return sortedDesc;
+    const cutoff = fastHistoryRangeCutoff(historyRange);
+    return cutoff == null ? sortedDesc.slice(0, 7) : sortedDesc.filter(record => {
+      const timestamp = Date.parse(record.end);
+      return Number.isFinite(timestamp) && timestamp >= cutoff;
+    });
+  }
+
+  function visibleFastHistoryRecords() {
+    const spec = historyFilterSpec();
+    const sorted = sortedRecordsDesc();
+    const filtered = historyFilterActive(spec) ? sorted.filter(record => fastPassesHistoryFilter(record, spec)) : sorted;
+    return fastHistoryRecordsForDisplay(filtered);
+  }
+
   function bulkCheckbox(id,set,label) {
     const wrap=document.createElement('label'); wrap.className='bulkSelectCell';
     const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=set.has(id); cb.setAttribute('aria-label',label);
@@ -5037,7 +5072,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const wbtn=el('weightBulkModeBtn'); if(wbtn){wbtn.setAttribute('aria-pressed',String(weightBulkMode));wbtn.textContent=t(weightBulkMode?'bulk.done':'bulk.select');}
   }
 
-  function clearHistoryFilters(){for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax'])if(el(id))el(id).value='';if(el('historyFilterTarget'))el('historyFilterTarget').value='all';if(el('historyFilterEdited'))el('historyFilterEdited').value='all';if(el('historyIncludeDeleted'))el('historyIncludeDeleted').checked=true;historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;renderHistory();}
+  function clearHistoryFilters(){for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax'])if(el(id))el(id).value='';if(el('historyFilterTarget'))el('historyFilterTarget').value='all';if(el('historyFilterEdited'))el('historyFilterEdited').value='all';if(el('historyIncludeDeleted'))el('historyIncludeDeleted').checked=true;historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;historyRange='recent7';historyRangeMenuOpen=false;renderHistory();}
   function clearWeightFilters(){for(const id of ['weightFilterFrom','weightFilterTo'])if(el(id))el(id).value='';if(el('weightIncludeDeleted'))el('weightIncludeDeleted').checked=true;weightVisibleCount=HISTORY_PAGE_SIZE;renderWeight();}
 
   function exportFastRecordsCsv(records, namePrefix='fasting-selected') {
@@ -5215,9 +5250,24 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   function renderHistory() {
     const box=el('historyList'),spec=historyFilterSpec();box.replaceChildren();
     const allSorted=sortedRecordsDesc();const filtered=historyFilterActive(spec)?allSorted.filter(r=>fastPassesHistoryFilter(r,spec)):allSorted;
+    if(filtered.length<=7){historyRange='recent7';historyRangeMenuOpen=false;}
+    const visible=fastHistoryRecordsForDisplay(filtered);
     const status=el('historyFilterStatus');if(status)status.textContent=t('history.filterCount',{shown:filtered.length,total:data.records.length});
-    if(!filtered.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=data.records.length?t('history.filterNoMatch'):t('history.empty');box.append(empty);renderDeletedFasts();updateBulkActionBars();return;}
-    const visible=filtered.slice(0,historyVisibleCount);
+    const controls=el('fastHistoryControls'),countLabel=el('historyVisibleCount'),moreBtn=el('historyMoreBtn'),rangeSelect=el('historyRange');
+    if(countLabel)countLabel.textContent=t('history.lastCount',{n:visible.length});
+    if(controls&&moreBtn&&rangeSelect){
+      controls.hidden=false;
+      const rangeActions=controls.querySelector('.historyRangeActions');if(rangeActions)rangeActions.hidden=filtered.length<=7;
+      moreBtn.textContent=historyRange==='recent7'?(historyRangeMenuOpen?t('history.rangeClose'):t('history.rangeMore')):t('history.rangeRecent');
+      moreBtn.setAttribute('aria-expanded',String(historyRangeMenuOpen));
+      rangeSelect.hidden=!historyRangeMenuOpen;
+      rangeSelect.value=historyRange==='recent7'?'':historyRange;
+    }
+    if(!visible.length){
+      const empty=document.createElement('div');empty.className='historyEmpty';
+      empty.textContent=historyRange!=='recent7'?t('history.rangeEmpty'):(data.records.length?t('history.filterNoMatch'):t('history.empty'));
+      box.append(empty);renderDeletedFasts();updateBulkActionBars();return;
+    }
     for(const r of visible){
       const row=document.createElement('div');row.className='row historyRow'+(historyBulkMode?' bulkSelectable':'');
       if(historyBulkMode)row.append(bulkCheckbox(r.id,selectedFastIds,t('bulk.selectFast',{date:localDateLabel(r.end,r.timeZone)})));
@@ -5228,7 +5278,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       if(!historyBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');edit.addEventListener('click',()=>openEntryModal(r));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');del.addEventListener('click',()=>{if(confirm(t('history.deleteConfirm'))&&deleteFastToAudit(r, 'user'))showUndoToast(t('history.deletedUndo'),()=>restoreDeletedFast(r.id));});actions.append(edit,del);right.append(actions);}
       row.append(left,right);box.append(row);
     }
-    if(visible.length<filtered.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:filtered.length-visible.length});more.addEventListener('click',()=>{historyVisibleCount+=HISTORY_PAGE_SIZE;renderHistory();});wrap.append(more);box.append(wrap);}
     renderDeletedFasts();updateBulkActionBars();
   }
 
@@ -8174,8 +8223,10 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     el('wTarget').textContent = data.targetWeightKg == null ? '—' : formatWeight(data.targetWeightKg, unit);
     el('wToTarget').textContent = latest && data.targetWeightKg != null ? formatWeight(latest.kg - data.targetWeightKg, unit, true) : '—';
 
-    const box=el('weightHistoryList');box.replaceChildren();const spec=weightFilterSpec();const allDesc=[...asc].reverse();const sortedDesc=weightFilterActive(spec)?allDesc.filter(w=>weightPassesFilter(w,spec)):allDesc;const visibleWeights=weightHistoryRecordsForDisplay(sortedDesc);const filterStatus=el('weightFilterStatus');if(filterStatus)filterStatus.textContent=t('history.filterCount',{shown:sortedDesc.length,total:asc.length});
-    const controls=el('weightHistoryControls'),moreBtn=el('weightHistoryMoreBtn'),rangeSelect=el('weightHistoryRange');if(controls&&moreBtn&&rangeSelect){const hasOlder=sortedDesc.length>7;controls.hidden=!hasOlder;if(!hasOlder){weightHistoryRange='recent7';weightHistoryMenuOpen=false;}moreBtn.textContent=weightHistoryRange==='recent7'?(weightHistoryMenuOpen?t('weight.historyClose'):t('weight.historyMore')):t('weight.historyRecent');moreBtn.setAttribute('aria-expanded',String(weightHistoryMenuOpen));rangeSelect.hidden=!weightHistoryMenuOpen;rangeSelect.value=weightHistoryRange==='recent7'?'':weightHistoryRange;}
+    const box=el('weightHistoryList');box.replaceChildren();const spec=weightFilterSpec();const allDesc=[...asc].reverse();const sortedDesc=weightFilterActive(spec)?allDesc.filter(w=>weightPassesFilter(w,spec)):allDesc;
+    if(sortedDesc.length<=7){weightHistoryRange='recent7';weightHistoryMenuOpen=false;}
+    const visibleWeights=weightHistoryRecordsForDisplay(sortedDesc);const filterStatus=el('weightFilterStatus');if(filterStatus)filterStatus.textContent=t('history.filterCount',{shown:sortedDesc.length,total:asc.length});
+    const controls=el('weightHistoryControls'),countLabel=el('weightHistoryVisibleCount'),moreBtn=el('weightHistoryMoreBtn'),rangeSelect=el('weightHistoryRange');if(countLabel)countLabel.textContent=t('weight.historyLastCount',{n:visibleWeights.length});if(controls&&moreBtn&&rangeSelect){controls.hidden=false;const rangeActions=controls.querySelector('.historyRangeActions');if(rangeActions)rangeActions.hidden=sortedDesc.length<=7;moreBtn.textContent=weightHistoryRange==='recent7'?(weightHistoryMenuOpen?t('history.rangeClose'):t('history.rangeMore')):t('history.rangeRecent');moreBtn.setAttribute('aria-expanded',String(weightHistoryMenuOpen));rangeSelect.hidden=!weightHistoryMenuOpen;rangeSelect.value=weightHistoryRange==='recent7'?'':weightHistoryRange;}
     if(!visibleWeights.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=weightHistoryRange!=='recent7'?t('weight.historyRangeEmpty'):(asc.length?t('history.filterNoMatch'):t('weight.empty'));box.append(empty);}else{visibleWeights.forEach(w=>{const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(w.when,w.timeZone);left.append(strong);const when=document.createElement('div');when.className='small';when.textContent=localDateTimeLabel(w.when,w.timeZone);left.append(when);const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const val=document.createElement('div');val.className='duration';val.textContent=formatWeight(w.kg,unit);right.append(val);if(!weightBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');bindResponsiveAction(edit, () => openWeightModal(w));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');bindResponsiveAction(del, () => {if(!confirm(t('weight.deleteConfirm')))return;if(!softDeleteWeightById(w.id,'user')){renderAll();return;}renderWeight();showUndoToast(t('weight.deletedUndo'),()=>{if(restoreDeletedWeightById(w.id))renderWeight();});});actions.append(edit,del);right.append(actions);}row.append(left,right);box.append(row);});}
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
@@ -9304,10 +9355,12 @@ function mergeImportedData(imported) {
   document.querySelectorAll('.backdatePreset').forEach(btn => btn.addEventListener('click', () => setBackdatePreset(btn.dataset.hours)));
 
   el('addEntryBtn').addEventListener('click', () => openEntryModal());
-  for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax','historyFilterTarget','historyFilterEdited','historyIncludeDeleted'])el(id)?.addEventListener('change',()=>{historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;selectedFastIds.clear();selectedDeletedFastIds.clear();renderHistory();});
+  for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax','historyFilterTarget','historyFilterEdited','historyIncludeDeleted'])el(id)?.addEventListener('change',()=>{historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;historyRange='recent7';historyRangeMenuOpen=false;selectedFastIds.clear();selectedDeletedFastIds.clear();renderHistory();});
+  el('historyMoreBtn')?.addEventListener('click',()=>{if(historyRange!=='recent7'){historyRange='recent7';historyRangeMenuOpen=false;}else{historyRangeMenuOpen=!historyRangeMenuOpen;}selectedFastIds.clear();renderHistory();});
+  el('historyRange')?.addEventListener('change',()=>{const value=el('historyRange').value;if(!['month','halfyear','year','all'].includes(value))return;historyRange=value;historyRangeMenuOpen=true;selectedFastIds.clear();renderHistory();});
   el('historyClearFiltersBtn')?.addEventListener('click',clearHistoryFilters);
   el('historyBulkModeBtn')?.addEventListener('click',()=>{historyBulkMode=!historyBulkMode;if(!historyBulkMode){selectedFastIds.clear();selectedDeletedFastIds.clear();}renderHistory();});
-  el('historySelectVisibleBtn')?.addEventListener('click',()=>{sortedRecordsDesc().filter(r=>fastPassesHistoryFilter(r)).slice(0,historyVisibleCount).forEach(r=>selectedFastIds.add(r.id));renderHistory();});
+  el('historySelectVisibleBtn')?.addEventListener('click',()=>{visibleFastHistoryRecords().forEach(r=>selectedFastIds.add(r.id));renderHistory();});
   el('historyBulkExportBtn')?.addEventListener('click',()=>exportFastRecordsCsv(data.records.filter(r=>selectedFastIds.has(r.id))));
   el('historyBulkDeleteBtn')?.addEventListener('click',()=>bulkDeleteFasts());
   el('deletedFastSelectVisibleBtn')?.addEventListener('click',()=>{data.deletedFasts.filter(r=>fastPassesHistoryFilter(r)).slice(0,deletedHistoryVisibleCount).forEach(r=>selectedDeletedFastIds.add(r.id));renderHistory();});
