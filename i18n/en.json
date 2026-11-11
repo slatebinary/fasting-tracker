@@ -1097,5 +1097,7 @@
   "notifications.weightSnoozeDefault": "Default weigh-in snooze",
   "notifications.weightSnoozeHelp": "Default delay when you snooze a weigh-in reminder.",
   "notifications.fastingSnoozeDefault": "Default fasting reminder snooze",
-  "notifications.fastingSnoozeHelp": "Default delay when you snooze a fasting target, safety or cycle reminder."
+  "notifications.fastingSnoozeHelp": "Default delay when you snooze a fasting target, safety or cycle reminder.",
+  "weight.modeRolling": "Rolling",
+  "weight.modeFixed": "Fixed periods"
 }
