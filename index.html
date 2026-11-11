@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.72" />
+  <meta name="ft-app-version" content="1.17.73" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1904,7 +1904,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.72';
+  const APP_VERSION = '1.17.73';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -8515,6 +8515,12 @@ function mergeImportedData(imported) {
     // hidden canvases are never redrawn simply because some other screen changed.
     requestAnimationFrame(() => {
       renderScreen(target);
+      if (target === 'stats' && statsVizMode === 'timeline') {
+        // A clean Statistics view is intentionally not redrawn on screen
+        // return. Refresh its selection detail explicitly, however: other
+        // screens may have replaced the shared detail panel's contents.
+        renderChartDetail(timelineChartDays);
+      }
       if (target === 'stats' && statsVizMode === 'timeline') scrollTimelineToLatest();
       if (target === 'stats') verifyStatsVisualizationAfterLayout();
     });
