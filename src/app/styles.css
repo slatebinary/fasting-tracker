@@ -210,7 +210,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 
     /* Color-Friendly navigation: strong neutral contrast and a non-colour-only active state. */
     html[data-theme="colorblind"] nav {
-      background: #ffffff;
+      background: #D6E8F8;
       border-top: 2px solid #132238;
       box-shadow: 0 -2px 8px rgba(19,34,56,.10);
     }
@@ -225,7 +225,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     }
     html[data-theme="colorblind"] .tab.active {
       color: #003f73;
-      background: #dcecf8;
+      background: #C7DDF1;
       box-shadow: inset 0 -4px 0 #003f73;
       font-weight: 800;
     }
@@ -241,6 +241,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 
     /* Specialized colour-vision palettes use neutral labels and a persistent accent underline. */
     html[data-theme="protanopia"] nav, html[data-theme="deuteranopia"] nav, html[data-theme="tritanopia"] nav { background:#fff; border-top:2px solid var(--text); backdrop-filter:none; -webkit-backdrop-filter:none; }
+    html[data-theme="protanopia"] nav { background:var(--tab); }
     html[data-theme="protanopia"] .tab, html[data-theme="deuteranopia"] .tab, html[data-theme="tritanopia"] .tab { color:var(--muted); font-weight:750; }
     html[data-theme="protanopia"] .tab .ico, html[data-theme="deuteranopia"] .tab .ico, html[data-theme="tritanopia"] .tab .ico { color:var(--text); filter:grayscale(1) contrast(1.4); font-weight:800; }
     html[data-theme="protanopia"] .tab.active, html[data-theme="deuteranopia"] .tab.active, html[data-theme="tritanopia"] .tab.active { color:var(--text); background:color-mix(in srgb,var(--accent) 14%,var(--card)); box-shadow:inset 0 -4px 0 var(--accent); font-weight:850; }
