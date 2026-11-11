@@ -1,3 +1,11 @@
+  function setWeightChartStyle(style) {
+    if (!['rolling','fixed'].includes(style) || style===weightChartStyle) return;
+    weightChartStyle=style;
+    try { localStorage.setItem('fastingTracker.weightChartStyle',style); } catch {}
+    weightChartSelectedId=null; weightChartScrollToLatestPending=true;
+    const asc=sortedWeightsAsc(); renderWeightPeriodAnalytics(asc); drawWeightChart(asc); renderDeletedWeights();
+  }
+
   function setWeightPeriodMode(mode) {
     if (!WEIGHT_PERIOD_MODES.includes(mode) || mode === weightPeriodMode) return;
     weightPeriodMode = mode;
