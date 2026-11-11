@@ -122,6 +122,10 @@ with sync_playwright() as p:
     page.locator('#notificationMasterToggle').click()  # on; previously delivered reminder detail remains available
     page.wait_for_function("document.querySelectorAll('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]').length === 1",timeout=5000)
     weigh_card=page.locator('#notificationDetailStack [data-notification-detail-id^="fasting-weigh-"]')
+    debug_visibility=weigh_card.locator('.notificationDetailAddWeight').evaluate("""el => {
+      const out=[]; for(let n=el;n;n=n.parentElement){const s=getComputedStyle(n),r=n.getBoundingClientRect();out.push({tag:n.tagName,id:n.id,cls:String(n.className),hidden:n.hidden,display:s.display,visibility:s.visibility,opacity:s.opacity,width:r.width,height:r.height,overflow:s.overflow});} return out;
+    }""")
+    print('NOTIFICATION ACTION VISIBILITY DEBUG:',debug_visibility)
     if weigh_card.locator('.notificationDetailAddWeight').count()!=1 or weigh_card.locator('.notificationDetailDismiss').count()!=1:
         print('FAIL: weigh-in reminder must offer both Add and Dismiss'); sys.exit(1)
     if page.locator('#notificationDetailStack [data-notification-detail-id^="fasting-target-"] .notificationDetailAddWeight').count():
