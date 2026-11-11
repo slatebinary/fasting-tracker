@@ -115,10 +115,12 @@
   document.querySelectorAll('.backdatePreset').forEach(btn => btn.addEventListener('click', () => setBackdatePreset(btn.dataset.hours)));
 
   el('addEntryBtn').addEventListener('click', () => openEntryModal());
-  for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax','historyFilterTarget','historyFilterEdited','historyIncludeDeleted'])el(id)?.addEventListener('change',()=>{historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;selectedFastIds.clear();selectedDeletedFastIds.clear();renderHistory();});
+  for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax','historyFilterTarget','historyFilterEdited','historyIncludeDeleted'])el(id)?.addEventListener('change',()=>{historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;historyRange='recent7';historyRangeMenuOpen=false;selectedFastIds.clear();selectedDeletedFastIds.clear();renderHistory();});
+  el('historyMoreBtn')?.addEventListener('click',()=>{if(historyRange!=='recent7'){historyRange='recent7';historyRangeMenuOpen=false;}else{historyRangeMenuOpen=!historyRangeMenuOpen;}selectedFastIds.clear();renderHistory();});
+  el('historyRange')?.addEventListener('change',()=>{const value=el('historyRange').value;if(!['month','halfyear','year','all'].includes(value))return;historyRange=value;historyRangeMenuOpen=true;selectedFastIds.clear();renderHistory();});
   el('historyClearFiltersBtn')?.addEventListener('click',clearHistoryFilters);
   el('historyBulkModeBtn')?.addEventListener('click',()=>{historyBulkMode=!historyBulkMode;if(!historyBulkMode){selectedFastIds.clear();selectedDeletedFastIds.clear();}renderHistory();});
-  el('historySelectVisibleBtn')?.addEventListener('click',()=>{sortedRecordsDesc().filter(r=>fastPassesHistoryFilter(r)).slice(0,historyVisibleCount).forEach(r=>selectedFastIds.add(r.id));renderHistory();});
+  el('historySelectVisibleBtn')?.addEventListener('click',()=>{visibleFastHistoryRecords().forEach(r=>selectedFastIds.add(r.id));renderHistory();});
   el('historyBulkExportBtn')?.addEventListener('click',()=>exportFastRecordsCsv(data.records.filter(r=>selectedFastIds.has(r.id))));
   el('historyBulkDeleteBtn')?.addEventListener('click',()=>bulkDeleteFasts());
   el('deletedFastSelectVisibleBtn')?.addEventListener('click',()=>{data.deletedFasts.filter(r=>fastPassesHistoryFilter(r)).slice(0,deletedHistoryVisibleCount).forEach(r=>selectedDeletedFastIds.add(r.id));renderHistory();});
