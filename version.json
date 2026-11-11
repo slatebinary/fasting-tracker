@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.75",
+  "version": "1.17.76",
   "released": "2026-11-11",
-  "notes": "Strengthened the visual separation between the general colour-vision and Protanopia palettes with distinct cool-blue versus warm-golden surfaces, stronger accent/status colours, clearer localized purpose hints and a browser regression for live switching.",
+  "notes": "Moved the weight chart period selector directly above the trend chart, kept all six periods visible in a responsive layout, and clarified that the selector controls both the chart and period statistics.",
   "entry": "./index.html",
   "shell": [
     "./",
