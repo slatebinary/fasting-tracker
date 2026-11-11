@@ -188,6 +188,7 @@
     scroller.scrollLeft=weightChartProgrammaticScrollLeft;
     drawWeightChart();
     renderWeightChartData();
+    renderWeightPeriodAnalytics();
     syncWeightChartNavigator();
   }
   function shiftWeightChartViewport(direction){
@@ -218,7 +219,7 @@
     if(!start||start.id!==event.pointerId)return;
     if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
     const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;
-    weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
+    weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();renderWeightPeriodAnalytics();syncWeightChartNavigator();
   }
   function cancelWeightChartPointer(){weightChartPointerStart=null;}
 
@@ -236,6 +237,6 @@
         if(!nearest?.count){let distance=Infinity;for(let i=0;i<buckets.length;i++){if(!buckets[i].count)continue;const d=Math.abs(i-index);if(d<distance){distance=d;nearest=buckets[i];}}}
         if(nearest?.count)weightChartSelectedId=nearest.key;
       }
-      drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
+      drawWeightChart();renderWeightChartData();renderWeightPeriodAnalytics();syncWeightChartNavigator();
     });
   }
