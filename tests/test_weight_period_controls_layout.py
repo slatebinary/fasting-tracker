@@ -46,6 +46,10 @@ with sync_playwright() as p:
         # The list starts with the seven newest measurements. Older history
         # is revealed through a compact button and a period dropdown.
         history_rows = page.locator("#weightHistoryList .historyRow")
+        page.wait_for_function(
+            "document.querySelectorAll('#weightHistoryList .historyRow').length === 7",
+            timeout=10000,
+        )
         assert history_rows.count() == 7
         history_button = page.locator("#weightHistoryMoreBtn")
         history_range = page.locator("#weightHistoryRange")
