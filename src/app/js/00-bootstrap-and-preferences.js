@@ -203,6 +203,7 @@
   let weightAggregateCache = new Map();
   let weightChartScaleCache = null;
   let weightPeriodMode = 'daily';
+  let weightChartStyle = (()=>{try{return localStorage.getItem('fastingTracker.weightChartStyle')==='fixed'?'fixed':'rolling';}catch{return 'rolling';}})();
   let chartInteractiveLayout = [];
   let timelineChartGeometry = null;
   let timelineChartDays = [];
