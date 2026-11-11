@@ -156,8 +156,7 @@ console.log('PASS: manual backup color-coded status, export action and translate
 // v1.12.8: the section header is a dedicated row; backup attention appears below.
 assert.match(index, /<div class="sectionHeader fastingSectionHeader"><h1[^>]*>Fasting<\/h1><button id="shareProgressBtn"/);
 assert.match(index, /<div id="fastingBackupRow" class="fastingBackupRow" hidden>/);
-assert.match(index, /const visible = state === 'stale' \|\| state === 'never' \|\| state === 'aged'/);
-assert.match(index, /Date\.now\(\) < backupSuccessVisibleUntil/);
+assert.match(index, /const visible = state !== 'empty'/);
 assert.match(index, /row\.hidden = !visible/);
 assert.match(index, /banner\.hidden = !snapshotAttention/);
 console.log('PASS: v1.12.8 consistent fasting header and attention-only backup action');
