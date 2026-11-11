@@ -484,6 +484,10 @@
     if (restoreDueSnoozedNotificationDetails()) renderNotificationDetails();
   }, 30 * 1000);
   setInterval(() => {
+    notificationRuntimeState = loadNotificationRuntimeState();
+    if (restoreDueSnoozedNotificationDetails()) renderNotificationDetails();
+  }, 30 * 1000);
+  setInterval(() => {
     if (document.hidden) return;
     const screen = activeScreenId();
     if (!data.activeStart && screen === 'fasting') updateTimer();
