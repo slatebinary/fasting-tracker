@@ -979,7 +979,7 @@
   "reset.typePhrase": "Escribe {phrase} exactamente para activar el botón final:",
   "reset.confirmAll": "Eliminar definitivamente todos los datos",
   "reset.confirmRecovery": "Empezar de nuevo y reemplazar los datos",
-  "backupChip.current": "Copia al día",
+  "backupChip.current": "Copia al día — sin cambios desde la última copia JSON externa",
   "backupChip.currentHelp": "Exportación manual JSON registrada el {date}. No hay cambios de ayuno ni peso desde entonces. La aplicación no puede verificar que el archivo siga guardado fuera de ella.",
   "backupChip.aged": "Copia de más de 7 días",
   "backupChip.agedHelp": "La última exportación manual JSON registrada fue el {date}. Los datos no han cambiado, pero se recomienda una nueva copia externa.",
