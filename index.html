@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.78" />
+  <meta name="ft-app-version" content="1.17.79" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -764,6 +764,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .notificationDetailDismiss { flex:0 0 auto; white-space:nowrap; }
     @media (max-width: 420px) { .notificationDetailHeader { gap:8px; } .notificationDetailActions { gap:5px; } .notificationDetailActions button { padding-inline:9px; } }
     @media (prefers-reduced-motion: reduce) { .settingsGroupChevron { transition:none; } }
+
+    .notificationDetailSnoozeRow { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .notificationDetailSnoozeDuration { min-height:40px; max-width:130px; }
 </style>
 </head>
 <body>
@@ -1221,6 +1224,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 <div class="row">
 <div><strong data-i18n="notifications.weighIn" id="notificationWeighLabel">Weigh-in reminder</strong><div class="small" data-i18n="notifications.weighInHelp">Optional reminder after the selected interval has passed since the latest weight entry.</div></div>
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><input id="notificationWeighCadence" type="hidden" value="weekly"/><div aria-label="Weigh-in reminder cadence" class="notificationCadenceToggle" data-i18n-aria="notifications.weighCadence" id="notificationWeighCadenceButtons" role="group"><button aria-pressed="false" data-i18n="notifications.daily" data-notification-cadence="daily" id="notificationWeighDailyBtn" type="button">Daily</button><button aria-pressed="true" class="active" data-i18n="notifications.weekly" data-notification-cadence="weekly" id="notificationWeighWeeklyBtn" type="button">Weekly</button></div><label class="toggleWrap"><input aria-labelledby="notificationWeighLabel" id="notificationWeighToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.weightSnoozeDefault" id="notificationWeightSnoozeLabel">Default weigh-in snooze</strong><div class="small" data-i18n="notifications.weightSnoozeHelp">Default delay when you snooze a weigh-in reminder.</div></div>
+<select id="notificationWeightSnoozeDefault" aria-labelledby="notificationWeightSnoozeLabel"></select>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.fastingSnoozeDefault" id="notificationFastingSnoozeLabel">Default fasting reminder snooze</strong><div class="small" data-i18n="notifications.fastingSnoozeHelp">Default delay when you snooze a fasting target, safety or cycle reminder.</div></div>
+<select id="notificationFastingSnoozeDefault" aria-labelledby="notificationFastingSnoozeLabel"></select>
 </div>
 <div class="row">
 <div><strong data-i18n="notifications.cycleComplete" id="notificationCycleLabel">24-hour-cycle remainder completed</strong><div class="small" data-i18n="notifications.cycleCompleteHelp">Optional neutral timing notice when the mathematical remainder after a sub-24-hour fast reaches zero.</div></div>
@@ -1905,7 +1916,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.78';
+  const APP_VERSION = '1.17.79';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1939,7 +1950,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const MAX_DATE_MS = 8.64e15;
   // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
   const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
-  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false }, language: 'system', appearance: 'system', iconChoice: 'plate' };
+  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false, weightSnoozeMinutes: 1440, fastingSnoozeMinutes: 60 }, language: 'system', appearance: 'system', iconChoice: 'plate' };
   const timeZoneValidityCache = new Map();
   const numberSymbolsCache = new Map();
   let preferredTimeZone = null;
@@ -3355,7 +3366,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       longFastSafety: value.longFastSafety !== false,
       weighIn: value.weighIn === true,
       weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
-      cycleComplete: value.cycleComplete === true
+      cycleComplete: value.cycleComplete === true,
+      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 1440,
+      fastingSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.fastingSnoozeMinutes)) ? Number(value.fastingSnoozeMinutes) : 60
     };
   }
 
@@ -3409,9 +3422,70 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return clean;
   }
 
+  const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080]);
+  function notificationSnoozeCategory(kind) {
+    if (kind === 'weigh-in') return 'weight';
+    return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
+  }
+  function notificationSnoozeDefaultMinutes(kind) {
+    const prefs = notificationPrefs();
+    return notificationSnoozeCategory(kind) === 'weight' ? prefs.weightSnoozeMinutes : prefs.fastingSnoozeMinutes;
+  }
+  function notificationSnoozeDurationLabel(minutes) {
+    if (minutes < 60) return `${minutes} ${t(pluralKey('unit.minute', minutes))}`;
+    if (minutes < 1440) { const count = minutes / 60; return `${formatNumber(count)} ${t(pluralKey('unit.hour', count))}`; }
+    const count = minutes / 1440;
+    return `${formatNumber(count)} ${t(pluralKey('unit.day', count))}`;
+  }
+  function snoozeNotificationDetail(id, durationMinutes) {
+    const duration = Number(durationMinutes);
+    if (!NOTIFICATION_SNOOZE_MINUTES.includes(duration)) return false;
+    const item = notificationDetailItems().find(entry => entry.id === id);
+    if (!item || !notificationSnoozeCategory(item.kind)) return false;
+    const until = Date.now() + duration * 60000;
+    notificationRuntimeState.details = notificationDetailItems().filter(entry => entry.id !== id);
+    const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
+    notificationRuntimeState.snoozedDetails = [{...item, snoozedUntil:new Date(until).toISOString()}, ...pending.filter(entry => entry?.id !== id)].slice(0, NOTIFICATION_DETAIL_LIMIT);
+    saveNotificationRuntimeState();
+    renderNotificationDetails();
+    return true;
+  }
+  function restoreDueSnoozedNotificationDetails(nowMs = Date.now()) {
+    const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
+    const due = [], remaining = [];
+    for (const item of pending) {
+      const until = validDate(item?.snoozedUntil);
+      if (!item || typeof item !== 'object' || !String(item.id || '') || !until) continue;
+      if (until.getTime() <= nowMs) due.push(item);
+      else remaining.push(item);
+    }
+    if (!due.length) return false;
+    const active = notificationDetailItems();
+    for (const item of due) {
+      if (active.some(entry => entry.id === item.id)) continue;
+      const restored = {id:String(item.id),kind:String(item.kind),screen:APP_SCREENS.includes(item.screen)?item.screen:'fasting',createdAt:new Date(nowMs).toISOString(),params:item.params&&typeof item.params==='object'?item.params:{}};
+      active.unshift(restored);
+      const copy = notificationDetailCopy(restored.kind, restored.params);
+      let deviceBody = copy.body;
+      if (restored.kind === 'target') deviceBody = t('notifications.targetBodyShort',{target:formatGoal(sanitizeGoal(restored.params.targetHours,activeTargetHours()))});
+      else if (restored.kind === 'safety') deviceBody = t('notifications.safetyBodyShort');
+      else if (restored.kind === 'cycle') deviceBody = t('notifications.cycleBodyShort');
+      else if (restored.kind === 'weigh-in') {
+        const cadenceKey = restored.params.cadence === 'daily' ? 'notifications.daily' : 'notifications.weekly';
+        deviceBody = t('notifications.weighBodyShort',{cadence:t(cadenceKey).toLowerCase()});
+      }
+      void sendDeviceNotification(restored.kind, copy.title, deviceBody, {screen:restored.screen,tag:restored.id,detailParams:restored.params,recordDetail:false});
+    }
+    notificationRuntimeState.snoozedDetails = remaining;
+    notificationRuntimeState.details = active.slice(0, NOTIFICATION_DETAIL_LIMIT);
+    saveNotificationRuntimeState();
+    return true;
+  }
+
   function recordNotificationDetail(kind, {screen='fasting', tag=null, params={}} = {}) {
     const id = String(tag || `fasting-tracker-${kind}-${Date.now()}`);
     const current = notificationDetailItems().filter(item => item.id !== id);
+    notificationRuntimeState.snoozedDetails = (Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : []).filter(item => item?.id !== id);
     notificationRuntimeState.details = [{id, kind, screen:APP_SCREENS.includes(screen)?screen:'fasting', createdAt:new Date().toISOString(), params}, ...current].slice(0, NOTIFICATION_DETAIL_LIMIT);
     saveNotificationRuntimeState();
     renderNotificationDetails();
@@ -3424,6 +3498,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
 
   function renderNotificationDetails() {
     const stack = el('notificationDetailStack'); if (!stack) return;
+    restoreDueSnoozedNotificationDetails();
     const items = notificationDetailItems(); stack.replaceChildren(); stack.hidden = items.length === 0;
     for (const item of items) {
       const copy = notificationDetailCopy(item.kind, item.params);
@@ -3442,7 +3517,18 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       actions.append(dismiss);
       header.append(heading,actions);
       const body=document.createElement('div'); body.className='notificationDetailBody'; body.textContent=copy.body;
-      card.append(header,body); stack.append(card);
+      card.append(header,body);
+      if (notificationSnoozeCategory(item.kind)) {
+        const snoozeRow=document.createElement('div'); snoozeRow.className='notificationDetailSnoozeRow';
+        const duration=document.createElement('select'); duration.className='notificationDetailSnoozeDuration'; duration.setAttribute('aria-label',t('notifications.snoozeDurationAria',{title:copy.title}));
+        for (const minutes of NOTIFICATION_SNOOZE_MINUTES) { const option=document.createElement('option'); option.value=String(minutes); option.textContent=notificationSnoozeDurationLabel(minutes); duration.append(option); }
+        duration.value=String(notificationSnoozeDefaultMinutes(item.kind));
+        const snooze=document.createElement('button'); snooze.type='button'; snooze.className='secondary notificationDetailSnooze'; snooze.textContent=t('notifications.snoozeAction'); snooze.setAttribute('aria-label',t('notifications.detailsSnoozeAria',{title:copy.title}));
+        snooze.addEventListener('click',()=>snoozeNotificationDetail(item.id,duration.value));
+        snoozeRow.append(duration,snooze);
+        card.append(snoozeRow);
+      }
+      stack.append(card);
     }
   }
   function migrateData(parsed) {
@@ -4119,7 +4205,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return prefs.enabled === true && prefs[key] === true && notificationPermissionState() === 'granted';
   }
 
-  async function sendDeviceNotification(kind, title, body, {screen='fasting', tag=null, detailParams={}} = {}) {
+  async function sendDeviceNotification(kind, title, body, {screen='fasting', tag=null, detailParams={}, recordDetail=true} = {}) {
     if (notificationPermissionState() !== 'granted') return false;
     const detailId = String(tag || `fasting-tracker-${kind}`);
     const options = {
@@ -4138,7 +4224,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       }
     } catch {}
     if (!sent) { try { new Notification(title, options); sent = true; } catch {} }
-    if (sent) recordNotificationDetail(kind, {screen, tag:detailId, params:detailParams});
+    if (sent && recordDetail) recordNotificationDetail(kind, {screen, tag:detailId, params:detailParams});
     return sent;
   }
 
@@ -4262,12 +4348,16 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   async function checkFastNotifications() {
+    notificationRuntimeState = loadNotificationRuntimeState();
+    if (restoreDueSnoozedNotificationDetails()) renderNotificationDetails();
     await maybeNotifyTargetReached();
     await maybeNotifyLongFastSafety();
     await maybeNotifyCycleComplete();
   }
 
   async function checkMaintenanceNotifications() {
+    notificationRuntimeState = loadNotificationRuntimeState();
+    if (restoreDueSnoozedNotificationDetails()) renderNotificationDetails();
     await maybeNotifyBackupDue();
     await maybeNotifyWeighIn();
   }
@@ -4302,6 +4392,19 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     renderNotificationSettings();
   }
 
+  function renderNotificationSnoozeOptions(id, selectedMinutes) {
+    const select = el(id);
+    if (!select) return;
+    select.replaceChildren();
+    for (const minutes of NOTIFICATION_SNOOZE_MINUTES) {
+      const option = document.createElement('option');
+      option.value = String(minutes);
+      option.textContent = notificationSnoozeDurationLabel(minutes);
+      select.append(option);
+    }
+    select.value = String(selectedMinutes);
+  }
+
   function renderNotificationSettings() {
     const prefs = notificationPrefs();
     const master = el('notificationMasterToggle');
@@ -4314,6 +4417,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     el('notificationWeighToggle').checked = prefs.weighIn;
     el('notificationCycleToggle').checked = prefs.cycleComplete;
     renderWeighCadenceButtons('notification', prefs.weighInCadence);
+    renderNotificationSnoozeOptions('notificationWeightSnoozeDefault', prefs.weightSnoozeMinutes);
+    renderNotificationSnoozeOptions('notificationFastingSnoozeDefault', prefs.fastingSnoozeMinutes);
     const permission = notificationPermissionState();
     const badge = el('notificationPermissionBadge');
     badge.textContent = t(permission === 'granted' && prefs.enabled ? 'notifications.badgeOn' : permission === 'denied' ? 'notifications.badgeBlocked' : permission === 'unsupported' ? 'notifications.badgeUnavailable' : 'notifications.badgeOff');
@@ -4341,6 +4446,15 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
     renderNotificationSettings();
     if (prefs.enabled) { checkFastNotifications(); checkMaintenanceNotifications(); }
+  }
+
+  function saveNotificationSnoozeDefault(key, value) {
+    const duration = Number(value);
+    if (!NOTIFICATION_SNOOZE_MINUTES.includes(duration)) return;
+    const prefs = notificationPrefs();
+    prefs[key] = duration;
+    if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
+    renderNotificationSettings();
   }
 
   function saveNotificationOption(key, value) {
@@ -5467,6 +5581,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     scroller.scrollLeft=weightChartProgrammaticScrollLeft;
     drawWeightChart();
     renderWeightChartData();
+    renderWeightPeriodAnalytics();
     syncWeightChartNavigator();
   }
   function shiftWeightChartViewport(direction){
@@ -5497,7 +5612,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if(!start||start.id!==event.pointerId)return;
     if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
     const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;
-    weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
+    weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();renderWeightPeriodAnalytics();syncWeightChartNavigator();
   }
   function cancelWeightChartPointer(){weightChartPointerStart=null;}
 
@@ -5515,7 +5630,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
         if(!nearest?.count){let distance=Infinity;for(let i=0;i<buckets.length;i++){if(!buckets[i].count)continue;const d=Math.abs(i-index);if(d<distance){distance=d;nearest=buckets[i];}}}
         if(nearest?.count)weightChartSelectedId=nearest.key;
       }
-      drawWeightChart();renderWeightChartData();syncWeightChartNavigator();
+      drawWeightChart();renderWeightChartData();renderWeightPeriodAnalytics();syncWeightChartNavigator();
     });
   }
   function drawGenericBarChart(canvasId,items,valueKey,{maxValue=null,valueSuffix='',selectedKey=null,detailBuilder=null,percent=false,integerScale=false}={}){
@@ -5576,8 +5691,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     start.setHours(0,0,0,0);
     return { start, end };
   }
-  function weightEntriesForPeriod(asc = sortedWeightsAsc(), mode = weightPeriodMode, now = new Date()) {
-    const {start, end} = weightPeriodBounds(mode, now);
+  function weightEntriesForPeriod(asc = sortedWeightsAsc(), mode = weightPeriodMode, now = new Date(), explicitBounds = null) {
+    const {start, end} = explicitBounds || weightPeriodBounds(mode, now);
     const startIso = start.toISOString(), endIso = end.toISOString();
     let lo = 0, hi = asc.length;
     while (lo < hi) { const mid = (lo + hi) >> 1; if (String(asc[mid].when) < startIso) lo = mid + 1; else hi = mid; }
@@ -5710,6 +5825,25 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     }
     weightAggregateCache.set(key,result); return result;
   }
+  function selectedWeightPeriodBounds(asc = sortedWeightsAsc(), mode = weightPeriodMode) {
+    const buckets = buildWeightAggregateBuckets(asc, mode);
+    let selected = buckets.find(bucket => bucket.key === weightChartSelectedId && bucket.count > 0);
+    if (!selected) selected = [...buckets].reverse().find(bucket => bucket.count > 0) || null;
+    let endDay = mode === 'daily' && selected?.entry
+      ? weightEntryCalendarDay(selected.entry)
+      : selected?.calendarDay;
+    if (!endDay) endDay = dayKeyFast(new Date(), currentTimeZone());
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(endDay));
+    if (!match) return weightPeriodBounds(mode);
+    const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+    const end = new Date(year, month - 1, day, 23, 59, 59, 999);
+    const days = mode === 'daily' ? 30 : weightRollingWindowDays(mode);
+    const start = new Date(year, month - 1, day);
+    start.setDate(start.getDate() - Math.max(0, days - 1));
+    start.setHours(0, 0, 0, 0);
+    return {start, end};
+  }
+
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
     if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'daily';
     document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => {
@@ -5717,8 +5851,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-selected', String(active));
     });
-    const bounds = weightPeriodBounds(weightPeriodMode);
-    const entries = weightEntriesForPeriod(asc, weightPeriodMode, bounds.end);
+    const bounds = selectedWeightPeriodBounds(asc, weightPeriodMode);
+    const entries = weightEntriesForPeriod(asc, weightPeriodMode, bounds.end, bounds);
     const range = weightPeriodDateRangeLabel(bounds.start, bounds.end);
     const summary = el('weightPeriodRange');
     if (summary) {
@@ -8525,6 +8659,8 @@ function mergeImportedData(imported) {
   document.querySelectorAll('[data-notification-cadence]').forEach(btn => bindResponsiveAction(btn, () => setSettingsWeighCadence(btn.dataset.notificationCadence)));
   el('notificationCycleToggle').addEventListener('change', () => saveNotificationOption('cycleComplete', el('notificationCycleToggle').checked));
   el('notificationTestBtn').addEventListener('click', sendTestNotification);
+  el('notificationWeightSnoozeDefault').addEventListener('change', () => saveNotificationSnoozeDefault('weightSnoozeMinutes', el('notificationWeightSnoozeDefault').value));
+  el('notificationFastingSnoozeDefault').addEventListener('change', () => saveNotificationSnoozeDefault('fastingSnoozeMinutes', el('notificationFastingSnoozeDefault').value));
 
   const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html','changelog.html']);
   function rememberDocumentReturn(event) {
@@ -9471,6 +9607,10 @@ function mergeImportedData(imported) {
   setTimeout(() => { checkFastNotifications(); checkMaintenanceNotifications(); }, 700);
   setInterval(checkFastNotifications, 15000);
   setInterval(checkMaintenanceNotifications, 15 * 60 * 1000);
+  setInterval(() => {
+    notificationRuntimeState = loadNotificationRuntimeState();
+    if (restoreDueSnoozedNotificationDetails()) renderNotificationDetails();
+  }, 30 * 1000);
   setInterval(() => {
     if (document.hidden) return;
     const screen = activeScreenId();
