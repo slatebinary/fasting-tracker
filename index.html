@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.76" />
+  <meta name="ft-app-version" content="1.17.77" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -500,9 +500,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .fastingSectionHeader h1 { flex:1 1 auto; min-width:0; }
     .fastingSectionHeader #shareProgressBtn { flex:0 0 auto; max-width:55%; min-height:44px; padding:10px 12px; font-size:13px; line-height:1.2; }
     .fastingSectionHeader.hasBackupAttention { margin-bottom:8px; }
-    .fastingBackupRow { display:flex; align-items:center; margin:0 0 14px; }
+    .fastingBackupRow { display:flex; align-items:center; width:100%; margin:0 0 14px; }
     .fastingBackupRow[hidden] { display:none !important; }
-    .backupStatusButton { min-height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:12px; color:var(--muted); background:var(--card); white-space:normal; text-align:left; font-size:13px; line-height:1.3; }
+    .backupStatusButton { min-height:44px; width:fit-content; max-width:100%; display:inline-flex; align-items:center; justify-content:flex-start; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:12px; color:var(--muted); background:var(--card); white-space:normal; text-align:left; font-size:13px; line-height:1.3; }
     .backupStatusDot { width:10px; height:10px; flex:none; border-radius:50%; background:currentColor; }
     .backupStatusButton[data-state="current"] { color:var(--good); background:color-mix(in srgb,var(--good) 9%,var(--card)); border-color:color-mix(in srgb,var(--good) 37%,var(--line)); }
     .backupStatusButton[data-state="aged"] { color:var(--text); background:color-mix(in srgb,#d78e16 15%,var(--card)); border-color:#ba881d; }
@@ -1898,14 +1898,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 37;
+  const I18N_SOURCE_REVISION = 38;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.76';
+  const APP_VERSION = '1.17.77';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -7261,23 +7261,20 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
   }
 
-  let backupSuccessVisibleUntil = 0;
-  let backupSuccessHideTimer = 0;
   function renderFastingBackupIndicator(freshness, due) {
     const row=el('fastingBackupRow'), header=el('fasting')?.querySelector('.fastingSectionHeader');
     const button=el('fastingBackupStatusBtn'), text=el('fastingBackupStatusText');
     if (!row || !header || !button || !text) return;
     const age = freshness.last ? Date.now() - freshness.last.getTime() : 0;
     const state = freshness.state === 'current' && age >= BACKUP_REMINDER_MS ? 'aged' : freshness.state;
-    const visible = state === 'stale' || state === 'never' || state === 'aged' ||
-      (state === 'current' && Date.now() < backupSuccessVisibleUntil);
+    const visible = state !== 'empty';
     const labelKey = 'backupChip.' + state;
     const descriptionKey = 'backupChip.' + state + 'Help';
-    const date = freshness.last ? localDateTimeLabel(freshness.last) : '';
+    const date = freshness.last ? localDateTimeLabel(freshness.last, deviceTimeZone()) : '';
     const status = t(labelKey);
     const explanation = t(descriptionKey, {date});
     button.dataset.state=state;
-    const visibleStatus = freshness.last ? `${status} — ${date}` : status;
+    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : freshness.last ? `${status} — ${date}` : status;
     if (text.textContent!==visibleStatus) text.textContent=visibleStatus;
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
@@ -7303,9 +7300,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const freshnessLabel=el('backupFreshnessLabel');
     if (!label || !banner || !textBox) return;
     const last = validDate(backupMeta.lastExternalBackupAt);
-    label.textContent = last ? localDateTimeLabel(last) : t('backup.noneYet');
+    label.textContent = last ? localDateTimeLabel(last, deviceTimeZone()) : t('backup.noneYet');
     const freshness=backupFreshnessState();
-    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last)}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
@@ -7387,9 +7384,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   async function saveManualSnapshotFromModal(){const input=el('manualSnapshotLabel'),btn=el('manualSnapshotSaveBtn');if(btn)btn.disabled=true;announceDiagnosticAction(t('actionFeedback.snapshotRunning'),'info');try{if(!(await allowStorageIntensiveOperation())){announceDiagnosticAction(t('actionFeedback.cancelled'),'warning');return;}const ok=await createManualRecoverySnapshot(input?.value||'');if(ok){hideModal('manualSnapshotModal');alert(t('actionFeedback.snapshotCreated'));}}catch(err){noteDiagnosticError('snapshot.manual');announceDiagnosticAction(t('actionFeedback.snapshotFailed'),'error');alert(t('backup.snapshotFailed'));}finally{if(btn)btn.disabled=false;}}
 
   function markExternalBackupNow(exportedData = data) {
-    backupSuccessVisibleUntil = Date.now() + 7000;
-    if (backupSuccessHideTimer) clearTimeout(backupSuccessHideTimer);
-    backupSuccessHideTimer = setTimeout(() => { backupSuccessHideTimer = 0; renderBackupStatus(); }, 7000);
     backupMeta.lastExternalBackupAt = new Date().toISOString();
     backupMeta.lastExternalBackupRevision = Math.max(0,Number(exportedData.revision)||0);
     backupMeta.lastExternalBackupDataUpdatedAt = validDate(exportedData.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
