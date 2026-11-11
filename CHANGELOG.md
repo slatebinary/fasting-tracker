@@ -1,3 +1,10 @@
+## v1.17.78 — 2026-11-11
+
+- Prevent duplicate weigh-in notifications when startup, foreground-resume and periodic maintenance checks overlap.
+- Coordinate weigh-in delivery across same-origin app contexts with the Web Locks API where available; reserve the reminder token before asynchronous delivery and use an expiring persisted reservation as a fallback.
+- Release the reservation after failed delivery so the reminder can be retried; retain the existing stable notification tag and successful-delivery token.
+- Extend browser regression coverage to fire repeated foreground checks and verify that only one device reminder is emitted.
+
 ## v1.17.77 — 2026-11-11
 
 - Keep the green current external JSON backup indicator visible instead of hiding it after the seven-second confirmation period.

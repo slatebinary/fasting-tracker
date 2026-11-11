@@ -23,7 +23,14 @@ with sync_playwright() as p:
         requestPermission:async()=>{ MockNotification.permission='granted'; return 'granted'; }
       };
       Object.defineProperty(window,'Notification',{value:MockNotification,configurable:true});
-      const registration={showNotification:async(title,options)=>{window.__ftNotifications.push({title,options});}};
+      window.__ftHoldWeighIn=false;
+      window.__ftReleaseWeighIn=null;
+      const registration={showNotification:async(title,options)=>{
+        if(options?.tag?.startsWith('fasting-weigh-') && window.__ftHoldWeighIn) {
+          await new Promise(resolve=>{window.__ftReleaseWeighIn=resolve;});
+        }
+        window.__ftNotifications.push({title,options});
+      }};
       const sw={ready:Promise.resolve(registration),register:async()=>({}),addEventListener:()=>{},controller:null};
       Object.defineProperty(navigator,'serviceWorker',{value:sw,configurable:true});
     }""")
@@ -77,9 +84,18 @@ with sync_playwright() as p:
     if 'lock screen' not in page.locator('#notificationsCard').inner_text().lower():
         print('FAIL: lock-screen privacy warning is missing'); sys.exit(1)
 
+    # Hold the due weigh-in delivery while concurrent foreground checks run.
+    page.evaluate("() => { window.__ftHoldWeighIn=true; }")
     page.locator('#notificationMasterToggle').click()
     page.wait_for_function("document.querySelector('#notificationPermissionBadge')?.textContent === 'On'",timeout=5000)
     page.wait_for_function("window.__ftNotifications.length >= 2",timeout=5000)
+    page.wait_for_function("window.__ftReleaseWeighIn !== null",timeout=5000)
+    page.evaluate("""() => {
+      for (let i=0;i<6;i++) document.dispatchEvent(new Event('visibilitychange'));
+      window.__ftHoldWeighIn=false;
+      window.__ftReleaseWeighIn();
+    }""")
+    page.wait_for_function("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-weigh-')).length === 1",timeout=5000)
     sent=page.evaluate("window.__ftNotifications.map(x=>x.title)")
     if not any('target' in x.lower() for x in sent) or not any('safety' in x.lower() for x in sent):
         print('FAIL: enabling notifications did not emit due target + safety alerts:',sent); sys.exit(1)
@@ -103,7 +119,7 @@ with sync_playwright() as p:
     # the weight form and dismisses only that reminder detail.
     page.locator('#notificationWeighToggle').click()
     page.locator('#notificationMasterToggle').click()  # off
-    page.locator('#notificationMasterToggle').click()  # on; rechecks due weigh-in
+    page.locator('#notificationMasterToggle').click()  # on; previously delivered reminder detail remains available
     page.wait_for_function("document.querySelectorAll('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]').length === 1",timeout=5000)
     weigh_card=page.locator('#notificationDetailStack [data-notification-detail-id^="fasting-weigh-"]')
     if weigh_card.locator('.notificationDetailAddWeight').count()!=1 or weigh_card.locator('.notificationDetailDismiss').count()!=1:

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.77",
+  "version": "1.17.78",
   "released": "2026-11-11",
-  "notes": "Keep the current external JSON backup indicator visible after the temporary confirmation window, show the no-changes-since-backup status and render external backup timestamps in the device timezone.",
+  "notes": "Prevent duplicate weigh-in reminders when startup, foreground and periodic notification checks overlap; coordinate across app contexts and release failed-delivery reservations for safe retries.",
   "entry": "./index.html",
   "shell": [
     "./",

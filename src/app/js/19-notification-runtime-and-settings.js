@@ -107,7 +107,17 @@
     return latest;
   }
 
+  // Prevent overlapping startup, foreground and timer checks from delivering the
+  // same weigh-in reminder more than once. Web Locks coordinate separate tabs;
+  // the persisted short lease is the fallback and recovers automatically after a crash.
+  let weighInNotificationPromise = null;
+
   async function maybeNotifyWeighIn(nowMs = Date.now()) {
+    if (weighInNotificationPromise) return weighInNotificationPromise;
+    const run = async () => {
+    // Refresh persisted state after acquiring the cross-context lock; another
+    // tab may have delivered this reminder while this context was suspended.
+    notificationRuntimeState = loadNotificationRuntimeState();
     const prefs = notificationPrefs();
     if (!notificationEnabledFor('weighIn')) return false;
     const cadenceMs = prefs.weighInCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
@@ -122,10 +132,31 @@
     if (!Number.isFinite(anchorMs) || nowMs < anchorMs + cadenceMs) return false;
     const token = `${prefs.weighInCadence}:${tokenBase}`;
     if (notificationRuntimeState.weighInToken === token) return false;
+    const reservation = notificationRuntimeState.weighInReservation;
+    const reservedAt = Number(reservation?.reservedAt);
+    if (reservation?.token === token && Number.isFinite(reservedAt) && Date.now() - reservedAt < 120000) return false;
+
+    // Reserve synchronously before the first await. Other app contexts will see
+    // the reservation even where the Web Locks API is unavailable.
+    notificationRuntimeState.weighInReservation = {token, reservedAt:Date.now()};
+    saveNotificationRuntimeState();
     const cadence = t(prefs.weighInCadence === 'daily' ? 'notifications.daily' : 'notifications.weekly').toLowerCase();
-    const sent = await sendDeviceNotification('weigh-in', t('notifications.weighTitle'), t('notifications.weighBodyShort', {cadence}), {screen:'weight',tag:`fasting-weigh-${token}`,detailParams:{cadence:prefs.weighInCadence}});
-    if (sent) { notificationRuntimeState.weighInToken = token; saveNotificationRuntimeState(); }
-    return sent;
+    let sent = false;
+    try {
+      sent = await sendDeviceNotification('weigh-in', t('notifications.weighTitle'), t('notifications.weighBodyShort', {cadence}), {screen:'weight',tag:`fasting-weigh-${token}`,detailParams:{cadence:prefs.weighInCadence}});
+      if (sent) notificationRuntimeState.weighInToken = token;
+      return sent;
+    } finally {
+      if (notificationRuntimeState.weighInReservation?.token === token) delete notificationRuntimeState.weighInReservation;
+      saveNotificationRuntimeState();
+    }
+    };
+    const operation = typeof navigator.locks?.request === 'function'
+      ? navigator.locks.request('fasting-tracker-weigh-in-reminder', run)
+      : run();
+    weighInNotificationPromise = operation;
+    try { return await operation; }
+    finally { if (weighInNotificationPromise === operation) weighInNotificationPromise = null; }
   }
 
   async function checkFastNotifications() {
