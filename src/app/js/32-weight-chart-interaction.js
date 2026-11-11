@@ -26,7 +26,7 @@
     const ctx = c.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.clearRect(0,0,viewportW,cssH);
 
     const chartNote = el('weightChartNote');
-    if (chartNote) chartNote.textContent = t('weight.chartHelp');
+    if (chartNote) chartNote.textContent = weightPeriodMode === 'daily' ? t('weight.chartHelp') : t('weight.rollingChartHelp',{days:weightRollingWindowDays(weightPeriodMode)});
     const detail = el('weightChartDetail');
     weightChartHitPoints = [];
     const style = getComputedStyle(document.documentElement);
@@ -61,10 +61,10 @@
     const dailySpacing=buckets.length<=30
       ? Math.max(1,plotW/Math.max(1,buckets.length-1))
       : Math.max(10,Math.min(22,plotW/29));
-    // Daily retains its fine-grained, scrollable history. Weekly and broader
-    // aggregates distribute all non-empty periods across the available width.
-    const pointSpacing=weightPeriodMode==='daily' ? dailySpacing : plotW/Math.max(1,buckets.length-1);
-    const virtualPlotW=weightPeriodMode==='daily' ? Math.max(plotW,(buckets.length-1)*pointSpacing) : plotW;
+    // Every non-daily mode is a rolling series sampled on actual measurement
+    // dates. Keep the same dense, scrollable navigation model as Daily.
+    const pointSpacing=dailySpacing;
+    const virtualPlotW=Math.max(plotW,(buckets.length-1)*pointSpacing);
     const trackW=Math.ceil(left+virtualPlotW+right);
     track.style.width=`${Math.max(viewportW,trackW)}px`;
     scroller.dataset.period = weightPeriodMode;
@@ -120,7 +120,7 @@
       }
       if(detail){
         if(weightPeriodMode==='daily'&&bucket.entry) detail.textContent=t('weight.pointDetail',{weight:formatWeight(bucket.entry.kg,unit),date:localDateTimeLabel(bucket.entry.when,bucket.entry.timeZone)});
-        else {const count=bucket.count;detail.textContent=t('weight.aggregatePointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count))});}
+        else {const count=bucket.count,calendar=bucket.calendarBucket;detail.textContent=t('weight.rollingPointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),days:bucket.rollingWindowDays,count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,unit):'—',calendarCount:calendar?formatNumber(calendar.count):'0'});}
         detail.hidden=false;
       }
     } else if(detail){detail.hidden=true;detail.textContent='';}
@@ -146,8 +146,7 @@
   }
   function weightChartPointSpacing(){
     const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
-    if(weightPeriodMode==='daily')return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
-    return plotW/Math.max(1,buckets.length-1);
+    return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
   }
   function syncWeightChartNavigator(){
     const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
