@@ -17,6 +17,35 @@
     renderDeletedWeights();
   }
 
+  function weightHistoryRangeCutoff(range) {
+    const months = ({month:1,halfyear:6,year:12})[range];
+    if (!months) return null;
+    const now = new Date();
+    const cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+    cutoff.setMonth(cutoff.getMonth() - months);
+    const day = Math.min(now.getDate(), new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0).getDate());
+    cutoff.setDate(day);
+    cutoff.setHours(0, 0, 0, 0);
+    return cutoff.getTime();
+  }
+
+  function weightHistoryRecordsForDisplay(sortedDesc) {
+    if (weightHistoryRange === 'recent7') return sortedDesc.slice(0, 7);
+    if (weightHistoryRange === 'all') return sortedDesc;
+    const cutoff = weightHistoryRangeCutoff(weightHistoryRange);
+    return cutoff == null ? sortedDesc.slice(0, 7) : sortedDesc.filter(w => {
+      const timestamp = Date.parse(w.when);
+      return Number.isFinite(timestamp) && timestamp >= cutoff;
+    });
+  }
+
+  function visibleWeightHistoryRecords() {
+    const spec = weightFilterSpec();
+    const allDesc = [...sortedWeightsAsc()].reverse();
+    const filtered = weightFilterActive(spec) ? allDesc.filter(w => weightPassesFilter(w, spec)) : allDesc;
+    return weightHistoryRecordsForDisplay(filtered);
+  }
+
   function softDeleteWeightById(id, reason = 'user') {
     const index=data.weights.findIndex(w=>w.id===id);if(index<0||data.deletedWeights.some(w=>w.id===id))return false;
     const original=data.weights[index],tombstone={...original,deleted:true,deletedAt:new Date().toISOString(),deletedTimeZone:currentTimeZone(),deletionReason:String(reason||'user').slice(0,80)};
@@ -49,8 +78,9 @@
     el('wTarget').textContent = data.targetWeightKg == null ? '—' : formatWeight(data.targetWeightKg, unit);
     el('wToTarget').textContent = latest && data.targetWeightKg != null ? formatWeight(latest.kg - data.targetWeightKg, unit, true) : '—';
 
-    const box=el('weightHistoryList');box.replaceChildren();const spec=weightFilterSpec();const allDesc=[...asc].reverse();const sortedDesc=weightFilterActive(spec)?allDesc.filter(w=>weightPassesFilter(w,spec)):allDesc;const filterStatus=el('weightFilterStatus');if(filterStatus)filterStatus.textContent=t('history.filterCount',{shown:sortedDesc.length,total:asc.length});
-    if(!sortedDesc.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=asc.length?t('history.filterNoMatch'):t('weight.empty');box.append(empty);}else{const visibleWeights=sortedDesc.slice(0,weightVisibleCount);visibleWeights.forEach(w=>{const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(w.when,w.timeZone);left.append(strong);const when=document.createElement('div');when.className='small';when.textContent=localDateTimeLabel(w.when,w.timeZone);left.append(when);const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const val=document.createElement('div');val.className='duration';val.textContent=formatWeight(w.kg,unit);right.append(val);if(!weightBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');bindResponsiveAction(edit, () => openWeightModal(w));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');bindResponsiveAction(del, () => {if(!confirm(t('weight.deleteConfirm')))return;if(!softDeleteWeightById(w.id,'user')){renderAll();return;}renderWeight();showUndoToast(t('weight.deletedUndo'),()=>{if(restoreDeletedWeightById(w.id))renderWeight();});});actions.append(edit,del);right.append(actions);}row.append(left,right);box.append(row);});if(visibleWeights.length<sortedDesc.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:sortedDesc.length-visibleWeights.length});more.addEventListener('click',()=>{weightVisibleCount+=HISTORY_PAGE_SIZE;renderWeight();});wrap.append(more);box.append(wrap);}}
+    const box=el('weightHistoryList');box.replaceChildren();const spec=weightFilterSpec();const allDesc=[...asc].reverse();const sortedDesc=weightFilterActive(spec)?allDesc.filter(w=>weightPassesFilter(w,spec)):allDesc;const visibleWeights=weightHistoryRecordsForDisplay(sortedDesc);const filterStatus=el('weightFilterStatus');if(filterStatus)filterStatus.textContent=t('history.filterCount',{shown:sortedDesc.length,total:asc.length});
+    const controls=el('weightHistoryControls'),moreBtn=el('weightHistoryMoreBtn'),rangeSelect=el('weightHistoryRange');if(controls&&moreBtn&&rangeSelect){const hasOlder=sortedDesc.length>7;controls.hidden=!hasOlder;if(!hasOlder){weightHistoryRange='recent7';weightHistoryMenuOpen=false;}moreBtn.textContent=weightHistoryRange==='recent7'?(weightHistoryMenuOpen?t('weight.historyClose'):t('weight.historyMore')):t('weight.historyRecent');moreBtn.setAttribute('aria-expanded',String(weightHistoryMenuOpen));rangeSelect.hidden=!weightHistoryMenuOpen;rangeSelect.value=weightHistoryRange==='recent7'?'':weightHistoryRange;}
+    if(!visibleWeights.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=weightHistoryRange!=='recent7'?t('weight.historyRangeEmpty'):(asc.length?t('history.filterNoMatch'):t('weight.empty'));box.append(empty);}else{visibleWeights.forEach(w=>{const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(w.when,w.timeZone);left.append(strong);const when=document.createElement('div');when.className='small';when.textContent=localDateTimeLabel(w.when,w.timeZone);left.append(when);const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const val=document.createElement('div');val.className='duration';val.textContent=formatWeight(w.kg,unit);right.append(val);if(!weightBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');bindResponsiveAction(edit, () => openWeightModal(w));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');bindResponsiveAction(del, () => {if(!confirm(t('weight.deleteConfirm')))return;if(!softDeleteWeightById(w.id,'user')){renderAll();return;}renderWeight();showUndoToast(t('weight.deletedUndo'),()=>{if(restoreDeletedWeightById(w.id))renderWeight();});});actions.append(edit,del);right.append(actions);}row.append(left,right);box.append(row);}}
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
     renderDeletedWeights();
