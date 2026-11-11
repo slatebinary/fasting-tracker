@@ -58,7 +58,7 @@ with sync_playwright() as p:
     expected_general = {
         "theme": "colorblind",
         "bg": "#e5f1ff",
-        "card": "#f8fcff",
+        "card": "#ecf5ff",
         "accent": "#004f8a",
         "good": "#006f55",
         "danger": "#a84300",
@@ -73,7 +73,7 @@ with sync_playwright() as p:
     expected_specialized = {
         "theme": "protanopia",
         "bg": "#fff0a8",
-        "card": "#fffae8",
+        "card": "#fff2c5",
         "accent": "#5b2a86",
         "good": "#006f8a",
         "danger": "#8b5700",
