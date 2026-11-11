@@ -201,8 +201,8 @@
         // return. Refresh its selection detail explicitly, however: other
         // screens may have replaced the shared detail panel's contents.
         renderChartDetail(timelineChartDays);
-        scrollTimelineToLatest();
       }
+      if (target === 'stats' && statsVizMode === 'timeline') scrollTimelineToLatest();
       if (target === 'stats') verifyStatsVisualizationAfterLayout();
     });
   }
