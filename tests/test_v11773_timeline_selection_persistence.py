@@ -33,7 +33,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM)
     page.evaluate("""d => {
       __seedFastingDbV2(d, []);
-      localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion: VERSION_PLACEHOLDER}));
+      localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion: 'VERSION_PLACEHOLDER'}));
     }""".replace("VERSION_PLACEHOLDER", VERSION), data)
     page.set_content(inlined_html(), wait_until="domcontentloaded")
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{VERSION}'", timeout=20000)
