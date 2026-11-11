@@ -78,7 +78,7 @@ with sync_playwright() as p:
     if restored != selected:
         raise AssertionError(f"Timeline selection changed after Weight round-trip: {selected} -> {restored}")
     if (restored_title, restored_detail) != (title, detail):
-        raise AssertionError(f"Timeline detail was lost after Weight round-trip: {(title!r}/{detail!r} -> {restored_title!r}/{restored_detail!r}")
+        raise AssertionError(f"Timeline detail was lost after Weight round-trip: {title!r}/{detail!r} -> {restored_title!r}/{restored_detail!r}")
     if errors:
         raise AssertionError("Browser errors: " + " | ".join(errors[:5]))
     browser.close()
