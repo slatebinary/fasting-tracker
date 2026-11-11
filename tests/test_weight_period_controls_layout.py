@@ -51,6 +51,22 @@ with sync_playwright() as p:
         assert page.evaluate("localStorage.getItem('fastingTracker.weightChartStyle')")=="fixed"
         style_switcher.locator('[data-weight-style="rolling"]').click()
 
+        # The chart-data disclosure must keep its label, ARIA state and actual
+        # visibility synchronized in both directions.
+        data_button = page.locator("#weightChartDataBtn")
+        data_box = page.locator("#weightChartData")
+        assert data_button.get_attribute("aria-expanded") == "false"
+        assert data_box.is_hidden()
+        assert data_button.inner_text() == "Show chart data"
+        data_button.click()
+        assert data_button.get_attribute("aria-expanded") == "true"
+        assert data_box.is_visible(), "Show chart data must reveal the chart data"
+        assert data_button.inner_text() == "Hide chart data"
+        data_button.click()
+        assert data_button.get_attribute("aria-expanded") == "false"
+        assert data_box.is_hidden(), "Hide chart data must conceal the chart data"
+        assert data_button.inner_text() == "Show chart data"
+
         selector = page.locator("#weightPeriodSwitcher")
         assert selector.is_visible(), "Period selector must be visible"
         assert selector.evaluate(
