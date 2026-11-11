@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.79" />
+  <meta name="ft-app-version" content="1.17.80" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -569,6 +569,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightChartNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
     .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
+    .weightChartStyleSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; max-width:360px; margin:2px 0 8px; }
+    .weightChartStyleSwitcher button { min-width:0; width:100%; padding:9px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; }
+    .weightChartStyleSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
     .weightPeriodSwitcher { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:7px; overflow:visible; padding:4px 0 8px; margin:2px 0 10px; }
     .weightPeriodSwitcher button { min-width:0; width:100%; padding:10px 7px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; line-height:1.1; white-space:nowrap; }
     @media (max-width:520px) { .weightPeriodSwitcher { grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -636,6 +639,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightUnitToggle button.active { background:var(--card); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,.08); }
     .weightValue { font-variant-numeric: tabular-nums; }
     .weightHistory { margin-top: 14px; }
+    .weightHistoryControls { display:flex; align-items:center; gap:8px; margin:0 0 10px; }
+    .weightHistoryControls select { min-width:88px; max-width:140px; }
     .weightTargetRow { flex-wrap:wrap; align-items:center; }
     .weightTargetRow > div:first-child { flex:1 1 160px; min-width:0; }
     .weightTargetWrap { display:flex; align-items:center; gap:7px; flex:0 0 auto; min-width:max-content; }
@@ -955,6 +960,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
     <div class="card weightChartWrap">
       <h2 data-i18n="weight.trend">Weight trend</h2>
+      <div class="weightPeriodSwitcher" id="weightChartStyleSwitcher" role="group" aria-label="Weight aggregation mode"><button type="button" data-weight-style="rolling" class="active" aria-pressed="true" data-i18n="weight.modeRolling">Rolling</button><button type="button" data-weight-style="fixed" aria-pressed="false" data-i18n="weight.modeFixed">Fixed periods</button></div>
       <div class="weightPeriodSwitcher" id="weightPeriodSwitcher" role="tablist" aria-label="Weight chart and statistics period" data-i18n-aria="a11y.weightPeriod">
         <button type="button" data-weight-period="daily" role="tab" aria-selected="true" class="active" data-i18n="weight.periodDaily">Daily</button>
         <button type="button" data-weight-period="week" role="tab" aria-selected="false" data-i18n="weight.periodWeek">Week</button>
@@ -982,7 +988,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
       <div id="weightChartData" class="chartDataList small" hidden></div>
     </div>
-    <div class="card weightHistory"><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
+    <div class="card weightHistory"><div class="weightHistoryControls" id="weightHistoryControls" hidden><button id="weightHistoryMoreBtn" class="secondary" type="button" aria-expanded="false" aria-controls="weightHistoryRange" data-i18n="weight.historyMore">More…</button><select id="weightHistoryRange" aria-label="Older weight history range" data-i18n-aria="weight.historyRangeAria" hidden><option value="" selected disabled data-i18n="weight.historyRangePrompt">Period</option><option value="month" data-i18n="weight.historyRange.month">1 mo</option><option value="halfyear" data-i18n="weight.historyRange.halfyear">6 mo</option><option value="year" data-i18n="weight.historyRange.year">1 yr</option><option value="all" data-i18n="weight.historyRange.all">All</option></select></div><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
     <div class="card" id="deletedWeightsCard" style="margin-top:14px" hidden>
       <div class="sectionHeader"><h2 data-i18n="weight.deletedTitle">Recently deleted weights</h2><span class="small" id="deletedWeightsCount"></span></div>
       <div class="small" data-i18n="weight.deletedHelp">Deleted weight entries are excluded from charts, statistics and XP, but remain in JSON backups until restored or permanently deleted.</div>
@@ -1909,14 +1915,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 38;
+  const I18N_SOURCE_REVISION = 39;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.79';
+  const APP_VERSION = '1.17.80';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2064,7 +2070,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   let currentStreakCache = null;
   let historyVisibleCount = HISTORY_PAGE_SIZE;
   let deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
-  let weightVisibleCount = HISTORY_PAGE_SIZE;
+  let weightHistoryRange = 'recent7';
+  let weightHistoryMenuOpen = false;
   let fastActionLocked = false;
   let suppressFastToggleUntil = 0;
   let pendingStopUndo = null;
@@ -2083,6 +2090,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   let weightAggregateCache = new Map();
   let weightChartScaleCache = null;
   let weightPeriodMode = 'daily';
+  let weightChartStyle = (()=>{try{return localStorage.getItem('fastingTracker.weightChartStyle')==='fixed'?'fixed':'rolling';}catch{return 'rolling';}})();
   let chartInteractiveLayout = [];
   let timelineChartGeometry = null;
   let timelineChartDays = [];
@@ -3367,7 +3375,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       weighIn: value.weighIn === true,
       weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
       cycleComplete: value.cycleComplete === true,
-      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 1440,
+      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 60,
       fastingSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.fastingSnoozeMinutes)) ? Number(value.fastingSnoozeMinutes) : 60
     };
   }
@@ -5518,7 +5526,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       scroller.dataset.selectedCalendarCount = String(bucket.calendarBucket?.count || 0);
       if(detail){
         if(weightPeriodMode==='daily'&&bucket.entry) detail.textContent=t('weight.pointDetail',{weight:formatWeight(bucket.entry.kg,unit),date:localDateTimeLabel(bucket.entry.when,bucket.entry.timeZone)});
-        else {const count=bucket.count,calendar=bucket.calendarBucket;detail.textContent=t('weight.rollingPointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),days:bucket.rollingWindowDays,count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,unit):'—',calendarCount:calendar?formatNumber(calendar.count):'0'});}
+        else {const count=bucket.count,calendar=bucket.calendarBucket;detail.textContent=t('weight.rollingPointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),days:bucket.rollingWindowDays,count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,unit):'—',calendarCount:calendar?formatNumber(calendar.count):'0',calendarMeasurementWord:calendar?t(pluralKey('weight.measurement',calendar.count)):t(pluralKey('weight.measurement',0))});}
         detail.hidden=false;
       }
     } else if(detail){detail.hidden=true;detail.textContent='';}
@@ -5791,7 +5799,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return ({week:7,month:30,quarter:90,halfyear:180,year:365})[mode] || 0;
   }
   function buildWeightAggregateBuckets(asc = null, mode = weightPeriodMode) {
-    const key = `${Number(data.revision)||0}|${mode}`;
+    const key = `${Number(data.revision)||0}|${mode}|${weightChartStyle}`;
     if (weightAggregateCache.has(key)) return weightAggregateCache.get(key);
     if (weightAggregateCache.size > 10) weightAggregateCache.clear();
     const entries = Array.isArray(asc) ? asc : sortedWeightsAsc();
@@ -5802,6 +5810,10 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     // Calendar-period aggregates remain available for context. The plotted
     // series samples trailing rolling averages only on dates with real entries.
     const calendarBuckets = buildWeightCalendarBuckets(entries,mode);
+    if (weightChartStyle === 'fixed') {
+      const fixed = [...calendarBuckets.values()].map(bucket => ({...bucket,key:bucket.key,calendarDay:bucket.key,rollingWindowDays:0}));
+      weightAggregateCache.set(key,fixed); return fixed;
+    }
     const windowDays = weightRollingWindowDays(mode);
     const ordered = entries.map(entry => {
       const day = weightEntryCalendarDay(entry), match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
@@ -5836,6 +5848,16 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(endDay));
     if (!match) return weightPeriodBounds(mode);
     const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+    if (weightChartStyle === 'fixed' && mode !== 'daily') {
+      const start = new Date(year, month - 1, day);
+      const end = new Date(start);
+      if (mode === 'week') end.setDate(end.getDate()+6);
+      else if (mode === 'month') end.setMonth(end.getMonth()+1,0);
+      else if (mode === 'quarter') end.setMonth(end.getMonth()+3,0);
+      else if (mode === 'halfyear') end.setMonth(end.getMonth()+6,0);
+      else end.setFullYear(end.getFullYear()+1,0,0);
+      end.setHours(23,59,59,999); start.setHours(0,0,0,0); return {start,end};
+    }
     const end = new Date(year, month - 1, day, 23, 59, 59, 999);
     const days = mode === 'daily' ? 30 : weightRollingWindowDays(mode);
     const start = new Date(year, month - 1, day);
@@ -5846,6 +5868,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
 
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
     if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'daily';
+    document.querySelectorAll('#weightChartStyleSwitcher [data-weight-style]').forEach(btn=>{const active=btn.dataset.weightStyle===weightChartStyle;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
     document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => {
       const active = btn.dataset.weightPeriod === weightPeriodMode;
       btn.classList.toggle('active', active);
@@ -8071,6 +8094,14 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
 
+  function setWeightChartStyle(style) {
+    if (!['rolling','fixed'].includes(style) || style===weightChartStyle) return;
+    weightChartStyle=style;
+    try { localStorage.setItem('fastingTracker.weightChartStyle',style); } catch {}
+    weightChartSelectedId=null; weightChartScrollToLatestPending=true;
+    const asc=sortedWeightsAsc(); renderWeightPeriodAnalytics(asc); drawWeightChart(asc); renderDeletedWeights();
+  }
+
   function setWeightPeriodMode(mode) {
     if (!WEIGHT_PERIOD_MODES.includes(mode) || mode === weightPeriodMode) return;
     weightPeriodMode = mode;
@@ -8080,6 +8111,35 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
     renderDeletedWeights();
+  }
+
+  function weightHistoryRangeCutoff(range) {
+    const months = ({month:1,halfyear:6,year:12})[range];
+    if (!months) return null;
+    const now = new Date();
+    const cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+    cutoff.setMonth(cutoff.getMonth() - months);
+    const day = Math.min(now.getDate(), new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0).getDate());
+    cutoff.setDate(day);
+    cutoff.setHours(0, 0, 0, 0);
+    return cutoff.getTime();
+  }
+
+  function weightHistoryRecordsForDisplay(sortedDesc) {
+    if (weightHistoryRange === 'recent7') return sortedDesc.slice(0, 7);
+    if (weightHistoryRange === 'all') return sortedDesc;
+    const cutoff = weightHistoryRangeCutoff(weightHistoryRange);
+    return cutoff == null ? sortedDesc.slice(0, 7) : sortedDesc.filter(w => {
+      const timestamp = Date.parse(w.when);
+      return Number.isFinite(timestamp) && timestamp >= cutoff;
+    });
+  }
+
+  function visibleWeightHistoryRecords() {
+    const spec = weightFilterSpec();
+    const allDesc = [...sortedWeightsAsc()].reverse();
+    const filtered = weightFilterActive(spec) ? allDesc.filter(w => weightPassesFilter(w, spec)) : allDesc;
+    return weightHistoryRecordsForDisplay(filtered);
   }
 
   function softDeleteWeightById(id, reason = 'user') {
@@ -8114,8 +8174,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     el('wTarget').textContent = data.targetWeightKg == null ? '—' : formatWeight(data.targetWeightKg, unit);
     el('wToTarget').textContent = latest && data.targetWeightKg != null ? formatWeight(latest.kg - data.targetWeightKg, unit, true) : '—';
 
-    const box=el('weightHistoryList');box.replaceChildren();const spec=weightFilterSpec();const allDesc=[...asc].reverse();const sortedDesc=weightFilterActive(spec)?allDesc.filter(w=>weightPassesFilter(w,spec)):allDesc;const filterStatus=el('weightFilterStatus');if(filterStatus)filterStatus.textContent=t('history.filterCount',{shown:sortedDesc.length,total:asc.length});
-    if(!sortedDesc.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=asc.length?t('history.filterNoMatch'):t('weight.empty');box.append(empty);}else{const visibleWeights=sortedDesc.slice(0,weightVisibleCount);visibleWeights.forEach(w=>{const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(w.when,w.timeZone);left.append(strong);const when=document.createElement('div');when.className='small';when.textContent=localDateTimeLabel(w.when,w.timeZone);left.append(when);const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const val=document.createElement('div');val.className='duration';val.textContent=formatWeight(w.kg,unit);right.append(val);if(!weightBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');bindResponsiveAction(edit, () => openWeightModal(w));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');bindResponsiveAction(del, () => {if(!confirm(t('weight.deleteConfirm')))return;if(!softDeleteWeightById(w.id,'user')){renderAll();return;}renderWeight();showUndoToast(t('weight.deletedUndo'),()=>{if(restoreDeletedWeightById(w.id))renderWeight();});});actions.append(edit,del);right.append(actions);}row.append(left,right);box.append(row);});if(visibleWeights.length<sortedDesc.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:sortedDesc.length-visibleWeights.length});more.addEventListener('click',()=>{weightVisibleCount+=HISTORY_PAGE_SIZE;renderWeight();});wrap.append(more);box.append(wrap);}}
+    const box=el('weightHistoryList');box.replaceChildren();const spec=weightFilterSpec();const allDesc=[...asc].reverse();const sortedDesc=weightFilterActive(spec)?allDesc.filter(w=>weightPassesFilter(w,spec)):allDesc;const visibleWeights=weightHistoryRecordsForDisplay(sortedDesc);const filterStatus=el('weightFilterStatus');if(filterStatus)filterStatus.textContent=t('history.filterCount',{shown:sortedDesc.length,total:asc.length});
+    const controls=el('weightHistoryControls'),moreBtn=el('weightHistoryMoreBtn'),rangeSelect=el('weightHistoryRange');if(controls&&moreBtn&&rangeSelect){const hasOlder=sortedDesc.length>7;controls.hidden=!hasOlder;if(!hasOlder){weightHistoryRange='recent7';weightHistoryMenuOpen=false;}moreBtn.textContent=weightHistoryRange==='recent7'?(weightHistoryMenuOpen?t('weight.historyClose'):t('weight.historyMore')):t('weight.historyRecent');moreBtn.setAttribute('aria-expanded',String(weightHistoryMenuOpen));rangeSelect.hidden=!weightHistoryMenuOpen;rangeSelect.value=weightHistoryRange==='recent7'?'':weightHistoryRange;}
+    if(!visibleWeights.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=weightHistoryRange!=='recent7'?t('weight.historyRangeEmpty'):(asc.length?t('history.filterNoMatch'):t('weight.empty'));box.append(empty);}else{visibleWeights.forEach(w=>{const row=document.createElement('div');row.className='row historyRow'+(weightBulkMode?' bulkSelectable':'');if(weightBulkMode)row.append(bulkCheckbox(w.id,selectedWeightIds,t('bulk.selectWeight',{date:localDateLabel(w.when,w.timeZone)})));const left=document.createElement('div');left.style.minWidth='0';const strong=document.createElement('strong');strong.textContent=localDateLabel(w.when,w.timeZone);left.append(strong);const when=document.createElement('div');when.className='small';when.textContent=localDateTimeLabel(w.when,w.timeZone);left.append(when);const right=document.createElement('div');right.style.textAlign='right';right.style.flex='0 0 auto';const val=document.createElement('div');val.className='duration';val.textContent=formatWeight(w.kg,unit);right.append(val);if(!weightBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');bindResponsiveAction(edit, () => openWeightModal(w));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');bindResponsiveAction(del, () => {if(!confirm(t('weight.deleteConfirm')))return;if(!softDeleteWeightById(w.id,'user')){renderAll();return;}renderWeight();showUndoToast(t('weight.deletedUndo'),()=>{if(restoreDeletedWeightById(w.id))renderWeight();});});actions.append(edit,del);right.append(actions);}row.append(left,right);box.append(row);});}
     renderWeightPeriodAnalytics(asc);
     drawWeightChart(asc);
     renderDeletedWeights();
@@ -9259,10 +9320,12 @@ function mergeImportedData(imported) {
   for (const id of ['entryStart','entryEnd','entryGoal']) el(id)?.addEventListener('change', refreshEntryStopReasonVisibility);
   el('entryModal').addEventListener('click', e => { if (e.target === el('entryModal')) closeEntryModal(); });
   bindResponsiveAction(el('addWeightBtn'), () => openWeightModal());
-  for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightVisibleCount=HISTORY_PAGE_SIZE;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
+  for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightHistoryRange='recent7';weightHistoryMenuOpen=false;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
+  el('weightHistoryMoreBtn')?.addEventListener('click',()=>{if(weightHistoryRange!=='recent7'){weightHistoryRange='recent7';weightHistoryMenuOpen=false;}else{weightHistoryMenuOpen=!weightHistoryMenuOpen;}selectedWeightIds.clear();renderWeight();});
+  el('weightHistoryRange')?.addEventListener('change',()=>{const value=el('weightHistoryRange').value;if(!['month','halfyear','year','all'].includes(value))return;weightHistoryRange=value;weightHistoryMenuOpen=true;selectedWeightIds.clear();renderWeight();});
   el('weightClearFiltersBtn')?.addEventListener('click',clearWeightFilters);
   el('weightBulkModeBtn')?.addEventListener('click',()=>{weightBulkMode=!weightBulkMode;if(!weightBulkMode){selectedWeightIds.clear();selectedDeletedWeightIds.clear();}renderWeight();});
-  el('weightSelectVisibleBtn')?.addEventListener('click',()=>{sortedWeightsAsc().slice().reverse().filter(w=>weightPassesFilter(w)).slice(0,weightVisibleCount).forEach(w=>selectedWeightIds.add(w.id));renderWeight();});
+  el('weightSelectVisibleBtn')?.addEventListener('click',()=>{visibleWeightHistoryRecords().forEach(w=>selectedWeightIds.add(w.id));renderWeight();});
   el('weightBulkExportBtn')?.addEventListener('click',()=>exportWeightRecordsCsv(data.weights.filter(w=>selectedWeightIds.has(w.id))));
   el('weightBulkDeleteBtn')?.addEventListener('click',()=>bulkDeleteWeights());
   el('deletedWeightSelectVisibleBtn')?.addEventListener('click',()=>{data.deletedWeights.filter(w=>weightPassesFilter(w)).slice(0,HISTORY_PAGE_SIZE).forEach(w=>selectedDeletedWeightIds.add(w.id));renderWeight();});
@@ -9274,6 +9337,7 @@ function mergeImportedData(imported) {
   el('weightModal').addEventListener('click', e => { if (e.target === el('weightModal')) closeWeightModal(); });
   el('unitKgBtn').addEventListener('click', () => setWeightUnit('kg'));
   el('unitLbBtn').addEventListener('click', () => setWeightUnit('lb'));
+  document.querySelectorAll('#weightChartStyleSwitcher [data-weight-style]').forEach(btn => bindResponsiveAction(btn, () => setWeightChartStyle(btn.dataset.weightStyle)));
   document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => bindResponsiveAction(btn, () => setWeightPeriodMode(btn.dataset.weightPeriod)));
   el('weightTargetInput').addEventListener('change', setTargetWeightFromInput);
   el('weightTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') { el('weightTargetInput').blur(); setTargetWeightFromInput(); } });
@@ -9437,7 +9501,7 @@ function mergeImportedData(imported) {
   el('weightChartRange').addEventListener('input',()=>navigateWeightChartToIndex(Number(el('weightChartRange').value)));
   el('weightChartOlderBtn').addEventListener('click',()=>shiftWeightChartViewport(-1));
   el('weightChartNewerBtn').addEventListener('click',()=>shiftWeightChartViewport(1));
-  el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');box.hidden=!box.hidden;btn.setAttribute('aria-expanded',String(!box.hidden));btn.textContent=box.hidden?t('a11y.showChartData'):t('a11y.hideChartData');renderWeightChartData();if(!box.hidden)box.setAttribute('tabindex','0');});
+  el('weightChartDataBtn').addEventListener('click',()=>{const box=el('weightChartData'),btn=el('weightChartDataBtn');const expanded=btn.getAttribute('aria-expanded')!=='true';box.hidden=!expanded;btn.setAttribute('aria-expanded',String(expanded));btn.textContent=expanded?t('a11y.hideChartData'):t('a11y.showChartData');if(expanded){renderWeightChartData();box.setAttribute('tabindex','0');}});
   el('weightChart').addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(!weightChartBuckets.length)return;e.preventDefault();const valid=weightChartBuckets.filter(b=>b.count>0),current=valid.findIndex(b=>b.key===weightChartSelectedId),base=current<0?(e.key==='ArrowRight'?valid.length-1:0):current,next=Math.max(0,Math.min(valid.length-1,base+(current<0?0:(e.key==='ArrowRight'?1:-1))));const bucket=valid[next];if(bucket){weightChartSelectedId=bucket.key;const visible=weightChartHitPoints.some(p=>p.id===bucket.key);if(!visible){const scroller=el('weightChartScroller');const index=weightChartBuckets.findIndex(b=>b.key===bucket.key);const spacing=weightChartPointSpacing();scroller.scrollLeft=Math.max(0,16+index*spacing-scroller.clientWidth/2);}drawWeightChart();}return;}if(e.key==='Enter'||e.key===' '){e.preventDefault();el('weightChartDataBtn').click();if(!el('weightChartData').hidden)el('weightChartData').focus();}});
   el('statsHistoryOlderBtn')?.addEventListener('click',()=>shiftStatsHistory(-1));
   el('statsHistoryNewerBtn')?.addEventListener('click',()=>shiftStatsHistory(1));

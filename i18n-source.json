@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 38,
-  "appVersion": "1.17.79",
+  "sourceRevision": 39,
+  "appVersion": "1.17.80",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1101,6 +1101,18 @@
     "notifications.weightSnoozeDefault": "Default weigh-in snooze",
     "notifications.weightSnoozeHelp": "Default delay when you snooze a weigh-in reminder.",
     "notifications.fastingSnoozeDefault": "Default fasting reminder snooze",
-    "notifications.fastingSnoozeHelp": "Default delay when you snooze a fasting target, safety or cycle reminder."
+    "notifications.fastingSnoozeHelp": "Default delay when you snooze a fasting target, safety or cycle reminder.",
+    "weight.modeRolling": "Rolling",
+    "weight.modeFixed": "Fixed periods",
+    "weight.historyMore": "More…",
+    "weight.historyClose": "Close",
+    "weight.historyRecent": "Last 7",
+    "weight.historyRangeAria": "Older weight history range",
+    "weight.historyRangePrompt": "Period",
+    "weight.historyRange.month": "1 mo",
+    "weight.historyRange.halfyear": "6 mo",
+    "weight.historyRange.year": "1 yr",
+    "weight.historyRange.all": "All",
+    "weight.historyRangeEmpty": "No measurements in this period."
   }
 }
