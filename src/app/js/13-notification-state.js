@@ -8,7 +8,7 @@
       weighIn: value.weighIn === true,
       weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
       cycleComplete: value.cycleComplete === true,
-      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 1440,
+      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 60,
       fastingSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.fastingSnoozeMinutes)) ? Number(value.fastingSnoozeMinutes) : 60
     };
   }
