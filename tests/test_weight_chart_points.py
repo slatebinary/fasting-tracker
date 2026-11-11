@@ -53,8 +53,18 @@ with sync_playwright() as p:
     page.locator('#weightChart').click(position={'x':pos['x'],'y':pos['y']})
     page.wait_for_function("!document.querySelector('#weightChartDetail')?.hidden",timeout=5000)
     detail=page.locator('#weightChartDetail').inner_text()
-    if 'Average' not in detail or 'kg' not in detail or '5 measurements' not in detail or '{calendarMeasurementWord}' in detail:
-        print('FAIL: aggregate weight point did not show a complete average/count/calendar detail:', detail); sys.exit(1)
+    if '365-day rolling average' not in detail or 'kg' not in detail or 'Ending' not in detail or '5 measurements in this window' not in detail or 'Calendar year average' not in detail:
+        print('FAIL: rolling point did not show clearly separated rolling and calendar summaries:', detail); sys.exit(1)
+
+    # Fixed mode must describe the selected calendar bucket directly. It must
+    # never reuse the rolling template or display a misleading "0-day" value.
+    page.locator('[data-weight-style="fixed"]').click()
+    page.wait_for_function("document.querySelector('[data-weight-style=\"fixed\"]')?.getAttribute('aria-pressed') === 'true'",timeout=5000)
+    page.locator('#weightChart').click(position={'x':pos['x'],'y':pos['y']})
+    page.wait_for_function("!document.querySelector('#weightChartDetail')?.hidden",timeout=5000)
+    fixed_detail=page.locator('#weightChartDetail').inner_text()
+    if 'Calendar year average' not in fixed_detail or '2026' not in fixed_detail or '5 measurements' not in fixed_detail or '0-day' in fixed_detail:
+        print('FAIL: fixed-period point did not show a calendar-period summary:',fixed_detail); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
