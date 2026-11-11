@@ -104,7 +104,6 @@
     const active = notificationDetailItems();
     for (const item of due) {
       if (active.some(entry => entry.id === item.id)) continue;
-      const snoozedUntilMs = validDate(item.snoozedUntil)?.getTime() || nowMs;
       const restored = {id:String(item.id),kind:String(item.kind),screen:APP_SCREENS.includes(item.screen)?item.screen:'fasting',createdAt:new Date(nowMs).toISOString(),params:item.params&&typeof item.params==='object'?item.params:{}};
       active.unshift(restored);
       const copy = notificationDetailCopy(restored.kind, restored.params);
