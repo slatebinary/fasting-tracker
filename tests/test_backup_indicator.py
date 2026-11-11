@@ -58,9 +58,10 @@ with sync_playwright() as p:
     status(page,'current')
     chip_text=page.locator('#fastingBackupStatusText').inner_text()
     assert ' — ' in chip_text and __import__('re').search(r'\d{1,2}:\d{2}',chip_text), chip_text
-    # Green confirmation is temporary; the underlying Settings status persists.
+    assert 'no changes since the last external json backup' in chip_text.lower(), chip_text
+    # The green current-backup status must remain visible after the initial confirmation window.
     page.wait_for_timeout(7300)
-    assert page.locator('#fastingBackupRow').is_hidden(), 'Green badge must disappear'
+    assert page.locator('#fastingBackupRow').is_visible(), 'Current backup status must remain visible after the temporary confirmation period'
     assert page.locator('#shareProgressBtn').is_visible(), 'Share action must remain available'
     meta=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.backupMeta'))")
     assert meta.get('lastExternalBackupDataSignature','').startswith('v1:'),meta
@@ -71,7 +72,7 @@ with sync_playwright() as p:
     page.select_option('#languageSelect', 'en')
     page.locator('[data-screen="fasting"]').click()
     page.wait_for_function("document.querySelector('#fastingBackupStatusBtn')?.dataset.state==='current'")
-    assert page.locator('#fastingBackupRow').is_hidden(), 'No permanent green badge'
+    assert page.locator('#fastingBackupRow').is_visible(), 'Current backup status must remain visible after preference changes'
     # Start a fast: the recorded export is now missing the active fast.
     page.locator('#toggleFast').click()
     status(page,'stale')
@@ -153,8 +154,11 @@ with sync_playwright() as p:
         tz_page.wait_for_function("document.querySelector('#lastBackupLabel')?.textContent.includes(':')",timeout=5000)
     utc_status=utc_page.locator('#backupFreshnessLabel').text_content() or ''
     sofia_status=sofia_page.locator('#backupFreshnessLabel').text_content() or ''
+    utc_chip=utc_page.locator('#fastingBackupStatusText').text_content() or ''
+    sofia_chip=sofia_page.locator('#fastingBackupStatusText').text_content() or ''
     assert ':' in utc_status and ':' in sofia_status, f'Current-backup status omits export time: UTC={utc_status!r}, Sofia={sofia_status!r}'
     assert utc_status != sofia_status, f'Current-backup status did not follow device timezone: UTC={utc_status!r}, Sofia={sofia_status!r}'
+    assert utc_chip != sofia_chip, f'Visible backup chip did not follow device timezone: UTC={utc_chip!r}, Sofia={sofia_chip!r}'
     # The backup summary lives inside a collapsible Settings group. Read its
     # rendered text node content without requiring the group to be expanded.
     utc_label=utc_page.locator('#lastBackupLabel').text_content() or ''
@@ -163,4 +167,4 @@ with sync_playwright() as p:
     assert ':' in utc_label and ':' in sofia_label, f'Backup timestamp is missing local time: UTC={utc_label!r}, Sofia={sofia_label!r}'
     assert not errors2, errors2[:5]
     browser.close()
-print('PASS: backup indicator red/green/amber, cancel safety, preference isolation, active fast and weight change, timestamp in current device timezone, accessible button')
+print('PASS: persistent backup indicator red/green/amber, cancel safety, preference isolation, active fast and weight change, device-local timestamp, accessible button')

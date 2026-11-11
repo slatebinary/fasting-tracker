@@ -1,3 +1,11 @@
+## v1.17.77 — 2026-11-11
+
+- Keep the green current external JSON backup indicator visible instead of hiding it after the seven-second confirmation period.
+- Show the explicit no-changes-since-last-external-JSON-backup message alongside the backup timestamp.
+- Render the visible indicator and Settings backup timestamps in the device timezone, even when the app uses a separately selected timezone.
+- Keep the indicator hidden when there is no fasting or weight data; retain stale, never-backed-up and aged states.
+- Extend browser regression coverage for persistent visibility, status wording and UTC-versus-Europe/Sofia device-time rendering.
+
 ## v1.17.76 — 2026-11-11
 
 - Moved the Daily/Week/Month/Quarter/6 months/Year selector into the Weight trend card, directly above the chart it controls; period summary metrics continue to follow the same selection.

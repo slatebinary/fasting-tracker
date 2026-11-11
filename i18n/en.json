@@ -979,7 +979,7 @@
   "reset.typePhrase": "Type {phrase} exactly to unlock the final button:",
   "reset.confirmAll": "Permanently delete all data",
   "reset.confirmRecovery": "Start fresh and replace data",
-  "backupChip.current": "Backup current",
+  "backupChip.current": "Backup current — no changes since the last external JSON backup",
   "backupChip.currentHelp": "Manual JSON export recorded {date}. No tracked fasting or weight changes since then. The app cannot verify the file is still saved externally.",
   "backupChip.aged": "Backup over 7 days old",
   "backupChip.agedHelp": "The last recorded manual JSON export was {date}. Your tracked data has not changed, but a fresh external backup is recommended.",
