@@ -50,7 +50,9 @@ with sync_playwright() as p:
             good:css.getPropertyValue('--good').trim().toLowerCase(),
             danger:css.getPropertyValue('--danger').trim().toLowerCase(),
             hintVisible:!!hint && !hint.hidden,
-            hint:hint?.innerText||'',\n            navBg:getComputedStyle(document.querySelector('nav')).backgroundColor,\n            activeTabBg:getComputedStyle(document.querySelector('.tab.active')).backgroundColor
+            hint:hint?.innerText||'',
+            navBg:getComputedStyle(document.querySelector('nav')).backgroundColor,
+            activeTabBg:getComputedStyle(document.querySelector('.tab.active')).backgroundColor
           };
         }""")
 
@@ -65,7 +67,8 @@ with sync_playwright() as p:
     }
     for key, expected in expected_general.items():
         assert general[key] == expected, f"Colour-vision palette {key} mismatch: {general}"
-    assert general["hintVisible"] and "Cool blue surfaces" in general["hint"], general\n    assert general["navBg"] == "rgb(214, 232, 248)", general
+    assert general["hintVisible"] and "Cool blue surfaces" in general["hint"], general
+    assert general["navBg"] == "rgb(214, 232, 248)", general
 
     selector.select_option("protanopia")
     page.wait_for_function("document.documentElement.dataset.theme === 'protanopia'")
@@ -80,8 +83,10 @@ with sync_playwright() as p:
     }
     for key, expected in expected_specialized.items():
         assert specialized[key] == expected, f"Protanopia palette {key} mismatch: {specialized}"
-    assert specialized["hintVisible"] and "Warm golden surfaces" in specialized["hint"], specialized\n    assert specialized["navBg"] == "rgb(245, 219, 114)", specialized
-    assert general["activeTabBg"] != specialized["activeTabBg"], (general, specialized)\n    for token in ("bg", "card", "accent", "good", "danger"):
+    assert specialized["hintVisible"] and "Warm golden surfaces" in specialized["hint"], specialized
+    assert specialized["navBg"] == "rgb(245, 219, 114)", specialized
+    assert general["activeTabBg"] != specialized["activeTabBg"], (general, specialized)
+    for token in ("bg", "card", "accent", "good", "danger"):
         assert general[token] != specialized[token], f"Palette switch did not change --{token}"
 
     selector.select_option("colorblind")
