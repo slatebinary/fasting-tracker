@@ -54,10 +54,10 @@
     const scroller=el('weightChartScroller'), buckets=weightChartBuckets; box.replaceChildren();
     if(!buckets.length){box.textContent=t('a11y.noChartData');return;}
     const viewport=Math.max(1,scroller?.clientWidth||600), scroll=scroller?.scrollLeft||0;
-    const spacing=weightPeriodMode==='daily'?(buckets.length<=30?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,(viewport-30)/29))):(buckets.length<=5?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):68);
+    const spacing=buckets.length<=30?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,(viewport-30)/29));
     const first=Math.max(0,Math.floor((scroll-16)/Math.max(1,spacing))-1), last=Math.min(buckets.length-1,Math.ceil((scroll+viewport-16)/Math.max(1,spacing))+1);
     const ul=document.createElement('ul');
-    for(let i=last;i>=first;i--){const b=buckets[i];if(!b.count)continue;const li=document.createElement('li');li.textContent=`${weightBucketLongLabel(b)} — ${formatWeight(b.averageKg,data.weightUnit)}${b.count>1?` • ${b.count} ${t(pluralKey('weight.measurement',b.count))}`:''}`;ul.append(li);} box.append(ul);
+    for(let i=last;i>=first;i--){const b=buckets[i];if(!b.count)continue;const li=document.createElement('li');if(b.rollingWindowDays){const calendar=b.calendarBucket;li.textContent=t('weight.rollingDataRow',{period:weightBucketLongLabel(b),days:b.rollingWindowDays,weight:formatWeight(b.averageKg,data.weightUnit),count:formatNumber(b.count),measurementWord:t(pluralKey('weight.measurement',b.count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,data.weightUnit):'—',calendarCount:calendar?formatNumber(calendar.count):'0',calendarMeasurementWord:calendar?t(pluralKey('weight.measurement',calendar.count)):t(pluralKey('weight.measurement',0))});}else li.textContent=`${weightBucketLongLabel(b)} — ${formatWeight(b.averageKg,data.weightUnit)}${b.count>1?` • ${b.count} ${t(pluralKey('weight.measurement',b.count))}`:''}`;ul.append(li);} box.append(ul);
   }
   function setWeightUnit(unit) {
     data.weightUnit = normalizeWeightUnit(unit);
