@@ -62,7 +62,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(100)
     title = page.locator("#chartDetailTitle").inner_text().strip()
     detail = page.locator("#chartDetailText").inner_text().strip()
-    if not title or "Fasting this day:" not in detail or "2h 0m of 16h 0m target" not in detail:
+    if not title or "Fasting:" not in detail or "2h 0m of 16h 0m target" not in detail:
         raise AssertionError(f"Tap did not select today's two-hour fast segment: {title!r} / {detail!r}; point={point}")
 
     page.locator('.tab[data-screen="weight"]').click()
