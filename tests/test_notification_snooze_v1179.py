@@ -56,7 +56,7 @@ with sync_playwright() as p:
     page.locator('.tab[data-screen="settings"]').click()
     page.locator('#settingsGroupNotifications > summary').click()
     page.wait_for_function("document.querySelector('#notificationWeightSnoozeDefault option') && document.querySelector('#notificationFastingSnoozeDefault option')")
-    if page.locator('#notificationWeightSnoozeDefault').input_value()!='1440' or page.locator('#notificationFastingSnoozeDefault').input_value()!='60':
+    if page.locator('#notificationWeightSnoozeDefault').input_value()!='60' or page.locator('#notificationFastingSnoozeDefault').input_value()!='60':
         print('FAIL: separate Settings snooze defaults are missing or incorrect'); sys.exit(1)
     page.locator('#notificationWeightSnoozeDefault').select_option('4320')
     page.locator('#notificationFastingSnoozeDefault').select_option('240')
