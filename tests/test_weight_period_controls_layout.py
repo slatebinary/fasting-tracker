@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Regression: weight period controls sit with the chart and remain fully visible."""
+# Check both the visual grouping and responsive accessibility behavior.
 import json
 from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
