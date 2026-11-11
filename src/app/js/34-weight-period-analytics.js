@@ -195,6 +195,7 @@
 
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
     if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'daily';
+    document.querySelectorAll('#weightChartStyleSwitcher [data-weight-style]').forEach(btn=>{const active=btn.dataset.weightStyle===weightChartStyle;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
     document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => {
       const active = btn.dataset.weightPeriod === weightPeriodMode;
       btn.classList.toggle('active', active);
