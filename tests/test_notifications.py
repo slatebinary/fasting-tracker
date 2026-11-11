@@ -23,7 +23,14 @@ with sync_playwright() as p:
         requestPermission:async()=>{ MockNotification.permission='granted'; return 'granted'; }
       };
       Object.defineProperty(window,'Notification',{value:MockNotification,configurable:true});
-      const registration={showNotification:async(title,options)=>{window.__ftNotifications.push({title,options});}};
+      window.__ftHoldWeighIn=false;
+      window.__ftReleaseWeighIn=null;
+      const registration={showNotification:async(title,options)=>{
+        if(options?.tag?.startsWith('fasting-weigh-') && window.__ftHoldWeighIn) {
+          await new Promise(resolve=>{window.__ftReleaseWeighIn=resolve;});
+        }
+        window.__ftNotifications.push({title,options});
+      }};
       const sw={ready:Promise.resolve(registration),register:async()=>({}),addEventListener:()=>{},controller:null};
       Object.defineProperty(navigator,'serviceWorker',{value:sw,configurable:true});
     }""")
@@ -101,16 +108,18 @@ with sync_playwright() as p:
 
     # A due weigh-in reminder offers a direct Add action. Activating it opens
     # the weight form and dismisses only that reminder detail.
+    page.evaluate("() => { window.__ftHoldWeighIn=true; }")
     page.locator('#notificationWeighToggle').click()
     page.locator('#notificationMasterToggle').click()  # off
     page.locator('#notificationMasterToggle').click()  # on; rechecks due weigh-in
-    page.wait_for_function("document.querySelectorAll('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]').length === 1",timeout=5000)
-    # Several foreground notifications arriving together must not produce a
-    # second device reminder for the same overdue weigh-in.
+    page.wait_for_function("window.__ftReleaseWeighIn !== null",timeout=5000)
+    # Hold the first delivery while several foreground checks overlap it.
     page.evaluate("""() => {
       for (let i=0;i<6;i++) document.dispatchEvent(new Event('visibilitychange'));
+      window.__ftHoldWeighIn=false;
+      window.__ftReleaseWeighIn();
     }""")
-    page.wait_for_timeout(250)
+    page.wait_for_function("document.querySelectorAll('#notificationDetailStack [data-notification-detail-id^=\\\"fasting-weigh-\\\"]').length === 1",timeout=5000)
     weigh_notifications=page.evaluate("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-weigh-')).length")
     if weigh_notifications != 1:
         print('FAIL: concurrent foreground checks produced duplicate weigh-in notifications:',weigh_notifications); sys.exit(1)

@@ -115,6 +115,9 @@
   async function maybeNotifyWeighIn(nowMs = Date.now()) {
     if (weighInNotificationPromise) return weighInNotificationPromise;
     const run = async () => {
+    // Refresh persisted state after acquiring the cross-context lock; another
+    // tab may have delivered this reminder while this context was suspended.
+    notificationRuntimeState = loadNotificationRuntimeState();
     const prefs = notificationPrefs();
     if (!notificationEnabledFor('weighIn')) return false;
     const cadenceMs = prefs.weighInCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
