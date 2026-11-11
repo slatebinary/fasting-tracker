@@ -63,7 +63,7 @@ with sync_playwright() as p:
         "card": "#ecf5ff",
         "accent": "#004f8a",
         "good": "#006f55",
-        "danger": "#a84300",
+        "danger": "#c43d00",
     }
     for key, expected in expected_general.items():
         assert general[key] == expected, f"Colour-vision palette {key} mismatch: {general}"
