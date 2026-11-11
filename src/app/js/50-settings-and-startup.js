@@ -131,10 +131,12 @@
   for (const id of ['entryStart','entryEnd','entryGoal']) el(id)?.addEventListener('change', refreshEntryStopReasonVisibility);
   el('entryModal').addEventListener('click', e => { if (e.target === el('entryModal')) closeEntryModal(); });
   bindResponsiveAction(el('addWeightBtn'), () => openWeightModal());
-  for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightVisibleCount=HISTORY_PAGE_SIZE;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
+  for(const id of ['weightFilterFrom','weightFilterTo','weightIncludeDeleted'])el(id)?.addEventListener('change',()=>{weightHistoryRange='recent7';weightHistoryMenuOpen=false;selectedWeightIds.clear();selectedDeletedWeightIds.clear();renderWeight();});
+  el('weightHistoryMoreBtn')?.addEventListener('click',()=>{if(weightHistoryRange!=='recent7'){weightHistoryRange='recent7';weightHistoryMenuOpen=false;}else{weightHistoryMenuOpen=!weightHistoryMenuOpen;}selectedWeightIds.clear();renderWeight();});
+  el('weightHistoryRange')?.addEventListener('change',()=>{const value=el('weightHistoryRange').value;if(!['month','halfyear','year','all'].includes(value))return;weightHistoryRange=value;weightHistoryMenuOpen=true;selectedWeightIds.clear();renderWeight();});
   el('weightClearFiltersBtn')?.addEventListener('click',clearWeightFilters);
   el('weightBulkModeBtn')?.addEventListener('click',()=>{weightBulkMode=!weightBulkMode;if(!weightBulkMode){selectedWeightIds.clear();selectedDeletedWeightIds.clear();}renderWeight();});
-  el('weightSelectVisibleBtn')?.addEventListener('click',()=>{sortedWeightsAsc().slice().reverse().filter(w=>weightPassesFilter(w)).slice(0,weightVisibleCount).forEach(w=>selectedWeightIds.add(w.id));renderWeight();});
+  el('weightSelectVisibleBtn')?.addEventListener('click',()=>{visibleWeightHistoryRecords().forEach(w=>selectedWeightIds.add(w.id));renderWeight();});
   el('weightBulkExportBtn')?.addEventListener('click',()=>exportWeightRecordsCsv(data.weights.filter(w=>selectedWeightIds.has(w.id))));
   el('weightBulkDeleteBtn')?.addEventListener('click',()=>bulkDeleteWeights());
   el('deletedWeightSelectVisibleBtn')?.addEventListener('click',()=>{data.deletedWeights.filter(w=>weightPassesFilter(w)).slice(0,HISTORY_PAGE_SIZE).forEach(w=>selectedDeletedWeightIds.add(w.id));renderWeight();});
