@@ -168,7 +168,7 @@
       ? weightEntryCalendarDay(selected.entry)
       : selected?.calendarDay;
     if (!endDay) endDay = dayKeyFast(new Date(), currentTimeZone());
-    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(endDay));
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(endDay));
     if (!match) return weightPeriodBounds(mode);
     const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
     const end = new Date(year, month - 1, day, 23, 59, 59, 999);
