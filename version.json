@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.81",
+  "version": "1.17.82",
   "released": "2026-11-11",
-  "notes": "Add matching compact, period-based Fasting and Weight history lists with dynamic visible-entry counts.",
+  "notes": "Clarify rolling and fixed weight averages with separate period labels, dates and measurement counts.",
   "entry": "./index.html",
   "shell": [
     "./",
