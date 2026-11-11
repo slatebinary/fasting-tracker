@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: aggregate weight periods fit the viewport without empty-gap scrolling."""
+"""Regression: rolling averages sample calendar days between weigh-ins without inventing measurements."""
 import sys, datetime, json
 from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
@@ -36,14 +36,14 @@ with sync_playwright() as p:
         if mode == 'daily' and info['d'] != 800:
             print('FAIL: Daily must preserve every individual measurement',info); sys.exit(1)
         if info['b'] != info['d']:
-            print('FAIL: rolling series contains non-measurement or empty synthetic points',mode,info); sys.exit(1)
+            print('FAIL: chart point and bucket counts diverged',mode,info); sys.exit(1)
         if info['max'] <= 1 or abs(info['left']-info['max']) > 2:
             print('FAIL: chart did not preserve dense horizontal history or open at newest/right side',mode,info); sys.exit(1)
         if mode != 'daily' and info['d'] != 800:
             print('FAIL: rolling mode must sample all 800 actual measurement dates',mode,info); sys.exit(1)
 
     if len(set(counts.values())) != 1 or counts['daily'] != 800:
-        print('FAIL: rolling modes should remain sampled on actual measurement dates',counts); sys.exit(1)
+        print('FAIL: rolling modes should provide daily samples across the full date span',counts); sys.exit(1)
 
     # Each rolling point is calculated from its trailing window and carries the
     # calendar-period aggregate separately for transparent comparison.
