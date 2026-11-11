@@ -137,7 +137,7 @@
             detail.append(group);
           };
           const count=bucket.count,measurementWord=t(pluralKey('weight.measurement',count));
-          const periodName=t('weight.periodName.'+weightPeriodMode);
+          const periodName=weightPeriodMode==='week'?t('weight.periodWeek'):weightPeriodMode==='month'?t('weight.periodMonth'):weightPeriodMode==='quarter'?t('weight.periodQuarter'):weightPeriodMode==='halfyear'?t('weight.periodHalfyear'):t('weight.periodYear');
           const calendar=bucket.calendarBucket;
           if(weightChartStyle==='fixed'){
             addDetailGroup('primary',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(bucket.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(bucket,weightPeriodMode),count:formatNumber(count),measurementWord}));
