@@ -1,3 +1,8 @@
+## v1.17.73 — 2026-11-11
+
+- Restored the selected Timeline chart detail whenever Statistics is revisited after another screen, without forcing a full chart redraw.
+- Added a browser regression that selects a real Timeline segment and verifies its selection and exact detail survive Statistics → Weight → Statistics.
+
 ## v1.17.72 — 2026-11-10
 
 - Fixed Timing chart click-fallback deduplication by tracking recent pointer activation per canvas, preventing one chart's pointer event from suppressing a click on another chart and allowing the first click after load.
