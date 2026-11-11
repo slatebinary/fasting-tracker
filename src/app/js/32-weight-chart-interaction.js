@@ -125,7 +125,7 @@
       scroller.dataset.selectedCalendarCount = String(bucket.calendarBucket?.count || 0);
       if(detail){
         if(weightPeriodMode==='daily'&&bucket.entry) detail.textContent=t('weight.pointDetail',{weight:formatWeight(bucket.entry.kg,unit),date:localDateTimeLabel(bucket.entry.when,bucket.entry.timeZone)});
-        else {const count=bucket.count,calendar=bucket.calendarBucket;detail.textContent=t('weight.rollingPointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),days:bucket.rollingWindowDays,count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,unit):'—',calendarCount:calendar?formatNumber(calendar.count):'0'});}
+        else {const count=bucket.count,calendar=bucket.calendarBucket;detail.textContent=t('weight.rollingPointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),days:bucket.rollingWindowDays,count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,unit):'—',calendarCount:calendar?formatNumber(calendar.count):'0',calendarMeasurementWord:calendar?t(pluralKey('weight.measurement',calendar.count)):t(pluralKey('weight.measurement',0))});}
         detail.hidden=false;
       }
     } else if(detail){detail.hidden=true;detail.textContent='';}
