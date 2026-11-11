@@ -75,6 +75,7 @@ with sync_playwright() as p:
     pending[0]['snoozedUntil']=due.isoformat().replace('+00:00','Z')
     page.evaluate("state => { localStorage.setItem('fastingTracker.notificationState',JSON.stringify(state)); document.dispatchEvent(new Event('visibilitychange')); }",stored)
     page.wait_for_function("!!document.querySelector('[data-notification-detail-id=\\\"fasting-weigh-snooze-test\\\"]')",timeout=5000)
+    page.wait_for_function("window.__ftNotifications?.length === 1",timeout=3000)
     restored=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.notificationState')||'{}')")
     if restored.get('snoozedDetails'):
         print('FAIL: due reminder remained in snoozed queue:',restored.get('snoozedDetails')); sys.exit(1)
