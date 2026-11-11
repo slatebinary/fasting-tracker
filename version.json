@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.78",
+  "version": "1.17.79",
   "released": "2026-11-11",
-  "notes": "Prevent duplicate weigh-in reminders when startup, foreground and periodic notification checks overlap; coordinate across app contexts and release failed-delivery reservations for safe retries.",
+  "notes": "Make weight period summaries follow the selected rolling chart date; add per-reminder snooze durations with independent weight and fasting defaults and automatic reappearance.",
   "entry": "./index.html",
   "shell": [
     "./",
