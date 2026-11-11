@@ -264,6 +264,17 @@ for first_name, second_name in itertools.combinations(theme_names, 2):
             f"(Delta E 00 {distance:.1f}, expected at least {minimum:.1f})"
         )
 
+# The two palettes reported as indistinguishable must remain unmistakably
+# different across the page surface, card surface, accent and navigation tab.
+general_palette = _palette_tokens("colorblind")
+protanopia_palette = _palette_tokens("protanopia")
+for token, minimum in (("bg", 24.0), ("card", 20.0), ("accent", 20.0), ("tab", 30.0)):
+    distance = _delta_e_2000(_rgb_from_hex(general_palette[token]), _rgb_from_hex(protanopia_palette[token]))
+    assert distance >= minimum, (
+        f"general colour-vision and Protanopia --{token} must remain clearly distinct "
+        f"(Delta E 00 {distance:.1f}, expected at least {minimum:.1f})"
+    )
+
 print("All four colour-vision palettes pass six pairwise CIEDE2000 comparisons.")
 
 
