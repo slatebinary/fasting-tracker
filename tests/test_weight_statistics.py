@@ -58,6 +58,16 @@ with sync_playwright() as p:
     summary=page.locator('#weightPeriodRange').inner_text()
     if 'measurement' not in summary:
         print('FAIL: period range/count summary is missing'); sys.exit(1)
+    # The range label follows the selected chart date, not a permanently fixed today window.
+    before_navigation=page.locator('#weightPeriodRange').inner_text()
+    older=page.locator('#weightChartOlderBtn')
+    if older.is_disabled():
+        print('FAIL: older-period navigation should be available with 400 daily measurements'); sys.exit(1)
+    older.click()
+    page.wait_for_function('(before) => document.querySelector("#weightPeriodRange")?.innerText !== before', arg=before_navigation, timeout=5000)
+    after_navigation=page.locator('#weightPeriodRange').inner_text()
+    if after_navigation == before_navigation:
+        print('FAIL: weight period summary did not move with the selected chart date'); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
