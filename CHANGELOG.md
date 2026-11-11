@@ -1,3 +1,9 @@
+## v1.17.76 — 2026-11-11
+
+- Moved the Daily/Week/Month/Quarter/6 months/Year selector into the Weight trend card, directly above the chart it controls; period summary metrics continue to follow the same selection.
+- Replaced the horizontally scrolling selector with a responsive grid: six options across on wider screens and three columns across two rows on narrow screens, keeping every period visible without horizontal scrolling.
+- Clarified the accessibility label in English, Bulgarian and Spanish and added a browser regression for selector placement, responsive layout, visibility and selection state.
+
 ## v1.17.75 — 2026-11-11
 
 - Increased the visual separation between the general colour-vision palette and the Protanopia palette: cool-blue surfaces/navy accents versus warm-golden surfaces/violet accents, with distinct status colours and maintained WCAG text contrast.
