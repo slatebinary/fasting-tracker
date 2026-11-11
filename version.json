@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.74",
+  "version": "1.17.75",
   "released": "2026-11-11",
-  "notes": "Replaced sparse calendar-bucket weight plots with measurement-date rolling averages (7/30/90/180/365 days), retaining calendar-period averages and measurement counts in point details.",
+  "notes": "Strengthened the visual separation between the general colour-vision and Protanopia palettes with distinct cool-blue versus warm-golden surfaces, stronger accent/status colours, clearer localized purpose hints and a browser regression for live switching.",
   "entry": "./index.html",
   "shell": [
     "./",
