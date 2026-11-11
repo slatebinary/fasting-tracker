@@ -86,6 +86,8 @@ jobs:
           python3 tests/test_setup_notification_layout.py
           python3 tests/test_notifications.py
           python3 tests/test_notification_details_v1120.py
+          python3 tests/test_notification_snooze_v1179.py
+          python3 tests/test_weight_statistics.py
           python3 tests/test_dst_timezone.py
           python3 tests/test_weight_unit_layout.py
           python3 tests/test_weight_aggregation_scroll.py
