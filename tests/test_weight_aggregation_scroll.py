@@ -56,7 +56,7 @@ with sync_playwright() as p:
         nav.evaluate("(e)=>{e.value='6';e.dispatchEvent(new Event('input',{bubbles:true}))}")
         page.wait_for_function("document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === '7'",timeout=5000)
         nav.evaluate("(e)=>{e.value='7';e.dispatchEvent(new Event('input',{bubbles:true}))}")
-        page.wait_for_function("expected => document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === String(expected)",arg=Math.min(8,days),timeout=5000)
+        page.wait_for_function("expected => document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === String(expected)",arg=min(8,days),timeout=5000)
         result=page.locator('#weightChartScroller').evaluate("e=>({window:+e.dataset.rollingWindowDays,selectedCount:+e.dataset.selectedWindowCount,calendarCount:+e.dataset.selectedCalendarCount})")
         if result['window'] != days or result['selectedCount'] != min(8,days) or result['calendarCount'] < 1:
             print('FAIL: rolling window semantics or calendar summary incorrect',mode,result); sys.exit(1)
