@@ -23,7 +23,7 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:APP_VERSION,seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("arg => { __seedFastingDbV2(arg.data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:arg.version,seenAt:new Date().toISOString()})); }", {'data':data,'version':APP_VERSION})
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function("v => document.querySelector('#appVersionLabel')?.textContent === 'v' + v",arg=APP_VERSION,timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
