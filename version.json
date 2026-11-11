@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.72",
-  "released": "2026-11-10",
-  "notes": "Fixed per-canvas Timing chart click-fallback deduplication and added browser regression coverage for Duration Bars and Start-time Bars interactions.",
+  "version": "1.17.73",
+  "released": "2026-11-11",
+  "notes": "Restored selected Timeline detail when returning to Statistics after visiting Weight; added explicit browser regression coverage for the screen round-trip.",
   "entry": "./index.html",
   "shell": [
     "./",

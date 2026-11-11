@@ -196,6 +196,12 @@
     // hidden canvases are never redrawn simply because some other screen changed.
     requestAnimationFrame(() => {
       renderScreen(target);
+      if (target === 'stats' && statsVizMode === 'timeline') {
+        // A clean Statistics view is intentionally not redrawn on screen
+        // return. Refresh its selection detail explicitly, however: other
+        // screens may have replaced the shared detail panel's contents.
+        renderChartDetail(timelineChartDays);
+      }
       if (target === 'stats' && statsVizMode === 'timeline') scrollTimelineToLatest();
       if (target === 'stats') verifyStatsVisualizationAfterLayout();
     });
