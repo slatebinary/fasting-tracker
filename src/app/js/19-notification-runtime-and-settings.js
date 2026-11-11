@@ -204,6 +204,19 @@
     renderNotificationSettings();
   }
 
+  function renderNotificationSnoozeOptions(id, selectedMinutes) {
+    const select = el(id);
+    if (!select) return;
+    select.replaceChildren();
+    for (const minutes of NOTIFICATION_SNOOZE_MINUTES) {
+      const option = document.createElement('option');
+      option.value = String(minutes);
+      option.textContent = notificationSnoozeDurationLabel(minutes);
+      select.append(option);
+    }
+    select.value = String(selectedMinutes);
+  }
+
   function renderNotificationSettings() {
     const prefs = notificationPrefs();
     const master = el('notificationMasterToggle');
@@ -216,8 +229,8 @@
     el('notificationWeighToggle').checked = prefs.weighIn;
     el('notificationCycleToggle').checked = prefs.cycleComplete;
     renderWeighCadenceButtons('notification', prefs.weighInCadence);
-    el('notificationWeightSnoozeDefault').value = String(prefs.weightSnoozeMinutes);
-    el('notificationFastingSnoozeDefault').value = String(prefs.fastingSnoozeMinutes);
+    renderNotificationSnoozeOptions('notificationWeightSnoozeDefault', prefs.weightSnoozeMinutes);
+    renderNotificationSnoozeOptions('notificationFastingSnoozeDefault', prefs.fastingSnoozeMinutes);
     const permission = notificationPermissionState();
     const badge = el('notificationPermissionBadge');
     badge.textContent = t(permission === 'granted' && prefs.enabled ? 'notifications.badgeOn' : permission === 'denied' ? 'notifications.badgeBlocked' : permission === 'unsupported' ? 'notifications.badgeUnavailable' : 'notifications.badgeOff');
