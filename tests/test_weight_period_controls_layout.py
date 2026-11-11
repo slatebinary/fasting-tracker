@@ -42,6 +42,15 @@ with sync_playwright() as p:
             timeout=5000,
         )
 
+        style_switcher=page.locator("#weightChartStyleSwitcher")
+        assert style_switcher.is_visible(), "Rolling/fixed mode buttons must be visible above the weight period selector"
+        assert style_switcher.locator("button").count()==2
+        assert style_switcher.locator('[data-weight-style="rolling"]').get_attribute("aria-pressed")=="true"
+        style_switcher.locator('[data-weight-style="fixed"]').click()
+        assert style_switcher.locator('[data-weight-style="fixed"]').get_attribute("aria-pressed")=="true"
+        assert page.evaluate("localStorage.getItem('fastingTracker.weightChartStyle')")=="fixed"
+        style_switcher.locator('[data-weight-style="rolling"]').click()
+
         selector = page.locator("#weightPeriodSwitcher")
         assert selector.is_visible(), "Period selector must be visible"
         assert selector.evaluate(
