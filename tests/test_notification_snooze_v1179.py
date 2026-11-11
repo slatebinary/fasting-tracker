@@ -20,7 +20,7 @@ data=build_data(0)
 data['notificationPreferences']={
     'enabled':False,'targetReached':True,'backupDue':True,'longFastSafety':True,
     'weighIn':False,'weighInCadence':'weekly','cycleComplete':False,
-    'weightSnoozeMinutes':1440,'fastingSnoozeMinutes':60,
+    'weightSnoozeMinutes':60,'fastingSnoozeMinutes':60,
 }
 
 with sync_playwright() as p:
@@ -48,8 +48,8 @@ with sync_playwright() as p:
     weigh=page.locator('[data-notification-detail-id="fasting-weigh-snooze-test"]')
     target=page.locator('[data-notification-detail-id="fasting-target-snooze-test"]')
     page.wait_for_function("document.querySelectorAll('#notificationDetailStack .notificationDetailCard').length === 2",timeout=5000)
-    if weigh.locator('.notificationDetailSnoozeDuration').input_value()!='1440':
-        print('FAIL: weigh-in snooze default should be 1 day'); sys.exit(1)
+    if weigh.locator('.notificationDetailSnoozeDuration').input_value()!='60':
+        print('FAIL: weigh-in snooze default should be 1 hour'); sys.exit(1)
     if target.locator('.notificationDetailSnoozeDuration').input_value()!='60':
         print('FAIL: fasting snooze default should be 1 hour'); sys.exit(1)
 
