@@ -58,7 +58,7 @@ with sync_playwright() as p:
     status(page,'current')
     chip_text=page.locator('#fastingBackupStatusText').inner_text()
     assert ' — ' in chip_text and __import__('re').search(r'\d{1,2}:\d{2}',chip_text), chip_text
-    assert 'no changes since the last external JSON backup' in chip_text.lower(), chip_text
+    assert 'no changes since the last external json backup' in chip_text.lower(), chip_text
     # The green current-backup status must remain visible after the initial confirmation window.
     page.wait_for_timeout(7300)
     assert page.locator('#fastingBackupRow').is_visible(), 'Current backup status must remain visible after the temporary confirmation period'
