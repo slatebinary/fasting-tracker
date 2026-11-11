@@ -1,3 +1,9 @@
+## v1.17.75 — 2026-11-11
+
+- Increased the visual separation between the general colour-vision palette and the Protanopia palette: cool-blue surfaces/navy accents versus warm-golden surfaces/violet accents, with distinct status colours and maintained WCAG text contrast.
+- Clarified the palette-purpose hints in English, Bulgarian and Spanish.
+- Added a browser regression that switches palettes live in Settings and verifies the applied theme, surface/accent/status tokens and localized hint.
+
 ## v1.17.74 — 2026-11-11
 
 - Replaced sparse weekly-through-yearly calendar-bucket chart points with trailing rolling averages over 7, 30, 90, 180 and 365 days, sampled only on dates with actual weight measurements.
