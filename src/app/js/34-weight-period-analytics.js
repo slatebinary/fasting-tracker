@@ -26,8 +26,8 @@
     start.setHours(0,0,0,0);
     return { start, end };
   }
-  function weightEntriesForPeriod(asc = sortedWeightsAsc(), mode = weightPeriodMode, now = new Date()) {
-    const {start, end} = weightPeriodBounds(mode, now);
+  function weightEntriesForPeriod(asc = sortedWeightsAsc(), mode = weightPeriodMode, now = new Date(), explicitBounds = null) {
+    const {start, end} = explicitBounds || weightPeriodBounds(mode, now);
     const startIso = start.toISOString(), endIso = end.toISOString();
     let lo = 0, hi = asc.length;
     while (lo < hi) { const mid = (lo + hi) >> 1; if (String(asc[mid].when) < startIso) lo = mid + 1; else hi = mid; }
@@ -160,6 +160,25 @@
     }
     weightAggregateCache.set(key,result); return result;
   }
+  function selectedWeightPeriodBounds(asc = sortedWeightsAsc(), mode = weightPeriodMode) {
+    const buckets = buildWeightAggregateBuckets(asc, mode);
+    let selected = buckets.find(bucket => bucket.key === weightChartSelectedId && bucket.count > 0);
+    if (!selected) selected = [...buckets].reverse().find(bucket => bucket.count > 0) || null;
+    let endDay = mode === 'daily' && selected?.entry
+      ? weightEntryCalendarDay(selected.entry)
+      : selected?.calendarDay;
+    if (!endDay) endDay = dayKeyFast(new Date(), currentTimeZone());
+    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(endDay));
+    if (!match) return weightPeriodBounds(mode);
+    const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+    const end = new Date(year, month - 1, day, 23, 59, 59, 999);
+    const days = mode === 'daily' ? 30 : weightRollingWindowDays(mode);
+    const start = new Date(year, month - 1, day);
+    start.setDate(start.getDate() - Math.max(0, days - 1));
+    start.setHours(0, 0, 0, 0);
+    return {start, end};
+  }
+
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
     if (!WEIGHT_PERIOD_MODES.includes(weightPeriodMode)) weightPeriodMode = 'daily';
     document.querySelectorAll('#weightPeriodSwitcher [data-weight-period]').forEach(btn => {
@@ -167,8 +186,8 @@
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-selected', String(active));
     });
-    const bounds = weightPeriodBounds(weightPeriodMode);
-    const entries = weightEntriesForPeriod(asc, weightPeriodMode, bounds.end);
+    const bounds = selectedWeightPeriodBounds(asc, weightPeriodMode);
+    const entries = weightEntriesForPeriod(asc, weightPeriodMode, bounds.end, bounds);
     const range = weightPeriodDateRangeLabel(bounds.start, bounds.end);
     const summary = el('weightPeriodRange');
     if (summary) {
