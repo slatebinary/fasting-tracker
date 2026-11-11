@@ -70,6 +70,9 @@
     scroller.dataset.period = weightPeriodMode;
     scroller.dataset.bucketCount = String(buckets.length);
     scroller.dataset.dataPointCount = String(dataBuckets.length);
+    scroller.dataset.rollingWindowDays = String(weightRollingWindowDays(weightPeriodMode));
+    delete scroller.dataset.selectedWindowCount;
+    delete scroller.dataset.selectedCalendarCount;
     if(weightChartScrollToLatestPending){scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth);weightChartProgrammaticScrollLeft=scroller.scrollLeft;for(let i=buckets.length-1;i>=0;i--){if(buckets[i].count>0){weightChartSelectedId=buckets[i].key;break;}}weightChartScrollToLatestPending=false;}
     const scrollX=scroller.scrollLeft;
     const yFor=v=>top+h-((v-minV)/span)*h;
@@ -118,6 +121,8 @@
         ctx.fillStyle=textColor;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 12px -apple-system';ctx.fillText(valueLabel,bx+labelW/2,by+13);
         ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.fillText(periodLabel,bx+labelW/2,by+28);ctx.restore();
       }
+      scroller.dataset.selectedWindowCount = String(bucket.count);
+      scroller.dataset.selectedCalendarCount = String(bucket.calendarBucket?.count || 0);
       if(detail){
         if(weightPeriodMode==='daily'&&bucket.entry) detail.textContent=t('weight.pointDetail',{weight:formatWeight(bucket.entry.kg,unit),date:localDateTimeLabel(bucket.entry.when,bucket.entry.timeZone)});
         else {const count=bucket.count,calendar=bucket.calendarBucket;detail.textContent=t('weight.rollingPointDetail',{weight:formatWeight(bucket.averageKg,unit),period:weightBucketLongLabel(bucket),days:bucket.rollingWindowDays,count:formatNumber(count),measurementWord:t(pluralKey('weight.measurement',count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,unit):'—',calendarCount:calendar?formatNumber(calendar.count):'0'});}
