@@ -1,3 +1,10 @@
+## v1.17.81 — 2026-11-11
+
+- Unify Fasting and Weight history navigation: show the seven newest entries by default and provide matching 1-month, 6-month, 1-year and all-history ranges.
+- Add a live “Last N fasts” / “Last N measurements” count that reflects the exact number of entries currently displayed.
+- Keep the compact More / Last 7 controls, existing filters and visible-record bulk selection aligned across both histories.
+- Add English, Bulgarian and Spanish translations and browser regression coverage for both lists.
+
 ## v1.17.80 — 2026-11-11
 
 - Add clearly visible Rolling / Fixed periods controls to the Weight trend card. Rolling uses trailing averages; Fixed uses calendar-aligned weekly, monthly, quarterly, half-year and yearly buckets.
