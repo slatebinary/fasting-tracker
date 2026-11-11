@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.80",
+  "version": "1.17.81",
   "released": "2026-11-11",
-  "notes": "Add visible rolling/fixed weight chart modes and set weight reminder snooze default to 1 hour.",
+  "notes": "Add matching compact, period-based Fasting and Weight history lists with dynamic visible-entry counts.",
   "entry": "./index.html",
   "shell": [
     "./",
