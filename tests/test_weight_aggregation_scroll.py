@@ -57,11 +57,14 @@ with sync_playwright() as p:
               window:first.rollingWindowDays,hasCalendar:!!first.calendarBucket,
               key:first.key,calendarCount:first.calendarBucket?.count};
         }""")
-        if result['window'] != days or result['firstCount'] != 1 or result['insideCount'] != 7 or result['lateCount'] != 7 or not result['hasCalendar']:
+        if result['window'] != days or result['firstCount'] != 1 or result['insideCount'] != min(7,days) or result['lateCount'] != min(8,days) or not result['hasCalendar']:
             print('FAIL: rolling window semantics or calendar summary incorrect',mode,result); sys.exit(1)
         note=page.locator('#weightChartNote').inner_text().lower()
         if 'rolling' not in note:
             print('FAIL: rolling average is not clearly identified in chart help',mode,note); sys.exit(1)
+        detail=page.locator('#weightChartDetail').inner_text().lower()
+        if 'rolling' not in detail or 'calendar' not in detail:
+            print('FAIL: selected point does not explain rolling and calendar averages',mode,detail); sys.exit(1)
         nav=page.locator('#weightChartRange')
         if int(nav.get_attribute('max') or '0') != 799:
             print('FAIL: rolling chart navigator does not include all real measurement dates',mode,nav.get_attribute('max')); sys.exit(1)
