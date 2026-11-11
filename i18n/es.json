@@ -1097,5 +1097,7 @@
   "notifications.weightSnoozeDefault": "Posposición predeterminada del recordatorio de peso",
   "notifications.weightSnoozeHelp": "Tiempo predeterminado al posponer un recordatorio de peso.",
   "notifications.fastingSnoozeDefault": "Posposición predeterminada de avisos de ayuno",
-  "notifications.fastingSnoozeHelp": "Tiempo predeterminado al posponer un aviso de objetivo, seguridad o ciclo de ayuno."
+  "notifications.fastingSnoozeHelp": "Tiempo predeterminado al posponer un aviso de objetivo, seguridad o ciclo de ayuno.",
+  "weight.modeRolling": "Ventana móvil",
+  "weight.modeFixed": "Períodos fijos"
 }
