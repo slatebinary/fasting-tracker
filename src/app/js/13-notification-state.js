@@ -108,7 +108,15 @@
       const restored = {id:String(item.id),kind:String(item.kind),screen:APP_SCREENS.includes(item.screen)?item.screen:'fasting',createdAt:new Date(nowMs).toISOString(),params:item.params&&typeof item.params==='object'?item.params:{}};
       active.unshift(restored);
       const copy = notificationDetailCopy(restored.kind, restored.params);
-      void sendDeviceNotification(restored.kind, copy.title, copy.body, {screen:restored.screen,tag:`fasting-snooze-${restored.id}-${snoozedUntilMs}`,detailParams:restored.params,recordDetail:false});
+      let deviceBody = copy.body;
+      if (restored.kind === 'target') deviceBody = t('notifications.targetBodyShort',{target:formatGoal(sanitizeGoal(restored.params.targetHours,activeTargetHours()))});
+      else if (restored.kind === 'safety') deviceBody = t('notifications.safetyBodyShort');
+      else if (restored.kind === 'cycle') deviceBody = t('notifications.cycleBodyShort');
+      else if (restored.kind === 'weigh-in') {
+        const cadenceKey = restored.params.cadence === 'daily' ? 'notifications.daily' : 'notifications.weekly';
+        deviceBody = t('notifications.weighBodyShort',{cadence:t(cadenceKey).toLowerCase()});
+      }
+      void sendDeviceNotification(restored.kind, copy.title, deviceBody, {screen:restored.screen,tag:restored.id,detailParams:restored.params,recordDetail:false});
     }
     notificationRuntimeState.snoozedDetails = remaining;
     notificationRuntimeState.details = active.slice(0, NOTIFICATION_DETAIL_LIMIT);
