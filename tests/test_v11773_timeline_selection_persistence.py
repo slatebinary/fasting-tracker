@@ -60,23 +60,17 @@ with sync_playwright() as p:
       c.dispatchEvent(new PointerEvent('pointerup',{...init,clientX:p.x,clientY:p.y}));
     }""", point)
     page.wait_for_timeout(100)
-    selected = page.evaluate("() => chartSelectedTarget ? {...chartSelectedTarget} : null")
     title = page.locator("#chartDetailTitle").inner_text().strip()
     detail = page.locator("#chartDetailText").inner_text().strip()
-    if not selected or selected.get("kind") != "segment" or selected.get("dayKey") != end.strftime("%Y-%m-%d"):
-        raise AssertionError(f"Tap did not select today's Timeline segment: {selected}; point={point}")
-    if not title or "Fasting this day:" not in detail:
-        raise AssertionError(f"Selected Timeline detail was not rendered: {title!r} / {detail!r}")
+    if not title or "Fasting this day:" not in detail or "2h 0m of 16h 0m target" not in detail:
+        raise AssertionError(f"Tap did not select today's two-hour fast segment: {title!r} / {detail!r}; point={point}")
 
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_timeout(120)
     page.locator('.tab[data-screen="stats"]').click()
     page.wait_for_timeout(180)
-    restored = page.evaluate("() => chartSelectedTarget ? {...chartSelectedTarget} : null")
     restored_title = page.locator("#chartDetailTitle").inner_text().strip()
     restored_detail = page.locator("#chartDetailText").inner_text().strip()
-    if restored != selected:
-        raise AssertionError(f"Timeline selection changed after Weight round-trip: {selected} -> {restored}")
     if (restored_title, restored_detail) != (title, detail):
         raise AssertionError(f"Timeline detail was lost after Weight round-trip: {title!r}/{detail!r} -> {restored_title!r}/{restored_detail!r}")
     if errors:
