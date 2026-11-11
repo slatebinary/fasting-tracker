@@ -420,9 +420,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .fastingSectionHeader h1 { flex:1 1 auto; min-width:0; }
     .fastingSectionHeader #shareProgressBtn { flex:0 0 auto; max-width:55%; min-height:44px; padding:10px 12px; font-size:13px; line-height:1.2; }
     .fastingSectionHeader.hasBackupAttention { margin-bottom:8px; }
-    .fastingBackupRow { display:flex; align-items:center; margin:0 0 14px; }
+    .fastingBackupRow { display:flex; align-items:center; width:100%; margin:0 0 14px; }
     .fastingBackupRow[hidden] { display:none !important; }
-    .backupStatusButton { min-height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:12px; color:var(--muted); background:var(--card); white-space:normal; text-align:left; font-size:13px; line-height:1.3; }
+    .backupStatusButton { min-height:44px; width:fit-content; max-width:100%; display:inline-flex; align-items:center; justify-content:flex-start; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:12px; color:var(--muted); background:var(--card); white-space:normal; text-align:left; font-size:13px; line-height:1.3; }
     .backupStatusDot { width:10px; height:10px; flex:none; border-radius:50%; background:currentColor; }
     .backupStatusButton[data-state="current"] { color:var(--good); background:color-mix(in srgb,var(--good) 9%,var(--card)); border-color:color-mix(in srgb,var(--good) 37%,var(--line)); }
     .backupStatusButton[data-state="aged"] { color:var(--text); background:color-mix(in srgb,#d78e16 15%,var(--card)); border-color:#ba881d; }
