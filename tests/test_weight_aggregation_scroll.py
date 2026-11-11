@@ -50,15 +50,18 @@ with sync_playwright() as p:
     for mode,days in (('week',7),('month',30),('quarter',90),('halfyear',180),('year',365)):
         page.locator(f'[data-weight-period="{mode}"]').click()
         page.wait_for_function(f"document.querySelector('#weightChartScroller')?.dataset.period === '{mode}'",timeout=5000)
-        result=page.evaluate("""() => {
-            const first=weightChartBuckets[0], inside=weightChartBuckets[Math.min(6,weightChartBuckets.length-1)];
-            const late=weightChartBuckets[Math.min(7,weightChartBuckets.length-1)];
-            return {firstCount:first.count,insideCount:inside.count,lateCount:late.count,
-              window:first.rollingWindowDays,hasCalendar:!!first.calendarBucket,
-              key:first.key,calendarCount:first.calendarBucket?.count};
-        }""")
-        if result['window'] != days or result['firstCount'] != 1 or result['insideCount'] != min(7,days) or result['lateCount'] != min(8,days) or not result['hasCalendar']:
+        nav=page.locator('#weightChartRange')
+        nav.evaluate("(e)=>{e.value='0';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === '1'",timeout=5000)
+        nav.evaluate("(e)=>{e.value='6';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === '7'",timeout=5000)
+        nav.evaluate("(e)=>{e.value='7';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("expected => document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === String(expected)",arg=Math.min(8,days),timeout=5000)
+        result=page.locator('#weightChartScroller').evaluate("e=>({window:+e.dataset.rollingWindowDays,selectedCount:+e.dataset.selectedWindowCount,calendarCount:+e.dataset.selectedCalendarCount})")
+        if result['window'] != days or result['selectedCount'] != min(8,days) or result['calendarCount'] < 1:
             print('FAIL: rolling window semantics or calendar summary incorrect',mode,result); sys.exit(1)
+        nav.evaluate("(e)=>{e.value=e.max;e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("e => document.querySelector('#weightChartRange')?.value === e",arg=nav.get_attribute('max'),timeout=5000)
         note=page.locator('#weightChartNote').inner_text().lower()
         if 'rolling' not in note:
             print('FAIL: rolling average is not clearly identified in chart help',mode,note); sys.exit(1)
