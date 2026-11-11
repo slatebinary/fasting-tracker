@@ -35,23 +35,42 @@ with sync_playwright() as p:
             print('FAIL: mode did not produce multiple points despite enough data',mode,info); sys.exit(1)
         if mode == 'daily' and info['d'] != 800:
             print('FAIL: Daily must preserve every individual measurement',info); sys.exit(1)
-        if mode != 'daily' and (info['max'] > 1 or info['b'] != info['d']):
-            print('FAIL: aggregate view retained empty periods or requires horizontal scrolling',mode,info); sys.exit(1)
-        if mode == 'daily' and info['max'] > 1 and abs(info['left']-info['max']) > 2:
-            print('FAIL: Daily chart did not open on newest/right side',mode,info); sys.exit(1)
+        if info['b'] != info['d']:
+            print('FAIL: rolling series contains non-measurement or empty synthetic points',mode,info); sys.exit(1)
+        if info['max'] <= 1 or abs(info['left']-info['max']) > 2:
+            print('FAIL: chart did not preserve dense horizontal history or open at newest/right side',mode,info); sys.exit(1)
+        if mode != 'daily' and info['d'] != 800:
+            print('FAIL: rolling mode must sample all 800 actual measurement dates',mode,info); sys.exit(1)
 
-    if not (counts['daily'] > counts['week'] > counts['month'] > counts['quarter'] > counts['halfyear'] > counts['year']):
-        print('FAIL: aggregate granularity counts are unexpected',counts); sys.exit(1)
+    if len(set(counts.values())) != 1 or counts['daily'] != 800:
+        print('FAIL: rolling modes should remain sampled on actual measurement dates',counts); sys.exit(1)
 
-    # Aggregate modes must show every non-empty period in one viewport.
-    # Empty weeks/months are omitted rather than becoming blank scroll columns.
-    for mode in ('week','month','quarter','halfyear','year'):
+    # Each rolling point is calculated from its trailing window and carries the
+    # calendar-period aggregate separately for transparent comparison.
+    for mode,days in (('week',7),('month',30),('quarter',90),('halfyear',180),('year',365)):
         page.locator(f'[data-weight-period="{mode}"]').click()
         page.wait_for_function(f"document.querySelector('#weightChartScroller')?.dataset.period === '{mode}'",timeout=5000)
-        page.wait_for_function("Number(document.querySelector('#weightChartScroller')?.dataset.dataPointCount) >= 2",timeout=5000)
-        aggregate=page.locator('#weightChartScroller').evaluate("e=>({left:e.scrollLeft,max:e.scrollWidth-e.clientWidth,width:e.clientWidth,track:getComputedStyle(document.querySelector('#weightChartTrack')).width})")
-        if aggregate['max'] > 1 or aggregate['left'] > 1:
-            print('FAIL: aggregate chart should fit the full history without horizontal scrolling',mode,aggregate); sys.exit(1)
+        nav=page.locator('#weightChartRange')
+        nav.evaluate("(e)=>{e.value='0';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === '1'",timeout=5000)
+        nav.evaluate("(e)=>{e.value='6';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === '7'",timeout=5000)
+        nav.evaluate("(e)=>{e.value='7';e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("expected => document.querySelector('#weightChartScroller')?.dataset.selectedWindowCount === String(expected)",arg=min(8,days),timeout=5000)
+        result=page.locator('#weightChartScroller').evaluate("e=>({window:+e.dataset.rollingWindowDays,selectedCount:+e.dataset.selectedWindowCount,calendarCount:+e.dataset.selectedCalendarCount})")
+        if result['window'] != days or result['selectedCount'] != min(8,days) or result['calendarCount'] < 1:
+            print('FAIL: rolling window semantics or calendar summary incorrect',mode,result); sys.exit(1)
+        nav.evaluate("(e)=>{e.value=e.max;e.dispatchEvent(new Event('input',{bubbles:true}))}")
+        page.wait_for_function("e => document.querySelector('#weightChartRange')?.value === e",arg=nav.get_attribute('max'),timeout=5000)
+        note=page.locator('#weightChartNote').inner_text().lower()
+        if 'rolling' not in note:
+            print('FAIL: rolling average is not clearly identified in chart help',mode,note); sys.exit(1)
+        detail=page.locator('#weightChartDetail').inner_text().lower()
+        if 'rolling' not in detail or 'calendar' not in detail:
+            print('FAIL: selected point does not explain rolling and calendar averages',mode,detail); sys.exit(1)
+        nav=page.locator('#weightChartRange')
+        if int(nav.get_attribute('max') or '0') != 799:
+            print('FAIL: rolling chart navigator does not include all real measurement dates',mode,nav.get_attribute('max')); sys.exit(1)
 
     # Daily chart values can be browsed point-by-point with the keyboard.
     page.locator('[data-weight-period="daily"]').click()
@@ -160,4 +179,4 @@ with sync_playwright() as p:
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: Daily raw points, dense aggregate periods without horizontal scrolling, navigator traversal and raw-entry retention')
+print('PASS: Daily raw points, rolling windows, calendar summaries, dense navigation and raw-entry retention')
