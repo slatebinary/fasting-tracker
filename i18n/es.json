@@ -1109,5 +1109,17 @@
   "weight.historyRange.halfyear": "6 meses",
   "weight.historyRange.year": "1 año",
   "weight.historyRange.all": "Todo",
-  "weight.historyRangeEmpty": "No hay mediciones en este período."
+  "weight.historyRangeEmpty": "No hay mediciones en este período.",
+  "history.rangeMore": "Más…",
+  "history.rangeClose": "Cerrar",
+  "history.rangeRecent": "Últimos 7",
+  "history.rangeAria": "Período del historial de ayunos anteriores",
+  "history.rangePrompt": "Período",
+  "history.range.month": "1 mes",
+  "history.range.halfyear": "6 meses",
+  "history.range.year": "1 año",
+  "history.range.all": "Todo",
+  "history.rangeEmpty": "No hay ayunos en este período.",
+  "history.lastCount": "Últimos {n} ayunos",
+  "weight.historyLastCount": "Últimas {n} mediciones"
 }
