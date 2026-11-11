@@ -160,6 +160,8 @@
   document.querySelectorAll('[data-notification-cadence]').forEach(btn => bindResponsiveAction(btn, () => setSettingsWeighCadence(btn.dataset.notificationCadence)));
   el('notificationCycleToggle').addEventListener('change', () => saveNotificationOption('cycleComplete', el('notificationCycleToggle').checked));
   el('notificationTestBtn').addEventListener('click', sendTestNotification);
+  el('notificationWeightSnoozeDefault').addEventListener('change', () => saveNotificationSnoozeDefault('weightSnoozeMinutes', el('notificationWeightSnoozeDefault').value));
+  el('notificationFastingSnoozeDefault').addEventListener('change', () => saveNotificationSnoozeDefault('fastingSnoozeMinutes', el('notificationFastingSnoozeDefault').value));
 
   const APP_DOC_PATHS = Object.freeze(['about.html','privacy.html','branding.html','license.html','changelog.html']);
   function rememberDocumentReturn(event) {

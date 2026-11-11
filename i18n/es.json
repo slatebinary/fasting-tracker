@@ -961,7 +961,7 @@
   "notifications.detailsReceived": "Recibido {date}",
   "notifications.detailsDismissAria": "Cerrar detalles de la notificación: {title}",
   "notifications.detailsFallback": "Abre la pantalla correspondiente de Fasting Tracker para obtener más información.",
-  "notifications.detailPolicy": "Las notificaciones del dispositivo son breves a propósito. Los detalles completos permanecen en Fasting Tracker hasta que los cierres.",
+  "notifications.detailPolicy": "Las notificaciones del dispositivo son breves intencionadamente. Los detalles permanecen en Fasting Tracker hasta que los descartes o pospongas.",
   "backup.exportExplanation": "Exportar guarda una copia de seguridad JSON que se puede restaurar. Exportar todo incluye la misma copia y tablas CSV de ayunos y peso para consultarlas más fácilmente en Excel. Las instantáneas internas de recuperación permanecen en este dispositivo.",
   "public.license": "Licencia MIT",
   "public.branding": "Política de marca",
@@ -1084,5 +1084,18 @@
   "settings.paletteHint.tritanopia": "Pensada para ayudar a personas con tritanopia (dificultad para distinguir azul y amarillo): utiliza rosa, burdeos, verde y óxido, en lugar de depender del contraste azul-amarillo.",
   "weight.rollingChartHelp": "Cada punto es una media móvil de {days} días que termina en un día con una medición guardada. No se estiman los días sin datos.",
   "weight.rollingPointDetail": "Media móvil de {days} días hasta {period}: {weight} • {count} {measurementWord} en la ventana. Media del periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord}).",
-  "weight.rollingDataRow": "{period} — media móvil de {weight} en {days} días • {count} {measurementWord} en la ventana • periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
+  "weight.rollingDataRow": "{period} — media móvil de {weight} en {days} días • {count} {measurementWord} en la ventana • periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+  "unit.minute.one": "minuto",
+  "unit.minute.other": "minutos",
+  "unit.minute.zero": "minutos",
+  "unit.minute.two": "minutos",
+  "unit.minute.few": "minutos",
+  "unit.minute.many": "minutos",
+  "notifications.snoozeAction": "Volver a avisarme",
+  "notifications.snoozeDurationAria": "Elige cuándo volver a mostrar este recordatorio",
+  "notifications.detailsSnoozeAria": "Posponer los detalles de la notificación: {title}",
+  "notifications.weightSnoozeDefault": "Posposición predeterminada del recordatorio de peso",
+  "notifications.weightSnoozeHelp": "Tiempo predeterminado al posponer un recordatorio de peso.",
+  "notifications.fastingSnoozeDefault": "Posposición predeterminada de avisos de ayuno",
+  "notifications.fastingSnoozeHelp": "Tiempo predeterminado al posponer un aviso de objetivo, seguridad o ciclo de ayuno."
 }

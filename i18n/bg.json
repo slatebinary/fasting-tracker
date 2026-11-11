@@ -961,7 +961,7 @@
   "notifications.detailsReceived": "Получено {date}",
   "notifications.detailsDismissAria": "Затвори подробностите за известието: {title}",
   "notifications.detailsFallback": "Отворете съответния екран на Fasting Tracker за повече информация.",
-  "notifications.detailPolicy": "Известията на устройството са умишлено кратки. Пълните подробности остават във Fasting Tracker, докато не ги затворите.",
+  "notifications.detailPolicy": "Известията на устройството са умишлено кратки. Подробностите остават във Fasting Tracker, докато не ги затворите или отложите.",
   "backup.exportExplanation": "Експорт запазва JSON архив, който може да бъде възстановен. „Експортиране на всичко“ включва същия архив, както и CSV таблици за гладуванията и теглото за по-лесно разглеждане в Excel. Вътрешните точки за възстановяване остават на това устройство.",
   "public.license": "Лиценз MIT",
   "public.branding": "Политика за марката",
@@ -1084,5 +1084,18 @@
   "settings.paletteHint.tritanopia": "Предназначена да подпомага хора с тританопия (затруднено разграничаване на синьо и жълто): използва розово, бордо, зелено и ръждиви тонове вместо да разчита на контраст между синьо и жълто.",
   "weight.rollingChartHelp": "Всяка точка е плъзгаща се средна стойност за {days} дни, завършваща на ден със записано измерване. Липсващите дни не се оценяват.",
   "weight.rollingPointDetail": "Плъзгаща се средна стойност за {days} дни към {period}: {weight} • {count} {measurementWord} в периода. Календарна средна стойност за {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord}).",
-  "weight.rollingDataRow": "{period} — плъзгаща се средна стойност {weight} за {days} дни • {count} {measurementWord} в периода • календарен период {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
+  "weight.rollingDataRow": "{period} — плъзгаща се средна стойност {weight} за {days} дни • {count} {measurementWord} в периода • календарен период {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+  "unit.minute.one": "минута",
+  "unit.minute.other": "минути",
+  "unit.minute.zero": "минути",
+  "unit.minute.two": "минути",
+  "unit.minute.few": "минути",
+  "unit.minute.many": "минути",
+  "notifications.snoozeAction": "Напомни отново",
+  "notifications.snoozeDurationAria": "Изберете кога това напомняне да се покаже отново",
+  "notifications.detailsSnoozeAria": "Отложи известието: {title}",
+  "notifications.weightSnoozeDefault": "Отлагане на напомнянето за тегло по подразбиране",
+  "notifications.weightSnoozeHelp": "Интервалът по подразбиране при отлагане на напомняне за измерване на теглото.",
+  "notifications.fastingSnoozeDefault": "Отлагане на напомнянията за гладуване по подразбиране",
+  "notifications.fastingSnoozeHelp": "Интервалът по подразбиране при отлагане на напомняне за цел, безопасност или цикъл на гладуване."
 }

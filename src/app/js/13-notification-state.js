@@ -7,7 +7,9 @@
       longFastSafety: value.longFastSafety !== false,
       weighIn: value.weighIn === true,
       weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
-      cycleComplete: value.cycleComplete === true
+      cycleComplete: value.cycleComplete === true,
+      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 1440,
+      fastingSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.fastingSnoozeMinutes)) ? Number(value.fastingSnoozeMinutes) : 60
     };
   }
 
@@ -61,9 +63,70 @@
     return clean;
   }
 
+  const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080]);
+  function notificationSnoozeCategory(kind) {
+    if (kind === 'weigh-in') return 'weight';
+    return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
+  }
+  function notificationSnoozeDefaultMinutes(kind) {
+    const prefs = notificationPrefs();
+    return notificationSnoozeCategory(kind) === 'weight' ? prefs.weightSnoozeMinutes : prefs.fastingSnoozeMinutes;
+  }
+  function notificationSnoozeDurationLabel(minutes) {
+    if (minutes < 60) return `${minutes} ${t(pluralKey('unit.minute', minutes))}`;
+    if (minutes < 1440) { const count = minutes / 60; return `${formatNumber(count)} ${t(pluralKey('unit.hour', count))}`; }
+    const count = minutes / 1440;
+    return `${formatNumber(count)} ${t(pluralKey('unit.day', count))}`;
+  }
+  function snoozeNotificationDetail(id, durationMinutes) {
+    const duration = Number(durationMinutes);
+    if (!NOTIFICATION_SNOOZE_MINUTES.includes(duration)) return false;
+    const item = notificationDetailItems().find(entry => entry.id === id);
+    if (!item || !notificationSnoozeCategory(item.kind)) return false;
+    const until = Date.now() + duration * 60000;
+    notificationRuntimeState.details = notificationDetailItems().filter(entry => entry.id !== id);
+    const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
+    notificationRuntimeState.snoozedDetails = [{...item, snoozedUntil:new Date(until).toISOString()}, ...pending.filter(entry => entry?.id !== id)].slice(0, NOTIFICATION_DETAIL_LIMIT);
+    saveNotificationRuntimeState();
+    renderNotificationDetails();
+    return true;
+  }
+  function restoreDueSnoozedNotificationDetails(nowMs = Date.now()) {
+    const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
+    const due = [], remaining = [];
+    for (const item of pending) {
+      const until = validDate(item?.snoozedUntil);
+      if (!item || typeof item !== 'object' || !String(item.id || '') || !until) continue;
+      if (until.getTime() <= nowMs) due.push(item);
+      else remaining.push(item);
+    }
+    if (!due.length) return false;
+    const active = notificationDetailItems();
+    for (const item of due) {
+      if (active.some(entry => entry.id === item.id)) continue;
+      const restored = {id:String(item.id),kind:String(item.kind),screen:APP_SCREENS.includes(item.screen)?item.screen:'fasting',createdAt:new Date(nowMs).toISOString(),params:item.params&&typeof item.params==='object'?item.params:{}};
+      active.unshift(restored);
+      const copy = notificationDetailCopy(restored.kind, restored.params);
+      let deviceBody = copy.body;
+      if (restored.kind === 'target') deviceBody = t('notifications.targetBodyShort',{target:formatGoal(sanitizeGoal(restored.params.targetHours,activeTargetHours()))});
+      else if (restored.kind === 'safety') deviceBody = t('notifications.safetyBodyShort');
+      else if (restored.kind === 'cycle') deviceBody = t('notifications.cycleBodyShort');
+      else if (restored.kind === 'weigh-in') {
+        const cadenceKey = restored.params.cadence === 'daily' ? 'notifications.daily' : 'notifications.weekly';
+        deviceBody = t('notifications.weighBodyShort',{cadence:t(cadenceKey).toLowerCase()});
+      }
+      void sendDeviceNotification(restored.kind, copy.title, deviceBody, {screen:restored.screen,tag:restored.id,detailParams:restored.params,recordDetail:false});
+    }
+    notificationRuntimeState.snoozedDetails = remaining;
+    notificationRuntimeState.details = active.slice(0, NOTIFICATION_DETAIL_LIMIT);
+    saveNotificationRuntimeState();
+    return true;
+  }
+
   function recordNotificationDetail(kind, {screen='fasting', tag=null, params={}} = {}) {
     const id = String(tag || `fasting-tracker-${kind}-${Date.now()}`);
     const current = notificationDetailItems().filter(item => item.id !== id);
+    notificationRuntimeState.snoozedDetails = (Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : []).filter(item => item?.id !== id);
     notificationRuntimeState.details = [{id, kind, screen:APP_SCREENS.includes(screen)?screen:'fasting', createdAt:new Date().toISOString(), params}, ...current].slice(0, NOTIFICATION_DETAIL_LIMIT);
     saveNotificationRuntimeState();
     renderNotificationDetails();
@@ -76,6 +139,7 @@
 
   function renderNotificationDetails() {
     const stack = el('notificationDetailStack'); if (!stack) return;
+    restoreDueSnoozedNotificationDetails();
     const items = notificationDetailItems(); stack.replaceChildren(); stack.hidden = items.length === 0;
     for (const item of items) {
       const copy = notificationDetailCopy(item.kind, item.params);
@@ -94,6 +158,17 @@
       actions.append(dismiss);
       header.append(heading,actions);
       const body=document.createElement('div'); body.className='notificationDetailBody'; body.textContent=copy.body;
-      card.append(header,body); stack.append(card);
+      card.append(header,body);
+      if (notificationSnoozeCategory(item.kind)) {
+        const snoozeRow=document.createElement('div'); snoozeRow.className='notificationDetailSnoozeRow';
+        const duration=document.createElement('select'); duration.className='notificationDetailSnoozeDuration'; duration.setAttribute('aria-label',t('notifications.snoozeDurationAria',{title:copy.title}));
+        for (const minutes of NOTIFICATION_SNOOZE_MINUTES) { const option=document.createElement('option'); option.value=String(minutes); option.textContent=notificationSnoozeDurationLabel(minutes); duration.append(option); }
+        duration.value=String(notificationSnoozeDefaultMinutes(item.kind));
+        const snooze=document.createElement('button'); snooze.type='button'; snooze.className='secondary notificationDetailSnooze'; snooze.textContent=t('notifications.snoozeAction'); snooze.setAttribute('aria-label',t('notifications.detailsSnoozeAria',{title:copy.title}));
+        snooze.addEventListener('click',()=>snoozeNotificationDetail(item.id,duration.value));
+        snoozeRow.append(duration,snooze);
+        card.append(snoozeRow);
+      }
+      stack.append(card);
     }
   }

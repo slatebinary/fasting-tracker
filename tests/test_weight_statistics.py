@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Regression: selectable weight periods show range-specific metrics and chart data."""
-import sys, time, datetime
+import sys, time, datetime, json
+from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM, iso
+APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -21,9 +23,9 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("arg => { __seedFastingDbV2(arg.data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:arg.version,seenAt:new Date().toISOString()})); }", {'data':data,'version':APP_VERSION})
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function("v => document.querySelector('#appVersionLabel')?.textContent === 'v' + v",arg=APP_VERSION,timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_function("document.querySelector('#weight')?.classList.contains('active')",timeout=5000)
     page.wait_for_function("document.querySelector('#weightPeriodRange')?.dataset.period === 'daily'",timeout=5000)
@@ -58,6 +60,16 @@ with sync_playwright() as p:
     summary=page.locator('#weightPeriodRange').inner_text()
     if 'measurement' not in summary:
         print('FAIL: period range/count summary is missing'); sys.exit(1)
+    # The range label follows the selected chart date, not a permanently fixed today window.
+    before_navigation=page.locator('#weightPeriodRange').inner_text()
+    older=page.locator('#weightChartOlderBtn')
+    if older.is_disabled():
+        print('FAIL: older-period navigation should be available with 400 daily measurements'); sys.exit(1)
+    older.click()
+    page.wait_for_function('(before) => document.querySelector("#weightPeriodRange")?.innerText !== before', arg=before_navigation, timeout=5000)
+    after_navigation=page.locator('#weightPeriodRange').inner_text()
+    if after_navigation == before_navigation:
+        print('FAIL: weight period summary did not move with the selected chart date'); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()

@@ -684,3 +684,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .notificationDetailDismiss { flex:0 0 auto; white-space:nowrap; }
     @media (max-width: 420px) { .notificationDetailHeader { gap:8px; } .notificationDetailActions { gap:5px; } .notificationDetailActions button { padding-inline:9px; } }
     @media (prefers-reduced-motion: reduce) { .settingsGroupChevron { transition:none; } }
+
+    .notificationDetailSnoozeRow { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .notificationDetailSnoozeDuration { min-height:40px; max-width:130px; }
