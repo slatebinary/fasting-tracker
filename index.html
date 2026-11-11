@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.75" />
+  <meta name="ft-app-version" content="1.17.76" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -569,9 +569,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightChartNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
     .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
-    .weightPeriodSwitcher { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:4px 2px 8px; margin:2px -2px 10px; touch-action:pan-x; }
-    .weightPeriodSwitcher::-webkit-scrollbar { display:none; }
-    .weightPeriodSwitcher button { flex:0 0 auto; min-width:82px; padding:10px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; line-height:1.1; white-space:nowrap; }
+    .weightPeriodSwitcher { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:7px; overflow:visible; padding:4px 0 8px; margin:2px 0 10px; }
+    .weightPeriodSwitcher button { min-width:0; width:100%; padding:10px 7px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; line-height:1.1; white-space:nowrap; }
+    @media (max-width:520px) { .weightPeriodSwitcher { grid-template-columns:repeat(3,minmax(0,1fr)); } }
     .weightPeriodSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
     .weightPeriodRange { min-height:18px; margin:0 0 4px; color:var(--muted); }
     .weightStatsGrid { margin-top:8px; }
@@ -941,15 +941,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
     <div class="card weightStatsCard">
       <h2 data-i18n="weight.statistics">Weight statistics</h2>
-      <div class="weightPeriodSwitcher" id="weightPeriodSwitcher" role="tablist" aria-label="Weight statistics period" data-i18n-aria="a11y.weightPeriod">
-        <button type="button" data-weight-period="daily" role="tab" aria-selected="true" class="active" data-i18n="weight.periodDaily">Daily</button>
-        <button type="button" data-weight-period="week" role="tab" aria-selected="false" data-i18n="weight.periodWeek">Week</button>
-        <button type="button" data-weight-period="month" role="tab" aria-selected="false" data-i18n="weight.periodMonth">Month</button>
-        <button type="button" data-weight-period="quarter" role="tab" aria-selected="false" data-i18n="weight.periodQuarter">Quarter</button>
-        <button type="button" data-weight-period="halfyear" role="tab" aria-selected="false" data-i18n="weight.periodHalfYear">6 months</button>
-        <button type="button" data-weight-period="year" role="tab" aria-selected="false" data-i18n="weight.periodYear">Year</button>
-      </div>
-      <div class="weightPeriodRange small" id="weightPeriodRange"></div>
       <div class="grid weightStatsGrid">
         <div class="metric"><div class="value weightValue" id="wPeriodStart">—</div><div class="label" data-i18n="weight.periodStart">Start</div></div>
         <div class="metric"><div class="value weightValue" id="wPeriodEnd">—</div><div class="label" data-i18n="weight.periodEnd">Latest</div></div>
@@ -961,6 +952,15 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
     <div class="card weightChartWrap">
       <h2 data-i18n="weight.trend">Weight trend</h2>
+      <div class="weightPeriodSwitcher" id="weightPeriodSwitcher" role="tablist" aria-label="Weight chart and statistics period" data-i18n-aria="a11y.weightPeriod">
+        <button type="button" data-weight-period="daily" role="tab" aria-selected="true" class="active" data-i18n="weight.periodDaily">Daily</button>
+        <button type="button" data-weight-period="week" role="tab" aria-selected="false" data-i18n="weight.periodWeek">Week</button>
+        <button type="button" data-weight-period="month" role="tab" aria-selected="false" data-i18n="weight.periodMonth">Month</button>
+        <button type="button" data-weight-period="quarter" role="tab" aria-selected="false" data-i18n="weight.periodQuarter">Quarter</button>
+        <button type="button" data-weight-period="halfyear" role="tab" aria-selected="false" data-i18n="weight.periodHalfYear">6 months</button>
+        <button type="button" data-weight-period="year" role="tab" aria-selected="false" data-i18n="weight.periodYear">Year</button>
+      </div>
+      <div class="weightPeriodRange small" id="weightPeriodRange"></div>
       <div class="weightChartShell">
         <canvas id="weightChartYAxis" class="weightChartYAxis" width="46" height="240" aria-hidden="true"></canvas>
         <div id="weightChartScroller" class="weightChartScroller" aria-label="Scrollable weight trend" data-i18n-aria="a11y.weightChartScroller">
@@ -1905,7 +1905,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.75';
+  const APP_VERSION = '1.17.76';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
