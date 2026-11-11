@@ -140,7 +140,7 @@
   function renderNotificationDetails() {
     const stack = el('notificationDetailStack'); if (!stack) return;
     restoreDueSnoozedNotificationDetails();
-    const items = notificationDetailItems(); stack.replaceChildren();
+    const items = notificationDetailItems(); stack.replaceChildren(); stack.hidden = items.length === 0;
     for (const item of items) {
       const copy = notificationDetailCopy(item.kind, item.params);
       const card = document.createElement('div'); card.className='card notificationDetailCard'; card.setAttribute('role','status'); card.dataset.notificationDetailId=item.id;
