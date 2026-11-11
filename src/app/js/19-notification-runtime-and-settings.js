@@ -17,7 +17,7 @@
     return prefs.enabled === true && prefs[key] === true && notificationPermissionState() === 'granted';
   }
 
-  async function sendDeviceNotification(kind, title, body, {screen='fasting', tag=null, detailParams={}} = {}) {
+  async function sendDeviceNotification(kind, title, body, {screen='fasting', tag=null, detailParams={}, recordDetail=true} = {}) {
     if (notificationPermissionState() !== 'granted') return false;
     const detailId = String(tag || `fasting-tracker-${kind}`);
     const options = {
@@ -36,7 +36,7 @@
       }
     } catch {}
     if (!sent) { try { new Notification(title, options); sent = true; } catch {} }
-    if (sent) recordNotificationDetail(kind, {screen, tag:detailId, params:detailParams});
+    if (sent && recordDetail) recordNotificationDetail(kind, {screen, tag:detailId, params:detailParams});
     return sent;
   }
 
@@ -160,12 +160,16 @@
   }
 
   async function checkFastNotifications() {
+    notificationRuntimeState = loadNotificationRuntimeState();
+    if (restoreDueSnoozedNotificationDetails()) renderNotificationDetails();
     await maybeNotifyTargetReached();
     await maybeNotifyLongFastSafety();
     await maybeNotifyCycleComplete();
   }
 
   async function checkMaintenanceNotifications() {
+    notificationRuntimeState = loadNotificationRuntimeState();
+    if (restoreDueSnoozedNotificationDetails()) renderNotificationDetails();
     await maybeNotifyBackupDue();
     await maybeNotifyWeighIn();
   }
@@ -212,6 +216,8 @@
     el('notificationWeighToggle').checked = prefs.weighIn;
     el('notificationCycleToggle').checked = prefs.cycleComplete;
     renderWeighCadenceButtons('notification', prefs.weighInCadence);
+    el('notificationWeightSnoozeDefault').value = String(prefs.weightSnoozeMinutes);
+    el('notificationFastingSnoozeDefault').value = String(prefs.fastingSnoozeMinutes);
     const permission = notificationPermissionState();
     const badge = el('notificationPermissionBadge');
     badge.textContent = t(permission === 'granted' && prefs.enabled ? 'notifications.badgeOn' : permission === 'denied' ? 'notifications.badgeBlocked' : permission === 'unsupported' ? 'notifications.badgeUnavailable' : 'notifications.badgeOff');
@@ -239,6 +245,15 @@
     if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
     renderNotificationSettings();
     if (prefs.enabled) { checkFastNotifications(); checkMaintenanceNotifications(); }
+  }
+
+  function saveNotificationSnoozeDefault(key, value) {
+    const duration = Number(value);
+    if (!NOTIFICATION_SNOOZE_MINUTES.includes(duration)) return;
+    const prefs = notificationPrefs();
+    prefs[key] = duration;
+    if (!save({invalidateDerived:false, dirtyViews:['settings']})) { renderAll(); return; }
+    renderNotificationSettings();
   }
 
   function saveNotificationOption(key, value) {
