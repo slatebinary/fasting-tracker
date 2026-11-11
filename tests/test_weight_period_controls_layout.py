@@ -49,7 +49,8 @@ with sync_playwright() as p:
         assert selector.evaluate(
             "e => !!(e.compareDocumentPosition(document.querySelector('.weightChartShell')) & Node.DOCUMENT_POSITION_FOLLOWING)"
         ), "Period selector must appear before the chart"
-        aria_label = (selector.get_attribute("aria-label") or "").lower()\n        assert aria_label and any(word in aria_label for word in ("period", "период", "período")), (width, aria_label)
+        aria_label = (selector.get_attribute("aria-label") or "").lower()
+        assert aria_label and any(word in aria_label for word in ("period", "период", "período")), (width, aria_label)
         assert selector.locator("button").count() == 6
         layout = selector.evaluate(
             """e => ({
