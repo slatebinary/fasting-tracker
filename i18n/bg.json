@@ -458,11 +458,11 @@
   "weight.pointDetail": "{weight} • {date}",
   "weight.statistics": "Статистика за теглото",
   "weight.periodDaily": "Дневно",
-  "weight.periodWeek": "седмица",
-  "weight.periodMonth": "месец",
-  "weight.periodQuarter": "тримесечие",
+  "weight.periodWeek": "Седмица",
+  "weight.periodMonth": "Месец",
+  "weight.periodQuarter": "Тримесечие",
   "weight.periodHalfYear": "6 месеца",
-  "weight.periodYear": "година",
+  "weight.periodYear": "Година",
   "weight.periodStart": "Начално",
   "weight.periodEnd": "Последно",
   "weight.periodChange": "Промяна",
@@ -1127,6 +1127,5 @@
   "weight.rollingAverageMeta": "Към {date} · {count} {measurementWord} в този период",
   "weight.calendarAverageTitle": "Календарна средна стойност за {period}",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
-  "weight.noCalendarMeasurements": "Няма измервания за този календарен период.",
-  "weight.periodHalfyear": "полугодие"
+  "weight.noCalendarMeasurements": "Няма измервания за този календарен период."
 }
