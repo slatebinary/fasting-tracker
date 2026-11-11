@@ -70,7 +70,7 @@
   const MAX_DATE_MS = 8.64e15;
   // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
   const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
-  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false }, language: 'system', appearance: 'system', iconChoice: 'plate' };
+  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false, weightSnoozeMinutes: 1440, fastingSnoozeMinutes: 60 }, language: 'system', appearance: 'system', iconChoice: 'plate' };
   const timeZoneValidityCache = new Map();
   const numberSymbolsCache = new Map();
   let preferredTimeZone = null;
