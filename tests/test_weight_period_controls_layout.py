@@ -2,13 +2,14 @@
 """Regression: weight period controls sit with the chart and remain fully visible."""
 # Check both the visual grouping and responsive accessibility behavior.
 import json
+import time
 from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
-DATA = build_data(80)
+DATA = build_data(80, base=int(time.time() * 1000))
 
 with sync_playwright() as p:
     browser = p.chromium.launch(
@@ -41,6 +42,32 @@ with sync_playwright() as p:
             "document.querySelector('#weight.screen')?.classList.contains('active')",
             timeout=5000,
         )
+
+        # The list starts with the seven newest measurements. Older history
+        # is revealed through a compact button and a period dropdown.
+        history_rows = page.locator("#weightHistoryList .historyRow")
+        assert history_rows.count() == 7
+        history_button = page.locator("#weightHistoryMoreBtn")
+        history_range = page.locator("#weightHistoryRange")
+        assert history_button.is_visible()
+        assert history_button.inner_text() == "More…"
+        assert history_range.is_hidden()
+        history_button.click()
+        assert history_range.is_visible()
+        assert history_button.inner_text() == "Close"
+        history_range.select_option("month")
+        assert 27 <= history_rows.count() <= 32, history_rows.count()
+        assert history_button.inner_text() == "Last 7"
+        history_range.select_option("halfyear")
+        assert history_rows.count() == 80
+        history_range.select_option("year")
+        assert history_rows.count() == 80
+        history_range.select_option("all")
+        assert history_rows.count() == 80
+        history_button.click()
+        assert history_rows.count() == 7
+        assert history_range.is_hidden()
+        assert history_button.inner_text() == "More…"
 
         style_switcher=page.locator("#weightChartStyleSwitcher")
         assert style_switcher.is_visible(), "Rolling/fixed mode buttons must be visible above the weight period selector"
