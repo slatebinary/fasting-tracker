@@ -22,6 +22,35 @@
   function weightFilterActive(spec=weightFilterSpec()) { return !!(spec.from||spec.to); }
   function weightPassesFilter(record,spec=weightFilterSpec()){const key=dayKey(record.when,record.timeZone);return !(spec.from&&key<spec.from)&&!(spec.to&&key>spec.to);}
 
+  function fastHistoryRangeCutoff(range) {
+    const months = ({month:1,halfyear:6,year:12})[range];
+    if (!months) return null;
+    const now = new Date();
+    const cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+    cutoff.setMonth(cutoff.getMonth() - months);
+    const day = Math.min(now.getDate(), new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0).getDate());
+    cutoff.setDate(day);
+    cutoff.setHours(0, 0, 0, 0);
+    return cutoff.getTime();
+  }
+
+  function fastHistoryRecordsForDisplay(sortedDesc) {
+    if (historyRange === 'recent7') return sortedDesc.slice(0, 7);
+    if (historyRange === 'all') return sortedDesc;
+    const cutoff = fastHistoryRangeCutoff(historyRange);
+    return cutoff == null ? sortedDesc.slice(0, 7) : sortedDesc.filter(record => {
+      const timestamp = Date.parse(record.end);
+      return Number.isFinite(timestamp) && timestamp >= cutoff;
+    });
+  }
+
+  function visibleFastHistoryRecords() {
+    const spec = historyFilterSpec();
+    const sorted = sortedRecordsDesc();
+    const filtered = historyFilterActive(spec) ? sorted.filter(record => fastPassesHistoryFilter(record, spec)) : sorted;
+    return fastHistoryRecordsForDisplay(filtered);
+  }
+
   function bulkCheckbox(id,set,label) {
     const wrap=document.createElement('label'); wrap.className='bulkSelectCell';
     const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=set.has(id); cb.setAttribute('aria-label',label);
@@ -40,7 +69,7 @@
     const wbtn=el('weightBulkModeBtn'); if(wbtn){wbtn.setAttribute('aria-pressed',String(weightBulkMode));wbtn.textContent=t(weightBulkMode?'bulk.done':'bulk.select');}
   }
 
-  function clearHistoryFilters(){for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax'])if(el(id))el(id).value='';if(el('historyFilterTarget'))el('historyFilterTarget').value='all';if(el('historyFilterEdited'))el('historyFilterEdited').value='all';if(el('historyIncludeDeleted'))el('historyIncludeDeleted').checked=true;historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;renderHistory();}
+  function clearHistoryFilters(){for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax'])if(el(id))el(id).value='';if(el('historyFilterTarget'))el('historyFilterTarget').value='all';if(el('historyFilterEdited'))el('historyFilterEdited').value='all';if(el('historyIncludeDeleted'))el('historyIncludeDeleted').checked=true;historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;historyRange='recent7';historyRangeMenuOpen=false;renderHistory();}
   function clearWeightFilters(){for(const id of ['weightFilterFrom','weightFilterTo'])if(el(id))el(id).value='';if(el('weightIncludeDeleted'))el('weightIncludeDeleted').checked=true;weightVisibleCount=HISTORY_PAGE_SIZE;renderWeight();}
 
   function exportFastRecordsCsv(records, namePrefix='fasting-selected') {
@@ -218,9 +247,23 @@
   function renderHistory() {
     const box=el('historyList'),spec=historyFilterSpec();box.replaceChildren();
     const allSorted=sortedRecordsDesc();const filtered=historyFilterActive(spec)?allSorted.filter(r=>fastPassesHistoryFilter(r,spec)):allSorted;
+    if(filtered.length<=7){historyRange='recent7';historyRangeMenuOpen=false;}
+    const visible=fastHistoryRecordsForDisplay(filtered);
     const status=el('historyFilterStatus');if(status)status.textContent=t('history.filterCount',{shown:filtered.length,total:data.records.length});
-    if(!filtered.length){const empty=document.createElement('div');empty.className='historyEmpty';empty.textContent=data.records.length?t('history.filterNoMatch'):t('history.empty');box.append(empty);renderDeletedFasts();updateBulkActionBars();return;}
-    const visible=filtered.slice(0,historyVisibleCount);
+    const controls=el('fastHistoryControls'),countLabel=el('historyVisibleCount'),moreBtn=el('historyMoreBtn'),rangeSelect=el('historyRange');
+    if(countLabel)countLabel.textContent=t('history.lastCount',{n:visible.length});
+    if(controls&&moreBtn&&rangeSelect){
+      controls.hidden=filtered.length<=7;
+      moreBtn.textContent=historyRange==='recent7'?(historyRangeMenuOpen?t('history.rangeClose'):t('history.rangeMore')):t('history.rangeRecent');
+      moreBtn.setAttribute('aria-expanded',String(historyRangeMenuOpen));
+      rangeSelect.hidden=!historyRangeMenuOpen;
+      rangeSelect.value=historyRange==='recent7'?'':historyRange;
+    }
+    if(!visible.length){
+      const empty=document.createElement('div');empty.className='historyEmpty';
+      empty.textContent=historyRange!=='recent7'?t('history.rangeEmpty'):(data.records.length?t('history.filterNoMatch'):t('history.empty'));
+      box.append(empty);renderDeletedFasts();updateBulkActionBars();return;
+    }
     for(const r of visible){
       const row=document.createElement('div');row.className='row historyRow'+(historyBulkMode?' bulkSelectable':'');
       if(historyBulkMode)row.append(bulkCheckbox(r.id,selectedFastIds,t('bulk.selectFast',{date:localDateLabel(r.end,r.timeZone)})));
@@ -231,7 +274,6 @@
       if(!historyBulkMode){const actions=document.createElement('div');actions.className='historyActions';const edit=document.createElement('button');edit.className='secondary';edit.textContent=t('common.edit');edit.addEventListener('click',()=>openEntryModal(r));const del=document.createElement('button');del.className='dangerText';del.textContent=t('common.delete');del.addEventListener('click',()=>{if(confirm(t('history.deleteConfirm'))&&deleteFastToAudit(r, 'user'))showUndoToast(t('history.deletedUndo'),()=>restoreDeletedFast(r.id));});actions.append(edit,del);right.append(actions);}
       row.append(left,right);box.append(row);
     }
-    if(visible.length<filtered.length){const wrap=document.createElement('div');wrap.className='loadMoreWrap';const more=document.createElement('button');more.className='secondary';more.textContent=t('common.loadMoreCount',{n:filtered.length-visible.length});more.addEventListener('click',()=>{historyVisibleCount+=HISTORY_PAGE_SIZE;renderHistory();});wrap.append(more);box.append(wrap);}
     renderDeletedFasts();updateBulkActionBars();
   }
 
