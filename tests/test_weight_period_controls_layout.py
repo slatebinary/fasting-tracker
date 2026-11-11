@@ -52,6 +52,7 @@ with sync_playwright() as p:
         )
         assert history_rows.count() == 7
         weight_count = page.locator("#weightHistoryVisibleCount")
+        assert weight_count.is_visible()
         assert weight_count.inner_text() == "Last 7 measurements"
         history_button = page.locator("#weightHistoryMoreBtn")
         history_range = page.locator("#weightHistoryRange")
@@ -83,6 +84,7 @@ with sync_playwright() as p:
         fast_rows = page.locator("#historyList .historyRow")
         page.wait_for_function("document.querySelectorAll('#historyList .historyRow').length === 7", timeout=10000)
         fast_count = page.locator("#historyVisibleCount")
+        assert fast_count.is_visible()
         assert fast_count.inner_text() == "Last 7 fasts"
         fast_button = page.locator("#historyMoreBtn")
         fast_range = page.locator("#historyRange")
