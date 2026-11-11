@@ -254,7 +254,7 @@
     if(countLabel)countLabel.textContent=t('history.lastCount',{n:visible.length});
     if(controls&&moreBtn&&rangeSelect){
       controls.hidden=false;
-      const rangeActions=el('fastHistoryRangeActions');if(rangeActions)rangeActions.hidden=filtered.length<=7;
+      const rangeActions=controls.querySelector('.historyRangeActions');if(rangeActions)rangeActions.hidden=filtered.length<=7;
       moreBtn.textContent=historyRange==='recent7'?(historyRangeMenuOpen?t('history.rangeClose'):t('history.rangeMore')):t('history.rangeRecent');
       moreBtn.setAttribute('aria-expanded',String(historyRangeMenuOpen));
       rangeSelect.hidden=!historyRangeMenuOpen;
