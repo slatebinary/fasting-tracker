@@ -51,6 +51,8 @@ with sync_playwright() as p:
             timeout=10000,
         )
         assert history_rows.count() == 7
+        weight_count = page.locator("#weightHistoryVisibleCount")
+        assert weight_count.inner_text() == "Last 7 measurements"
         history_button = page.locator("#weightHistoryMoreBtn")
         history_range = page.locator("#weightHistoryRange")
         assert history_button.is_visible()
@@ -61,6 +63,7 @@ with sync_playwright() as p:
         assert history_button.inner_text() == "Close"
         history_range.select_option("month")
         assert 27 <= history_rows.count() <= 32, history_rows.count()
+        assert weight_count.inner_text() == f"Last {history_rows.count()} measurements"
         assert history_button.inner_text() == "Last 7"
         history_range.select_option("halfyear")
         assert history_rows.count() == 80
@@ -73,6 +76,37 @@ with sync_playwright() as p:
         assert history_range.is_hidden()
         assert history_button.inner_text() == "More…"
 
+        # Fasting History uses the same seven-entry default, live count,
+        # and period selector as Weight History.
+        page.locator('.tab[data-screen="history"]').click()
+        page.wait_for_function("document.querySelector('#history.screen')?.classList.contains('active')", timeout=5000)
+        fast_rows = page.locator("#historyList .historyRow")
+        page.wait_for_function("document.querySelectorAll('#historyList .historyRow').length === 7", timeout=10000)
+        fast_count = page.locator("#historyVisibleCount")
+        assert fast_count.inner_text() == "Last 7 fasts"
+        fast_button = page.locator("#historyMoreBtn")
+        fast_range = page.locator("#historyRange")
+        assert fast_button.inner_text() == "More…"
+        fast_button.click()
+        assert fast_range.is_visible()
+        fast_range.select_option("month")
+        assert 27 <= fast_rows.count() <= 32, fast_rows.count()
+        assert fast_count.inner_text() == f"Last {fast_rows.count()} fasts"
+        assert fast_button.inner_text() == "Last 7"
+        fast_range.select_option("halfyear")
+        assert fast_rows.count() == 80
+        fast_range.select_option("year")
+        assert fast_rows.count() == 80
+        fast_range.select_option("all")
+        assert fast_rows.count() == 80
+        assert fast_count.inner_text() == "Last 80 fasts"
+        fast_button.click()
+        assert fast_rows.count() == 7
+        assert fast_count.inner_text() == "Last 7 fasts"
+        assert fast_range.is_hidden()
+
+        page.locator('.tab[data-screen="weight"]').click()
+        page.wait_for_function("document.querySelector('#weight.screen')?.classList.contains('active')", timeout=5000)
         style_switcher=page.locator("#weightChartStyleSwitcher")
         assert style_switcher.is_visible(), "Rolling/fixed mode buttons must be visible above the weight period selector"
         assert style_switcher.locator("button").count()==2
