@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.76",
+  "version": "1.17.77",
   "released": "2026-11-11",
-  "notes": "Moved the weight chart period selector directly above the trend chart, kept all six periods visible in a responsive layout, and clarified that the selector controls both the chart and period statistics.",
+  "notes": "Keep the current external JSON backup indicator visible after the temporary confirmation window, show the no-changes-since-backup status and render external backup timestamps in the device timezone.",
   "entry": "./index.html",
   "shell": [
     "./",
