@@ -1,3 +1,9 @@
+## v1.17.74 — 2026-11-11
+
+- Replaced sparse weekly-through-yearly calendar-bucket chart points with trailing rolling averages over 7, 30, 90, 180 and 365 days, sampled only on dates with actual weight measurements.
+- Kept calendar-period averages and measurement counts visible alongside each rolling value in point details and chart data; explicitly label the rolling window and never estimate missing-day measurements.
+- Preserved raw daily measurements, target-weight reference, selectable points, horizontal history navigation and Older/Newer endpoint behaviour; added regression coverage for rolling-window calculations and calendar summaries.
+
 ## v1.17.73 — 2026-11-11
 
 - Restored the selected Timeline chart detail whenever Statistics is revisited after another screen, without forcing a full chart redraw.
