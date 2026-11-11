@@ -1,6 +1,6 @@
 {
   "sourceRevision": 37,
-  "appVersion": "1.17.73",
+  "appVersion": "1.17.74",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1085,6 +1085,9 @@
     "settings.paletteHint.colorblind": "Intended for broad colour-vision accessibility: uses blue, bluish-green and vermilion distinctions, while avoiding reliance on red–green differences alone.",
     "settings.paletteHint.protanopia": "Intended to support protanopia (reduced red perception): prioritises violet, cyan and ochre distinctions, with status meaning reinforced by labels and icons.",
     "settings.paletteHint.deuteranopia": "Intended to support deuteranopia (reduced green perception): uses teal, blue and plum distinctions rather than relying on red–green contrasts.",
-    "settings.paletteHint.tritanopia": "Intended to support tritanopia (reduced blue–yellow discrimination): uses rose, burgundy, green and rust distinctions rather than relying on blue–yellow contrasts."
+    "settings.paletteHint.tritanopia": "Intended to support tritanopia (reduced blue–yellow discrimination): uses rose, burgundy, green and rust distinctions rather than relying on blue–yellow contrasts.",
+    "weight.rollingChartHelp": "Each point is a {days}-day rolling average ending on a day with a saved measurement. Missing days are not estimated.",
+    "weight.rollingPointDetail": "{days}-day rolling average ending {period}: {weight} • {count} {measurementWord} in the window. Calendar {calendarPeriod} average: {calendarAverage} ({calendarCount} {calendarMeasurementWord}).",
+    "weight.rollingDataRow": "{period} — {weight} rolling average over {days} days • {count} {measurementWord} in window • calendar {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
   }
 }
