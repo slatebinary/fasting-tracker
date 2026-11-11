@@ -537,6 +537,14 @@ layout: null
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><input id="notificationWeighCadence" type="hidden" value="weekly"/><div aria-label="Weigh-in reminder cadence" class="notificationCadenceToggle" data-i18n-aria="notifications.weighCadence" id="notificationWeighCadenceButtons" role="group"><button aria-pressed="false" data-i18n="notifications.daily" data-notification-cadence="daily" id="notificationWeighDailyBtn" type="button">Daily</button><button aria-pressed="true" class="active" data-i18n="notifications.weekly" data-notification-cadence="weekly" id="notificationWeighWeeklyBtn" type="button">Weekly</button></div><label class="toggleWrap"><input aria-labelledby="notificationWeighLabel" id="notificationWeighToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label></div>
 </div>
 <div class="row">
+<div><strong data-i18n="notifications.weightSnoozeDefault" id="notificationWeightSnoozeLabel">Default weigh-in snooze</strong><div class="small" data-i18n="notifications.weightSnoozeHelp">Default delay when you snooze a weigh-in reminder.</div></div>
+<select id="notificationWeightSnoozeDefault" aria-labelledby="notificationWeightSnoozeLabel"></select>
+</div>
+<div class="row">
+<div><strong data-i18n="notifications.fastingSnoozeDefault" id="notificationFastingSnoozeLabel">Default fasting reminder snooze</strong><div class="small" data-i18n="notifications.fastingSnoozeHelp">Default delay when you snooze a fasting target, safety or cycle reminder.</div></div>
+<select id="notificationFastingSnoozeDefault" aria-labelledby="notificationFastingSnoozeLabel"></select>
+</div>
+<div class="row">
 <div><strong data-i18n="notifications.cycleComplete" id="notificationCycleLabel">24-hour-cycle remainder completed</strong><div class="small" data-i18n="notifications.cycleCompleteHelp">Optional neutral timing notice when the mathematical remainder after a sub-24-hour fast reaches zero.</div></div>
 <label class="toggleWrap"><input aria-labelledby="notificationCycleLabel" id="notificationCycleToggle" type="checkbox"/><span aria-hidden="true" data-i18n="common.on">On</span></label>
 </div>
