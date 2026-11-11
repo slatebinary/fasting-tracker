@@ -1,3 +1,12 @@
+## v1.17.79 — 2026-11-11
+
+- Make the Weight period date range, measurement count and summary metrics follow the selected chart date, including older/newer navigation and chart scrolling, rather than remaining anchored to the current date.
+- Keep each chart mode's summary window aligned with its plotted rolling window: 30, 7, 30, 90, 180 or 365 calendar days.
+- Add reminder snoozing for weigh-in and fasting target/safety/cycle notices, with selectable delays from 15 minutes to 7 days and a scheduled return to the in-app notification stack.
+- Add independent Settings defaults for weight and fasting reminders. Defaults: 1 day for weigh-in reminders and 1 hour for fasting reminders.
+- Restore due snoozed reminders while the app is active or when it is reopened; send a device notification too when notification permission is available.
+- Add English, Bulgarian and Spanish strings and regression coverage for selected-date summaries and reminder snooze persistence/reappearance.
+
 ## v1.17.78 — 2026-11-11
 
 - Prevent duplicate weigh-in notifications when startup, foreground-resume and periodic maintenance checks overlap.
