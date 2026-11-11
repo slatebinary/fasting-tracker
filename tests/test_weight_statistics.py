@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Regression: selectable weight periods show range-specific metrics and chart data."""
-import sys, time, datetime
+import sys, time, datetime, json
+from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM, iso
+APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -21,9 +23,9 @@ with sync_playwright() as p:
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDbV2(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:APP_VERSION,seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function("v => document.querySelector('#appVersionLabel')?.textContent === 'v' + v",arg=APP_VERSION,timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_function("document.querySelector('#weight')?.classList.contains('active')",timeout=5000)
     page.wait_for_function("document.querySelector('#weightPeriodRange')?.dataset.period === 'daily'",timeout=5000)
