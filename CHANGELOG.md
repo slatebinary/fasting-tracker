@@ -1,3 +1,11 @@
+## v1.17.82 — 2026-11-11
+
+- Separate Rolling and Fixed weight-chart point details so each mode describes the calculation actually shown.
+- Present the average as a clear heading and value, followed by the ending date/period and exact measurement count.
+- In Rolling mode, show the trailing-window average and the matching calendar-period average as distinct summaries; in Fixed mode, show only the calendar-period average.
+- Remove the misleading “0-day rolling average” and empty calendar-summary output from Fixed mode; clarify chart guidance in English, Bulgarian and Spanish.
+- Extend browser regression coverage for both Rolling and Fixed point details.
+
 ## v1.17.81 — 2026-11-11
 
 - Unify Fasting and Weight history navigation: show the seven newest entries by default and provide matching 1-month, 6-month, 1-year and all-history ranges.

@@ -488,7 +488,13 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightChartNavigator button { min-height:42px; padding:9px 12px; white-space:nowrap; }
     .weightChartNavigator input[type="range"] { display:block; width:100%; min-width:0; margin:0; accent-color:var(--accent); cursor:pointer; touch-action:pan-x pan-y; }
     .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
-    .weightPointDetail { margin-top:8px; min-height:20px; font-weight:650; color:var(--text); }
+    .weightPointDetail { display:grid; gap:7px; margin-top:8px; min-height:20px; color:var(--text); }
+    .weightPointDetailGroup { display:grid; gap:2px; min-width:0; }
+    .weightPointDetailHeading { display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-width:0; }
+    .weightPointDetailHeading strong { font-size:13px; font-weight:650; }
+    .weightPointDetailValue { flex:0 0 auto; font-weight:750; white-space:nowrap; }
+    .weightPointDetailMeta { color:var(--muted); font-size:12px; font-weight:400; line-height:1.4; }
+    .weightPointDetailContext { padding-top:6px; border-top:1px solid var(--line); }
     .weightChartStyleSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; max-width:360px; margin:2px 0 8px; }
     .weightChartStyleSwitcher button { min-width:0; width:100%; padding:9px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:14px; }
     .weightChartStyleSwitcher button.active { background:var(--card); color:var(--accent); box-shadow:0 0 0 2px var(--accent),0 1px 4px rgba(0,0,0,.10); }
