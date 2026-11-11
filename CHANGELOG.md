@@ -1,3 +1,9 @@
+## v1.17.83 — 2026-11-11
+
+- Sample Rolling weight charts once per calendar day between the first and latest measurement, filling gaps between weigh-ins.
+- Calculate each daily average only from real measurements inside its trailing window; omit days with no measurements in-window.
+- Preserve Daily and Fixed chart semantics.
+
 ## v1.17.82 — 2026-11-11
 
 - Separate Rolling and Fixed weight-chart point details so each mode describes the calculation actually shown.
