@@ -404,7 +404,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     canvas[tabindex="0"]:focus-visible, .chartDataList:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent); outline-offset:3px; }
     html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     /* iOS system body text style follows the user's Larger Text preference. */
-    @supports (-webkit-touch-callout: none) {
+    @supports (font: -apple-system-body) {
       html { font: -apple-system-body; }
       body { font-size: calc(16 / 17 * 1em); }
     }
