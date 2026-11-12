@@ -33,15 +33,25 @@ def normalize_html_for_integrity(text, scope_url):
     parsed = urlsplit(scope_url)
     site_base = scope_url.rstrip("/")
     site_origin = f"{parsed.scheme}://{parsed.netloc}"
-    return (
+    normalized = (
         str(text)
         .replace("\r\n", "\n")
         .replace("\r", "\n")
+    )
+    normalized = re.sub(r"^---\n[\s\S]*?\n---\n", "", normalized, count=1)
+    normalized = (
+        normalized
         .replace("{{ site.github.url }}", "__SITE_URL__")
         .replace("{{ site.github.repository_url }}", "__REPO_URL__")
         .replace(site_base, "__SITE_URL__")
         .replace(site_origin, "__SITE_URL__")
     )
+    normalized = re.sub(
+        r"""https://github\.com/[^/"'<>\s]+/[^/"'<>\s]+""",
+        "__REPO_URL__",
+        normalized,
+    )
+    return normalized
 
 
 def build_release(version, scope_url):
