@@ -80,6 +80,7 @@ jobs:
           python3 tests/test_weight_soft_delete.py
           python3 tests/test_backup_version_restore_matrix.py
           python3 tests/test_internal_recovery_snapshot_restore.py
+          python3 tests/test_pwa_update_lifecycle.py
           python3 tests/test_import_preview_merge.py
           python3 tests/test_destructive_guard.py
           python3 tests/test_permanent_purge_confirmation.py

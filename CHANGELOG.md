@@ -1,3 +1,9 @@
+## v1.17.92 — 2026-11-12
+
+- Add a real-browser service-worker lifecycle regression that installs a release, stages two subsequent releases, and verifies both Update without backup and Backup & Update paths.
+- Verify release cache integrity/completeness, startup confirmation and preservation of active-fast metadata across reloads.
+- No runtime behaviour changes.
+
 ## v1.17.91 — 2026-11-12
 
 - Extend browser accessibility regression coverage to measure actual computed text/background contrast for primary, stop, secondary and destructive-action buttons across all accessibility palettes.

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.91",
+  "version": "1.17.92",
   "released": "2026-11-12",
-  "notes": "Extend browser accessibility regression coverage to measure computed contrast for primary, stop, secondary and destructive-action buttons, navigation labels/icons, and the App icons & installation heading across all accessibility palettes; no runtime behavior changes.",
+  "notes": "Add real-browser service-worker update lifecycle coverage for staged release integrity, both update paths, startup confirmation, cache completeness and preservation of an active fast; no runtime behavior changes.",
   "entry": "./index.html",
   "shell": [
     "./",
