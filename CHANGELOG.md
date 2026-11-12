@@ -1,3 +1,10 @@
+## v1.17.96 — 2026-11-12
+
+- Keep the Rolling and Fixed periods labels inside their buttons at very large iOS Dynamic Type sizes.
+- Make all five bottom-navigation destinations remain visible and accessible when Larger Text is increased, allowing labels to wrap without horizontal overflow.
+- Increase bottom content clearance to accommodate the taller Dynamic Type navigation bar.
+- Add browser regression coverage for large-text control containment, navigation reachability and layout clearance.
+
 ## v1.17.95 — 2026-11-12
 
 - Make application typography respond to iOS Larger Text / Dynamic Type by using the iOS system body text style and scalable rem-based font sizes.
