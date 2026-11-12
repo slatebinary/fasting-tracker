@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.96" />
+  <meta name="ft-app-version" content="1.17.97" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1943,7 +1943,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.96';
+  const APP_VERSION = '1.17.97';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5591,7 +5591,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
         const by=y>labelH+18?y-labelH-10:Math.min(cssH-labelH-4,y+12);
         ctx.fillStyle=card;ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.beginPath();if(typeof ctx.roundRect==='function')ctx.roundRect(bx,by,labelW,labelH,7);else ctx.rect(bx,by,labelW,labelH);ctx.fill();ctx.stroke();
         ctx.fillStyle=textColor;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 '+valueFontSize+'px -apple-system';ctx.fillText(valueLabel,bx+labelW/2,by+valueFontSize*.78+3);
-        ctx.fillStyle=muted;ctx.font=periodFontSize+'px -apple-system';ctx.fillText(periodLabel,bx+labelW/2,by+valueFontSize+periodFontSize*.8+5);ctx.restore();
+        ctx.fillStyle=textColor;ctx.font=periodFontSize+'px -apple-system';ctx.fillText(periodLabel,bx+labelW/2,by+valueFontSize+periodFontSize*.8+5);ctx.restore();
       }
       scroller.dataset.selectedWindowCount = String(bucket.count);
       scroller.dataset.selectedCalendarCount = String(bucket.calendarBucket?.count || 0);
@@ -7734,7 +7734,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if (!Number.isInteger(version) || version < BACKUP_MIN_VERSION || version > BACKUP_VERSION) throw new Error('unsupported backup version');
     if (version === 1) return {verified:false, legacy:true};
     if (!raw.integrity || raw.integrity.scope !== 'data' || typeof raw.integrity.digest !== 'string' || !backupManifestMatches(raw)) throw new Error('backup manifest invalid');
-    const algorithm = raw.integrity.algorithm === 'FNV-1a-64' ? 'FNV-1a-64' : 'SHA-256';
+    const algorithm = raw.integrity.algorithm;
+    if (algorithm !== 'FNV-1a-64' && algorithm !== 'SHA-256') throw new Error('unsupported backup integrity algorithm');
     const actual = await checksumText(stableStringify(raw.data), algorithm);
     if (actual.algorithm !== algorithm || actual.digest.toLowerCase() !== raw.integrity.digest.toLowerCase()) throw new Error('backup checksum mismatch');
     return {verified:true, legacy:false, algorithm};
