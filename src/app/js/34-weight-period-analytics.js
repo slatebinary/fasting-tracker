@@ -152,7 +152,7 @@
     // A trailing average remains valid after the last weigh-in while at least
     // one real measurement is still inside its window; no raw measurement is
     // created and the series naturally stops when the window becomes empty.
-    const todayMatch=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(dayKeyFast(new Date(),currentTimeZone()));
+    const todayMatch=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dayKeyFast(new Date(),currentTimeZone()));
     const todayDayNumber=todayMatch?Math.floor(Date.UTC(Number(todayMatch[1]),Number(todayMatch[2])-1,Number(todayMatch[3]))/86400000):lastMeasurementDayNumber;
     const lastDayNumber=Math.max(lastMeasurementDayNumber,todayDayNumber),result=[];
     let end=0,start=0;
