@@ -1,6 +1,6 @@
 {
   "sourceRevision": 40,
-  "appVersion": "1.17.83",
+  "appVersion": "1.17.84",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1086,9 +1086,9 @@
     "settings.paletteHint.protanopia": "Warm golden surfaces and a violet accent, with cyan success and ochre warning cues. Designed to reduce reliance on red perception; labels and icons reinforce status.",
     "settings.paletteHint.deuteranopia": "Intended to support deuteranopia (reduced green perception): uses teal, blue and plum distinctions rather than relying on red–green contrasts.",
     "settings.paletteHint.tritanopia": "Intended to support tritanopia (reduced blue–yellow discrimination): uses rose, burgundy, green and rust distinctions rather than relying on blue–yellow contrasts.",
-    "weight.rollingChartHelp": "Each point is a {days}-day rolling average ending on a day with a saved measurement. Missing days are not estimated.",
+    "weight.rollingChartHelp": "Each point is a {days}-day rolling average for that day, calculated only from measurements in the trailing window. Days with no measurements in the window are omitted.",
     "weight.rollingPointDetail": "{days}-day rolling average ending {period}: {weight} • {count} {measurementWord} in the window. Calendar {calendarPeriod} average: {calendarAverage} ({calendarCount} {calendarMeasurementWord}).",
-    "weight.rollingDataRow": "{period} — {weight} rolling average over {days} days • {count} {measurementWord} in window • calendar {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+    "weight.rollingDataRow": "{period} — {days}-day rolling average: {weight} • {count} {measurementWord} in window",
     "unit.minute.one": "minute",
     "unit.minute.other": "minutes",
     "unit.minute.zero": "minutes",
@@ -1131,6 +1131,7 @@
     "weight.rollingAverageMeta": "Ending {date} · {count} {measurementWord} in this window",
     "weight.calendarAverageTitle": "Calendar {period} average",
     "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
-    "weight.noCalendarMeasurements": "No measurements in this calendar period."
+    "weight.noCalendarMeasurements": "No measurements in this calendar period.",
+    "weight.rollingDataCalendar": "Calendar {calendarPeriod} average: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
   }
 }

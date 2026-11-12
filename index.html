@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.83" />
+  <meta name="ft-app-version" content="1.17.84" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1932,7 +1932,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.83';
+  const APP_VERSION = '1.17.84';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5601,8 +5601,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
             addDetailGroup('primary',t('weight.rollingAverageTitle',{days:bucket.rollingWindowDays}),formatWeight(bucket.averageKg,unit),t('weight.rollingAverageMeta',{date:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord,days:bucket.rollingWindowDays}));
             if(calendar&&calendar.count){
               addDetailGroup('context',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(calendar.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(calendar,weightPeriodMode),count:formatNumber(calendar.count),measurementWord:t(pluralKey('weight.measurement',calendar.count))}));
-            }else{
-              const empty=document.createElement('div');empty.className='weightPointDetailMeta weightPointDetailContext';empty.textContent=t('weight.noCalendarMeasurements');detail.append(empty);
             }
           }
         }
@@ -8275,7 +8273,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const spacing=buckets.length<=30?Math.max(1,(viewport-30)/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,(viewport-30)/29));
     const first=Math.max(0,Math.floor((scroll-16)/Math.max(1,spacing))-1), last=Math.min(buckets.length-1,Math.ceil((scroll+viewport-16)/Math.max(1,spacing))+1);
     const ul=document.createElement('ul');
-    for(let i=last;i>=first;i--){const b=buckets[i];if(!b.count)continue;const li=document.createElement('li');if(b.rollingWindowDays){const calendar=b.calendarBucket;li.textContent=t('weight.rollingDataRow',{period:weightBucketLongLabel(b),days:b.rollingWindowDays,weight:formatWeight(b.averageKg,data.weightUnit),count:formatNumber(b.count),measurementWord:t(pluralKey('weight.measurement',b.count)),calendarPeriod:calendar?weightBucketLongLabel(calendar,weightPeriodMode):'—',calendarAverage:calendar?formatWeight(calendar.averageKg,data.weightUnit):'—',calendarCount:calendar?formatNumber(calendar.count):'0',calendarMeasurementWord:calendar?t(pluralKey('weight.measurement',calendar.count)):t(pluralKey('weight.measurement',0))});}else li.textContent=`${weightBucketLongLabel(b)} — ${formatWeight(b.averageKg,data.weightUnit)}${b.count>1?` • ${b.count} ${t(pluralKey('weight.measurement',b.count))}`:''}`;ul.append(li);} box.append(ul);
+    for(let i=last;i>=first;i--){const b=buckets[i];if(!b.count)continue;const li=document.createElement('li');if(b.rollingWindowDays){const calendar=b.calendarBucket;let row=t('weight.rollingDataRow',{period:weightBucketLongLabel(b),days:b.rollingWindowDays,weight:formatWeight(b.averageKg,data.weightUnit),count:formatNumber(b.count),measurementWord:t(pluralKey('weight.measurement',b.count))});if(calendar?.count)row+=' • '+t('weight.rollingDataCalendar',{calendarPeriod:weightBucketLongLabel(calendar,weightPeriodMode),calendarAverage:formatWeight(calendar.averageKg,data.weightUnit),calendarCount:formatNumber(calendar.count),calendarMeasurementWord:t(pluralKey('weight.measurement',calendar.count))});li.textContent=row;}else li.textContent=`${weightBucketLongLabel(b)} — ${formatWeight(b.averageKg,data.weightUnit)}${b.count>1?` • ${b.count} ${t(pluralKey('weight.measurement',b.count))}`:''}`;ul.append(li);} box.append(ul);
   }
   function setWeightUnit(unit) {
     data.weightUnit = normalizeWeightUnit(unit);
