@@ -1,3 +1,8 @@
+## v1.17.98 — 2026-11-13
+
+- Improve the selected Weight calendar/chart callout subtitle contrast by using the primary readable foreground instead of muted text.
+- Add a regression guard for the period/count subtitle foreground.
+
 ## v1.17.97 — 2026-11-12
 
 - Reject unsupported backup integrity algorithm identifiers instead of silently interpreting unknown labels as SHA-256.
