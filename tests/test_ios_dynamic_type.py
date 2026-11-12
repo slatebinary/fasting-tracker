@@ -9,6 +9,7 @@ html = (ROOT / "index.html").read_text(encoding="utf-8")
 
 assert "@supports (-webkit-touch-callout: none)" in css
 assert "html { font: -apple-system-body; }" in css
+assert "body { font-size: calc(16 / 17 * 1em); }" in css
 assert "-webkit-text-size-adjust:100%" in css
 assert "text-size-adjust:100%" in css
 
