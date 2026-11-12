@@ -284,6 +284,8 @@ def main():
                 f"Initial service-worker cache is incomplete: {initial_health}"
             )
 
+            page.locator('.tab[data-screen="fasting"]').click()
+            page.locator("#toggleFast").wait_for(state="visible", timeout=15000)
             page.locator("#toggleFast").click()
             initial_state = wait_for_active_fast(page)
             active_start = initial_state["settings"]["activeStart"]
