@@ -94,7 +94,18 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(encoded)
 
     def do_GET(self):
-        path = urlsplit(self.path).path
+        parsed = urlsplit(self.path)
+        path = parsed.path
+        if "__ft_release" in parsed.query:
+            if path in getattr(self.server, "failed_paths", set()):
+                self.send_error(503, "simulated interrupted release asset transfer")
+                return
+            if path in getattr(self.server, "corrupt_paths", set()):
+                target = Path(self.translate_path(self.path))
+                if target.is_file():
+                    body = target.read_bytes() + b"\\n/* simulated corrupted release asset */"
+                    self._send_dynamic(body, self.guess_type(str(target)) or "application/octet-stream")
+                    return
         state = self.server.release_state
         if path in (PREFIX, PREFIX + "index.html"):
             self._send_dynamic(state["html"], "text/html; charset=utf-8")
@@ -169,7 +180,7 @@ def worker_health(page):
 
 def wait_for_installed_release(page, version, active_start):
     page.wait_for_function(
-        "version => document.querySelector('meta[name=\"ft-app-version\"]')?.content === version",
+                "version => document.querySelector('meta[name=ft-app-version]')?.content === version",
         arg=version,
         timeout=90000,
     )
@@ -234,6 +245,62 @@ def install_release(page, version, backup, active_start):
     return wait_for_installed_release(page, version, active_start)
 
 
+def assert_failed_update_preserved_release(page, active_version, active_start):
+    page.wait_for_function(
+        """() => {
+          const button = document.querySelector('#updateBtn');
+          const status = document.querySelector('#updateStatus')?.textContent || '';
+          return button && !button.disabled && !/installing/i.test(status) &&
+            document.querySelector('#updateBanner')?.hidden &&
+            document.querySelector('#updateModal')?.hidden;
+        }""",
+        timeout=45000,
+    )
+    page.wait_for_function(
+        """version => {
+          const meta = JSON.parse(localStorage.getItem('fastingTracker.appMeta') || '{}');
+          return document.querySelector('meta[name="ft-app-version"]')?.content === version &&
+            meta.lastKnownGood?.version === version;
+        }""",
+        arg=active_version,
+        timeout=15000,
+    )
+    health = worker_health(page)
+    assert health and health.get("ok") is True, f"Active release health failed after rejected update: {health}"
+    assert health.get("activeVersion") == active_version and health.get("cacheComplete") is True, (
+        f"Rejected update displaced the last known-good release: {health}"
+    )
+    state = wait_for_active_fast(page)
+    assert state["settings"].get("activeStart") == active_start, "Failed update changed active-fast metadata"
+    staging = page.evaluate(
+        """activeVersion => caches.keys().then(keys => keys.filter(name =>
+          name.includes('-staging-') &&
+          !name.includes('-release-' + activeVersion + '-staging-')
+        ))""",
+        active_version,
+    )
+    assert not staging, f"Failed update left an orphaned staging cache behind: {staging}"
+
+
+def attempt_rejected_update(page, active_version, active_start):
+    ensure_update_group_open(page)
+    page.evaluate("document.querySelector('#updateBtn').click()")
+    page.wait_for_function("() => !document.querySelector('#updateBanner').hidden", timeout=20000)
+    page.evaluate("document.querySelector('#updateBtn').click()")
+    page.wait_for_function("() => !document.querySelector('#updateModal').hidden", timeout=10000)
+    page.evaluate("document.querySelector('#updateWithoutBackupBtn').click()")
+    page.wait_for_function(
+        """() => {
+          const status = document.querySelector('#updateStatus')?.textContent || '';
+          return !document.querySelector('#updateBtn')?.disabled &&
+            document.querySelector('#updateBanner')?.hidden &&
+            !/installing/i.test(status);
+        }""",
+        timeout=45000,
+    )
+    assert_failed_update_preserved_release(page, active_version, active_start)
+
+
 def main():
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     server.daemon_threads = True
@@ -246,8 +313,12 @@ def main():
 
     first_version = patch_version(BASE_VERSION, 1)
     second_version = patch_version(BASE_VERSION, 2)
+    third_version = patch_version(BASE_VERSION, 3)
+    fourth_version = patch_version(BASE_VERSION, 4)
     first_metadata, first_html = build_release(first_version, scope_url)
     second_metadata, second_html = build_release(second_version, scope_url)
+    third_metadata, third_html = build_release(third_version, scope_url)
+    fourth_metadata, fourth_html = build_release(fourth_version, scope_url)
     server.release_state = {"metadata": BASE_METADATA, "html": BASE_HTML}
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -346,6 +417,39 @@ def main():
             server.release_state = {"metadata": second_metadata, "html": second_html}
             install_release(page, second_version, backup=True, active_start=active_start)
 
+            # A failed network transfer must discard the staging cache without
+            # changing the active pointer or the last known-good application.
+            server.release_state = {"metadata": third_metadata, "html": third_html}
+            server.failed_paths = {PREFIX.rstrip("/") + "/js/fasting-time.js"}
+            attempt_rejected_update(page, second_version, active_start)
+
+            # A successful HTTP response containing corrupted bytes must also
+            # fail SHA-256 validation and leave the previous release untouched.
+            server.failed_paths = set()
+            server.corrupt_paths = {PREFIX.rstrip("/") + "/js/fasting-time.js"}
+            server.release_state = {"metadata": fourth_metadata, "html": fourth_html}
+            attempt_rejected_update(page, second_version, active_start)
+
+            # The last known-good release must still boot from its complete
+            # cache while the network is unavailable, retaining the active fast.
+            context.set_offline(True)
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_function(
+                "version => document.querySelector('meta[name=ft-app-version]')?.content === version",
+                arg=second_version,
+                timeout=30000,
+            )
+            page.wait_for_function("() => !!navigator.serviceWorker?.controller", timeout=30000)
+            offline_health = worker_health(page)
+            assert offline_health and offline_health.get("activeVersion") == second_version and offline_health.get("cacheComplete") is True, (
+                f"Last known-good release did not survive offline reload: {offline_health}"
+            )
+            offline_state = wait_for_active_fast(page)
+            assert offline_state["settings"].get("activeStart") == active_start, "Offline reload lost the active fast"
+            context.set_offline(False)
+            server.failed_paths = set()
+            server.corrupt_paths = set()
+
             assert not errors, "Browser errors during PWA update lifecycle: " + " | ".join(errors[:8])
             browser.close()
     finally:
@@ -355,7 +459,8 @@ def main():
     print(
         "PASS: real service-worker install, staged release integrity, "
         "no-backup update, Backup & Update download, startup confirmation, "
-        "complete cache and active-fast preservation"
+        "complete cache and active-fast preservation, rejected HTTP/corrupt updates, "
+        "staging cleanup and offline last-known-good recovery"
     )
 
 
