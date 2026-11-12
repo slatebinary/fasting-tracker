@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.93",
+  "version": "1.17.94",
   "released": "2026-11-12",
-  "notes": "Add end-to-end internal recovery snapshot restore coverage for active fast metadata, completed/deleted fasting and weight records with audit details, pre-restore safety snapshots and reload persistence.",
+  "notes": "Improve Light-theme active navigation label contrast to meet WCAG AA; extend runtime accessibility regression coverage.",
   "entry": "./index.html",
   "shell": [
     "./",
