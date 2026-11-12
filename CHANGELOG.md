@@ -1,3 +1,12 @@
+## v1.17.96 — 2026-11-12
+
+- Keep the Rolling and Fixed periods labels inside their buttons at very large iOS Dynamic Type sizes.
+- Make all five bottom-navigation destinations remain visible and accessible when Larger Text is increased, allowing labels to wrap without horizontal overflow.
+- Increase bottom content clearance to accommodate the taller Dynamic Type navigation bar.
+- Scale the selected Weight chart-point callout typography with iOS Dynamic Type so its period/date line remains readable.
+- Place Weight statistics after the chart in the reading order, keeping the summary adjacent to the chart instead of above it.
+- Add browser regression coverage for callout scaling, chart/statistics order, large-text control containment and navigation reachability.
+
 ## v1.17.95 — 2026-11-12
 
 - Make application typography respond to iOS Larger Text / Dynamic Type by using the iOS system body text style and scalable rem-based font sizes.

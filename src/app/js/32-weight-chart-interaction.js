@@ -113,13 +113,17 @@
         drawSelectionCrosshair(ctx,x,top,top+h,muted);
         ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,6.5,0,Math.PI*2);ctx.fill();ctx.stroke();
         const valueLabel=formatWeight(bucket.averageKg,unit),periodLabel=weightPointCalloutPeriod(bucket);
-        ctx.font='600 12px -apple-system';const valueW=ctx.measureText(valueLabel).width;
-        ctx.font='10px -apple-system';const periodW=ctx.measureText(periodLabel).width;
-        const labelW=Math.min(viewportW-8,Math.max(72,Math.ceil(Math.max(valueW,periodW))+18)),labelH=39;
-        const bx=Math.max(4,Math.min(viewportW-labelW-4,x-labelW/2)),by=y>62?y-51:y+12;
+        const textScale=Math.max(1,Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ft-text-scale'))||1);
+        const valueFontSize=Math.max(13,12*textScale),periodFontSize=Math.max(12,11*textScale);
+        ctx.font='600 '+valueFontSize+'px -apple-system';const valueW=ctx.measureText(valueLabel).width;
+        ctx.font=periodFontSize+'px -apple-system';const periodW=ctx.measureText(periodLabel).width;
+        const labelW=Math.min(viewportW-8,Math.max(82,Math.ceil(Math.max(valueW,periodW))+22));
+        const labelH=Math.ceil(valueFontSize*1.35+periodFontSize*1.35+10);
+        const bx=Math.max(4,Math.min(viewportW-labelW-4,x-labelW/2));
+        const by=y>labelH+18?y-labelH-10:Math.min(cssH-labelH-4,y+12);
         ctx.fillStyle=card;ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.beginPath();if(typeof ctx.roundRect==='function')ctx.roundRect(bx,by,labelW,labelH,7);else ctx.rect(bx,by,labelW,labelH);ctx.fill();ctx.stroke();
-        ctx.fillStyle=textColor;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 12px -apple-system';ctx.fillText(valueLabel,bx+labelW/2,by+13);
-        ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.fillText(periodLabel,bx+labelW/2,by+28);ctx.restore();
+        ctx.fillStyle=textColor;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 '+valueFontSize+'px -apple-system';ctx.fillText(valueLabel,bx+labelW/2,by+valueFontSize*.78+3);
+        ctx.fillStyle=muted;ctx.font=periodFontSize+'px -apple-system';ctx.fillText(periodLabel,bx+labelW/2,by+valueFontSize+periodFontSize*.8+5);ctx.restore();
       }
       scroller.dataset.selectedWindowCount = String(bucket.count);
       scroller.dataset.selectedCalendarCount = String(bucket.calendarBucket?.count || 0);
