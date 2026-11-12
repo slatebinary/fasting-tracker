@@ -165,13 +165,13 @@ def main():
         page.locator('.tab[data-screen="history"]').click()
         page.locator("#deletedFastsList .secondary").first.click()
         wait_counts(page, {"records":3, "deletedFasts":0, "weights":2, "deletedWeights":1})
-        page.locator("#historyList .historyRow").first.locator(".dangerText").click()
+        page.locator("#historyList .historyRow").nth(1).locator(".dangerText").click()
         wait_counts(page, {"records":2, "deletedFasts":1, "weights":2, "deletedWeights":1})
 
         page.locator('.tab[data-screen="weight"]').click()
         page.locator("#deletedWeightsList .secondary").first.click()
         wait_counts(page, {"records":2, "deletedFasts":1, "weights":3, "deletedWeights":0})
-        page.locator("#weightHistoryList .historyRow").first.locator(".dangerText").click()
+        page.locator("#weightHistoryList .historyRow").nth(1).locator(".dangerText").click()
         mutated = wait_counts(page, {"records":2, "deletedFasts":1, "weights":2, "deletedWeights":1})
 
         assert ids(mutated["records"]) != ids(baseline["records"]) or ids(mutated["deletedFasts"]) != ids(baseline["deletedFasts"])
