@@ -215,11 +215,11 @@ with sync_playwright() as p:
     page.locator('.tab[data-screen="settings"]').click()
     group=page.locator("#settingsGroupAppIcons")
     summary=group.locator(":scope > summary")
-    if await group.get_attribute("open") is not None:
+    if group.get_attribute("open") is not None:
         summary.click()
-    assert await group.get_attribute("open") is None, "App icons group should collapse"
+    assert group.get_attribute("open") is None, "App icons group should collapse"
     summary.click()
-    assert await group.get_attribute("open") is not None, "App icons group should expand"
+    assert group.get_attribute("open") is not None, "App icons group should expand"
 
     # Reinitialise the document against the same browser storage and verify appearance restoration.
     selector.select_option("protanopia")
