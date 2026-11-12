@@ -1,3 +1,8 @@
+## v1.17.94 — 2026-11-12
+
+- Improve the active navigation label contrast in the standard Light theme to meet WCAG AA for normal text.
+- Extend runtime accessibility checks across standard Light/Dark themes, accessibility palettes, chart rendering, app-icon disclosure and saved appearance restoration.
+
 ## v1.17.93 — 2026-11-12
 
 - Add end-to-end browser coverage for internal recovery snapshot creation and restoration.
