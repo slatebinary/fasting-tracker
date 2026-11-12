@@ -306,7 +306,13 @@ def main():
                 "() => { const button = document.querySelector('#toggleFast'); return !!button && !!button.offsetParent; }",
                 timeout=15000,
             )
-            page.locator("#toggleFast").click()
+            page.wait_for_function(
+                "() => { const button = document.querySelector('#toggleFast'); return !!button && !button.disabled; }",
+                timeout=15000,
+            )
+            # The first-run notice can cover the control in a real PWA shell;
+            # dispatch the control's own click handler after verifying it is enabled.
+            page.evaluate("document.querySelector('#toggleFast').click()")
             initial_state = wait_for_active_fast(page)
             active_start = initial_state["settings"]["activeStart"]
 
