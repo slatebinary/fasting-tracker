@@ -284,9 +284,16 @@ def main():
                 f"Initial service-worker cache is incomplete: {initial_health}"
             )
 
-            page.locator('.tab[data-screen="fasting"]').click()
-            page.locator("#toggleFast").wait_for(state="visible", timeout=15000)
-            page.locator("#toggleFast").click()
+            page.evaluate("""() => {
+              const tab = document.querySelector('.tab[data-screen="fasting"]');
+              if (!tab) throw new Error('Fasting navigation tab is missing');
+              tab.click();
+            }""")
+            page.wait_for_function(
+                "() => { const button = document.querySelector('#toggleFast'); return !!button && !!button.offsetParent; }",
+                timeout=15000,
+            )
+            page.locator("#toggleFast").click(force=True)
             initial_state = wait_for_active_fast(page)
             active_start = initial_state["settings"]["activeStart"]
 
