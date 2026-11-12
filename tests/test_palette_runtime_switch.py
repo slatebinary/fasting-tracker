@@ -205,9 +205,14 @@ with sync_playwright() as p:
             const x=[lum(a),lum(b)].sort((a,b)=>b-a);return (x[0]+.05)/(x[1]+.05);
           };
           const nav=document.querySelector('nav'),active=document.querySelector('.tab.active');
-          const navBg=getComputedStyle(nav).backgroundColor,activeBg=getComputedStyle(active).backgroundColor;
+          const navBg=getComputedStyle(nav).backgroundColor;
+          const activeStyle=getComputedStyle(active),rawActiveBg=activeStyle.backgroundColor;
+          // A transparent tab is painted over the navigation surface; compare against that
+          // composited surface rather than treating transparent RGB channels as black.
+          const alpha=rawActiveBg.match(/[0-9.]+/g);
+          const activeBg=alpha && alpha.length >= 4 && Number(alpha[3]) === 0 ? navBg : rawActiveBg;
           const card=document.querySelector('#stats .card'),cardText=card.querySelector('h2');
-          return {navLabel:contrast(getComputedStyle(active).color,activeBg),
+          return {navLabel:contrast(activeStyle.color,activeBg),
             inactiveLabel:contrast(getComputedStyle(document.querySelector('.tab:not(.active)')).color,navBg),
             cardText:contrast(getComputedStyle(cardText).color,getComputedStyle(card).backgroundColor),
             chartVisible:!!document.querySelector('#statsTimelineView canvas')&&!document.querySelector('#statsTimelineView').hidden,
