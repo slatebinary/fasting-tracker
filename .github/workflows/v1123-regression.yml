@@ -47,6 +47,7 @@ jobs:
           python3 tests/test_release_protocol_v11717.py
           python3 tests/test_timeline_month_axis.py
           python3 tests/test_accessibility_theme_contrast.py
+          python3 tests/test_ios_dynamic_type.py
           python3 tests/test_release_health_metadata.py
           python3 tests/test_changelog_unique_versions.py
           python3 tests/test_palette_hint_initialization.py

@@ -1,3 +1,9 @@
+## v1.17.95 — 2026-11-12
+
+- Make application typography respond to iOS Larger Text / Dynamic Type by using the iOS system body text style and scalable rem-based font sizes.
+- Preserve the existing default text scale and leave fasting, weight, chart calculations and stored data unchanged.
+- Add automated regression coverage for scalable typography and generated app-shell consistency.
+
 ## v1.17.94 — 2026-11-12
 
 - Improve the active navigation label contrast in the standard Light theme to meet WCAG AA for normal text.

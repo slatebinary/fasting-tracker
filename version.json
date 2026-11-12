@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.94",
+  "version": "1.17.95",
   "released": "2026-11-12",
-  "notes": "Improve Light-theme active navigation label contrast to meet WCAG AA; extend runtime accessibility regression coverage.",
+  "notes": "Support iOS Dynamic Type while preserving the default typography scale.",
   "entry": "./index.html",
   "shell": [
     "./",
