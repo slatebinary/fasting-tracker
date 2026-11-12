@@ -18,7 +18,7 @@ with sync_playwright() as p:
         args=["--no-sandbox", "--disable-dev-shm-usage"],
     )
     for width, expected_columns in ((390, 3), (1280, 6)):
-        page = browser.new_page(viewport={"width": width, "height": 900})
+        page = browser.new_page(viewport={"width": width, "height": 900}, timezone_id="UTC")
         errors = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         page.evaluate(STORAGE_SHIM)
@@ -76,6 +76,37 @@ with sync_playwright() as p:
         assert history_rows.count() == 7
         assert history_range.is_hidden()
         assert history_button.inner_text() == "More…"
+
+        # Applying a date filter from the All range must return to the compact
+        # seven-entry view while retaining an accurate count of all matches.
+        history_button.click()
+        history_range.select_option("all")
+        assert history_rows.count() == 80
+        from_date = page.evaluate("""() => {
+          const d = new Date(Date.now() - 15 * 86400000);
+          return d.toISOString().slice(0, 10);
+        }""")
+        page.locator("#weightFilterFrom").fill(from_date)
+        page.wait_for_function(
+            "document.querySelectorAll('#weightHistoryList .historyRow').length === 7",
+            timeout=5000,
+        )
+        filter_summary = page.locator("#weightFilterStatus").inner_text()
+        matched_count = int(filter_summary.split()[1])
+        assert matched_count > 7, filter_summary
+        assert history_rows.count() == 7
+        assert weight_count.inner_text() == "Last 7 measurements"
+        assert history_button.inner_text() == "More…"
+        assert history_range.is_hidden()
+        assert history_range.input_value() == ""
+
+        page.locator("#weightClearFiltersBtn").click()
+        page.wait_for_function(
+            "document.querySelector('#weightFilterStatus')?.textContent.includes('80')",
+            timeout=5000,
+        )
+        assert history_rows.count() == 7
+        assert weight_count.inner_text() == "Last 7 measurements"
 
         # Fasting History uses the same seven-entry default, live count,
         # and period selector as Weight History.
