@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.85",
+  "version": "1.17.86",
   "released": "2026-11-12",
-  "notes": "Extend Rolling weight-chart averages through the current local day while the trailing window contains actual measurements; preserve Daily and Fixed chart behaviour.",
+  "notes": "Add regression coverage for Weight History date-filter resets and synchronized visible counts and range controls; no runtime behaviour changes.",
   "entry": "./index.html",
   "shell": [
     "./",

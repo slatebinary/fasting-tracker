@@ -186,6 +186,7 @@
   let historyRange = 'recent7';
   let historyRangeMenuOpen = false;
   let deletedHistoryVisibleCount = HISTORY_PAGE_SIZE;
+  let weightVisibleCount = HISTORY_PAGE_SIZE;
   let weightHistoryRange = 'recent7';
   let weightHistoryMenuOpen = false;
   let fastActionLocked = false;

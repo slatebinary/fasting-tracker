@@ -1,3 +1,9 @@
+## v1.17.86 — 2026-11-12
+
+- Add regression coverage ensuring date filters reset Weight History to the newest seven entries.
+- Verify the live measurement count, More control and range selector remain synchronized after filtering.
+- No runtime behaviour changes.
+
 ## v1.17.85 — 2026-11-12
 
 - Extend Rolling weight-chart averages through the current local day while the trailing window still contains actual measurements.
