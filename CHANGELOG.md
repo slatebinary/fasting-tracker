@@ -1,3 +1,9 @@
+## v1.17.91 — 2026-11-12
+
+- Extend browser accessibility regression coverage to measure actual computed text/background contrast for primary, stop, secondary and destructive-action buttons across all accessibility palettes.
+- Verify active/inactive navigation labels and icons, grayscale icon treatment, and the App icons & installation title/subtitle in every accessibility palette.
+- No runtime behaviour changes.
+
 ## v1.17.90 — 2026-11-12
 
 - Add end-to-end browser regression coverage for creating a named internal recovery snapshot and restoring it through the snapshot preview workflow.
