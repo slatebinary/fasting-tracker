@@ -1,3 +1,9 @@
+## v1.17.87 — 2026-11-12
+
+- Restore Rolling weight-chart points through the current local day while real measurements remain inside the selected trailing window.
+- Stop extending the series when all real measurements have aged out of that window; do not fabricate measurements or alter raw weight history.
+- Add browser regression coverage for current-day continuity and exact trailing-window expiry across all Rolling periods.
+
 ## v1.17.86 — 2026-11-12
 
 - Add regression coverage ensuring date filters reset Weight History to the newest seven entries.
