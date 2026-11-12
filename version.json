@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.84",
-  "released": "2026-11-11",
-  "notes": "Clarify Rolling weight data rows and omit empty calendar comparisons.",
+  "version": "1.17.85",
+  "released": "2026-11-12",
+  "notes": "Extend Rolling weight-chart averages through the current local day while the trailing window contains actual measurements; preserve Daily and Fixed chart behaviour.",
   "entry": "./index.html",
   "shell": [
     "./",

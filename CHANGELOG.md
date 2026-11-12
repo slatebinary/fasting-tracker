@@ -1,3 +1,9 @@
+## v1.17.85 — 2026-11-12
+
+- Extend Rolling weight-chart averages through the current local day while the trailing window still contains actual measurements.
+- Continue calculating averages exclusively from real measurements in each trailing window; do not fabricate measurements.
+- Preserve Daily and Fixed chart behaviour.
+
 ## v1.17.84 — 2026-11-11
 
 - Clarify Rolling weight-chart data rows by showing the trailing-window average and exact measurement count without empty calendar comparisons.
