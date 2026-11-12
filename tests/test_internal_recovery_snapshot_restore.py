@@ -190,6 +190,12 @@ def main():
         page.locator("#snapshotList .snapshotItem").filter(has_text=LABEL).locator("button").click()
         page.wait_for_function("!document.querySelector('#snapshotPreviewModal').hidden")
         page.locator("#snapshotPreviewRestoreBtn").click()
+        # The restore handler is asynchronous; wait until its atomic IndexedDB
+        # commit finishes and both preview/catalogue modals close before reading.
+        page.wait_for_function(
+            "document.querySelector('#snapshotModal').hidden && document.querySelector('#snapshotPreviewModal').hidden",
+            timeout=15000,
+        )
 
         restored = wait_counts(page, {"records":2, "deletedFasts":1, "weights":2, "deletedWeights":1})
         assert ids(restored["records"]) == ids(baseline["records"]), "Completed fasting records were not restored"
