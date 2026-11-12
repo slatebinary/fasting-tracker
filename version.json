@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.95",
+  "version": "1.17.96",
   "released": "2026-11-12",
-  "notes": "Support iOS Dynamic Type while preserving the default typography scale.",
+  "notes": "Fix very-large iOS Dynamic Type overflow in Weight mode controls and keep all bottom navigation destinations accessible.",
   "entry": "./index.html",
   "shell": [
     "./",
