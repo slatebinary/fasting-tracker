@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.97",
-  "released": "2026-11-12",
-  "notes": "Reject unsupported backup integrity algorithms and extend corruption-recovery regression coverage.",
+  "version": "1.17.98",
+  "released": "2026-11-13",
+  "notes": "Improve Weight calendar callout subtitle contrast for readability.",
   "entry": "./index.html",
   "shell": [
     "./",
