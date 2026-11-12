@@ -149,6 +149,14 @@ with sync_playwright() as p:
         assert style_switcher.locator('[data-weight-style="fixed"]').get_attribute("aria-pressed")=="true"
         assert page.evaluate("localStorage.getItem('fastingTracker.weightChartStyle')")=="fixed"
 
+        # Weight statistics follow the chart in the natural reading order.
+        stats_position = page.evaluate("""() => {
+          const stats=document.querySelector('.weightStatsCard');
+          const chart=document.querySelector('.weightChartWrap');
+          return !!stats && !!chart && !!(chart.compareDocumentPosition(stats) & Node.DOCUMENT_POSITION_FOLLOWING);
+        }""")
+        assert stats_position, "Weight statistics must follow the chart"
+
         # Simulate a very large iOS Dynamic Type scale. Both mode labels must
         # stay inside their buttons, and all five bottom destinations must
         # remain visible without horizontal overflow or covered page content.
@@ -194,6 +202,9 @@ with sync_playwright() as p:
         bottom_padding = page.locator("body").evaluate("e => parseFloat(getComputedStyle(e).paddingBottom)")
         assert bottom_padding >= nav_height, (width, nav_height, bottom_padding)
         page.evaluate("document.documentElement.style.removeProperty('--ft-text-scale')")
+        chart_source = (ROOT / "src/app/js/32-weight-chart-interaction.js").read_text(encoding="utf-8")
+        assert "periodFontSize=Math.max(12,11*textScale)" in chart_source
+        assert "valueFontSize=Math.max(13,12*textScale)" in chart_source
         style_switcher.locator('[data-weight-style="rolling"]').click()
 
         # The chart-data disclosure must keep its label, ARIA state and actual
