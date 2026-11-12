@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.92",
+  "version": "1.17.93",
   "released": "2026-11-12",
-  "notes": "Add real-browser service-worker update lifecycle coverage for staged release integrity, both update paths, startup confirmation, cache completeness and preservation of an active fast; no runtime behavior changes.",
+  "notes": "Add end-to-end internal recovery snapshot restore coverage for active fast metadata, completed/deleted fasting and weight records with audit details, pre-restore safety snapshots and reload persistence.",
   "entry": "./index.html",
   "shell": [
     "./",
