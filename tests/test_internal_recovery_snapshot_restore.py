@@ -90,8 +90,8 @@ def main():
     data["records"][1]["editHistory"] = [{
         "editedAt": "2026-11-01T10:00:00.000Z",
         "editedTimeZone": "UTC",
-        "start": data["records"][0]["start"],
-        "end": data["records"][0]["end"],
+        "start": data["records"][1]["start"],
+        "end": data["records"][1]["end"],
         "goalHours": 18,
         "timeZone": "UTC",
         "stopReason": None,
@@ -212,8 +212,11 @@ def main():
         restored_records = {row["id"]: row for row in restored["records"]}
         for record_id, before in baseline_records.items():
             after = restored_records[record_id]
-            for field in ("start", "end", "goalHours", "timeZone", "editHistory", "stopReason"):
+            for field in ("start", "end", "goalHours", "timeZone", "stopReason"):
                 assert after.get(field) == before.get(field), f"Completed fasting record {record_id} lost {field} during restore"
+            assert after.get("editHistory", []) == before.get("editHistory", []), (
+                f"Completed fasting record {record_id} lost edit audit history during restore"
+            )
         assert ids(restored["deletedFasts"]) == ids(baseline["deletedFasts"]), "Deleted fasting audit records were not restored"
         assert ids(restored["weights"]) == ids(baseline["weights"]), "Active weight measurements were not restored"
         baseline_weights = {row["id"]: row for row in baseline["weights"]}
