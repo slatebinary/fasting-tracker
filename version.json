@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.87",
+  "version": "1.17.88",
   "released": "2026-11-12",
-  "notes": "Restore Rolling weight-chart continuity through the current local day while real measurements remain in the trailing window; stop the series when that window expires.",
+  "notes": "Make Goals / Months comparisons follow the selected month column, with previous-month and same-month-last-year baselines relative to that selection.",
   "entry": "./index.html",
   "shell": [
     "./",

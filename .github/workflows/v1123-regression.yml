@@ -96,6 +96,7 @@ jobs:
           python3 tests/test_weight_navigator_pointer_drag.py
           python3 tests/test_weight_chart_touch_swipe.py
           python3 tests/test_v1178_stats_history_navigation.py
+          python3 tests/test_stats_month_comparison_selection.py
           python3 tests/test_v11773_timeline_selection_persistence.py
           python3 tests/test_fasting_encouragement_v1179.py
       - name: Execute statistics performance regression

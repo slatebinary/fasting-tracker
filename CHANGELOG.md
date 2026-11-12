@@ -1,3 +1,9 @@
+## v1.17.88 — 2026-11-12
+
+- Make the Fasting Patterns → Goals → Months comparison follow the selected month column instead of always showing the latest month.
+- Calculate month-over-month and year-over-year baselines relative to the selected month, including older months across the available history.
+- Add browser regression coverage for changing between month columns and verifying the comparison label and figures refresh.
+
 ## v1.17.87 — 2026-11-12
 
 - Restore Rolling weight-chart points through the current local day while real measurements remain inside the selected trailing window.
