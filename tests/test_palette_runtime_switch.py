@@ -109,6 +109,8 @@ with sync_playwright() as p:
               if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
               if (hex.length === 6) return [0,2,4].map(index => parseInt(hex.slice(index,index+2),16));
             }
+            const srgb = raw.match(/^color\(srgb\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)/i);
+            if (srgb) return srgb.slice(1,4).map(channel => Number(channel) * 255);
             const parts = raw.match(/[0-9.]+/g);
             if (!parts || parts.length < 3) throw new Error('Unparseable colour: ' + value);
             return parts.slice(0,3).map(Number);
