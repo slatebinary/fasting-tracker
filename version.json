@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.96",
+  "version": "1.17.97",
   "released": "2026-11-12",
-  "notes": "Improve very-large iOS Dynamic Type layouts across Weight controls, chart callouts, statistics placement and bottom navigation.",
+  "notes": "Reject unsupported backup integrity algorithms and extend corruption-recovery regression coverage.",
   "entry": "./index.html",
   "shell": [
     "./",
