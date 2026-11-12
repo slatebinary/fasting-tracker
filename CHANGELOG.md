@@ -1,3 +1,9 @@
+## v1.17.90 — 2026-11-12
+
+- Add end-to-end browser regression coverage for creating a named internal recovery snapshot and restoring it through the snapshot preview workflow.
+- Verify restoration of active-fast metadata, completed fasting records, deleted-record audit metadata, active/deleted weight measurements and the pre-restore safety snapshot.
+- No runtime behaviour changes.
+
 ## v1.17.89 — 2026-11-12
 
 - Add end-to-end browser coverage for selecting visible Weight History measurements and checking live selection counts and action states.
