@@ -87,6 +87,9 @@ def audit_fields(row):
 
 def main():
     data = build_data(3)
+    # The application stores weight values to three decimal places.
+    for weight in data["weights"]:
+        weight["kg"] = round(weight["kg"], 3)
     data["records"][1]["editHistory"] = [{
         "editedAt": "2026-11-01T10:00:00.000Z",
         "editedTimeZone": "UTC",
