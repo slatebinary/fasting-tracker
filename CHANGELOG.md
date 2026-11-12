@@ -1,3 +1,9 @@
+## v1.17.93 — 2026-11-12
+
+- Add end-to-end browser coverage for internal recovery snapshot creation and restoration.
+- Verify active-fast metadata, completed/deleted fasts and weights including audit details, automatic pre-restore safety snapshot and persistence after reload.
+- No runtime behaviour changes.
+
 ## v1.17.92 — 2026-11-12
 
 - Add a real-browser service-worker lifecycle regression that installs a release, stages two subsequent releases, and verifies both Update without backup and Backup & Update paths.

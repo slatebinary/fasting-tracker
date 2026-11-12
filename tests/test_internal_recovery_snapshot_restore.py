@@ -87,6 +87,18 @@ def audit_fields(row):
 
 def main():
     data = build_data(3)
+    # The application stores weight values to three decimal places.
+    for weight in data["weights"]:
+        weight["kg"] = round(weight["kg"], 3)
+    data["records"][1]["editHistory"] = [{
+        "editedAt": "2026-11-01T10:00:00.000Z",
+        "editedTimeZone": "UTC",
+        "start": data["records"][1]["start"],
+        "end": data["records"][1]["end"],
+        "goalHours": 18,
+        "timeZone": "UTC",
+        "stopReason": None,
+    }]
     now = datetime.datetime.now(datetime.timezone.utc)
     active_start = (now - datetime.timedelta(hours=4)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     active_created = (now - datetime.timedelta(hours=5)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -199,8 +211,23 @@ def main():
 
         restored = wait_counts(page, {"records":2, "deletedFasts":1, "weights":2, "deletedWeights":1})
         assert ids(restored["records"]) == ids(baseline["records"]), "Completed fasting records were not restored"
+        baseline_records = {row["id"]: row for row in baseline["records"]}
+        restored_records = {row["id"]: row for row in restored["records"]}
+        for record_id, before in baseline_records.items():
+            after = restored_records[record_id]
+            for field in ("start", "end", "goalHours", "timeZone", "stopReason"):
+                assert after.get(field) == before.get(field), f"Completed fasting record {record_id} lost {field} during restore"
+            assert after.get("editHistory", []) == before.get("editHistory", []), (
+                f"Completed fasting record {record_id} lost edit audit history during restore"
+            )
         assert ids(restored["deletedFasts"]) == ids(baseline["deletedFasts"]), "Deleted fasting audit records were not restored"
         assert ids(restored["weights"]) == ids(baseline["weights"]), "Active weight measurements were not restored"
+        baseline_weights = {row["id"]: row for row in baseline["weights"]}
+        restored_weights = {row["id"]: row for row in restored["weights"]}
+        for weight_id, before in baseline_weights.items():
+            after = restored_weights[weight_id]
+            for field in ("when", "kg", "timeZone"):
+                assert after.get(field) == before.get(field), f"Weight measurement {weight_id} lost {field} during restore"
         assert ids(restored["deletedWeights"]) == ids(baseline["deletedWeights"]), "Deleted weight audit records were not restored"
 
         for field in ("activeStart", "activeGoalHours", "activeTimeZone", "activeCreatedAt", "activeModifiedAt"):
