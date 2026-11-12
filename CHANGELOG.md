@@ -1,3 +1,8 @@
+## v1.17.97 — 2026-11-12
+
+- Reject unsupported backup integrity algorithm identifiers instead of silently interpreting unknown labels as SHA-256.
+- Extend corruption-recovery browser coverage to verify rejection of unknown algorithms and manifest/payload count mismatches without modifying live data.
+
 ## v1.17.96 — 2026-11-12
 
 - Keep the Rolling and Fixed periods labels inside their buttons at very large iOS Dynamic Type sizes.

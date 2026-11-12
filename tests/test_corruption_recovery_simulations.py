@@ -45,6 +45,31 @@ with sync_playwright() as p:
     page.set_input_files('#importFile',tmp)
     page.wait_for_timeout(600)
     assert any('not a valid' in m.lower() for m in dialogs), dialogs
+    # An unknown checksum algorithm must be rejected even when the payload has a valid SHA-256 digest.
+    # This prevents the verifier from silently treating an unrecognized algorithm label as SHA-256.
+    unknown_algorithm=page.evaluate("""async backup => {
+      const canonical=window.FTIntegrity.stableStringify(backup.data);
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical));
+      backup.integrity={scope:'data',algorithm:'SHA-512',digest:[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('')};
+      return backup;
+    }""",raw)
+    unknown_path=Path(tmp).with_name('unknown-algorithm.json')
+    unknown_path.write_text(json.dumps(unknown_algorithm),encoding='utf-8')
+    dialogs.clear(); page.set_input_files('#importFile',str(unknown_path)); page.wait_for_timeout(500)
+    assert any('not a valid' in m.lower() for m in dialogs), ('unknown integrity algorithm was accepted',dialogs)
+
+    # A manifest whose record counts disagree with its payload must also be rejected.
+    bad_manifest=json.loads(json.dumps(raw)); bad_manifest['manifest']['fastingRecords']+=1
+    manifest_path=Path(tmp).with_name('bad-manifest.json')
+    manifest_path.write_text(json.dumps(bad_manifest),encoding='utf-8')
+    dialogs.clear(); page.set_input_files('#importFile',str(manifest_path)); page.wait_for_timeout(500)
+    assert any('not a valid' in m.lower() for m in dialogs), ('mismatched manifest was accepted',dialogs)
+
+    # Every rejected envelope must leave the original primary record untouched.
+    unchanged=page.evaluate("""() => new Promise((resolve,reject)=>{const q=indexedDB.open('FastingTrackerDB',2);q.onsuccess=()=>{const tx=q.result.transaction('records','readonly'),r=tx.objectStore('records').get('keep-fast');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)};q.onerror=()=>reject(q.error)})""")
+    assert unchanged and unchanged['goalHours']==16, unchanged
+    unknown_path.unlink(missing_ok=True); manifest_path.unlink(missing_ok=True)
+
     # Failed/tampered import must not change live primary data.
     page.locator('.tab[data-screen="fasting"]').click(); page.wait_for_timeout(100)
     goal=page.locator('#goalText').inner_text()

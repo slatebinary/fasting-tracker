@@ -224,7 +224,8 @@
     if (!Number.isInteger(version) || version < BACKUP_MIN_VERSION || version > BACKUP_VERSION) throw new Error('unsupported backup version');
     if (version === 1) return {verified:false, legacy:true};
     if (!raw.integrity || raw.integrity.scope !== 'data' || typeof raw.integrity.digest !== 'string' || !backupManifestMatches(raw)) throw new Error('backup manifest invalid');
-    const algorithm = raw.integrity.algorithm === 'FNV-1a-64' ? 'FNV-1a-64' : 'SHA-256';
+    const algorithm = raw.integrity.algorithm;
+    if (algorithm !== 'FNV-1a-64' && algorithm !== 'SHA-256') throw new Error('unsupported backup integrity algorithm');
     const actual = await checksumText(stableStringify(raw.data), algorithm);
     if (actual.algorithm !== algorithm || actual.digest.toLowerCase() !== raw.integrity.digest.toLowerCase()) throw new Error('backup checksum mismatch');
     return {verified:true, legacy:false, algorithm};
