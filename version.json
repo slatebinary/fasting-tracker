@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.86",
+  "version": "1.17.87",
   "released": "2026-11-12",
-  "notes": "Add regression coverage for Weight History date-filter resets and synchronized visible counts and range controls; no runtime behaviour changes.",
+  "notes": "Restore Rolling weight-chart continuity through the current local day while real measurements remain in the trailing window; stop the series when that window expires.",
   "entry": "./index.html",
   "shell": [
     "./",
