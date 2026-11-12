@@ -453,7 +453,8 @@ def main():
     print(
         "PASS: real service-worker install, staged release integrity, "
         "no-backup update, Backup & Update download, startup confirmation, "
-        "complete cache and active-fast preservation"
+        "complete cache and active-fast preservation, rejected HTTP/corrupt updates, "
+        "staging cleanup and offline last-known-good recovery"
     )
 
 
