@@ -174,6 +174,11 @@ def wait_for_installed_release(page, version, active_start):
         timeout=90000,
     )
     page.wait_for_function(
+        "version => document.querySelector('#appVersionLabel')?.textContent.trim() === ('v' + version)",
+        arg=version,
+        timeout=45000,
+    )
+    page.wait_for_function(
         """version => {
           try {
             const meta = JSON.parse(localStorage.getItem('fastingTracker.appMeta') || '{}');
@@ -272,6 +277,14 @@ def main():
                 arg=BASE_VERSION,
                 timeout=20000,
             )
+            # The worker can claim the page before asynchronous app/IndexedDB
+            # startup has finished. Wait for the runtime version label before
+            # interacting with controls.
+            page.wait_for_function(
+                "version => document.querySelector('#appVersionLabel')?.textContent.trim() === ('v' + version)",
+                arg=BASE_VERSION,
+                timeout=30000,
+            )
             page.wait_for_function(
                 "() => !!navigator.serviceWorker?.controller",
                 timeout=45000,
@@ -293,7 +306,7 @@ def main():
                 "() => { const button = document.querySelector('#toggleFast'); return !!button && !!button.offsetParent; }",
                 timeout=15000,
             )
-            page.locator("#toggleFast").click(force=True)
+            page.locator("#toggleFast").click()
             initial_state = wait_for_active_fast(page)
             active_start = initial_state["settings"]["activeStart"]
 
