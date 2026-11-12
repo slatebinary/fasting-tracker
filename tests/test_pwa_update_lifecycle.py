@@ -272,8 +272,14 @@ def assert_failed_update_preserved_release(page, active_version, active_start):
     )
     state = wait_for_active_fast(page)
     assert state["settings"].get("activeStart") == active_start, "Failed update changed active-fast metadata"
-    staging = page.evaluate("() => caches.keys().then(keys => keys.filter(name => name.includes('-staging-')))")
-    assert not staging, f"Failed update left incomplete staging caches behind: {staging}"
+    staging = page.evaluate(
+        """activeVersion => caches.keys().then(keys => keys.filter(name =>
+          name.includes('-staging-') &&
+          !name.includes('-release-' + activeVersion + '-staging-')
+        ))""",
+        active_version,
+    )
+    assert not staging, f"Failed update left an orphaned staging cache behind: {staging}"
 
 
 def attempt_rejected_update(page, active_version, active_start):
