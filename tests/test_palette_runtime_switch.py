@@ -222,6 +222,9 @@ with sync_playwright() as p:
     assert group.get_attribute("open") is not None, "App icons group should expand"
 
     # Reinitialise the document against the same browser storage and verify appearance restoration.
+    page.locator('.tab[data-screen="settings"]').click()
+    page.wait_for_function("document.querySelector('#settings').classList.contains('active')")
+    selector = page.locator("#appearanceSelect")
     selector.select_option("protanopia")
     page.wait_for_function("document.documentElement.dataset.theme === 'protanopia'")
     page.set_content(inlined_html(), wait_until="domcontentloaded")
