@@ -74,7 +74,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     html[data-theme="tritanopia"] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible { outline:3px solid var(--accent) !important; outline-offset:3px; }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
-    body { padding: env(safe-area-inset-top) 0 calc(max(78px, 3.6rem * var(--ft-text-scale)) + env(safe-area-inset-bottom)); }
+    body { padding: env(safe-area-inset-top) 0 calc(max(78px, 4.5rem * var(--ft-text-scale)) + env(safe-area-inset-bottom)); }
     main { width: min(720px, 100%); margin: 0 auto; padding: 16px; }
     h1 { font-size: calc(1.7647rem * var(--ft-text-scale)); margin: 8px 0 18px; }
     h2 { font-size: calc(1.1765rem * var(--ft-text-scale)); margin: 0 0 12px; }
