@@ -190,7 +190,7 @@ def ensure_update_group_open(page):
         page.locator("#settingsGroupUpdates > summary").click()
 
 
-def install_release(page, version, backup):
+def install_release(page, version, backup, active_start):
     ensure_update_group_open(page)
     page.locator("#updateBtn").click()
     page.wait_for_function(
@@ -210,7 +210,7 @@ def install_release(page, version, backup):
         assert download.suggested_filename.endswith(".json")
     else:
         page.locator("#updateWithoutBackupBtn").click()
-    return wait_for_installed_release(page, version, ACTIVE_START)
+    return wait_for_installed_release(page, version, active_start)
 
 
 def main():
@@ -232,8 +232,6 @@ def main():
     thread.start()
 
     errors = []
-    global ACTIVE_START
-    ACTIVE_START = None
 
     try:
         with sync_playwright() as p:
@@ -272,7 +270,7 @@ def main():
 
             page.locator("#toggleFast").click()
             initial_state = wait_for_active_fast(page)
-            ACTIVE_START = initial_state["settings"]["activeStart"]
+            active_start = initial_state["settings"]["activeStart"]
 
             page.locator('.tab[data-screen="settings"]').click()
             ensure_update_group_open(page)
@@ -288,7 +286,7 @@ def main():
 
             # First update uses the no-external-backup path.
             server.release_state = {"metadata": first_metadata, "html": first_html}
-            install_release(page, first_version, backup=False)
+            install_release(page, first_version, backup=False, active_start=active_start)
 
             # Second update exercises the Backup & Update path and verifies
             # that the backup download completes before the release is staged.
@@ -302,7 +300,7 @@ def main():
                 timeout=30000,
             )
             server.release_state = {"metadata": second_metadata, "html": second_html}
-            install_release(page, second_version, backup=True)
+            install_release(page, second_version, backup=True, active_start=active_start)
 
             assert not errors, "Browser errors during PWA update lifecycle: " + " | ".join(errors[:8])
             browser.close()
