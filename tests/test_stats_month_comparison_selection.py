@@ -14,7 +14,7 @@ now=datetime.datetime.now(datetime.timezone.utc)
 # Keep 480 consecutive daily fasts so the chart contains more than 12 months
 # and every selected month has both comparison baselines.
 latest_end=now-datetime.timedelta(hours=1)
-base=int((latest_end+datetime.timedelta(hours=16)).timestamp()*1000)
+base=int((latest_end-datetime.timedelta(hours=10)).timestamp()*1000)
 data=build_data(480,base=base)
 first_end=datetime.datetime.fromisoformat(data["records"][0]["end"].replace("Z","+00:00"))
 month_count=(now.year-first_end.year)*12+(now.month-first_end.month)+1
