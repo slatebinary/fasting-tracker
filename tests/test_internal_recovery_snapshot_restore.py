@@ -87,7 +87,7 @@ def audit_fields(row):
 
 def main():
     data = build_data(3)
-    data["records"][0]["editHistory"] = [{
+    data["records"][1]["editHistory"] = [{
         "editedAt": "2026-11-01T10:00:00.000Z",
         "editedTimeZone": "UTC",
         "start": data["records"][0]["start"],
