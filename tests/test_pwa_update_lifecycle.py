@@ -429,7 +429,7 @@ def main():
             context.set_offline(True)
             page.reload(wait_until="domcontentloaded")
             page.wait_for_function(
-                "version => document.querySelector('meta[name=\\"ft-app-version\\"]')?.content === version",
+                "version => document.querySelector('meta[name=ft-app-version]')?.content === version",
                 arg=second_version,
                 timeout=30000,
             )
