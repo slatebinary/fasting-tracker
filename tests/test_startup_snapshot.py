@@ -50,7 +50,7 @@ def test_internal_snapshot_restore_lifecycle():
         return page.evaluate("""()=>new Promise((resolve,reject)=>{const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction(['state','records','deletedFasts','weights','deletedWeights'],'readonly');const names=['records','deletedFasts','weights','deletedWeights'];const out={};let done=0;for(const n of names){const r=tx.objectStore(n).getAll();r.onsuccess=()=>{out[n]=r.result;if(++done===4){const st=tx.objectStore('state').get('settings');st.onsuccess=()=>resolve({ ...out,settings:st.result.data });}};}})""")
     with sync_playwright() as p:
       browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage']);page=browser.new_page(viewport={'width':390,'height':844});errors=[];dialogs=[]
-      page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda dlg:(dialogs.append(dlg.message),dlg.accept()))
+      page.on('pageerror',lambda e:errors.append(str(e)))
       page.evaluate(STORAGE_SHIM);page.evaluate("v=>localStorage.setItem('fastingTracker.data',v)",json.dumps(d,separators=(',',':')))
       page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
       # Use the recovery snapshot catalogue UI to create the restore point.
@@ -58,9 +58,9 @@ def test_internal_snapshot_restore_lifecycle():
       page.wait_for_function("()=>document.querySelectorAll('#snapshotList .snapshotItem').length>=1",timeout=15000)
       # Mutate the authoritative IndexedDB records/state, then reload to simulate lost/altered live data.
       page.evaluate("""() => new Promise((resolve,reject)=>{const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction(['state','records','deletedFasts','weights','deletedWeights'],'readwrite');for(const n of ['records','deletedFasts','weights','deletedWeights'])tx.objectStore(n).clear();const st=tx.objectStore('state'),r=st.get('settings');r.onsuccess=()=>{const x=r.result;x.data.activeStart=null;x.data.activeGoalHours=null;x.data.activeTimeZone=null;x.data.activeCreatedAt=null;x.data.activeModifiedAt=null;st.put(x);};tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);};})""")
-      page.reload();page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
+      page.goto('about:blank');page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
       page.locator('#recoveryBanner').evaluate("el=>el.hidden=false");page.locator('#recoverySnapshotsBtn').click();page.locator('#snapshotList button').first.click()
-      page.wait_for_function("()=>!document.querySelector('#snapshotPreviewModal').hidden",timeout=10000);page.locator('#snapshotPreviewRestoreBtn').click()
+      page.wait_for_function("()=>!document.querySelector('#snapshotPreviewModal').hidden",timeout=10000);page.once('dialog',lambda dlg:(dialogs.append(dlg.message),dlg.accept()));page.locator('#snapshotPreviewRestoreBtn').click()
       page.wait_for_function("()=>document.querySelector('#snapshotPreviewModal').hidden",timeout=15000)
       page.wait_for_function("()=>document.querySelectorAll('#snapshotList .snapshotItem').length>=1",timeout=15000)
       restored=read_db(page)
@@ -70,7 +70,7 @@ def test_internal_snapshot_restore_lifecycle():
       assert restored['deletedWeights']==expected['deletedWeights'],'deleted weight audit metadata not restored'
       assert restored['settings']['activeStart']==expected['activeStart'] and restored['settings']['activeGoalHours']==20 and restored['settings']['activeTimeZone']=='Europe/Sofia','active fast metadata not restored'
       page.wait_for_function("()=>document.querySelectorAll('#snapshotList .snapshotItem').length>=2",timeout=15000)
-      page.reload();page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
+      page.goto('about:blank');page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
       after=read_db(page);assert after['records']==expected['records'] and after['deletedFasts']==expected['deletedFasts'] and after['weights']==expected['weights'] and after['deletedWeights']==expected['deletedWeights'],'restored records not durable after reload'
       assert after['settings']['activeStart']==expected['activeStart'],'active fast metadata not durable after reload'
       if errors:raise AssertionError('browser errors: '+' | '.join(errors[:5]))
