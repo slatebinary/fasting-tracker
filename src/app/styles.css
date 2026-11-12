@@ -406,6 +406,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     /* iOS system body text style follows the user's Larger Text preference. */
     @supports (-webkit-touch-callout: none) {
       html { font: -apple-system-body; }
+      body { font-size: calc(16 / 17 * 1em); }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:0.001ms !important; animation-duration:0.001ms !important; animation-iteration-count:1 !important; } }
     .textButton { border:0; background:transparent; color:var(--accent); padding:0; font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
