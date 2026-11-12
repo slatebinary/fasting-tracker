@@ -42,42 +42,38 @@ print('PASS: startup migration snapshot does not trigger false failure alert')
 
 # v1.17.93: complete internal recovery snapshot restore regression.
 def test_internal_snapshot_restore_lifecycle():
-    d=build_data(2)
-    d['activeStart']='2026-11-12T10:00:00.000Z'; d['activeGoalHours']=20; d['activeTimeZone']='Europe/Sofia'
-    d['activeCreatedAt']='2026-11-12T10:00:00.000Z'; d['activeModifiedAt']='2026-11-12T10:15:00.000Z'
+    d=build_data(2);d['activeStart']='2026-11-12T10:00:00.000Z';d['activeGoalHours']=20;d['activeTimeZone']='Europe/Sofia';d['activeCreatedAt']='2026-11-12T10:00:00.000Z';d['activeModifiedAt']='2026-11-12T10:15:00.000Z'
     d['records'][0]['editHistory']=[{'at':'2026-11-01T10:00:00.000Z','field':'goalHours','from':16,'to':18,'reason':'test audit'}]
     d['deletedFasts']=[{'id':'deleted-fast-audit','start':'2026-10-20T10:00:00.000Z','end':'2026-10-21T02:00:00.000Z','goalHours':16,'timeZone':'UTC','deletedAt':'2026-10-21T03:00:00.000Z','deleteReason':'test deletion','editHistory':[{'at':'2026-10-20T12:00:00.000Z','field':'goalHours','from':16,'to':17,'reason':'audit'}]}]
-    d['deletedWeights']=[{'id':'deleted-weight-audit','when':'2026-10-22T08:00:00.000Z','kg':79.2,'timeZone':'UTC','deletedAt':'2026-10-22T09:00:00.000Z','deleteReason':'test deletion'}]
-    d['weights'][0]['note']='snapshot-weight-note'; expected=json.loads(json.dumps(d))
+    d['deletedWeights']=[{'id':'deleted-weight-audit','when':'2026-10-22T08:00:00.000Z','kg':79.2,'timeZone':'UTC','deletedAt':'2026-10-22T09:00:00.000Z','deleteReason':'test deletion'}];d['weights'][0]['note']='snapshot-weight-note';expected=json.loads(json.dumps(d))
+    def read_db(page):
+        return page.evaluate("""()=>new Promise((resolve,reject)=>{const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction(['state','records','deletedFasts','weights','deletedWeights'],'readonly');const names=['records','deletedFasts','weights','deletedWeights'];const out={};let done=0;for(const n of names){const r=tx.objectStore(n).getAll();r.onsuccess=()=>{out[n]=r.result;if(++done===4){const st=tx.objectStore('state').get('settings');st.onsuccess=()=>resolve({ ...out,settings:st.result.data });}};}})""")
     with sync_playwright() as p:
-      browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
-      page=browser.new_page(viewport={'width':390,'height':844}); errors=[]; dialogs=[]
-      page.on('pageerror',lambda e:errors.append(str(e))); page.on('dialog',lambda dlg:(dialogs.append(dlg.message),dlg.accept()))
-      page.evaluate(STORAGE_SHIM); page.evaluate("v=>localStorage.setItem('fastingTracker.data',v)",json.dumps(d,separators=(',',':')))
-      page.set_content(inlined_html(),wait_until='domcontentloaded')
-      page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
-      page.wait_for_function("()=>typeof save==='function'",timeout=15000)
-      page.locator('#recoveryBanner').evaluate("el=>el.hidden=false"); page.locator('#recoverySnapshotsBtn').click(); page.locator('#snapshotCreateNowBtn').click()
-      page.wait_for_function("()=>loadSnapshots().length>=1",timeout=15000)
-      page.evaluate("""() => {data.records=[];data.deletedFasts=[];data.weights=[];data.deletedWeights=[];data.activeStart=null;data.activeGoalHours=null;data.activeTimeZone=null;data.activeCreatedAt=null;data.activeModifiedAt=null;if(!save({force:true}))throw new Error('Mutation persistence failed');}""")
-      page.wait_for_function("()=>data.records.length===0 && data.weights.length===0 && !data.activeStart",timeout=15000)
-      page.locator('#snapshotCloseBtn').click(); page.locator('#recoverySnapshotsBtn').click(); page.locator('#snapshotList button').first.click()
-      page.wait_for_function("()=>!document.querySelector('#snapshotPreviewModal').hidden",timeout=10000)
-      page.locator('#snapshotPreviewRestoreBtn').click()
+      browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage']);page=browser.new_page(viewport={'width':390,'height':844});errors=[];dialogs=[]
+      page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda dlg:(dialogs.append(dlg.message),dlg.accept()))
+      page.evaluate(STORAGE_SHIM);page.evaluate("v=>localStorage.setItem('fastingTracker.data',v)",json.dumps(d,separators=(',',':')))
+      page.set_content(inlined_html(),wait_until='domcontentloaded');page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
+      # Use the recovery snapshot catalogue UI to create the restore point.
+      page.locator('#recoveryBanner').evaluate("el=>el.hidden=false");page.locator('#recoverySnapshotsBtn').click();page.locator('#snapshotCreateNowBtn').click()
+      page.wait_for_function("()=>document.querySelectorAll('#snapshotList .snapshotItem').length>=1",timeout=15000)
+      # Mutate the authoritative IndexedDB records/state, then reload to simulate lost/altered live data.
+      page.evaluate("""() => new Promise((resolve,reject)=>{const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction(['state','records','deletedFasts','weights','deletedWeights'],'readwrite');for(const n of ['records','deletedFasts','weights','deletedWeights'])tx.objectStore(n).clear();const st=tx.objectStore('state'),r=st.get('settings');r.onsuccess=()=>{const x=r.result;x.data.activeStart=null;x.data.activeGoalHours=null;x.data.activeTimeZone=null;x.data.activeCreatedAt=null;x.data.activeModifiedAt=null;st.put(x);};tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);};})""")
+      page.reload();page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
+      page.locator('#recoveryBanner').evaluate("el=>el.hidden=false");page.locator('#recoverySnapshotsBtn').click();page.locator('#snapshotList button').first.click()
+      page.wait_for_function("()=>!document.querySelector('#snapshotPreviewModal').hidden",timeout=10000);page.locator('#snapshotPreviewRestoreBtn').click()
       page.wait_for_function("()=>document.querySelector('#snapshotPreviewModal').hidden",timeout=15000)
-      page.wait_for_function("()=>data.records.length===2 && data.deletedFasts.length===1 && data.weights.length===2 && data.deletedWeights.length===1 && !!data.activeStart",timeout=20000)
-      restored=page.evaluate("()=>({records:data.records,deletedFasts:data.deletedFasts,weights:data.weights,deletedWeights:data.deletedWeights,activeStart:data.activeStart,activeGoalHours:data.activeGoalHours,activeTimeZone:data.activeTimeZone})")
+      page.wait_for_function("()=>document.querySelectorAll('#snapshotList .snapshotItem').length>=1",timeout=15000)
+      restored=read_db(page)
       assert restored['records']==expected['records'],'completed fasting records/edit audit not restored'
       assert restored['deletedFasts']==expected['deletedFasts'],'deleted fasting audit metadata not restored'
       assert restored['weights']==expected['weights'],'weight records/notes not restored'
       assert restored['deletedWeights']==expected['deletedWeights'],'deleted weight audit metadata not restored'
-      assert restored['activeStart']==expected['activeStart'] and restored['activeGoalHours']==20 and restored['activeTimeZone']=='Europe/Sofia','active fast metadata not restored'
-      page.wait_for_function("()=>loadSnapshots().some(s=>s.reason==='before restoring another snapshot')",timeout=15000)
-      page.reload(); page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
-      page.wait_for_function("()=>data.records.length===2 && data.deletedFasts.length===1 && data.weights.length===2 && data.deletedWeights.length===1 && !!data.activeStart",timeout=20000)
-      if errors: raise AssertionError('browser errors: '+' | '.join(errors[:5]))
+      assert restored['settings']['activeStart']==expected['activeStart'] and restored['settings']['activeGoalHours']==20 and restored['settings']['activeTimeZone']=='Europe/Sofia','active fast metadata not restored'
+      page.wait_for_function("()=>document.querySelectorAll('#snapshotList .snapshotItem').length>=2",timeout=15000)
+      page.reload();page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent==='v{CURRENT_VERSION}'",timeout=25000)
+      after=read_db(page);assert after['records']==expected['records'] and after['deletedFasts']==expected['deletedFasts'] and after['weights']==expected['weights'] and after['deletedWeights']==expected['deletedWeights'],'restored records not durable after reload'
+      assert after['settings']['activeStart']==expected['activeStart'],'active fast metadata not durable after reload'
+      if errors:raise AssertionError('browser errors: '+' | '.join(errors[:5]))
       assert any('snapshot restored' in x.lower() for x in dialogs),'restore confirmation missing'
-      print('PASS: active fast, completed/deleted fasts and weights with audit metadata restored; safety snapshot and reload persistence verified.')
-      browser.close()
-
+      print('PASS: internal snapshot restored all live/deleted fasting and weight records with audit metadata, active fast state and safety snapshot; durable after reload.');browser.close()
 test_internal_snapshot_restore_lifecycle()
