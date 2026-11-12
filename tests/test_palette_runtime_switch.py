@@ -95,7 +95,7 @@ with sync_playwright() as p:
     assert restored["bg"] == general["bg"] and restored["accent"] == general["accent"], restored
     # Audit actual computed foreground/background pairs, not just palette tokens.
     page.locator("#settingsGroupData > summary").click()
-    page.wait_for_function("document.querySelector('#createSnapshotBtn') && !document.querySelector('#createSnapshotBtn').offsetParent === false")
+    page.wait_for_function("() => !!document.querySelector('#createSnapshotBtn')?.offsetParent")
     for theme in ("grayscale", "high-contrast-light", "high-contrast-dark",
                   "colorblind", "protanopia", "deuteranopia", "tritanopia"):
         selector.select_option(theme)
@@ -126,8 +126,8 @@ with sync_playwright() as p:
             const style = getComputedStyle(el);
             const color = style.color;
             const rawBackground = style.backgroundColor;
-            const alpha = rawBackground.match(/rgba?\\([^)]*[,/]\\s*([0-9.]+)\\s*\\)$/);
-            const background = rawBackground.includes('rgba') && alpha && Number(alpha[1]) === 0
+            const channels = rawBackground.match(/[0-9.]+/g) || [];
+            const background = channels.length >= 4 && Number(channels[3]) === 0
               ? fallback : rawBackground;
             return {selector, color, background, contrast:ratio(color, background)};
           };
