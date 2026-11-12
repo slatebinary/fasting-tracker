@@ -147,7 +147,14 @@
       if (!match) return null;
       return {entry,day,dayNumber:Math.floor(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))/86400000)};
     }).filter(Boolean).sort((x,y)=>x.dayNumber-y.dayNumber||String(x.entry.when).localeCompare(String(y.entry.when)));
-    const firstDayNumber=ordered[0].dayNumber,lastDayNumber=ordered[ordered.length-1].dayNumber,result=[];
+    const firstDayNumber=ordered[0].dayNumber,lastMeasurementDayNumber=ordered[ordered.length-1].dayNumber;
+    // Continue the latest rolling series through today's local calendar day.
+    // A trailing average remains valid after the last weigh-in while at least
+    // one real measurement is still inside its window; no raw measurement is
+    // created and the series naturally stops when the window becomes empty.
+    const todayMatch=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(dayKeyFast(new Date(),currentTimeZone()));
+    const todayDayNumber=todayMatch?Math.floor(Date.UTC(Number(todayMatch[1]),Number(todayMatch[2])-1,Number(todayMatch[3]))/86400000):lastMeasurementDayNumber;
+    const lastDayNumber=Math.max(lastMeasurementDayNumber,todayDayNumber),result=[];
     let end=0,start=0;
     // Sample once per calendar day, not only on measurement days. A rolling
     // average therefore remains a continuous daily series when measurements
