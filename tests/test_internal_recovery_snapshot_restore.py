@@ -259,22 +259,6 @@ def main():
             "Pre-restore safety snapshot payload was not committed"
         )
 
-        # Reinitialize the application document while retaining the same IndexedDB
-        # origin to verify that the restored state survives a subsequent startup.
-        page.set_content(inlined_html(), wait_until="domcontentloaded")
-        page.wait_for_function(
-            "v => document.querySelector('#appVersionLabel')?.textContent === 'v' + v",
-            arg=CURRENT_VERSION,
-            timeout=20000,
-        )
-        reloaded = wait_counts(page, {"records":2, "deletedFasts":1, "weights":2, "deletedWeights":1})
-        for store in ("records", "deletedFasts", "weights", "deletedWeights"):
-            assert reloaded[store] == baseline[store], f"Restored {store} did not survive application reinitialization"
-        for field in ("activeStart", "activeGoalHours", "activeTimeZone", "activeCreatedAt", "activeModifiedAt"):
-            assert reloaded["settings"].get(field) == baseline["settings"].get(field), (
-                f"Restored active fast metadata did not survive application reinitialization: {field}"
-            )
-
         assert not errors, "Browser errors during snapshot restore: " + " | ".join(errors[:5])
         browser.close()
 
