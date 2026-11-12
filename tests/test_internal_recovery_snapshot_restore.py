@@ -88,13 +88,14 @@ def audit_fields(row):
 def main():
     data = build_data(3)
     data["records"][0]["editHistory"] = [{
-        "at": "2026-11-01T10:00:00.000Z",
-        "field": "goalHours",
-        "from": 16,
-        "to": 18,
-        "reason": "snapshot audit regression",
+        "editedAt": "2026-11-01T10:00:00.000Z",
+        "editedTimeZone": "UTC",
+        "start": data["records"][0]["start"],
+        "end": data["records"][0]["end"],
+        "goalHours": 18,
+        "timeZone": "UTC",
+        "stopReason": None,
     }]
-    data["weights"][0]["note"] = "snapshot-weight-note"
     now = datetime.datetime.now(datetime.timezone.utc)
     active_start = (now - datetime.timedelta(hours=4)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     active_created = (now - datetime.timedelta(hours=5)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
