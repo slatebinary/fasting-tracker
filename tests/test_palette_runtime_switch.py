@@ -150,9 +150,16 @@ with sync_playwright() as p:
           const activeStyle = getComputedStyle(active);
           const activeBg = activeStyle.backgroundColor;
           const iconFilter = getComputedStyle(activeIcon).filter;
+          const primarySample = sample('#toggleFast', bg);
+          const toggle = document.querySelector('#toggleFast');
+          const originalClass = toggle.className;
+          toggle.classList.remove('primary');
+          toggle.classList.add('stop');
+          const stopSample = sample('#toggleFast', bg);
+          toggle.className = originalClass;
           const buttonSamples = [
-            sample('button.primary', bg),
-            sample('button.stop', bg),
+            primarySample,
+            stopSample,
             sample('#restoreSnapshotBtn', card),
             sample('button.dangerText', card)
           ];
