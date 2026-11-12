@@ -180,7 +180,7 @@ def worker_health(page):
 
 def wait_for_installed_release(page, version, active_start):
     page.wait_for_function(
-        "version => document.querySelector('meta[name=\"ft-app-version\"]')?.content === version",
+                "version => document.querySelector('meta[name=ft-app-version]')?.content === version",
         arg=version,
         timeout=90000,
     )
