@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 css = (ROOT / "src" / "app" / "styles.css").read_text(encoding="utf-8")
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 
-assert "@supports (-webkit-touch-callout: none)" in css
+assert "@supports (font: -apple-system-body)" in css
 assert "html { font: -apple-system-body; }" in css
 assert "body { font-size: calc(16 / 17 * 1em); }" in css
 assert "-webkit-text-size-adjust:100%" in css
