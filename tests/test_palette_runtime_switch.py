@@ -184,7 +184,50 @@ with sync_playwright() as p:
         for button in audit["buttonSamples"]:
             assert button["contrast"] >= 4.5, f"{theme}: button text contrast failed: {button}"
 
+    # Standard Light/Dark palettes must also expose readable navigation and card text.
+    page.locator('.tab[data-screen="stats"]').click()
+    page.wait_for_function("document.querySelector('#stats').classList.contains('active')")
+    page.wait_for_function("() => !document.querySelector('#statsTimelineView').hidden")
+    for theme in ("light", "dark"):
+        selector.select_option(theme)
+        page.wait_for_function("value => document.documentElement.dataset.theme === value", arg=theme)
+        standard = page.evaluate("""() => {
+          const contrast=(a,b)=>{
+            const rgb=v=>{const m=v.match(/[0-9.]+/g);return m.slice(0,3).map(Number).map(c=>{c/=255;return c<=.04045?c/12.92:((c+.055)/1.055)**2.4;});};
+            const lum=v=>{const c=rgb(v);return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+            const x=[lum(a),lum(b)].sort((a,b)=>b-a);return (x[0]+.05)/(x[1]+.05);
+          };
+          const nav=document.querySelector('nav'),active=document.querySelector('.tab.active');
+          const navBg=getComputedStyle(nav).backgroundColor,activeBg=getComputedStyle(active).backgroundColor;
+          const card=document.querySelector('#stats .card'),cardText=card.querySelector('h2');
+          return {navLabel:contrast(getComputedStyle(active).color,activeBg),
+            inactiveLabel:contrast(getComputedStyle(document.querySelector('.tab:not(.active)')).color,navBg),
+            cardText:contrast(getComputedStyle(cardText).color,getComputedStyle(card).backgroundColor),
+            chartVisible:!!document.querySelector('#statsTimelineView canvas')&&!document.querySelector('#statsTimelineView').hidden,
+            canvasSize:[document.querySelector('#statsTimelineView canvas').width,document.querySelector('#statsTimelineView canvas').height]};
+        }""")
+        assert standard["navLabel"] >= 4.5, f"{theme}: active navigation label contrast: {standard}"
+        assert standard["inactiveLabel"] >= 4.5, f"{theme}: inactive navigation label contrast: {standard}"
+        assert standard["cardText"] >= 4.5, f"{theme}: card heading contrast: {standard}"
+        assert standard["chartVisible"] and all(x>0 for x in standard["canvasSize"]), f"{theme}: chart missing: {standard}"
+
+    # App-icons installation details remain genuinely collapsible after palette changes.
+    page.locator('.tab[data-screen="settings"]').click()
+    group=page.locator("#settingsGroupAppIcons")
+    summary=group.locator(":scope > summary")
+    if await group.get_attribute("open") is not None:
+        summary.click()
+    assert await group.get_attribute("open") is None, "App icons group should collapse"
+    summary.click()
+    assert await group.get_attribute("open") is not None, "App icons group should expand"
+
+    # Reinitialise the document against the same browser storage and verify appearance restoration.
+    selector.select_option("protanopia")
+    page.wait_for_function("document.documentElement.dataset.theme === 'protanopia'")
+    page.set_content(inlined_html(), wait_until="domcontentloaded")
+    page.wait_for_function("v => document.querySelector('#appVersionLabel')?.textContent === 'v' + v", arg=VERSION, timeout=20000)
+    page.wait_for_function("document.documentElement.dataset.theme === 'protanopia'")
     assert not errors, errors[:5]
     browser.close()
 
-print("PASS: colour-vision and protanopia palettes apply distinct live tokens, surfaces and localized purpose hints")
+print("PASS: runtime accessibility palettes, standard themes, card/nav contrast, chart rendering, app-icon disclosure and appearance restoration")
