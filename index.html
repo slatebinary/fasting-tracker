@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.86" />
+  <meta name="ft-app-version" content="1.17.87" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1932,7 +1932,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.86';
+  const APP_VERSION = '1.17.87';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5898,7 +5898,14 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       if (!match) return null;
       return {entry,day,dayNumber:Math.floor(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))/86400000)};
     }).filter(Boolean).sort((x,y)=>x.dayNumber-y.dayNumber||String(x.entry.when).localeCompare(String(y.entry.when)));
-    const firstDayNumber=ordered[0].dayNumber,lastDayNumber=ordered[ordered.length-1].dayNumber,result=[];
+    const firstDayNumber=ordered[0].dayNumber,lastMeasurementDayNumber=ordered[ordered.length-1].dayNumber;
+    // Continue the latest rolling series through today's local calendar day.
+    // A trailing average remains valid after the last weigh-in while at least
+    // one real measurement is still inside its window; no raw measurement is
+    // created and the series naturally stops when the window becomes empty.
+    const todayMatch=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dayKeyFast(new Date(),currentTimeZone()));
+    const todayDayNumber=todayMatch?Math.floor(Date.UTC(Number(todayMatch[1]),Number(todayMatch[2])-1,Number(todayMatch[3]))/86400000):lastMeasurementDayNumber;
+    const lastDayNumber=Math.max(lastMeasurementDayNumber,todayDayNumber),result=[];
     let end=0,start=0;
     // Sample once per calendar day, not only on measurement days. A rolling
     // average therefore remains a continuous daily series when measurements
