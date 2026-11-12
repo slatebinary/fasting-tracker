@@ -47,7 +47,26 @@ def test_internal_snapshot_restore_lifecycle():
     d['deletedFasts']=[{'id':'deleted-fast-audit','start':'2026-10-20T10:00:00.000Z','end':'2026-10-21T02:00:00.000Z','goalHours':16,'timeZone':'UTC','deletedAt':'2026-10-21T03:00:00.000Z','deleteReason':'test deletion','editHistory':[{'at':'2026-10-20T12:00:00.000Z','field':'goalHours','from':16,'to':17,'reason':'audit'}]}]
     d['deletedWeights']=[{'id':'deleted-weight-audit','when':'2026-10-22T08:00:00.000Z','kg':79.2,'timeZone':'UTC','deletedAt':'2026-10-22T09:00:00.000Z','deleteReason':'test deletion'}];d['weights'][0]['note']='snapshot-weight-note';expected=json.loads(json.dumps(d))
     def read_db(page):
-        return page.evaluate("""()=>new Promise((resolve,reject)=>{const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction(['state','records','deletedFasts','weights','deletedWeights'],'readonly');const names=['records','deletedFasts','weights','deletedWeights'];const out={};let done=0;for(const n of names){const r=tx.objectStore(n).getAll();r.onsuccess=()=>{out[n]=r.result;if(++done===4){const st=tx.objectStore('state').get('settings');st.onsuccess=()=>resolve({ ...out,settings:st.result.data });}};}})""")
+        return page.evaluate("""() => new Promise((resolve, reject) => {
+          const request = indexedDB.open('FastingTrackerDB', 2);
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction(['state', 'records', 'deletedFasts', 'weights', 'deletedWeights'], 'readonly');
+            const result = {};
+            const names = ['records', 'deletedFasts', 'weights', 'deletedWeights'];
+            let remaining = names.length + 1;
+            const finish = () => { if (--remaining === 0) resolve(result); };
+            for (const name of names) {
+              const item = tx.objectStore(name).getAll();
+              item.onsuccess = () => { result[name] = item.result; finish(); };
+              item.onerror = () => reject(item.error);
+            }
+            const settings = tx.objectStore('state').get('settings');
+            settings.onsuccess = () => { result.settings = settings.result.data; finish(); };
+            settings.onerror = () => reject(settings.error);
+          };
+        })""")
     with sync_playwright() as p:
       browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage']);page=browser.new_page(viewport={'width':390,'height':844});errors=[];dialogs=[]
       page.on('pageerror',lambda e:errors.append(str(e)));dismiss_dialog=lambda dlg:(dialogs.append(dlg.message),dlg.dismiss());page.on('dialog',dismiss_dialog)
