@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.93" />
+  <meta name="ft-app-version" content="1.17.94" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -287,6 +287,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .tab { background: transparent; color: var(--muted); border-radius: 0; padding: 10px 4px 8px; font-size: 12px; font-weight: 600; }
     .tab .ico { display: block; font-size: 21px; line-height: 1.1; margin-bottom: 3px; }
     .tab.active { color: var(--accent); }
+    /* The default blue accent misses WCAG AA for active navigation on Light surfaces. */
+    html[data-theme="light"] .tab.active { color: #0054a6; }
 
     /* Color-Friendly navigation: strong neutral contrast and a non-colour-only active state. */
     html[data-theme="colorblind"] nav {
@@ -1932,7 +1934,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.93';
+  const APP_VERSION = '1.17.94';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
