@@ -8,8 +8,9 @@ css = (ROOT / "src" / "app" / "styles.css").read_text(encoding="utf-8")
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 
 assert "@supports (font: -apple-system-body)" in css
-assert "html { font: -apple-system-body; }" in css
-assert "body { font-size: calc(16 / 17 * 1em); }" in css
+assert "html { font: -apple-system-body; --ft-text-scale:calc(16 / 17); }" in css
+assert "body { font-size:calc(1rem * var(--ft-text-scale)); }" in css
+assert "--ft-text-scale:1;" in css
 assert "-webkit-text-size-adjust:100%" in css
 assert "text-size-adjust:100%" in css
 
@@ -22,8 +23,8 @@ for declaration in declarations:
     )
 
 # At the default iOS 17px body text size, preserve existing pixel baselines.
-assert "font-size: 1.7647rem" in css, "30px heading baseline was not preserved"
-assert "clamp(2rem, 10vw, 3.1765rem)" in css, "Timer clamp baseline was not preserved"
+assert "font-size: calc(1.7647rem * var(--ft-text-scale))" in css, "30px heading baseline was not preserved"
+assert "clamp(calc(2rem * var(--ft-text-scale)), 10vw, calc(3.1765rem * var(--ft-text-scale)))" in css, "Timer clamp baseline was not preserved"
 
 style = html.split("<style>", 1)[1].split("</style>", 1)[0]
 assert style == css, "Generated index stylesheet is out of sync with source"
