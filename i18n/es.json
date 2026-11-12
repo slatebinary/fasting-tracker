@@ -1082,9 +1082,9 @@
   "settings.paletteHint.protanopia": "Superficies doradas cálidas y un acento violeta, con éxito cian y avisos ocre. Diseñada para reducir la dependencia de la percepción del rojo; las etiquetas y los iconos refuerzan los estados.",
   "settings.paletteHint.deuteranopia": "Pensada para ayudar a personas con deuteranopia (percepción reducida del verde): utiliza distinciones entre verde azulado, azul y ciruela, en lugar de depender del contraste rojo-verde.",
   "settings.paletteHint.tritanopia": "Pensada para ayudar a personas con tritanopia (dificultad para distinguir azul y amarillo): utiliza rosa, burdeos, verde y óxido, en lugar de depender del contraste azul-amarillo.",
-  "weight.rollingChartHelp": "Cada punto es una media móvil de {days} días que termina en un día con una medición guardada. No se estiman los días sin datos.",
+  "weight.rollingChartHelp": "Cada punto es una media móvil de {days} días para ese día, calculada únicamente con las mediciones de la ventana anterior. Se omiten los días sin mediciones en esa ventana.",
   "weight.rollingPointDetail": "Media móvil de {days} días hasta {period}: {weight} • {count} {measurementWord} en la ventana. Media del periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord}).",
-  "weight.rollingDataRow": "{period} — media móvil de {weight} en {days} días • {count} {measurementWord} en la ventana • periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+  "weight.rollingDataRow": "{period} — media móvil de {days} días: {weight} • {count} {measurementWord} en la ventana",
   "unit.minute.one": "minuto",
   "unit.minute.other": "minutos",
   "unit.minute.zero": "minutos",
@@ -1127,5 +1127,6 @@
   "weight.rollingAverageMeta": "Hasta {date} · {count} {measurementWord} en esta ventana",
   "weight.calendarAverageTitle": "Promedio del período natural: {period}",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
-  "weight.noCalendarMeasurements": "No hay mediciones en este período natural."
+  "weight.noCalendarMeasurements": "No hay mediciones en este período natural.",
+  "weight.rollingDataCalendar": "Media del periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
 }

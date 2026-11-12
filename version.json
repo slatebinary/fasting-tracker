@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.83",
+  "version": "1.17.84",
   "released": "2026-11-11",
-  "notes": "Fill gaps in Rolling weight charts with daily trailing-average samples.",
+  "notes": "Clarify Rolling weight data rows and omit empty calendar comparisons.",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -92,7 +92,7 @@
   "hashes": {
     "./": "43b826475f099c12d77e0b6d6cb4f5457ab621b4f506f778f390fc780a6fbbbf",
     "./index.html": "43b826475f099c12d77e0b6d6cb4f5457ab621b4f506f778f390fc780a6fbbbf",
-    "./changelog.html": "4fcfd8eab1b306938739b52c590bd231063564f4b45ac7a53b268e62ceea6c7b",
+    "./changelog.html": "41a5f1c66d51f0c2bca604a31966f6d351589be70440eb1e38cebdb7dbff8fe2",
     "./i18n/en.js": "c64d439fd6600bd24fcf841fdab3778f7b06e0bd46234d3b5dc9951787113ea6",
     "./i18n/bg.js": "0eacd06a9a4ed29783210ac403bc49116f63219e5cb2ae7281340d33b8613e36",
     "./i18n/es.js": "2afa19c026de917e8605e8ab72c78a77dbbc63b4e465f97eb68bc2533a6b2ed2",

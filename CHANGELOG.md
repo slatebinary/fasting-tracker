@@ -1,3 +1,9 @@
+## v1.17.84 — 2026-11-11
+
+- Clarify Rolling weight-chart data rows by showing the trailing-window average and exact measurement count without empty calendar comparisons.
+- Show the calendar-period average only when that calendar period contains measurements.
+- Remove empty-calendar messages from selected Rolling point details and clarify daily rolling chart guidance in English, Bulgarian and Spanish.
+
 ## v1.17.83 — 2026-11-11
 
 - Sample Rolling weight charts once per calendar day between the first and latest measurement, filling gaps between weigh-ins.

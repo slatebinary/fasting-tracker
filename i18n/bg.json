@@ -1082,9 +1082,9 @@
   "settings.paletteHint.protanopia": "Топли златисти повърхности и виолетов акцент, с циан за успех и охра за предупреждение. Палитрата намалява зависимостта от възприемането на червения цвят; състоянията се подсилват с текст и икони.",
   "settings.paletteHint.deuteranopia": "Предназначена да подпомага хора с дейтеранопия (намалено възприемане на зеленото): използва тюркоазено, синьо и сливово вместо да разчита на контраст между червено и зелено.",
   "settings.paletteHint.tritanopia": "Предназначена да подпомага хора с тританопия (затруднено разграничаване на синьо и жълто): използва розово, бордо, зелено и ръждиви тонове вместо да разчита на контраст между синьо и жълто.",
-  "weight.rollingChartHelp": "Всяка точка е плъзгаща се средна стойност за {days} дни, завършваща на ден със записано измерване. Липсващите дни не се оценяват.",
+  "weight.rollingChartHelp": "Всяка точка е плъзгаща се средна стойност за {days} дни към съответния ден, изчислена само от измерванията в периода назад. Дните без измервания в този период се пропускат.",
   "weight.rollingPointDetail": "Плъзгаща се средна стойност за {days} дни към {period}: {weight} • {count} {measurementWord} в периода. Календарна средна стойност за {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord}).",
-  "weight.rollingDataRow": "{period} — плъзгаща се средна стойност {weight} за {days} дни • {count} {measurementWord} в периода • календарен период {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+  "weight.rollingDataRow": "{period} — плъзгаща се средна стойност за {days} дни: {weight} • {count} {measurementWord} в периода",
   "unit.minute.one": "минута",
   "unit.minute.other": "минути",
   "unit.minute.zero": "минути",
@@ -1127,5 +1127,6 @@
   "weight.rollingAverageMeta": "Към {date} · {count} {measurementWord} в този период",
   "weight.calendarAverageTitle": "Календарна средна стойност за {period}",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
-  "weight.noCalendarMeasurements": "Няма измервания за този календарен период."
+  "weight.noCalendarMeasurements": "Няма измервания за този календарен период.",
+  "weight.rollingDataCalendar": "Календарна средна стойност за {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
 }

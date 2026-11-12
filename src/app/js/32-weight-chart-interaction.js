@@ -145,8 +145,6 @@
             addDetailGroup('primary',t('weight.rollingAverageTitle',{days:bucket.rollingWindowDays}),formatWeight(bucket.averageKg,unit),t('weight.rollingAverageMeta',{date:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord,days:bucket.rollingWindowDays}));
             if(calendar&&calendar.count){
               addDetailGroup('context',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(calendar.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(calendar,weightPeriodMode),count:formatNumber(calendar.count),measurementWord:t(pluralKey('weight.measurement',calendar.count))}));
-            }else{
-              const empty=document.createElement('div');empty.className='weightPointDetailMeta weightPointDetailContext';empty.textContent=t('weight.noCalendarMeasurements');detail.append(empty);
             }
           }
         }
