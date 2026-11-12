@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.89",
+  "version": "1.17.90",
   "released": "2026-11-12",
-  "notes": "Add browser regression coverage for Weight History bulk selection, filter and range selection resets, auditable bulk deletion and restoration; no runtime behavior changes.",
+  "notes": "Add end-to-end browser regression coverage for internal recovery-snapshot creation and restoration, including active fast metadata, deleted-record audit trails and pre-restore safety snapshots; no runtime behavior changes.",
   "entry": "./index.html",
   "shell": [
     "./",
