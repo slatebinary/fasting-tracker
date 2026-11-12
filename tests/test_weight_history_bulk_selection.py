@@ -133,6 +133,19 @@ with sync_playwright() as p:
         "document.querySelector('#deletedWeightsCard').hidden && document.querySelectorAll('#weightHistoryList .historyRow').length === 7",
         timeout=10000,
     )
+    # save() queues IndexedDB persistence; wait for the committed store state,
+    # rather than reading the stores immediately after the synchronous UI render.
+    page.wait_for_function("""() => new Promise(resolve => {
+      const request = indexedDB.open('FastingTrackerDB', 2);
+      request.onsuccess = () => {
+        const tx = request.result.transaction(['weights', 'deletedWeights'], 'readonly');
+        const active = tx.objectStore('weights').getAll();
+        const deleted = tx.objectStore('deletedWeights').getAll();
+        tx.oncomplete = () => resolve(active.result.length === 12 && deleted.result.length === 0);
+        tx.onerror = () => resolve(false);
+      };
+      request.onerror = () => resolve(false);
+    })""", timeout=15000)
     counts = page.evaluate("""() => new Promise(resolve => {
       const request = indexedDB.open('FastingTrackerDB', 2);
       request.onsuccess = () => {
