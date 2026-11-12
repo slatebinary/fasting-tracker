@@ -207,6 +207,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .tab { background: transparent; color: var(--muted); border-radius: 0; padding: 10px 4px 8px; font-size: 12px; font-weight: 600; }
     .tab .ico { display: block; font-size: 21px; line-height: 1.1; margin-bottom: 3px; }
     .tab.active { color: var(--accent); }
+    /* The default blue accent misses WCAG AA for active navigation on Light surfaces. */
+    html[data-theme="light"] .tab.active { color: #0054a6; }
 
     /* Color-Friendly navigation: strong neutral contrast and a non-colour-only active state. */
     html[data-theme="colorblind"] nav {
