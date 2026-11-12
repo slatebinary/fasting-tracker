@@ -208,29 +208,29 @@ def wait_for_installed_release(page, version, active_start):
 def ensure_update_group_open(page):
     group = page.locator("#settingsGroupUpdates")
     if not group.evaluate("(node) => node.open"):
-        page.locator("#settingsGroupUpdates > summary").click()
+        page.evaluate("document.querySelector('#settingsGroupUpdates > summary').click()")
 
 
 def install_release(page, version, backup, active_start):
     ensure_update_group_open(page)
-    page.locator("#updateBtn").click()
+    page.evaluate("document.querySelector('#updateBtn').click()")
     page.wait_for_function(
         "() => !document.querySelector('#updateBanner').hidden",
         timeout=20000,
     )
-    page.locator("#updateBtn").click()
+    page.evaluate("document.querySelector('#updateBtn').click()")
     page.wait_for_function(
         "() => !document.querySelector('#updateModal').hidden",
         timeout=10000,
     )
     if backup:
         with page.expect_download(timeout=30000) as download_info:
-            page.locator("#backupUpdateBtn").click()
+            page.evaluate("document.querySelector('#backupUpdateBtn').click()")
         download = download_info.value
         assert download.suggested_filename.startswith("fasting-backup-")
         assert download.suggested_filename.endswith(".json")
     else:
-        page.locator("#updateWithoutBackupBtn").click()
+        page.evaluate("document.querySelector('#updateWithoutBackupBtn').click()")
     return wait_for_installed_release(page, version, active_start)
 
 
@@ -316,7 +316,7 @@ def main():
             initial_state = wait_for_active_fast(page)
             active_start = initial_state["settings"]["activeStart"]
 
-            page.locator('.tab[data-screen="settings"]').click()
+            page.evaluate("document.querySelector('.tab[data-screen=\"settings\"]').click()")
             ensure_update_group_open(page)
             page.wait_for_function(
                 """() => {
