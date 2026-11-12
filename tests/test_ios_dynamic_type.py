@@ -14,6 +14,14 @@ assert "--ft-text-scale:1;" in css
 assert "-webkit-text-size-adjust:100%" in css
 assert "text-size-adjust:100%" in css
 
+# Dynamic Type must not let fixed-mode labels or bottom navigation escape their controls.
+assert "#weightChartStyleSwitcher { grid-template-columns:repeat(2,minmax(0,1fr)); }" in css
+assert "#weightChartStyleSwitcher button" in css and "white-space:normal" in css
+assert ".tabs { max-width: 720px; min-width: 0;" in css
+assert "grid-template-columns: repeat(5, minmax(0, 1fr))" in css
+assert ".tab > span:not(.ico)" in css and "overflow-wrap: anywhere" in css
+assert "max(78px, 3.6rem * var(--ft-text-scale))" in css
+
 # All authored CSS font sizes and pixel-based font shorthands must scale.
 declarations = re.findall(r"(?:font-size|font)\s*:\s*([^;}]+)", css)
 assert declarations, "No application typography declarations found"
