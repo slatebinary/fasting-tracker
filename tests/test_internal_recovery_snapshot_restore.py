@@ -87,6 +87,14 @@ def audit_fields(row):
 
 def main():
     data = build_data(3)
+    data["records"][0]["editHistory"] = [{
+        "at": "2026-11-01T10:00:00.000Z",
+        "field": "goalHours",
+        "from": 16,
+        "to": 18,
+        "reason": "snapshot audit regression",
+    }]
+    data["weights"][0]["note"] = "snapshot-weight-note"
     now = datetime.datetime.now(datetime.timezone.utc)
     active_start = (now - datetime.timedelta(hours=4)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     active_created = (now - datetime.timedelta(hours=5)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -198,10 +206,10 @@ def main():
         )
 
         restored = wait_counts(page, {"records":2, "deletedFasts":1, "weights":2, "deletedWeights":1})
-        assert ids(restored["records"]) == ids(baseline["records"]), "Completed fasting records were not restored"
-        assert ids(restored["deletedFasts"]) == ids(baseline["deletedFasts"]), "Deleted fasting audit records were not restored"
-        assert ids(restored["weights"]) == ids(baseline["weights"]), "Active weight measurements were not restored"
-        assert ids(restored["deletedWeights"]) == ids(baseline["deletedWeights"]), "Deleted weight audit records were not restored"
+        assert restored["records"] == baseline["records"], "Completed fasting records and edit audit metadata were not fully restored"
+        assert restored["deletedFasts"] == baseline["deletedFasts"], "Deleted fasting audit records were not fully restored"
+        assert restored["weights"] == baseline["weights"], "Active weight measurements and notes were not fully restored"
+        assert restored["deletedWeights"] == baseline["deletedWeights"], "Deleted weight audit records were not fully restored"
 
         for field in ("activeStart", "activeGoalHours", "activeTimeZone", "activeCreatedAt", "activeModifiedAt"):
             assert restored["settings"].get(field) == baseline["settings"].get(field), (
