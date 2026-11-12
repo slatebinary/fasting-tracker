@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.88",
+  "version": "1.17.89",
   "released": "2026-11-12",
-  "notes": "Make Goals / Months comparisons follow the selected month column, with previous-month and same-month-last-year baselines relative to that selection.",
+  "notes": "Add browser regression coverage for Weight History bulk selection, filter and range selection resets, auditable bulk deletion and restoration; no runtime behavior changes.",
   "entry": "./index.html",
   "shell": [
     "./",
