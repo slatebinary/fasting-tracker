@@ -141,8 +141,10 @@ def main():
 
         # Save a named internal snapshot through the actual Settings workflow.
         page.locator('.tab[data-screen="settings"]').click()
-        page.locator("#settingsGroupAdvanced > summary").click()
-        page.locator("#settingsGroupData > summary").click()
+        for selector in ("#settingsGroupAdvanced", "#settingsGroupData"):
+            group = page.locator(selector)
+            if not group.evaluate("(node) => node.open"):
+                page.locator(f"{selector} > summary").click()
         page.locator("#createSnapshotBtn").click()
         page.wait_for_function("!document.querySelector('#manualSnapshotModal').hidden")
         page.locator("#manualSnapshotLabel").fill(LABEL)
@@ -179,8 +181,10 @@ def main():
 
         # Open the snapshot catalogue, preview the named point, and restore it.
         page.locator('.tab[data-screen="settings"]').click()
-        page.locator("#settingsGroupAdvanced > summary").click()
-        page.locator("#settingsGroupData > summary").click()
+        for selector in ("#settingsGroupAdvanced", "#settingsGroupData"):
+            group = page.locator(selector)
+            if not group.evaluate("(node) => node.open"):
+                page.locator(f"{selector} > summary").click()
         page.locator("#restoreSnapshotBtn").click()
         page.wait_for_function("!document.querySelector('#snapshotModal').hidden")
         page.locator("#snapshotList .snapshotItem").filter(has_text=LABEL).locator("button").click()
