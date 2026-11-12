@@ -93,6 +93,82 @@ with sync_playwright() as p:
     page.wait_for_function("document.documentElement.dataset.theme === 'colorblind'")
     restored = palette()
     assert restored["bg"] == general["bg"] and restored["accent"] == general["accent"], restored
+    # Audit actual computed foreground/background pairs, not just palette tokens.
+    page.locator("#settingsGroupData > summary").click()
+    page.wait_for_function("document.querySelector('#createSnapshotBtn') && !document.querySelector('#createSnapshotBtn').offsetParent === false")
+    for theme in ("grayscale", "high-contrast-light", "high-contrast-dark",
+                  "colorblind", "protanopia", "deuteranopia", "tritanopia"):
+        selector.select_option(theme)
+        page.wait_for_function("value => document.documentElement.dataset.theme === value", arg=theme)
+        audit = page.evaluate("""() => {
+          const root = getComputedStyle(document.documentElement);
+          const parse = value => {
+            const parts = String(value).match(/[0-9.]+/g);
+            if (!parts || parts.length < 3) throw new Error('Unparseable colour: ' + value);
+            return parts.slice(0,3).map(Number);
+          };
+          const luminance = value => {
+            const channels = parse(value).map(channel => {
+              const c = channel / 255;
+              return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+            });
+            return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+          };
+          const ratio = (foreground, background) => {
+            const values = [luminance(foreground), luminance(background)].sort((a,b) => b-a);
+            return (values[0] + 0.05) / (values[1] + 0.05);
+          };
+          const bg = root.getPropertyValue('--bg').trim();
+          const card = root.getPropertyValue('--card').trim();
+          const sample = (selector, fallback) => {
+            const el = document.querySelector(selector);
+            if (!el) throw new Error('Missing accessibility sample: ' + selector);
+            const style = getComputedStyle(el);
+            const color = style.color;
+            const rawBackground = style.backgroundColor;
+            const alpha = rawBackground.match(/rgba?\\([^)]*[,/]\\s*([0-9.]+)\\s*\\)$/);
+            const background = rawBackground.includes('rgba') && alpha && Number(alpha[1]) === 0
+              ? fallback : rawBackground;
+            return {selector, color, background, contrast:ratio(color, background)};
+          };
+          const title = document.querySelector('#settingsGroupAppIcons > summary .settingsIconSectionCopy > strong');
+          const subtitle = document.querySelector('#settingsGroupAppIcons > summary .settingsIconSectionCopy > .small');
+          const nav = document.querySelector('nav');
+          const active = document.querySelector('nav .tab.active');
+          const activeIcon = active?.querySelector('.ico');
+          const inactiveIcon = document.querySelector('nav .tab:not(.active) .ico');
+          if (!title || !subtitle || !nav || !active || !activeIcon || !inactiveIcon) {
+            throw new Error('Missing navigation or App icons & installation accessibility sample');
+          }
+          const navBg = getComputedStyle(nav).backgroundColor;
+          const activeStyle = getComputedStyle(active);
+          const activeBg = activeStyle.backgroundColor;
+          const iconFilter = getComputedStyle(activeIcon).filter;
+          const buttonSamples = [
+            sample('button.primary', bg),
+            sample('button.stop', bg),
+            sample('#createSnapshotBtn', card),
+            sample('button.dangerText', card)
+          ];
+          return {
+            titleContrast:ratio(getComputedStyle(title).color, bg),
+            subtitleContrast:ratio(getComputedStyle(subtitle).color, bg),
+            activeTabContrast:ratio(activeStyle.color, activeBg),
+            activeIconContrast:ratio(getComputedStyle(activeIcon).color, activeBg),
+            inactiveIconContrast:ratio(getComputedStyle(inactiveIcon).color, navBg),
+            iconFilter,
+            buttonSamples
+          };
+        }""")
+        assert audit["titleContrast"] >= 4.5, f"{theme}: App icons & installation title contrast failed: {audit}"
+        assert audit["subtitleContrast"] >= 4.5, f"{theme}: App icons & installation subtitle contrast failed: {audit}"
+        assert audit["activeTabContrast"] >= 4.5, f"{theme}: active navigation label contrast failed: {audit}"
+        assert audit["activeIconContrast"] >= 4.5, f"{theme}: active navigation icon contrast failed: {audit}"
+        assert audit["inactiveIconContrast"] >= 4.5, f"{theme}: inactive navigation icon contrast failed: {audit}"
+        assert "grayscale(1)" in audit["iconFilter"], f"{theme}: navigation icon must not rely on colour: {audit}"
+        for button in audit["buttonSamples"]:
+            assert button["contrast"] >= 4.5, f"{theme}: button text contrast failed: {button}"
+
     assert not errors, errors[:5]
     browser.close()
 
