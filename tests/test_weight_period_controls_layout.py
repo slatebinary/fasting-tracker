@@ -86,6 +86,7 @@ with sync_playwright() as p:
           const d = new Date(Date.now() - 15 * 86400000);
           return d.toISOString().slice(0, 10);
         }""")
+        page.locator("#weightTools > summary").click()
         page.locator("#weightFilterFrom").fill(from_date)
         page.wait_for_function(
             "document.querySelectorAll('#weightHistoryList .historyRow').length === 7",
