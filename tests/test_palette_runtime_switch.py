@@ -95,7 +95,7 @@ with sync_playwright() as p:
     assert restored["bg"] == general["bg"] and restored["accent"] == general["accent"], restored
     # Audit actual computed foreground/background pairs, not just palette tokens.
     page.locator("#settingsGroupData > summary").click()
-    page.wait_for_function("() => !!document.querySelector('#createSnapshotBtn')?.offsetParent")
+    page.wait_for_function("() => !!document.querySelector('#restoreSnapshotBtn')?.offsetParent")
     for theme in ("grayscale", "high-contrast-light", "high-contrast-dark",
                   "colorblind", "protanopia", "deuteranopia", "tritanopia"):
         selector.select_option(theme)
@@ -153,7 +153,7 @@ with sync_playwright() as p:
           const buttonSamples = [
             sample('button.primary', bg),
             sample('button.stop', bg),
-            sample('#createSnapshotBtn', card),
+            sample('#restoreSnapshotBtn', card),
             sample('button.dangerText', card)
           ];
           return {
