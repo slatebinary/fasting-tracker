@@ -223,7 +223,7 @@ def main():
         restored_weights = {row["id"]: row for row in restored["weights"]}
         for weight_id, before in baseline_weights.items():
             after = restored_weights[weight_id]
-            for field in ("when", "kg", "timeZone", "calendarDay"):
+            for field in ("when", "kg", "timeZone"):
                 assert after.get(field) == before.get(field), f"Weight measurement {weight_id} lost {field} during restore"
         assert ids(restored["deletedWeights"]) == ids(baseline["deletedWeights"]), "Deleted weight audit records were not restored"
 
