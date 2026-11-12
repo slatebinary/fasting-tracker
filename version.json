@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.17.96",
   "released": "2026-11-12",
-  "notes": "Fix very-large iOS Dynamic Type overflow in Weight mode controls and keep all bottom navigation destinations accessible.",
+  "notes": "Improve very-large iOS Dynamic Type layouts across Weight controls, chart callouts, statistics placement and bottom navigation.",
   "entry": "./index.html",
   "shell": [
     "./",
