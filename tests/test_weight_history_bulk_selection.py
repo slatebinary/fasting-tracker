@@ -47,6 +47,8 @@ with sync_playwright() as p:
         "document.querySelector('#weight.screen')?.classList.contains('active')",
         timeout=5000,
     )
+    page.locator("#weightTools > summary").click()
+    page.wait_for_function("document.querySelector('#weightTools')?.open === true", timeout=5000)
     rows = page.locator("#weightHistoryList .historyRow")
     page.wait_for_function(
         "document.querySelectorAll('#weightHistoryList .historyRow').length === 7",
@@ -81,7 +83,6 @@ with sync_playwright() as p:
 
     # Changing a date filter clears the selection and returns to the compact view.
     from_date = (now - datetime.timedelta(days=3)).date().isoformat()
-    page.locator("#weightTools > summary").click()
     page.locator("#weightFilterFrom").fill(from_date)
     page.wait_for_function(
         "document.querySelectorAll('#weightHistoryList .historyRow input[type=checkbox]:checked').length === 0",
