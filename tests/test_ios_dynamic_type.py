@@ -8,7 +8,7 @@ css = (ROOT / "src" / "app" / "styles.css").read_text(encoding="utf-8")
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 
 assert "@supports (font: -apple-system-body)" in css
-assert "html { font: -apple-system-body; --ft-text-scale:calc(16 / 17); }" in css
+assert "html { font: -apple-system-body; --ft-text-scale:0.9411764706; }" in css
 assert "body { font-size:calc(1rem * var(--ft-text-scale)); }" in css
 assert "--ft-text-scale:1;" in css
 assert "-webkit-text-size-adjust:100%" in css
