@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fault regressions: detect snapshot corruption and reject tampered v2 backups without changing live data."""
 from pathlib import Path
-import json, tempfile, sys
+import json, tempfile, sys, hashlib
 from playwright.sync_api import sync_playwright
 CURRENT_VERSION=json.loads((Path(__file__).resolve().parents[1] / 'version.json').read_text(encoding='utf-8'))['version']
 from browser_perf_common import STORAGE_SHIM, inlined_html
@@ -47,12 +47,9 @@ with sync_playwright() as p:
     assert any('not a valid' in m.lower() for m in dialogs), dialogs
     # An unknown checksum algorithm must be rejected even when the payload has a valid SHA-256 digest.
     # This prevents the verifier from silently treating an unrecognized algorithm label as SHA-256.
-    unknown_algorithm=page.evaluate("""async backup => {
-      const canonical=window.FTIntegrity.stableStringify(backup.data);
-      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical));
-      backup.integrity={scope:'data',algorithm:'SHA-512',digest:[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('')};
-      return backup;
-    }""",raw)
+    canonical=json.dumps(raw['data'],sort_keys=True,separators=(',',':'),ensure_ascii=False)
+    unknown_algorithm=json.loads(json.dumps(raw))
+    unknown_algorithm['integrity']={'scope':'data','algorithm':'SHA-512','digest':hashlib.sha256(canonical.encode('utf-8')).hexdigest()}
     unknown_path=Path(tmp).with_name('unknown-algorithm.json')
     unknown_path.write_text(json.dumps(unknown_algorithm),encoding='utf-8')
     dialogs.clear(); page.set_input_files('#importFile',str(unknown_path)); page.wait_for_timeout(500)
