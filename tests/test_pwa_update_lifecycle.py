@@ -92,6 +92,12 @@ class Handler(SimpleHTTPRequestHandler):
         if path == PREFIX + "version.json":
             self._send_dynamic(json.dumps(state["metadata"]), "application/json; charset=utf-8")
             return
+        if path.startswith(PREFIX) and path.endswith("/"):
+            relative = path[len(PREFIX):].strip("/")
+            target = ROOT / relative / "index.html"
+            if target.is_file():
+                self._send_dynamic(target.read_bytes(), "text/html; charset=utf-8")
+                return
         super().do_GET()
 
     def log_message(self, *_args):
