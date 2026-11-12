@@ -103,7 +103,13 @@ with sync_playwright() as p:
         audit = page.evaluate("""() => {
           const root = getComputedStyle(document.documentElement);
           const parse = value => {
-            const parts = String(value).match(/[0-9.]+/g);
+            const raw = String(value).trim();
+            if (raw.startsWith('#')) {
+              let hex = raw.slice(1);
+              if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+              if (hex.length === 6) return [0,2,4].map(index => parseInt(hex.slice(index,index+2),16));
+            }
+            const parts = raw.match(/[0-9.]+/g);
             if (!parts || parts.length < 3) throw new Error('Unparseable colour: ' + value);
             return parts.slice(0,3).map(Number);
           };
