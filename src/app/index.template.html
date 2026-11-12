@@ -254,17 +254,6 @@ layout: null
         <div class="weightTargetWrap"><input id="weightTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" aria-label="Target weight" data-i18n-aria="weight.target"><span id="weightTargetUnit">kg</span></div>
       </div>
     </div>
-    <div class="card weightStatsCard">
-      <h2 data-i18n="weight.statistics">Weight statistics</h2>
-      <div class="grid weightStatsGrid">
-        <div class="metric"><div class="value weightValue" id="wPeriodStart">—</div><div class="label" data-i18n="weight.periodStart">Start</div></div>
-        <div class="metric"><div class="value weightValue" id="wPeriodEnd">—</div><div class="label" data-i18n="weight.periodEnd">Latest</div></div>
-        <div class="metric"><div class="value weightValue" id="wPeriodChange">—</div><div class="label" data-i18n="weight.periodChange">Change</div></div>
-        <div class="metric"><div class="value weightValue" id="wPeriodAverage">—</div><div class="label" data-i18n="weight.average">Average</div></div>
-        <div class="metric"><div class="value weightValue" id="wPeriodLow">—</div><div class="label" data-i18n="weight.lowest">Lowest</div></div>
-        <div class="metric"><div class="value weightValue" id="wPeriodHigh">—</div><div class="label" data-i18n="weight.highest">Highest</div></div>
-      </div>
-    </div>
     <div class="card weightChartWrap">
       <h2 data-i18n="weight.trend">Weight trend</h2>
       <div class="weightPeriodSwitcher" id="weightChartStyleSwitcher" role="group" aria-label="Weight aggregation mode"><button type="button" data-weight-style="rolling" class="active" aria-pressed="true" data-i18n="weight.modeRolling">Rolling</button><button type="button" data-weight-style="fixed" aria-pressed="false" data-i18n="weight.modeFixed">Fixed periods</button></div>
@@ -294,6 +283,17 @@ layout: null
       <div class="weightPointDetail small" id="weightChartDetail" role="status" aria-live="polite" hidden></div>
       <button id="weightChartDataBtn" class="secondary" type="button" aria-expanded="false" data-i18n="a11y.showChartData">Show chart data</button>
       <div id="weightChartData" class="chartDataList small" hidden></div>
+    </div>
+    <div class="card weightStatsCard">
+      <h2 data-i18n="weight.statistics">Weight statistics</h2>
+      <div class="grid weightStatsGrid">
+        <div class="metric"><div class="value weightValue" id="wPeriodStart">—</div><div class="label" data-i18n="weight.periodStart">Start</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodEnd">—</div><div class="label" data-i18n="weight.periodEnd">Latest</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodChange">—</div><div class="label" data-i18n="weight.periodChange">Change</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodAverage">—</div><div class="label" data-i18n="weight.average">Average</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodLow">—</div><div class="label" data-i18n="weight.lowest">Lowest</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodHigh">—</div><div class="label" data-i18n="weight.highest">Highest</div></div>
+      </div>
     </div>
     <div class="card weightHistory"><div class="historyListControls weightHistoryControls" id="weightHistoryControls"><span class="small historyVisibleCount" id="weightHistoryVisibleCount" aria-live="polite"></span><div class="historyRangeActions"><button id="weightHistoryMoreBtn" class="secondary" type="button" aria-expanded="false" aria-controls="weightHistoryRange" data-i18n="history.rangeMore">More…</button><select id="weightHistoryRange" aria-label="Older weight history range" data-i18n-aria="weight.historyRangeAria" hidden><option value="" selected disabled data-i18n="history.rangePrompt">Period</option><option value="month" data-i18n="history.range.month">1 mo</option><option value="halfyear" data-i18n="history.range.halfyear">6 mo</option><option value="year" data-i18n="history.range.year">1 yr</option><option value="all" data-i18n="history.range.all">All</option></select></div></div><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
     <div class="card" id="deletedWeightsCard" style="margin-top:14px" hidden>
