@@ -38,17 +38,18 @@ with sync_playwright() as p:
 
     def select_month(index):
         return page.locator('#fastMonthsChart').evaluate(
-            """(canvas,index,count)=>{
+            """(canvas,arg)=>{
+              const {index,count}=arg;
               const w=canvas.clientWidth||660,h=canvas.clientHeight||220,left=44,right=10,plotW=w-left-right;
               const gap=count>80?0.25:Math.max(2,Math.min(10,plotW/(count*5)));
               const barW=Math.max(.35,(plotW-gap*(count-1))/count);
-              const x=left+index*(barW+gap)+barW/2,y= Math.min(h-45,Math.max(25,80));
+              const x=left+index*(barW+gap)+barW/2,y=Math.min(h-45,Math.max(25,80));
               const r=canvas.getBoundingClientRect(),clientX=r.left+x,clientY=r.top+y;
               const common={bubbles:true,cancelable:true,pointerId:33,pointerType:'mouse',button:0};
               canvas.dispatchEvent(new PointerEvent('pointerdown',{...common,clientX,clientY}));
               canvas.dispatchEvent(new PointerEvent('pointerup',{...common,clientX,clientY}));
               return {x,y};
-            }""",index,month_count
+            }""",{"index":index,"count":month_count}
         )
     def assert_selected_month(index):
         select_month(index)
