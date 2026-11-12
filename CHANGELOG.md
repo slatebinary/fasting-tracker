@@ -1,3 +1,10 @@
+## v1.17.89 — 2026-11-12
+
+- Add end-to-end browser coverage for selecting visible Weight History measurements and checking live selection counts and action states.
+- Verify that date-filter and history-range changes clear stale selections.
+- Verify bulk deletion moves selected measurements to Recently Deleted and bulk restoration returns all records without data loss.
+- No runtime behaviour changes.
+
 ## v1.17.88 — 2026-11-12
 
 - Make the Fasting Patterns → Goals → Months comparison follow the selected month column instead of always showing the latest month.
