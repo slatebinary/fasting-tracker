@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.90",
+  "version": "1.17.91",
   "released": "2026-11-12",
-  "notes": "Add end-to-end browser regression coverage for internal recovery-snapshot creation and restoration, including active fast metadata, deleted-record audit trails and pre-restore safety snapshots; no runtime behavior changes.",
+  "notes": "Extend browser accessibility regression coverage to measure computed contrast for primary, stop, secondary and destructive-action buttons, navigation labels/icons, and the App icons & installation heading across all accessibility palettes; no runtime behavior changes.",
   "entry": "./index.html",
   "shell": [
     "./",
