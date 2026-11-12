@@ -189,8 +189,15 @@ with sync_playwright() as p:
     page.wait_for_function("document.querySelector('#stats').classList.contains('active')")
     page.wait_for_function("() => !document.querySelector('#statsTimelineView').hidden")
     for theme in ("light", "dark"):
+        # Appearance controls live in Settings; switch there before changing the theme.
+        page.locator('.tab[data-screen="settings"]').click()
+        page.wait_for_function("document.querySelector('#settings').classList.contains('active')")
+        selector = page.locator("#appearanceSelect")
         selector.select_option(theme)
         page.wait_for_function("value => document.documentElement.dataset.theme === value", arg=theme)
+        page.locator('.tab[data-screen="stats"]').click()
+        page.wait_for_function("document.querySelector('#stats').classList.contains('active')")
+        page.wait_for_function("() => !document.querySelector('#statsTimelineView').hidden")
         standard = page.evaluate("""() => {
           const contrast=(a,b)=>{
             const rgb=v=>{const m=v.match(/[0-9.]+/g);return m.slice(0,3).map(Number).map(c=>{c/=255;return c<=.04045?c/12.92:((c+.055)/1.055)**2.4;});};
