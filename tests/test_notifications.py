@@ -103,7 +103,7 @@ with sync_playwright() as p:
       window.__ftReleaseTarget();
       window.__ftReleaseWeighIn();
     }""")
-    page.wait_for_function("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-target-')).length === 1 && window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-weigh-')).length === 1",timeout=5000)
+    page.wait_for_function("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-target-')).length === 1 && window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-safety-')).length === 1 && window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-weigh-')).length === 1",timeout=5000)
     sent=page.evaluate("window.__ftNotifications.map(x=>x.title)")
     if not any('target' in x.lower() for x in sent) or not any('safety' in x.lower() for x in sent):
         print('FAIL: enabling notifications did not emit due target + safety alerts:',sent); sys.exit(1)
