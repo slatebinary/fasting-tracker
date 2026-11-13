@@ -1,3 +1,9 @@
+## v1.17.103 — 2026-11-13
+
+- Add consistent internal padding and an inset card surface to the Weight primary chart callout, including “7-day rolling average” and its value, so the text no longer touches the callout edges.
+- Preserve rolling-average calculations, selected-period subtitle badge, chart behavior, and stored weight data.
+- Add regression coverage for primary callout padding.
+
 ## v1.17.102 — 2026-11-13
 
 - Give the selected Weight period/count subtitle (for example, “November 2026 · 12 measurements”) its own dark translucent badge with a white border, rounded corners, and bold white text, clearly distinct from the blue summary panel.
