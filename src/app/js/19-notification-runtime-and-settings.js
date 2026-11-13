@@ -44,8 +44,9 @@
   // separate-tab checks for each fasting notification type.
   const notificationDeliveryPromises = new Map();
 
-  async function sendDeduplicatedNotification({lockName, tokenKey, reservationKey, token, isDue, deliver}) {
-    if (notificationDeliveryPromises.has(lockName)) return notificationDeliveryPromises.get(lockName);
+  async function sendDeduplicatedNotification({tokenKey, reservationKey, token, isDue, deliver}) {
+    const promiseKey = `${tokenKey}:${token}`;
+    if (notificationDeliveryPromises.has(promiseKey)) return notificationDeliveryPromises.get(promiseKey);
     const run = async () => {
       notificationRuntimeState = loadNotificationRuntimeState();
       if (!isDue() || notificationRuntimeState[tokenKey] === token) return false;
@@ -65,12 +66,14 @@
         saveNotificationRuntimeState();
       }
     };
+    // One shared Web Lock also prevents different fasting alerts from racing
+    // while they update the shared persisted notification state.
     const operation = typeof navigator.locks?.request === 'function'
-      ? navigator.locks.request(lockName, run)
+      ? navigator.locks.request('fasting-tracker-fast-notification-delivery', run)
       : run();
-    notificationDeliveryPromises.set(lockName, operation);
+    notificationDeliveryPromises.set(promiseKey, operation);
     try { return await operation; }
-    finally { if (notificationDeliveryPromises.get(lockName) === operation) notificationDeliveryPromises.delete(lockName); }
+    finally { if (notificationDeliveryPromises.get(promiseKey) === operation) notificationDeliveryPromises.delete(promiseKey); }
   }
 
   async function maybeNotifyTargetReached(nowMs = Date.now()) {
@@ -82,7 +85,6 @@
     if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
     const token = `${start}|${target}`;
     return sendDeduplicatedNotification({
-      lockName:'fasting-tracker-target-reached-notification',
       tokenKey:'targetReachedToken',
       reservationKey:'targetReachedReservation',
       token,
@@ -98,7 +100,6 @@
     if (!Number.isFinite(startMs) || nowMs < startMs + 24 * 3600000) return false;
     const token = String(start);
     return sendDeduplicatedNotification({
-      lockName:'fasting-tracker-long-fast-safety-notification',
       tokenKey:'longFastSafetyToken',
       reservationKey:'longFastSafetyReservation',
       token,
@@ -120,7 +121,6 @@
     if (cycleEnd < enabledAt.getTime()) return false;
     const token = String(record.id);
     return sendDeduplicatedNotification({
-      lockName:'fasting-tracker-cycle-complete-notification',
       tokenKey:'cycleCompleteToken',
       reservationKey:'cycleCompleteReservation',
       token,
