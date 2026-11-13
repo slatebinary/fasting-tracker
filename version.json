@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.98",
+  "version": "1.17.99",
   "released": "2026-11-13",
-  "notes": "Improve Weight calendar callout subtitle contrast for readability.",
+  "notes": "Use white semibold Weight calendar subtitle for maximum contrast.",
   "entry": "./index.html",
   "shell": [
     "./",
