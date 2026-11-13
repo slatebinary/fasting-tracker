@@ -1,8 +1,8 @@
 ## v1.17.102 — 2026-11-13
 
-- Refine the actual Weight period-summary subtitle: keep it white and bold while reducing it slightly below the upper heading (0.7059rem versus 0.7647rem).
-- Preserve the chart callout styling, period aggregation, layout and stored weight data.
-- Extend regression coverage to verify the white bold subtitle and its smaller size relative to the upper heading.
+- Give the selected Weight period/count subtitle (for example, “November 2026 · 12 measurements”) its own dark translucent badge with a white border, rounded corners, and bold white text, clearly distinct from the blue summary panel.
+- Preserve the main heading, weight value, chart callout behavior, period aggregation, and stored weight data.
+- Add regression coverage for the distinct subtitle badge.
 
 ## v1.17.101 — 2026-11-13
 
