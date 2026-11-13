@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.101",
+  "version": "1.17.102",
   "released": "2026-11-13",
-  "notes": "Serialize fasting alerts to prevent duplicate notifications.",
+  "notes": "Refine Weight period-summary subtitle hierarchy and contrast.",
   "entry": "./index.html",
   "shell": [
     "./",
