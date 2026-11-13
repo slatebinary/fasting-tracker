@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.100",
+  "version": "1.17.101",
   "released": "2026-11-13",
-  "notes": "Use larger bold white text for the Weight period summary subtitle.",
+  "notes": "Serialize fasting alerts to prevent duplicate notifications.",
   "entry": "./index.html",
   "shell": [
     "./",
