@@ -1124,7 +1124,7 @@
   "weight.historyLastCount": "Últimas {n} mediciones",
   "weight.fixedChartHelp": "Cada punto muestra el promedio de las mediciones guardadas durante ese período natural. Se omiten los períodos sin mediciones.",
   "weight.rollingAverageTitle": "Media móvil de {days} días",
-  "weight.rollingAverageMeta": "Hasta {date} · {count} {measurementWord} en esta ventana",
+  "weight.rollingAverageMeta": "Ventana {date} · {count} {measurementWord} en esta ventana",
   "weight.calendarAverageTitle": "Promedio del período natural: {period}",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
   "weight.noCalendarMeasurements": "No hay mediciones en este período natural.",
