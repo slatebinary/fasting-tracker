@@ -1,6 +1,6 @@
 {
   "sourceRevision": 40,
-  "appVersion": "1.17.103",
+  "appVersion": "1.17.104",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1128,7 +1128,7 @@
     "weight.historyLastCount": "Last {n} measurements",
     "weight.fixedChartHelp": "Each point is the average of measurements saved during that calendar period. Periods without measurements are omitted.",
     "weight.rollingAverageTitle": "{days}-day rolling average",
-    "weight.rollingAverageMeta": "Ending {date} · {count} {measurementWord} in this window",
+    "weight.rollingAverageMeta": "Window {date} · {count} {measurementWord} in this window",
     "weight.calendarAverageTitle": "Calendar {period} average",
     "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
     "weight.noCalendarMeasurements": "No measurements in this calendar period.",
