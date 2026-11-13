@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.102" />
+  <meta name="ft-app-version" content="1.17.103" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -579,6 +579,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     .weightPointDetail { display:grid; gap:7px; margin-top:8px; min-height:20px; color:var(--text); }
     .weightPointDetailGroup { display:grid; gap:2px; min-width:0; }
+    .weightPointDetailGroup.primary { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); }
     .weightPointDetailHeading { display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-width:0; }
     .weightPointDetailHeading strong { font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:650; }
     .weightPointDetailValue { flex:0 0 auto; font-weight:750; white-space:nowrap; }
@@ -1945,7 +1946,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.102';
+  const APP_VERSION = '1.17.103';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
