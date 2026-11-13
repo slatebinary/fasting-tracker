@@ -95,6 +95,7 @@ jobs:
           python3 tests/test_weight_unit_layout.py
           python3 tests/test_weight_aggregation_scroll.py
           python3 tests/test_weight_rolling_continuity.py
+          python3 tests/test_weight_rolling_window_count.py
           python3 tests/test_weight_period_controls_layout.py
           python3 tests/test_weight_history_bulk_selection.py
           python3 tests/test_weight_navigator_pointer_drag.py

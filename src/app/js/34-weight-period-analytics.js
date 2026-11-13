@@ -74,7 +74,12 @@
   }
   function weightBucketLongLabel(bucket, mode = weightPeriodMode) {
     if (mode === 'daily' && bucket?.entry) return localDateTimeLabel(bucket.entry.when, bucket.entry.timeZone);
-    if (bucket?.rollingWindowDays && bucket.calendarDay) return weightBucketDate(bucket.calendarDay).toLocaleDateString(currentLocale(),{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+    if (bucket?.rollingWindowDays && bucket.calendarDay) {
+      const start = weightBucketDate(bucket.windowStartDay || bucket.calendarDay);
+      const end = weightBucketDate(bucket.windowEndDay || bucket.calendarDay);
+      const options = {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'};
+      return `${start.toLocaleDateString(currentLocale(),options)} – ${end.toLocaleDateString(currentLocale(),options)}`;
+    }
     const d = weightBucketDate(bucket.key);
     const locale = currentLocale();
     const year = d.getUTCFullYear(), month = d.getUTCMonth();

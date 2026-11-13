@@ -1,3 +1,10 @@
+## v1.17.104 — 2026-11-13
+
+- Show the complete inclusive start and end dates for each Weight rolling-average window, rather than only its ending date.
+- Keep the measurement count explicitly tied to that exact date range; distinguish it from the separate calendar-period average.
+- Localize the rolling-window label in English, Bulgarian and Spanish.
+- Add browser regression coverage for seven consecutive daily weigh-ins and verify the selected 7-day window reports all seven measurements and the correct dates.
+
 ## v1.17.103 — 2026-11-13
 
 - Add consistent internal padding and an inset card surface to the Weight primary chart callout, including “7-day rolling average” and its value, so the text no longer touches the callout edges.
