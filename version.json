@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.17.102",
   "released": "2026-11-13",
-  "notes": "Refine Weight period-summary subtitle hierarchy and contrast.",
+  "notes": "Give the Weight period/count subtitle a distinct bordered badge.",
   "entry": "./index.html",
   "shell": [
     "./",
