@@ -23,9 +23,14 @@ with sync_playwright() as p:
         requestPermission:async()=>{ MockNotification.permission='granted'; return 'granted'; }
       };
       Object.defineProperty(window,'Notification',{value:MockNotification,configurable:true});
+      window.__ftHoldTarget=false;
+      window.__ftReleaseTarget=null;
       window.__ftHoldWeighIn=false;
       window.__ftReleaseWeighIn=null;
       const registration={showNotification:async(title,options)=>{
+        if(options?.tag?.startsWith('fasting-target-') && window.__ftHoldTarget) {
+          await new Promise(resolve=>{window.__ftReleaseTarget=resolve;});
+        }
         if(options?.tag?.startsWith('fasting-weigh-') && window.__ftHoldWeighIn) {
           await new Promise(resolve=>{window.__ftReleaseWeighIn=resolve;});
         }
@@ -84,18 +89,21 @@ with sync_playwright() as p:
     if 'lock screen' not in page.locator('#notificationsCard').inner_text().lower():
         print('FAIL: lock-screen privacy warning is missing'); sys.exit(1)
 
-    # Hold the due weigh-in delivery while concurrent foreground checks run.
-    page.evaluate("() => { window.__ftHoldWeighIn=true; }")
+    # Hold target and weigh-in delivery while overlapping foreground checks run.
+    # This reproduces startup/visibility/timer paths reaching the same due alert.
+    page.evaluate("() => { window.__ftHoldTarget=true; window.__ftHoldWeighIn=true; }")
     page.locator('#notificationMasterToggle').click()
     page.wait_for_function("document.querySelector('#notificationPermissionBadge')?.textContent === 'On'",timeout=5000)
-    page.wait_for_function("window.__ftNotifications.length >= 2",timeout=5000)
-    page.wait_for_function("window.__ftReleaseWeighIn !== null",timeout=5000)
+    page.wait_for_function("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-safety-')).length === 1",timeout=5000)
+    page.wait_for_function("window.__ftReleaseTarget !== null && window.__ftReleaseWeighIn !== null",timeout=5000)
     page.evaluate("""() => {
       for (let i=0;i<6;i++) document.dispatchEvent(new Event('visibilitychange'));
+      window.__ftHoldTarget=false;
       window.__ftHoldWeighIn=false;
+      window.__ftReleaseTarget();
       window.__ftReleaseWeighIn();
     }""")
-    page.wait_for_function("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-weigh-')).length === 1",timeout=5000)
+    page.wait_for_function("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-target-')).length === 1 && window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-weigh-')).length === 1",timeout=5000)
     sent=page.evaluate("window.__ftNotifications.map(x=>x.title)")
     if not any('target' in x.lower() for x in sent) or not any('safety' in x.lower() for x in sent):
         print('FAIL: enabling notifications did not emit due target + safety alerts:',sent); sys.exit(1)
