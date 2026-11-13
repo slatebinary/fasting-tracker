@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.103",
+  "version": "1.17.104",
   "released": "2026-11-13",
-  "notes": "Add internal padding to the Weight rolling-average callout.",
+  "notes": "Show the complete date range for each Weight rolling-average window.",
   "entry": "./index.html",
   "shell": [
     "./",
