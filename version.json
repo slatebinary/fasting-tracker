@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.99",
+  "version": "1.17.100",
   "released": "2026-11-13",
-  "notes": "Use white semibold Weight calendar subtitle for maximum contrast.",
+  "notes": "Use larger bold white text for the Weight period summary subtitle.",
   "entry": "./index.html",
   "shell": [
     "./",
