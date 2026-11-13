@@ -504,7 +504,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightPointDetailValue { flex:0 0 auto; font-weight:750; white-space:nowrap; }
     .weightPointDetailMeta { color:var(--muted); font-size:calc(0.7059rem * var(--ft-text-scale)); font-weight:400; line-height:1.4; }
     /* Keep the selected-period summary high-contrast while visually secondary to the upper heading. */
-    .weightPointDetailGroup.primary .weightPointDetailMeta { color:#fff; font-size:calc(0.7059rem * var(--ft-text-scale)); font-weight:700; line-height:1.4; }
+    .weightPointDetailGroup.primary .weightPointDetailMeta { display:inline-block; width:fit-content; max-width:100%; margin-top:3px; padding:4px 8px; border:1px solid rgba(255,255,255,.65); border-radius:7px; background:rgba(0,0,0,.32); color:#fff; font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:750; line-height:1.4; }
     .weightPointDetailContext { padding-top:6px; border-top:1px solid var(--line); }
     .weightChartStyleSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; max-width:360px; margin:2px 0 8px; }
     .weightChartStyleSwitcher button { min-width:0; width:100%; padding:9px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:calc(0.8235rem * var(--ft-text-scale)); }
