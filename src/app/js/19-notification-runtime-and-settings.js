@@ -40,55 +40,71 @@
     return sent;
   }
 
-  // Serialize target-reached checks across startup, foreground and timer paths.
-  // The persisted lease also prevents duplicate delivery in overlapping app contexts.
-  let targetReachedNotificationPromise = null;
+  // A single delivery gate covers concurrent startup, foreground, timer and
+  // separate-tab checks for each fasting notification type.
+  const notificationDeliveryPromises = new Map();
 
-  async function maybeNotifyTargetReached(nowMs = Date.now()) {
-    if (targetReachedNotificationPromise) return targetReachedNotificationPromise;
+  async function sendDeduplicatedNotification({lockName, tokenKey, reservationKey, token, isDue, deliver}) {
+    if (notificationDeliveryPromises.has(lockName)) return notificationDeliveryPromises.get(lockName);
     const run = async () => {
       notificationRuntimeState = loadNotificationRuntimeState();
-      if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
-      const startMs = new Date(data.activeStart).getTime();
-      const target = activeTargetHours();
-      const targetMs = goalMs(target);
-      if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
-      const token = `${data.activeStart}|${target}`;
-      if (notificationRuntimeState.targetReachedToken === token) return false;
-      const reservation = notificationRuntimeState.targetReachedReservation;
+      if (!isDue() || notificationRuntimeState[tokenKey] === token) return false;
+      const reservation = notificationRuntimeState[reservationKey];
       const reservedAt = Number(reservation?.reservedAt);
       if (reservation?.token === token && Number.isFinite(reservedAt) && Date.now() - reservedAt < 120000) return false;
 
-      // Reserve synchronously before awaiting notification delivery.
-      notificationRuntimeState.targetReachedReservation = {token, reservedAt:Date.now()};
+      // Persist the lease before awaiting the browser notification API.
+      notificationRuntimeState[reservationKey] = {token, reservedAt:Date.now()};
       saveNotificationRuntimeState();
-      let sent = false;
       try {
-        sent = await sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}});
-        if (sent) notificationRuntimeState.targetReachedToken = token;
+        const sent = await deliver();
+        if (sent) notificationRuntimeState[tokenKey] = token;
         return sent;
       } finally {
-        if (notificationRuntimeState.targetReachedReservation?.token === token) delete notificationRuntimeState.targetReachedReservation;
+        if (notificationRuntimeState[reservationKey]?.token === token) delete notificationRuntimeState[reservationKey];
         saveNotificationRuntimeState();
       }
     };
     const operation = typeof navigator.locks?.request === 'function'
-      ? navigator.locks.request('fasting-tracker-target-reached-notification', run)
+      ? navigator.locks.request(lockName, run)
       : run();
-    targetReachedNotificationPromise = operation;
+    notificationDeliveryPromises.set(lockName, operation);
     try { return await operation; }
-    finally { if (targetReachedNotificationPromise === operation) targetReachedNotificationPromise = null; }
+    finally { if (notificationDeliveryPromises.get(lockName) === operation) notificationDeliveryPromises.delete(lockName); }
+  }
+
+  async function maybeNotifyTargetReached(nowMs = Date.now()) {
+    if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
+    const start = data.activeStart;
+    const startMs = new Date(start).getTime();
+    const target = activeTargetHours();
+    const targetMs = goalMs(target);
+    if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
+    const token = `${start}|${target}`;
+    return sendDeduplicatedNotification({
+      lockName:'fasting-tracker-target-reached-notification',
+      tokenKey:'targetReachedToken',
+      reservationKey:'targetReachedReservation',
+      token,
+      isDue:() => notificationEnabledFor('targetReached') && data.activeStart === start && activeTargetHours() === target && nowMs >= startMs + targetMs,
+      deliver:() => sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}})
+    });
   }
 
   async function maybeNotifyLongFastSafety(nowMs = Date.now()) {
     if (!notificationEnabledFor('longFastSafety') || !data.activeStart) return false;
-    const startMs = new Date(data.activeStart).getTime();
+    const start = data.activeStart;
+    const startMs = new Date(start).getTime();
     if (!Number.isFinite(startMs) || nowMs < startMs + 24 * 3600000) return false;
-    const token = String(data.activeStart);
-    if (notificationRuntimeState.longFastSafetyToken === token) return false;
-    const sent = await sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBodyShort'), {screen:'fasting',tag:`fasting-safety-${token}`});
-    if (sent) { notificationRuntimeState.longFastSafetyToken = token; saveNotificationRuntimeState(); }
-    return sent;
+    const token = String(start);
+    return sendDeduplicatedNotification({
+      lockName:'fasting-tracker-long-fast-safety-notification',
+      tokenKey:'longFastSafetyToken',
+      reservationKey:'longFastSafetyReservation',
+      token,
+      isDue:() => notificationEnabledFor('longFastSafety') && data.activeStart === start && nowMs >= startMs + 24 * 3600000,
+      deliver:() => sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBodyShort'), {screen:'fasting',tag:`fasting-safety-${token}`})
+    });
   }
 
   async function maybeNotifyCycleComplete(nowMs = Date.now()) {
@@ -102,10 +118,18 @@
     const enabledAt = validDate(notificationRuntimeState.enabledAt);
     if (!enabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
     if (cycleEnd < enabledAt.getTime()) return false;
-    if (notificationRuntimeState.cycleCompleteToken === record.id) return false;
-    const sent = await sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBodyShort'), {screen:'fasting',tag:`fasting-cycle-${record.id}`});
-    if (sent) { notificationRuntimeState.cycleCompleteToken = record.id; saveNotificationRuntimeState(); }
-    return sent;
+    const token = String(record.id);
+    return sendDeduplicatedNotification({
+      lockName:'fasting-tracker-cycle-complete-notification',
+      tokenKey:'cycleCompleteToken',
+      reservationKey:'cycleCompleteReservation',
+      token,
+      isDue:() => {
+        const current = latestCompletedFast();
+        return notificationEnabledFor('cycleComplete') && !data.activeStart && current?.id === record.id && cycleEnd >= (validDate(notificationRuntimeState.enabledAt)?.getTime() || Infinity) && nowMs >= cycleEnd;
+      },
+      deliver:() => sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBodyShort'), {screen:'fasting',tag:`fasting-cycle-${record.id}`})
+    });
   }
 
   function backupDueToken() {
