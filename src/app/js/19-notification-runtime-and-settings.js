@@ -40,17 +40,44 @@
     return sent;
   }
 
+  // Serialize target-reached checks across startup, foreground and timer paths.
+  // The persisted lease also prevents duplicate delivery in overlapping app contexts.
+  let targetReachedNotificationPromise = null;
+
   async function maybeNotifyTargetReached(nowMs = Date.now()) {
-    if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
-    const startMs = new Date(data.activeStart).getTime();
-    const target = activeTargetHours();
-    const targetMs = goalMs(target);
-    if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
-    const token = `${data.activeStart}|${target}`;
-    if (notificationRuntimeState.targetReachedToken === token) return false;
-    const sent = await sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}});
-    if (sent) { notificationRuntimeState.targetReachedToken = token; saveNotificationRuntimeState(); }
-    return sent;
+    if (targetReachedNotificationPromise) return targetReachedNotificationPromise;
+    const run = async () => {
+      notificationRuntimeState = loadNotificationRuntimeState();
+      if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
+      const startMs = new Date(data.activeStart).getTime();
+      const target = activeTargetHours();
+      const targetMs = goalMs(target);
+      if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
+      const token = `${data.activeStart}|${target}`;
+      if (notificationRuntimeState.targetReachedToken === token) return false;
+      const reservation = notificationRuntimeState.targetReachedReservation;
+      const reservedAt = Number(reservation?.reservedAt);
+      if (reservation?.token === token && Number.isFinite(reservedAt) && Date.now() - reservedAt < 120000) return false;
+
+      // Reserve synchronously before awaiting notification delivery.
+      notificationRuntimeState.targetReachedReservation = {token, reservedAt:Date.now()};
+      saveNotificationRuntimeState();
+      let sent = false;
+      try {
+        sent = await sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}});
+        if (sent) notificationRuntimeState.targetReachedToken = token;
+        return sent;
+      } finally {
+        if (notificationRuntimeState.targetReachedReservation?.token === token) delete notificationRuntimeState.targetReachedReservation;
+        saveNotificationRuntimeState();
+      }
+    };
+    const operation = typeof navigator.locks?.request === 'function'
+      ? navigator.locks.request('fasting-tracker-target-reached-notification', run)
+      : run();
+    targetReachedNotificationPromise = operation;
+    try { return await operation; }
+    finally { if (targetReachedNotificationPromise === operation) targetReachedNotificationPromise = null; }
   }
 
   async function maybeNotifyLongFastSafety(nowMs = Date.now()) {
