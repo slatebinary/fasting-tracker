@@ -1,3 +1,9 @@
+## v1.17.102 — 2026-11-13
+
+- Give the selected Weight period/count subtitle (for example, “November 2026 · 12 measurements”) its own dark translucent badge with a white border, rounded corners, and bold white text, clearly distinct from the blue summary panel.
+- Preserve the main heading, weight value, chart callout behavior, period aggregation, and stored weight data.
+- Add regression coverage for the distinct subtitle badge.
+
 ## v1.17.101 — 2026-11-13
 
 - Prevent duplicate fasting notifications when startup, foreground-resume, timer and separate app contexts check the same due alert concurrently.

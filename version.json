@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.101",
+  "version": "1.17.102",
   "released": "2026-11-13",
-  "notes": "Serialize fasting alerts to prevent duplicate notifications.",
+  "notes": "Give the Weight period/count subtitle a distinct bordered badge.",
   "entry": "./index.html",
   "shell": [
     "./",
