@@ -14,6 +14,10 @@ detail_expected = ".weightPointDetailGroup.primary .weightPointDetailMeta { disp
 if detail_expected not in css:
     raise SystemExit("FAIL: selected Weight period/count subtitle lacks its distinct bordered dark label, white text, and bold weight")
 
+primary_padding_expected = ".weightPointDetailGroup.primary { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); }"
+if primary_padding_expected not in css:
+    raise SystemExit("FAIL: primary Weight rolling/calendar callout lacks internal padding and a defined inset surface")
+
 upper_heading_expected = ".weightPointDetailHeading strong { font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:650; }"
 if upper_heading_expected not in css:
     raise SystemExit("FAIL: upper Weight summary heading typography changed unexpectedly")
@@ -21,4 +25,4 @@ if upper_heading_expected not in css:
 if "background:rgba(0,0,0,.32)" not in detail_expected or "border:1px solid rgba(255,255,255,.65)" not in detail_expected:
     raise SystemExit("FAIL: period/count subtitle must be visually separated from the blue summary surface")
 
-print("PASS: canvas subtitle remains white; period/count detail has a distinct dark badge with white bold text")
+print("PASS: chart subtitle remains white; primary callout has padding; period/count detail has a distinct dark badge with white bold text")
