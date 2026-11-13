@@ -503,6 +503,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightPointDetailHeading strong { font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:650; }
     .weightPointDetailValue { flex:0 0 auto; font-weight:750; white-space:nowrap; }
     .weightPointDetailMeta { color:var(--muted); font-size:calc(0.7059rem * var(--ft-text-scale)); font-weight:400; line-height:1.4; }
+    /* The selected-period summary sits on the blue primary surface: use high-contrast white, larger bold text. */
+    .weightPointDetailGroup.primary .weightPointDetailMeta { color:#fff; font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:700; line-height:1.4; }
     .weightPointDetailContext { padding-top:6px; border-top:1px solid var(--line); }
     .weightChartStyleSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; max-width:360px; margin:2px 0 8px; }
     .weightChartStyleSwitcher button { min-width:0; width:100%; padding:9px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:calc(0.8235rem * var(--ft-text-scale)); }
