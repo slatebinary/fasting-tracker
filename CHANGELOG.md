@@ -1,3 +1,9 @@
+## v1.17.101 — 2026-11-13
+
+- Prevent duplicate fasting notifications when startup, foreground-resume, timer and separate app contexts check the same due alert concurrently.
+- Serialize target-reached, long-fast safety and 24-hour cycle-complete delivery with a shared lock and persisted reservation; revalidate each alert's due condition before sending.
+- Add browser regression coverage that overlaps foreground checks while notification delivery is pending and verifies only one copy of each due alert.
+
 ## v1.17.100 — 2026-11-13
 
 - Fix the actual Weight period-summary subtitle ("November 2026 · 12 measurements"), which remained muted after the previous canvas-callout-only change.
