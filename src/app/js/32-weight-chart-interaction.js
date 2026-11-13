@@ -123,7 +123,7 @@
         const by=y>labelH+18?y-labelH-10:Math.min(cssH-labelH-4,y+12);
         ctx.fillStyle=card;ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.beginPath();if(typeof ctx.roundRect==='function')ctx.roundRect(bx,by,labelW,labelH,7);else ctx.rect(bx,by,labelW,labelH);ctx.fill();ctx.stroke();
         ctx.fillStyle=textColor;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 '+valueFontSize+'px -apple-system';ctx.fillText(valueLabel,bx+labelW/2,by+valueFontSize*.78+3);
-        ctx.fillStyle=textColor;ctx.font=periodFontSize+'px -apple-system';ctx.fillText(periodLabel,bx+labelW/2,by+valueFontSize+periodFontSize*.8+5);ctx.restore();
+        ctx.fillStyle='#fff';ctx.font='600 '+periodFontSize+'px -apple-system';ctx.fillText(periodLabel,bx+labelW/2,by+valueFontSize+periodFontSize*.8+5);ctx.restore();
       }
       scroller.dataset.selectedWindowCount = String(bucket.count);
       scroller.dataset.selectedCalendarCount = String(bucket.calendarBucket?.count || 0);
