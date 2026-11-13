@@ -1,3 +1,8 @@
+## v1.17.99 — 2026-11-13
+
+- Improve Weight calendar/chart callout period/count subtitle readability with white semibold text for maximum contrast against the blue background.
+- Preserve existing subtitle size and positioning; add a regression guard for the styling.
+
 ## v1.17.98 — 2026-11-13
 
 - Improve the selected Weight calendar/chart callout subtitle contrast by using the primary readable foreground instead of muted text.
