@@ -10,15 +10,15 @@ canvas_expected = "ctx.fillStyle='#fff';ctx.font='600 '+periodFontSize+'px -appl
 if canvas_expected not in js:
     raise SystemExit("FAIL: selected Weight chart canvas subtitle is not white and semibold")
 
-detail_expected = ".weightPointDetailGroup.primary .weightPointDetailMeta { color:#fff; font-size:calc(0.7059rem * var(--ft-text-scale)); font-weight:700; line-height:1.4; }"
+detail_expected = ".weightPointDetailGroup.primary .weightPointDetailMeta { display:inline-block; width:fit-content; max-width:100%; margin-top:3px; padding:4px 8px; border:1px solid rgba(255,255,255,.65); border-radius:7px; background:rgba(0,0,0,.32); color:#fff; font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:750; line-height:1.4; }"
 if detail_expected not in css:
-    raise SystemExit("FAIL: selected Weight period/count detail subtitle is not white, bold, and smaller on its blue surface")
+    raise SystemExit("FAIL: selected Weight period/count subtitle lacks its distinct bordered dark label, white text, and bold weight")
 
 upper_heading_expected = ".weightPointDetailHeading strong { font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:650; }"
 if upper_heading_expected not in css:
     raise SystemExit("FAIL: upper Weight summary heading typography changed unexpectedly")
 
-if "0.7059rem" not in detail_expected or "0.7647rem" not in upper_heading_expected:
-    raise SystemExit("FAIL: period/count subtitle must remain smaller than the upper heading")
+if "background:rgba(0,0,0,.32)" not in detail_expected or "border:1px solid rgba(255,255,255,.65)" not in detail_expected:
+    raise SystemExit("FAIL: period/count subtitle must be visually separated from the blue summary surface")
 
-print("PASS: canvas subtitle remains white; period/count detail is white, bold, and smaller than the upper heading")
+print("PASS: canvas subtitle remains white; period/count detail has a distinct dark badge with white bold text")
