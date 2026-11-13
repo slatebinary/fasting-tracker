@@ -1,3 +1,8 @@
+## v1.17.100 — 2026-11-13
+
+- Fix the actual Weight period-summary subtitle ("November 2026 · 12 measurements"), which remained muted after the previous canvas-callout-only change.
+- Render the summary subtitle white, larger and bold on its blue primary background; extend regression coverage to both subtitle locations.
+
 ## v1.17.99 — 2026-11-13
 
 - Improve Weight calendar/chart callout period/count subtitle readability with white semibold text for maximum contrast against the blue background.
