@@ -1124,7 +1124,7 @@
   "weight.historyLastCount": "Последни {n} измервания",
   "weight.fixedChartHelp": "Всяка точка показва средната стойност на измерванията, записани през съответния календарен период. Периодите без измервания не се показват.",
   "weight.rollingAverageTitle": "Плъзгаща се средна стойност за {days} дни",
-  "weight.rollingAverageMeta": "Към {date} · {count} {measurementWord} в този период",
+  "weight.rollingAverageMeta": "Период {date} · {count} {measurementWord} в този период",
   "weight.calendarAverageTitle": "Календарна средна стойност за {period}",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
   "weight.noCalendarMeasurements": "Няма измервания за този календарен период.",
