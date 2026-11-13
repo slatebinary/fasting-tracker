@@ -1,3 +1,9 @@
+## v1.17.102 — 2026-11-13
+
+- Refine the actual Weight period-summary subtitle: keep it white and bold while reducing it slightly below the upper heading (0.7059rem versus 0.7647rem).
+- Preserve the chart callout styling, period aggregation, layout and stored weight data.
+- Extend regression coverage to verify the white bold subtitle and its smaller size relative to the upper heading.
+
 ## v1.17.101 — 2026-11-13
 
 - Prevent duplicate fasting notifications when startup, foreground-resume, timer and separate app contexts check the same due alert concurrently.
