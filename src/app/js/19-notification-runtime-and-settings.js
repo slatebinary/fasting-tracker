@@ -40,28 +40,72 @@
     return sent;
   }
 
+  // A single delivery gate covers concurrent startup, foreground, timer and
+  // separate-tab checks for each fasting notification type.
+  const notificationDeliveryPromises = new Map();
+
+  async function sendDeduplicatedNotification({tokenKey, reservationKey, token, isDue, deliver}) {
+    const promiseKey = `${tokenKey}:${token}`;
+    if (notificationDeliveryPromises.has(promiseKey)) return notificationDeliveryPromises.get(promiseKey);
+    const run = async () => {
+      notificationRuntimeState = loadNotificationRuntimeState();
+      if (!isDue() || notificationRuntimeState[tokenKey] === token) return false;
+      const reservation = notificationRuntimeState[reservationKey];
+      const reservedAt = Number(reservation?.reservedAt);
+      if (reservation?.token === token && Number.isFinite(reservedAt) && Date.now() - reservedAt < 120000) return false;
+
+      // Persist the lease before awaiting the browser notification API.
+      notificationRuntimeState[reservationKey] = {token, reservedAt:Date.now()};
+      saveNotificationRuntimeState();
+      try {
+        const sent = await deliver();
+        if (sent) notificationRuntimeState[tokenKey] = token;
+        return sent;
+      } finally {
+        if (notificationRuntimeState[reservationKey]?.token === token) delete notificationRuntimeState[reservationKey];
+        saveNotificationRuntimeState();
+      }
+    };
+    // One shared Web Lock also prevents different fasting alerts from racing
+    // while they update the shared persisted notification state.
+    const operation = typeof navigator.locks?.request === 'function'
+      ? navigator.locks.request('fasting-tracker-fast-notification-delivery', run)
+      : run();
+    notificationDeliveryPromises.set(promiseKey, operation);
+    try { return await operation; }
+    finally { if (notificationDeliveryPromises.get(promiseKey) === operation) notificationDeliveryPromises.delete(promiseKey); }
+  }
+
   async function maybeNotifyTargetReached(nowMs = Date.now()) {
     if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
-    const startMs = new Date(data.activeStart).getTime();
+    const start = data.activeStart;
+    const startMs = new Date(start).getTime();
     const target = activeTargetHours();
     const targetMs = goalMs(target);
     if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
-    const token = `${data.activeStart}|${target}`;
-    if (notificationRuntimeState.targetReachedToken === token) return false;
-    const sent = await sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}});
-    if (sent) { notificationRuntimeState.targetReachedToken = token; saveNotificationRuntimeState(); }
-    return sent;
+    const token = `${start}|${target}`;
+    return sendDeduplicatedNotification({
+      tokenKey:'targetReachedToken',
+      reservationKey:'targetReachedReservation',
+      token,
+      isDue:() => notificationEnabledFor('targetReached') && data.activeStart === start && activeTargetHours() === target && nowMs >= startMs + targetMs,
+      deliver:() => sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}})
+    });
   }
 
   async function maybeNotifyLongFastSafety(nowMs = Date.now()) {
     if (!notificationEnabledFor('longFastSafety') || !data.activeStart) return false;
-    const startMs = new Date(data.activeStart).getTime();
+    const start = data.activeStart;
+    const startMs = new Date(start).getTime();
     if (!Number.isFinite(startMs) || nowMs < startMs + 24 * 3600000) return false;
-    const token = String(data.activeStart);
-    if (notificationRuntimeState.longFastSafetyToken === token) return false;
-    const sent = await sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBodyShort'), {screen:'fasting',tag:`fasting-safety-${token}`});
-    if (sent) { notificationRuntimeState.longFastSafetyToken = token; saveNotificationRuntimeState(); }
-    return sent;
+    const token = String(start);
+    return sendDeduplicatedNotification({
+      tokenKey:'longFastSafetyToken',
+      reservationKey:'longFastSafetyReservation',
+      token,
+      isDue:() => notificationEnabledFor('longFastSafety') && data.activeStart === start && nowMs >= startMs + 24 * 3600000,
+      deliver:() => sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBodyShort'), {screen:'fasting',tag:`fasting-safety-${token}`})
+    });
   }
 
   async function maybeNotifyCycleComplete(nowMs = Date.now()) {
@@ -75,10 +119,17 @@
     const enabledAt = validDate(notificationRuntimeState.enabledAt);
     if (!enabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
     if (cycleEnd < enabledAt.getTime()) return false;
-    if (notificationRuntimeState.cycleCompleteToken === record.id) return false;
-    const sent = await sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBodyShort'), {screen:'fasting',tag:`fasting-cycle-${record.id}`});
-    if (sent) { notificationRuntimeState.cycleCompleteToken = record.id; saveNotificationRuntimeState(); }
-    return sent;
+    const token = String(record.id);
+    return sendDeduplicatedNotification({
+      tokenKey:'cycleCompleteToken',
+      reservationKey:'cycleCompleteReservation',
+      token,
+      isDue:() => {
+        const current = latestCompletedFast();
+        return notificationEnabledFor('cycleComplete') && !data.activeStart && current?.id === record.id && cycleEnd >= (validDate(notificationRuntimeState.enabledAt)?.getTime() || Infinity) && nowMs >= cycleEnd;
+      },
+      deliver:() => sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBodyShort'), {screen:'fasting',tag:`fasting-cycle-${record.id}`})
+    });
   }
 
   function backupDueToken() {
