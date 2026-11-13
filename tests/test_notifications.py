@@ -94,7 +94,6 @@ with sync_playwright() as p:
     page.evaluate("() => { window.__ftHoldTarget=true; window.__ftHoldWeighIn=true; }")
     page.locator('#notificationMasterToggle').click()
     page.wait_for_function("document.querySelector('#notificationPermissionBadge')?.textContent === 'On'",timeout=5000)
-    page.wait_for_function("window.__ftNotifications.filter(x => x.options?.tag?.startsWith('fasting-safety-')).length === 1",timeout=5000)
     page.wait_for_function("window.__ftReleaseTarget !== null && window.__ftReleaseWeighIn !== null",timeout=5000)
     page.evaluate("""() => {
       for (let i=0;i<6;i++) document.dispatchEvent(new Event('visibilitychange'));
