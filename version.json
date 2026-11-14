@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.104",
-  "released": "2026-11-13",
-  "notes": "Show the complete date range for each Weight rolling-average window.",
+  "version": "1.17.105",
+  "released": "2026-11-14",
+  "notes": "Show pending external JSON backup categories",
   "entry": "./index.html",
   "shell": [
     "./",

@@ -1128,5 +1128,9 @@
   "weight.calendarAverageTitle": "Calendar {period} average",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
   "weight.noCalendarMeasurements": "No measurements in this calendar period.",
-  "weight.rollingDataCalendar": "Calendar {calendarPeriod} average: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
+  "weight.rollingDataCalendar": "Calendar {calendarPeriod} average: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+  "backup.pendingFasting": "fasting history",
+  "backup.pendingWeight": "weight measurements",
+  "backup.pendingDetail": "Not backed up: {items}",
+  "backup.pendingNone": "No fasting or weight changes are pending."
 }

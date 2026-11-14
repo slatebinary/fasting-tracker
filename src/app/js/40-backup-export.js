@@ -26,6 +26,34 @@
     return signature;
   }
 
+  function backupCategorySignatures(sourceData = data) {
+    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => (String(a?.id ?? '') < String(b?.id ?? '') ? -1 : String(a?.id ?? '') > String(b?.id ?? '') ? 1 : 0));
+    const hash = value => 'v1:' + fnv1a64Hex(stableStringify(value));
+    return {
+      fasting:hash({records:byId(sourceData.records),deletedFasts:byId(sourceData.deletedFasts),
+        activeFast:{start:sourceData.activeStart||null,timeZone:sourceData.activeTimeZone||null,
+          goal:sourceData.activeGoalHours??null,createdAt:sourceData.activeCreatedAt||null,modifiedAt:sourceData.activeModifiedAt||null}}),
+      weight:hash({weights:byId(sourceData.weights),deletedWeights:byId(sourceData.deletedWeights)})
+    };
+  }
+
+  function backupPendingCategories() {
+    const current=backupCategorySignatures();
+    const baselineFasting=backupMeta.lastExternalBackupFastingSignature;
+    const baselineWeight=backupMeta.lastExternalBackupWeightSignature;
+    // Old exports have only a combined signature. Report the general stale state
+    // until the next external JSON export establishes category baselines.
+    if(!baselineFasting || !baselineWeight) return {fasting:true,weight:true,known:false};
+    return {fasting:current.fasting!==baselineFasting,weight:current.weight!==baselineWeight,known:true};
+  }
+
+  function pendingBackupDetail() {
+    const pending=backupPendingCategories(), labels=[];
+    if(pending.fasting) labels.push(t('backup.pendingFasting'));
+    if(pending.weight) labels.push(t('backup.pendingWeight'));
+    return labels.length ? t('backup.pendingDetail',{items:labels.join(' · ')}) : t('backup.pendingNone');
+  }
+
   function backupFreshnessState() {
     const hasData = hasBackupWorthyData();
     const last=validDate(backupMeta.lastExternalBackupAt);
@@ -39,7 +67,7 @@
       : (backedRevision ? Number(data.revision)>backedRevision : (!!updated && updated.getTime()>last.getTime()+1000));
     // A deletion of the FINAL fasting/weight record must still mark the
     // previous export outdated, even though the live dataset is now empty.
-    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
+    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated,pending:changed?backupPendingCategories():{fasting:false,weight:false,known:true}};
   }
 
   function renderFastingBackupIndicator(freshness, due) {
@@ -55,7 +83,7 @@
     const status = t(labelKey);
     const explanation = t(descriptionKey, {date});
     button.dataset.state=state;
-    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : freshness.last ? `${status} — ${date}` : status;
+    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : (freshness.state==='stale'||freshness.state==='never') ? `${status} — ${pendingBackupDetail()}` : freshness.last ? `${status} — ${date}` : status;
     if (text.textContent!==visibleStatus) text.textContent=visibleStatus;
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
@@ -83,7 +111,7 @@
     const last = validDate(backupMeta.lastExternalBackupAt);
     label.textContent = last ? localDateTimeLabel(last, deviceTimeZone()) : t('backup.noneYet');
     const freshness=backupFreshnessState();
-    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=(freshness.state==='stale'||freshness.state==='never')?pendingBackupDetail():freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
@@ -169,6 +197,9 @@
     backupMeta.lastExternalBackupRevision = Math.max(0,Number(exportedData.revision)||0);
     backupMeta.lastExternalBackupDataUpdatedAt = validDate(exportedData.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
     backupMeta.lastExternalBackupDataSignature = backupDatasetSignature(exportedData);
+    const categories=backupCategorySignatures(exportedData);
+    backupMeta.lastExternalBackupFastingSignature=categories.fasting;
+    backupMeta.lastExternalBackupWeightSignature=categories.weight;
     saveBackupMeta();
     renderBackupStatus();
     renderGamification();

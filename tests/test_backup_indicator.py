@@ -76,6 +76,7 @@ with sync_playwright() as p:
     # Start a fast: the recorded export is now missing the active fast.
     page.locator('#toggleFast').click()
     status(page,'stale')
+    assert 'fasting history' in page.locator('#fastingBackupStatusText').inner_text().lower(), page.locator('#fastingBackupStatusText').inner_text()
     page.locator('#fastingBackupStatusBtn').click()
     status(page,'current')
     meta=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.backupMeta'))")
@@ -88,6 +89,7 @@ with sync_playwright() as p:
     page.locator('#weightSaveBtn').click()
     page.locator('[data-screen="fasting"]').click()
     status(page,'stale')
+    assert 'weight measurements' in page.locator('#fastingBackupStatusText').inner_text().lower(), page.locator('#fastingBackupStatusText').inner_text()
     page.locator('#fastingBackupStatusBtn').click()
     status(page,'current')
     # Editing an existing weight invalidates the recorded backup too.

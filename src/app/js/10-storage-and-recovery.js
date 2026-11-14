@@ -408,6 +408,8 @@
       lastExternalBackupRevision: Math.max(0, Number(meta.lastExternalBackupRevision) || 0),
       lastExternalBackupDataUpdatedAt: validDate(meta.lastExternalBackupDataUpdatedAt)?.toISOString() || null,
       lastExternalBackupDataSignature: typeof meta.lastExternalBackupDataSignature === 'string' && /^v1:[0-9a-f]{16}$/.test(meta.lastExternalBackupDataSignature) ? meta.lastExternalBackupDataSignature : null,
+      lastExternalBackupFastingSignature: typeof meta.lastExternalBackupFastingSignature==='string' && /^v1:[0-9a-f]{16}$/.test(meta.lastExternalBackupFastingSignature) ? meta.lastExternalBackupFastingSignature : null,
+      lastExternalBackupWeightSignature: typeof meta.lastExternalBackupWeightSignature==='string' && /^v1:[0-9a-f]{16}$/.test(meta.lastExternalBackupWeightSignature) ? meta.lastExternalBackupWeightSignature : null,
       snapshotProtectionStatus: ['ok','reduced','failed'].includes(meta.snapshotProtectionStatus) ? meta.snapshotProtectionStatus : 'ok',
       snapshotProtectionAt: snapshotAt ? snapshotAt.toISOString() : null,
       snapshotStoredCount: Math.max(0, Number(meta.snapshotStoredCount) || 0),
