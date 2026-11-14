@@ -406,7 +406,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     canvas[tabindex="0"]:focus-visible, .chartDataList:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent); outline-offset:3px; }
     html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     /* App typography is controlled independently of OS Dynamic Type. */
-    html { font-size:16px; }
     body { font-size:calc(1rem * var(--ft-text-scale)); }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:0.001ms !important; animation-duration:0.001ms !important; animation-iteration-count:1 !important; } }
     .textButton { border:0; background:transparent; color:var(--accent); padding:0; font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
