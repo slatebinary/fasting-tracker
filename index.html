@@ -7600,19 +7600,31 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   function backupCategorySignatures(sourceData = data) {
     const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => (String(a?.id ?? '') < String(b?.id ?? '') ? -1 : String(a?.id ?? '') > String(b?.id ?? '') ? 1 : 0));
     const hash = value => 'v1:' + fnv1a64Hex(stableStringify(value));
-    return {fasting:hash({records:byId(sourceData.records),deletedFasts:byId(sourceData.deletedFasts),activeFast:{start:sourceData.activeStart||null,timeZone:sourceData.activeTimeZone||null,goal:sourceData.activeGoalHours??null,createdAt:sourceData.activeCreatedAt||null,modifiedAt:sourceData.activeModifiedAt||null}}),weight:hash({weights:byId(sourceData.weights),deletedWeights:byId(sourceData.deletedWeights)})};
+    return {
+      fasting:hash({records:byId(sourceData.records),deletedFasts:byId(sourceData.deletedFasts),
+        activeFast:{start:sourceData.activeStart||null,timeZone:sourceData.activeTimeZone||null,
+          goal:sourceData.activeGoalHours??null,createdAt:sourceData.activeCreatedAt||null,modifiedAt:sourceData.activeModifiedAt||null}}),
+      weight:hash({weights:byId(sourceData.weights),deletedWeights:byId(sourceData.deletedWeights)})
+    };
   }
+
   function backupPendingCategories() {
-    const current=backupCategorySignatures(),f=backupMeta.lastExternalBackupFastingSignature,w=backupMeta.lastExternalBackupWeightSignature;
-    if(!f||!w)return {fasting:true,weight:true,known:false};
-    return {fasting:current.fasting!==f,weight:current.weight!==w,known:true};
+    const current=backupCategorySignatures();
+    const baselineFasting=backupMeta.lastExternalBackupFastingSignature;
+    const baselineWeight=backupMeta.lastExternalBackupWeightSignature;
+    // Old exports have only a combined signature. Report the general stale state
+    // until the next external JSON export establishes category baselines.
+    if(!baselineFasting || !baselineWeight) return {fasting:true,weight:true,known:false};
+    return {fasting:current.fasting!==baselineFasting,weight:current.weight!==baselineWeight,known:true};
   }
+
   function pendingBackupDetail() {
-    const pending=backupPendingCategories(),labels=[];
-    if(pending.fasting)labels.push(t('backup.pendingFasting'));
-    if(pending.weight)labels.push(t('backup.pendingWeight'));
+    const pending=backupPendingCategories(), labels=[];
+    if(pending.fasting) labels.push(t('backup.pendingFasting'));
+    if(pending.weight) labels.push(t('backup.pendingWeight'));
     return labels.length ? t('backup.pendingDetail',{items:labels.join(' · ')}) : t('backup.pendingNone');
   }
+
   function backupFreshnessState() {
     const hasData = hasBackupWorthyData();
     const last=validDate(backupMeta.lastExternalBackupAt);
@@ -7756,7 +7768,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     backupMeta.lastExternalBackupRevision = Math.max(0,Number(exportedData.revision)||0);
     backupMeta.lastExternalBackupDataUpdatedAt = validDate(exportedData.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
     backupMeta.lastExternalBackupDataSignature = backupDatasetSignature(exportedData);
-    const categories=backupCategorySignatures(exportedData);backupMeta.lastExternalBackupFastingSignature=categories.fasting;backupMeta.lastExternalBackupWeightSignature=categories.weight;
+    const categories=backupCategorySignatures(exportedData);
+    backupMeta.lastExternalBackupFastingSignature=categories.fasting;
+    backupMeta.lastExternalBackupWeightSignature=categories.weight;
     saveBackupMeta();
     renderBackupStatus();
     renderGamification();
