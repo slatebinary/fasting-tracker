@@ -1132,5 +1132,8 @@
   "backup.pendingFasting": "fasting history",
   "backup.pendingWeight": "weight measurements",
   "backup.pendingDetail": "Not backed up: {items}",
-  "backup.pendingNone": "No fasting or weight changes are pending."
+  "backup.pendingNone": "No fasting or weight changes are pending.",
+  "settings.textSize": "Text size",
+  "settings.textSizeHelp": "Adjust text size inside Fasting Tracker independently of your device text-size setting.",
+  "settings.textSizeReset": "Reset"
 }
