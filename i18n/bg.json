@@ -1132,5 +1132,8 @@
   "backup.pendingFasting": "история на гладуването",
   "backup.pendingWeight": "измервания на теглото",
   "backup.pendingDetail": "Не са архивирани: {items}",
-  "backup.pendingNone": "Няма чакащи промени в гладуването или теглото."
+  "backup.pendingNone": "Няма чакащи промени в гладуването или теглото.",
+  "settings.textSize": "Размер на текста",
+  "settings.textSizeHelp": "Променяйте размера на текста във Fasting Tracker независимо от настройката на устройството.",
+  "settings.textSizeReset": "По подразбиране"
 }
