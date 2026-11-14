@@ -1128,5 +1128,9 @@
   "weight.calendarAverageTitle": "Promedio del período natural: {period}",
   "weight.calendarAverageMeta": "{periodLabel} · {count} {measurementWord}",
   "weight.noCalendarMeasurements": "No hay mediciones en este período natural.",
-  "weight.rollingDataCalendar": "Media del periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})"
+  "weight.rollingDataCalendar": "Media del periodo natural {calendarPeriod}: {calendarAverage} ({calendarCount} {calendarMeasurementWord})",
+  "backup.pendingFasting": "historial de ayuno",
+  "backup.pendingWeight": "mediciones de peso",
+  "backup.pendingDetail": "Sin copia externa: {items}",
+  "backup.pendingNone": "No hay cambios pendientes de ayuno o peso."
 }
