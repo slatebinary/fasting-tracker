@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.104" />
+  <meta name="ft-app-version" content="1.17.105" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1939,14 +1939,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 40;
+  const I18N_SOURCE_REVISION = 41;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.104';
+  const APP_VERSION = '1.17.105';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2929,6 +2929,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       lastExternalBackupRevision: Math.max(0, Number(meta.lastExternalBackupRevision) || 0),
       lastExternalBackupDataUpdatedAt: validDate(meta.lastExternalBackupDataUpdatedAt)?.toISOString() || null,
       lastExternalBackupDataSignature: typeof meta.lastExternalBackupDataSignature === 'string' && /^v1:[0-9a-f]{16}$/.test(meta.lastExternalBackupDataSignature) ? meta.lastExternalBackupDataSignature : null,
+      lastExternalBackupFastingSignature: typeof meta.lastExternalBackupFastingSignature==='string' && /^v1:[0-9a-f]{16}$/.test(meta.lastExternalBackupFastingSignature) ? meta.lastExternalBackupFastingSignature : null,
+      lastExternalBackupWeightSignature: typeof meta.lastExternalBackupWeightSignature==='string' && /^v1:[0-9a-f]{16}$/.test(meta.lastExternalBackupWeightSignature) ? meta.lastExternalBackupWeightSignature : null,
       snapshotProtectionStatus: ['ok','reduced','failed'].includes(meta.snapshotProtectionStatus) ? meta.snapshotProtectionStatus : 'ok',
       snapshotProtectionAt: snapshotAt ? snapshotAt.toISOString() : null,
       snapshotStoredCount: Math.max(0, Number(meta.snapshotStoredCount) || 0),
@@ -7595,6 +7597,22 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return signature;
   }
 
+  function backupCategorySignatures(sourceData = data) {
+    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => (String(a?.id ?? '') < String(b?.id ?? '') ? -1 : String(a?.id ?? '') > String(b?.id ?? '') ? 1 : 0));
+    const hash = value => 'v1:' + fnv1a64Hex(stableStringify(value));
+    return {fasting:hash({records:byId(sourceData.records),deletedFasts:byId(sourceData.deletedFasts),activeFast:{start:sourceData.activeStart||null,timeZone:sourceData.activeTimeZone||null,goal:sourceData.activeGoalHours??null,createdAt:sourceData.activeCreatedAt||null,modifiedAt:sourceData.activeModifiedAt||null}}),weight:hash({weights:byId(sourceData.weights),deletedWeights:byId(sourceData.deletedWeights)})};
+  }
+  function backupPendingCategories() {
+    const current=backupCategorySignatures(),f=backupMeta.lastExternalBackupFastingSignature,w=backupMeta.lastExternalBackupWeightSignature;
+    if(!f||!w)return {fasting:true,weight:true,known:false};
+    return {fasting:current.fasting!==f,weight:current.weight!==w,known:true};
+  }
+  function pendingBackupDetail() {
+    const pending=backupPendingCategories(),labels=[];
+    if(pending.fasting)labels.push(t('backup.pendingFasting'));
+    if(pending.weight)labels.push(t('backup.pendingWeight'));
+    return labels.length ? t('backup.pendingDetail',{items:labels.join(' · ')}) : t('backup.pendingNone');
+  }
   function backupFreshnessState() {
     const hasData = hasBackupWorthyData();
     const last=validDate(backupMeta.lastExternalBackupAt);
@@ -7608,7 +7626,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       : (backedRevision ? Number(data.revision)>backedRevision : (!!updated && updated.getTime()>last.getTime()+1000));
     // A deletion of the FINAL fasting/weight record must still mark the
     // previous export outdated, even though the live dataset is now empty.
-    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
+    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated,pending:changed?backupPendingCategories():{fasting:false,weight:false,known:true}};
   }
 
   function renderFastingBackupIndicator(freshness, due) {
@@ -7624,7 +7642,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const status = t(labelKey);
     const explanation = t(descriptionKey, {date});
     button.dataset.state=state;
-    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : freshness.last ? `${status} — ${date}` : status;
+    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : freshness.state==='stale' ? `${status} — ${pendingBackupDetail()}` : freshness.last ? `${status} — ${date}` : status;
     if (text.textContent!==visibleStatus) text.textContent=visibleStatus;
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
@@ -7652,7 +7670,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const last = validDate(backupMeta.lastExternalBackupAt);
     label.textContent = last ? localDateTimeLabel(last, deviceTimeZone()) : t('backup.noneYet');
     const freshness=backupFreshnessState();
-    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='stale'?pendingBackupDetail():freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
@@ -7738,6 +7756,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     backupMeta.lastExternalBackupRevision = Math.max(0,Number(exportedData.revision)||0);
     backupMeta.lastExternalBackupDataUpdatedAt = validDate(exportedData.updatedAt)?.toISOString() || backupMeta.lastExternalBackupAt;
     backupMeta.lastExternalBackupDataSignature = backupDatasetSignature(exportedData);
+    const categories=backupCategorySignatures(exportedData);backupMeta.lastExternalBackupFastingSignature=categories.fasting;backupMeta.lastExternalBackupWeightSignature=categories.weight;
     saveBackupMeta();
     renderBackupStatus();
     renderGamification();
