@@ -7,8 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 css = (ROOT / "src" / "app" / "styles.css").read_text(encoding="utf-8")
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 
-assert "@supports (font: -apple-system-body)" in css
-assert "html { font: -apple-system-body; --ft-text-scale:0.9411764706; }" in css
+assert "@supports (font: -apple-system-body)" not in css
+assert "html { font-size:16px; }" in css
+assert "font: -apple-system-body" not in css
 assert "body { font-size:calc(1rem * var(--ft-text-scale)); }" in css
 assert "--ft-text-scale:1;" in css
 assert "-webkit-text-size-adjust:100%" in css
@@ -30,11 +31,16 @@ for declaration in declarations:
         f"Fixed-pixel typography remains: {declaration}"
     )
 
-# At the default iOS 17px body text size, preserve existing pixel baselines.
+# At the default 100% app scale, preserve existing typography baselines.
 assert "font-size: calc(1.7647rem * var(--ft-text-scale))" in css, "30px heading baseline was not preserved"
 assert "clamp(calc(2rem * var(--ft-text-scale)), 10vw, calc(3.1765rem * var(--ft-text-scale)))" in css, "Timer clamp baseline was not preserved"
 
 style = html.split("<style>", 1)[1].split("</style>", 1)[0]
 assert style == css, "Generated index stylesheet is out of sync with source"
-assert "font: -apple-system-body" in style
-print("PASS: iOS Dynamic Type typography scaling and generated shell checks.")
+assert "font: -apple-system-body" not in style
+assert 'id="textScaleRange"' in html and 'min="80" max="150" step="5"' in html
+assert 'id="textScaleReset"' in html and "fastingTracker.textScale" in html
+settings_js = (ROOT / "src" / "app" / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
+assert "textScaleRange?.addEventListener('input'" in settings_js
+assert "textScaleReset?.addEventListener('click'" in settings_js
+print("PASS: independent app text-size scaling, responsive typography and generated shell checks.")
