@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.105",
-  "released": "2026-11-14",
-  "notes": "Show pending external JSON backup categories",
+  "version": "1.17.106",
+  "released": "2026-11-15",
+  "notes": "Add independent in-app text-size control",
   "entry": "./index.html",
   "shell": [
     "./",
