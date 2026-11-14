@@ -405,11 +405,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .historyActions button, .textButton, .calendarHeader button { min-height:44px; }
     canvas[tabindex="0"]:focus-visible, .chartDataList:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent); outline-offset:3px; }
     html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
-    /* iOS system body text style follows the user's Larger Text preference. */
-    @supports (font: -apple-system-body) {
-      html { font: -apple-system-body; --ft-text-scale:0.9411764706; }
-      body { font-size:calc(1rem * var(--ft-text-scale)); }
-    }
+    /* App typography is controlled independently of OS Dynamic Type. */
+    html { font-size:16px; }
+    body { font-size:calc(1rem * var(--ft-text-scale)); }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:0.001ms !important; animation-duration:0.001ms !important; animation-iteration-count:1 !important; } }
     .textButton { border:0; background:transparent; color:var(--accent); padding:0; font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
     .csvActions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
@@ -715,3 +713,10 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 
     .notificationDetailSnoozeRow { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top:10px; }
     .notificationDetailSnoozeDuration { min-height:40px; max-width:130px; }
+
+    .textScaleControl { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+    #textScaleRange { width:min(34vw,150px); min-width:100px; min-height:44px; padding:0; }
+    #textScaleValue { min-width:42px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+    .textScaleReset { min-height:44px; padding:8px 10px; }
+    .srOnly { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important; }
+    @media (max-width:420px) { .textScaleSetting { align-items:flex-start; flex-direction:column; } .textScaleControl { width:100%; justify-content:space-between; } #textScaleRange { flex:1; width:auto; } }
