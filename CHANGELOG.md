@@ -1,3 +1,11 @@
+## v1.17.105 — 2026-11-14
+
+- Show pending external JSON backup changes by category: fasting history and/or weight measurements.
+- Persist category-specific baseline signatures at confirmed external JSON exports; update the compact fasting backup indicator and Settings backup status immediately when tracked data changes.
+- Keep category detail accurate for active-fast changes, completed fasting records, edits/deletions, weight measurements and weight edits/deletions.
+- Preserve internal recovery snapshots as distinct from external JSON backups; legacy backups remain compatible and show a general pending state until a new export establishes category baselines.
+- Add regression assertions for fasting-only and weight-only pending changes.
+
 ## v1.17.104 — 2026-11-13
 
 - Show the complete inclusive start and end dates for each Weight rolling-average window, rather than only its ending date.
