@@ -27,7 +27,7 @@
   }
 
   function backupCategorySignatures(sourceData = data) {
-    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => String(a?.id ?? '').localeCompare(String(b?.id ?? '')));
+    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => (String(a?.id ?? '') < String(b?.id ?? '') ? -1 : String(a?.id ?? '') > String(b?.id ?? '') ? 1 : 0));
     const hash = value => 'v1:' + fnv1a64Hex(stableStringify(value));
     return {
       fasting:hash({records:byId(sourceData.records),deletedFasts:byId(sourceData.deletedFasts),
@@ -51,7 +51,7 @@
     const pending=backupPendingCategories(), labels=[];
     if(pending.fasting) labels.push(t('backup.pendingFasting'));
     if(pending.weight) labels.push(t('backup.pendingWeight'));
-    return labels.length?t('backup.pendingDetail',{items:labels.join(' · ')}:t('backup.pendingNone');
+    return labels.length ? t('backup.pendingDetail',{items:labels.join(' · ')}) : t('backup.pendingNone');
   }
 
   function backupFreshnessState() {
