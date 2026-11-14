@@ -82,6 +82,7 @@
   // Initialize URL-dependent UI state and a safe default data object before loading
   // persisted data. Legacy-number normalization may ask currentLocale() ->
   // uiLanguage() during load(), so these bindings must never be in the TDZ.
+  try { const scale=Number(localStorage.getItem('fastingTracker.textScale')); if(Number.isFinite(scale)&&scale>=.8&&scale<=1.5)document.documentElement.style.setProperty('--ft-text-scale',String(scale)); } catch {}
   const initialUrlParams = new URLSearchParams(location.search);
   let initialAppMeta = {};
   try { initialAppMeta = JSON.parse(localStorage.getItem(APP_META_KEY) || '{}') || {}; } catch { initialAppMeta = {}; }
