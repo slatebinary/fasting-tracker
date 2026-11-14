@@ -83,7 +83,7 @@
     const status = t(labelKey);
     const explanation = t(descriptionKey, {date});
     button.dataset.state=state;
-    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : freshness.state==='stale' ? `${status} — ${pendingBackupDetail()}` : freshness.last ? `${status} — ${date}` : status;
+    const visibleStatus = freshness.state === 'current' ? `${status} • ${date}` : (freshness.state==='stale'||freshness.state==='never') ? `${status} — ${pendingBackupDetail()}` : freshness.last ? `${status} — ${date}` : status;
     if (text.textContent!==visibleStatus) text.textContent=visibleStatus;
     const action=t('backupChip.action');
     button.title = explanation + ' ' + action;
@@ -111,7 +111,7 @@
     const last = validDate(backupMeta.lastExternalBackupAt);
     label.textContent = last ? localDateTimeLabel(last, deviceTimeZone()) : t('backup.noneYet');
     const freshness=backupFreshnessState();
-    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=freshness.state==='stale'?pendingBackupDetail():freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
+    if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=(freshness.state==='stale'||freshness.state==='never')?pendingBackupDetail():freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
     const due = backupIsDue();
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
