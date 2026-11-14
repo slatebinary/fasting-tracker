@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 41,
-  "appVersion": "1.17.105",
+  "sourceRevision": 42,
+  "appVersion": "1.17.106",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1136,6 +1136,9 @@
     "backup.pendingFasting": "fasting history",
     "backup.pendingWeight": "weight measurements",
     "backup.pendingDetail": "Not backed up: {items}",
-    "backup.pendingNone": "No fasting or weight changes are pending."
+    "backup.pendingNone": "No fasting or weight changes are pending.",
+    "settings.textSize": "Text size",
+    "settings.textSizeHelp": "Adjust text size inside Fasting Tracker independently of your device text-size setting.",
+    "settings.textSizeReset": "Reset"
   }
 }
