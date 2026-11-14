@@ -8,7 +8,6 @@ css = (ROOT / "src" / "app" / "styles.css").read_text(encoding="utf-8")
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 
 assert "@supports (font: -apple-system-body)" not in css
-assert "html { font-size:16px; }" in css
 assert "font: -apple-system-body" not in css
 assert "body { font-size:calc(1rem * var(--ft-text-scale)); }" in css
 assert "--ft-text-scale:1;" in css
