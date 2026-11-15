@@ -1,5 +1,5 @@
 {
-  "sourceRevision": 45,
+  "sourceRevision": 46,
   "appVersion": "1.18.0",
   "language": "en",
   "strings": {
@@ -1167,6 +1167,7 @@
     "fasting.editFastZone": "Time zone retained: {zone}",
     "fasting.editFastErrStart": "Enter a valid fasting start date and time.",
     "fasting.editFastErrGoal": "Enter a target from 0.25 to 120 hours.",
-    "fasting.editFastConfirm": "Apply these changes? Start: {start}; target: {goal}. This will recalculate elapsed time and the subsequent non-fasting remainder."
+    "fasting.editFastConfirm": "Apply these changes? Start: {start}; target: {goal}. This will recalculate elapsed time and the subsequent non-fasting remainder.",
+    "fasting.timingConfirm": "Continue"
   }
 }
