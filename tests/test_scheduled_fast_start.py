@@ -11,6 +11,7 @@ startup = (ROOT / "src/app/js/50-settings-and-startup.js").read_text(encoding="u
 assert 'id="fastTimingModal"' in html
 assert 'id="fastTimingMode"' in html and 'id="fastTimingAmount"' in html and 'id="fastTimingUnit"' in html
 assert "function openFastTimingModal()" in backdate
+assert "if (data.activeStart) { openEditActiveFastModal(); return; }" in backdate
 assert "function confirmFastTiming()" in backdate
 assert "data.scheduledStart = {at:at.toISOString()" in backdate
 assert "data.scheduledStart && Date.now() >= new Date(data.scheduledStart.at).getTime()" in timer
