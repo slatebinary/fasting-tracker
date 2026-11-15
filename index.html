@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.105" />
+  <meta name="ft-app-version" content="1.17.106" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -78,7 +78,8 @@ layout: null
     "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
   }
   </script>
-  <style>
+  <script>(()=>{try{const n=Number(localStorage.getItem('fastingTracker.textScale'));if(Number.isFinite(n)&&n>=.8&&n<=1.5)document.documentElement.style.setProperty('--ft-text-scale',String(n));}catch{}})();</script>
+<style>
     :root {
       --ft-text-scale:1;
       color-scheme: light dark;
@@ -485,11 +486,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .historyActions button, .textButton, .calendarHeader button { min-height:44px; }
     canvas[tabindex="0"]:focus-visible, .chartDataList:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent); outline-offset:3px; }
     html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
-    /* iOS system body text style follows the user's Larger Text preference. */
-    @supports (font: -apple-system-body) {
-      html { font: -apple-system-body; --ft-text-scale:0.9411764706; }
-      body { font-size:calc(1rem * var(--ft-text-scale)); }
-    }
+    /* App typography is controlled independently of OS Dynamic Type. */
+    body { font-size:calc(1rem * var(--ft-text-scale)); }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:0.001ms !important; animation-duration:0.001ms !important; animation-iteration-count:1 !important; } }
     .textButton { border:0; background:transparent; color:var(--accent); padding:0; font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
     .csvActions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
@@ -795,6 +793,13 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 
     .notificationDetailSnoozeRow { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top:10px; }
     .notificationDetailSnoozeDuration { min-height:40px; max-width:130px; }
+
+    .textScaleControl { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+    #textScaleRange { width:min(34vw,150px); min-width:100px; min-height:44px; padding:0; }
+    #textScaleValue { min-width:42px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+    .textScaleReset { min-height:44px; padding:8px 10px; }
+    .srOnly { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important; }
+    @media (max-width:420px) { .textScaleSetting { align-items:flex-start; flex-direction:column; } .textScaleControl { width:100%; justify-content:space-between; } #textScaleRange { flex:1; width:auto; } }
 </style>
 </head>
 <body>
@@ -1193,6 +1198,10 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 </select>
 </div>
 <div id="appearancePaletteHint" class="small" role="status" aria-live="polite" hidden></div>
+<div class="row textScaleSetting">
+  <div><strong data-i18n="settings.textSize">Text size</strong><div class="small" data-i18n="settings.textSizeHelp">Adjust text size inside Fasting Tracker independently of your device text-size setting.</div></div>
+  <div class="textScaleControl"><label class="srOnly" for="textScaleRange" data-i18n="settings.textSize">Text size</label><input id="textScaleRange" type="range" min="80" max="150" step="5" value="100" aria-describedby="textScaleValue"><output id="textScaleValue" for="textScaleRange" aria-live="polite">100%</output><button id="textScaleReset" class="secondary textScaleReset" type="button" data-i18n="settings.textSizeReset">Reset</button></div>
+</div>
 <div class="timeZoneSettings">
   <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
   <div class="timeZonePicker">
@@ -1939,14 +1948,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 41;
+  const I18N_SOURCE_REVISION = 42;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.105';
+  const APP_VERSION = '1.17.106';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1992,6 +2001,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   // Initialize URL-dependent UI state and a safe default data object before loading
   // persisted data. Legacy-number normalization may ask currentLocale() ->
   // uiLanguage() during load(), so these bindings must never be in the TDZ.
+  try { const scale=Number(localStorage.getItem('fastingTracker.textScale')); if(Number.isFinite(scale)&&scale>=.8&&scale<=1.5)document.documentElement.style.setProperty('--ft-text-scale',String(scale)); } catch {}
   const initialUrlParams = new URLSearchParams(location.search);
   let initialAppMeta = {};
   try { initialAppMeta = JSON.parse(localStorage.getItem(APP_META_KEY) || '{}') || {}; } catch { initialAppMeta = {}; }
@@ -9811,6 +9821,12 @@ function mergeImportedData(imported) {
     el(id).addEventListener('change', () => { el('shareStatus').textContent=''; renderSharePreview(); });
   }
 
+  const textScaleRange=el('textScaleRange'), textScaleValue=el('textScaleValue'), textScaleReset=el('textScaleReset');
+  const applyTextScale=(percent,save=true)=>{const n=Math.max(80,Math.min(150,Math.round(Number(percent)/5)*5));const scale=n/100;document.documentElement.style.setProperty('--ft-text-scale',String(scale));if(textScaleRange)textScaleRange.value=String(n);if(textScaleValue)textScaleValue.textContent=n+'%';if(save)try{localStorage.setItem('fastingTracker.textScale',String(scale));}catch{}};
+  let initialTextScale=100;try{const saved=Number(localStorage.getItem('fastingTracker.textScale'));if(Number.isFinite(saved)&&saved>=.8&&saved<=1.5)initialTextScale=Math.round(saved*100);}catch{}
+  applyTextScale(initialTextScale,false);
+  textScaleRange?.addEventListener('input',()=>applyTextScale(textScaleRange.value));
+  textScaleReset?.addEventListener('click',()=>applyTextScale(100));
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
   const patientTortoiseTrigger = el('appVersionLabel');
   let patientTortoiseTapCount = 0;
