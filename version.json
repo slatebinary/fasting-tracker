@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.106",
+  "version": "1.18.0",
   "released": "2026-11-15",
-  "notes": "Add independent in-app text-size control",
+  "notes": "Improve text-size controls and preview; add configurable fast start timing",
   "entry": "./index.html",
   "shell": [
     "./",
