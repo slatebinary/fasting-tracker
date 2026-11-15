@@ -1,3 +1,8 @@
+## v1.18.1 — 2026-11-15
+
+- Fix the Timing options control on touch devices by binding it through the app's responsive action handler.
+- Add a regression assertion to prevent the control from reverting to a click-only binding.
+
 ## v1.18.0 — 2026-11-15
 
 - Add fast-start timing choices: start immediately, schedule a start after a selected number of minutes/hours, or record a fast that began earlier.
