@@ -1,3 +1,12 @@
+## v1.18.0 — 2026-11-15
+
+- Add fast-start timing choices: start immediately, schedule a start after a selected number of minutes/hours, or record a fast that began earlier.
+- Scheduled starts persist across app restarts and activate at the selected timestamp; users can cancel before activation.
+- Add an active-fast editor to correct start date/time and target duration, with future-time and overlap validation and confirmation.
+- Recalculate elapsed progress, completion and the derived non-fasting remainder from the corrected fast duration.
+- Localize the new controls in English, Bulgarian and Spanish; add regression assertions.
+
+
 ## v1.17.107 — 2026-11-15
 
 - Tighten the text-size setting layout to reduce unnecessary vertical space.

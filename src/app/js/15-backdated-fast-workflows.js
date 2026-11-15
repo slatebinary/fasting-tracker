@@ -92,6 +92,69 @@
     renderAll();
   }
 
+
+  function openEditActiveFastModal() {
+    if (!data.activeStart || recoveryMode) return;
+    el('editActiveFastStart').value=toLocalInputValue(new Date(data.activeStart),data.activeTimeZone||currentTimeZone());
+    el('editActiveFastGoal').value=String(activeTargetHours());
+    el('editActiveFastZone').textContent=t('fasting.editFastZone',{zone:data.activeTimeZone||currentTimeZone()});
+    el('editActiveFastError').hidden=true; showModal('editActiveFastModal','editActiveFastStart');
+  }
+  function saveEditedActiveFast() {
+    if (!data.activeStart || recoveryMode) { hideModal('editActiveFastModal'); return; }
+    const tz=normalizeTimeZone(data.activeTimeZone||currentTimeZone()), start=zonedLocalToDate(el('editActiveFastStart').value,tz), goal=parseLocalizedNumber(el('editActiveFastGoal').value), error=el('editActiveFastError');
+    const fail=key=>{error.textContent=t(key);error.hidden=false;}; error.hidden=true;
+    if(!start){fail('fasting.editFastErrStart');return;}
+    if(start.getTime()>Date.now()+FUTURE_TOLERANCE_MS){fail('backdate.errFuture');return;}
+    if(!Number.isFinite(goal)||goal<0.25||goal>120){fail('fasting.editFastErrGoal');return;}
+    if(backdateConflicts(start,new Date()).length){fail('backdate.errOverlap');return;}
+    const nextGoal=sanitizeGoal(goal,activeTargetHours());
+    if(!confirm(t('fasting.editFastConfirm',{start:localDateTimeLabel(start,tz),goal:formatGoal(nextGoal)})))return;
+    data.activeStart=start.toISOString();data.activeGoalHours=nextGoal;data.activeTimeZone=tz;data.activeModifiedAt=new Date().toISOString();
+    if(!save()){renderAll();return;}hideModal('editActiveFastModal');invalidateDerivedCaches();renderAll();
+  }
+
+  function openFastTimingModal() {
+    if (data.activeStart || data.scheduledStart || recoveryMode) return;
+    el('fastTimingMode').value = 'later';
+    el('fastTimingAmount').value = '30';
+    el('fastTimingUnit').value = 'minutes';
+    el('fastTimingHint').textContent = t('fasting.timingLaterHint');
+    el('fastTimingConfirm').textContent = t('fasting.timingSchedule');
+    showModal('fastTimingModal', 'fastTimingMode');
+  }
+
+  function updateFastTimingHint() {
+    const mode = el('fastTimingMode').value;
+    el('fastTimingHint').textContent = t(mode === 'later' ? 'fasting.timingLaterHint' : 'fasting.timingAgoHint');
+    el('fastTimingConfirm').textContent = t(mode === 'later' ? 'fasting.timingSchedule' : 'fasting.timingRecord');
+  }
+
+  function confirmFastTiming() {
+    if (data.activeStart || data.scheduledStart) { hideModal('fastTimingModal'); return; }
+    const amount = Number(el('fastTimingAmount').value);
+    const unit = el('fastTimingUnit').value;
+    if (!Number.isInteger(amount) || amount < 1 || amount > 120 || !['minutes','hours'].includes(unit)) {
+      el('fastTimingAmount').focus(); return;
+    }
+    const delta = amount * (unit === 'hours' ? 3600000 : 60000);
+    const now = Date.now(), tz = currentTimeZone();
+    if (el('fastTimingMode').value === 'ago') {
+      const start = new Date(now - delta);
+      el('backdateStart').value = toLocalInputValue(start, tz);
+      el('backdateTargetSummary').textContent = t('backdate.target', {goal:formatGoal(data.goalHours)});
+      showBackdateError(''); clearBackdateConflict();
+      hideModal('fastTimingModal');
+      showModal('backdateModal','backdateStart');
+      return;
+    }
+    const at = new Date(now + delta);
+    data.scheduledStart = {at:at.toISOString(),goalHours:data.goalHours,timeZone:tz,createdAt:new Date(now).toISOString()};
+    if (!save()) { data.scheduledStart=null; renderAll(); return; }
+    hideModal('fastTimingModal');
+    renderAll();
+  }
+
   function adjustBackdateAfterConflicts() {
     if (!backdateConflictRecords.length) return;
     const latest = backdateConflictRecords[backdateConflictRecords.length - 1];

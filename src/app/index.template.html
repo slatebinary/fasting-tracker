@@ -127,7 +127,9 @@ layout: null
       <div class="targetMoment" id="targetMoment" hidden></div>
       <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
       <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
+      <button id="editActiveFastBtn" class="secondary heroSecondary" data-i18n="fasting.editFast" hidden>Edit fast</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
+      <button id="fastTimingBtn" class="secondary heroSecondary" data-i18n="fasting.timingOptions">Timing options</button>
     </div>
     <div class="card nextFastCard" id="nextFastCard" hidden>
       <div class="sectionHeader"><h2 data-i18n="fasting.nextTitle">24-hour cycle</h2><span class="levelPill" data-i18n="fasting.nextCycleBadge">Optional timing</span></div>
@@ -875,7 +877,20 @@ layout: null
   </div>
 </div>
 
-<div class="modalBackdrop" id="backdateModal" hidden>
+<div class="modalBackdrop" id="fastTimingModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="fastTimingTitle">
+    <h2 id="fastTimingTitle" data-i18n="fasting.timingTitle">Fast start timing</h2>
+    <div class="small" data-i18n="fasting.timingHelp">Start later or record a fast that has already begun.</div>
+    <div class="formGroup"><label for="fastTimingMode" data-i18n="fasting.timingMode">Timing</label>
+      <select id="fastTimingMode"><option value="later" data-i18n="fasting.timingLater">Start in</option><option value="ago" data-i18n="fasting.timingAgo">Started</option></select>
+    </div>
+    <div class="formGroup"><label for="fastTimingAmount" data-i18n="fasting.timingAmount">Amount</label><div class="row"><input id="fastTimingAmount" type="number" min="1" max="120" step="1" value="30" inputmode="numeric"><select id="fastTimingUnit" aria-label="Time unit"><option value="minutes" data-i18n="unit.m">minutes</option><option value="hours" data-i18n="unit.h">hours</option></select></div></div>
+    <div class="small" id="fastTimingHint" aria-live="polite"></div>
+    <div class="modalActions"><button id="fastTimingCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="fastTimingConfirm" class="primary" type="button" data-i18n="fasting.timingConfirm">Continue</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="backdateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
     <h2 id="backdateModalTitle" data-i18n="backdate.title">Start an ongoing fast</h2>
     <div class="small" data-i18n="backdate.help">Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.</div>

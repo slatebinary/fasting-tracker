@@ -105,6 +105,10 @@
     syncActiveTargetPresetState();
   }));
   el('activeTargetModal').addEventListener('click', e => { if (e.target === el('activeTargetModal')) closeActiveTargetModal(); });
+  el('fastTimingCancel').addEventListener('click', () => hideModal('fastTimingModal'));
+  el('fastTimingConfirm').addEventListener('click', confirmFastTiming);
+  el('fastTimingMode').addEventListener('change', updateFastTimingHint);
+  el('fastTimingModal').addEventListener('click', e => { if (e.target === el('fastTimingModal')) hideModal('fastTimingModal'); });
   el('backdateCancelBtn').addEventListener('click', closeBackdateModal);
   el('backdateStartBtn').addEventListener('click', saveBackdatedActiveFast);
   el('backdateStart').addEventListener('input', () => { showBackdateError(''); clearBackdateConflict(); });

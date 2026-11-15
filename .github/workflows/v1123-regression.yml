@@ -51,6 +51,7 @@ jobs:
           python3 tests/test_release_health_metadata.py
           python3 tests/test_changelog_unique_versions.py
           python3 tests/test_palette_hint_initialization.py
+          python3 tests/test_scheduled_fast_start.py
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py

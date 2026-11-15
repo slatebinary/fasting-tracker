@@ -50,6 +50,9 @@
       activeTimeZone: activeValid ? normalizeTimeZone(parsed.activeTimeZone) : null,
       activeCreatedAt: activeValid ? normalizeAuditTimestamp(parsed.activeCreatedAt) : null,
       activeModifiedAt: activeValid ? normalizeAuditTimestamp(parsed.activeModifiedAt) : null,
+      scheduledStart: !activeValid && parsed.scheduledStart && validDate(parsed.scheduledStart.at)
+        ? {at: validDate(parsed.scheduledStart.at).toISOString(), goalHours: sanitizeGoal(parsed.scheduledStart.goalHours, goal), timeZone: normalizeTimeZone(parsed.scheduledStart.timeZone), createdAt: normalizeAuditTimestamp(parsed.scheduledStart.createdAt)}
+        : null,
       records: Array.isArray(parsed.records) ? parsed.records.map(normalizeRecord).filter(Boolean) : [],
       deletedFasts: Array.isArray(parsed.deletedFasts) ? parsed.deletedFasts.map(normalizeDeletedFast).filter(Boolean) : [],
       weights: Array.isArray(parsed.weights) ? parsed.weights.map(normalizeWeightEntry).filter(Boolean) : [],

@@ -102,6 +102,17 @@
   }
 
   function updateTimer() {
+    if (data.scheduledStart && Date.now() >= new Date(data.scheduledStart.at).getTime()) {
+      const scheduled = data.scheduledStart;
+      data.scheduledStart = null;
+      data.activeStart = scheduled.at;
+      data.activeGoalHours = scheduled.goalHours;
+      data.activeTimeZone = scheduled.timeZone;
+      data.activeCreatedAt = new Date().toISOString();
+      data.activeModifiedAt = null;
+      clearShorterGoalState();
+      save();
+    }
     const targetHours = activeTargetHours();
     goalText.textContent = data.activeStart ? t('fasting.targetLocked', {goal: formatGoal(targetHours)}) : t('fasting.target', {goal: formatGoal(data.goalHours)});
     if (document.activeElement !== goalHours) goalHours.value = formatNumber(data.goalHours, 0, 3);
@@ -120,6 +131,7 @@
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
       editActiveTargetBtn.hidden = false;
+      el('editActiveFastBtn').hidden = false;
       const visualPct = Math.min(100, Math.max(0, pct));
       fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
       fastProgressTrack.classList.toggle('reached', pct >= 100);
@@ -159,6 +171,25 @@
         progressDetail.textContent = t('fasting.progress', {pct: formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration: friendlyDuration(remaining)});
         progressDetail.classList.remove('good');
       }
+    } else if (data.scheduledStart) {
+      const remaining = Math.max(0, new Date(data.scheduledStart.at).getTime() - Date.now());
+      timer.textContent = exactDuration(remaining);
+      friendlyTimer.textContent = friendlyDuration(remaining);
+      statusText.textContent = t('fasting.scheduledFor', {date:localDateTimeLabel(data.scheduledStart.at,data.scheduledStart.timeZone)});
+      toggleFast.textContent = t('fasting.cancelScheduled');
+      toggleFast.classList.add('stop');
+      startEarlierBtn.hidden = true;
+      editActiveTargetBtn.hidden = true;
+      el('editActiveFastBtn').hidden = true;
+      fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
+      fastProgressTrack.classList.remove('reached');
+      fastProgressTrack.setAttribute('aria-valuenow', '0');
+      fastProgressTrack.setAttribute('aria-valuetext', t('fasting.zeroProgress'));
+      progressDetail.textContent = t('fasting.scheduledCountdown', {duration:friendlyDuration(remaining)});
+      progressDetail.classList.remove('good');
+      el('fastingEncouragement').hidden = true;
+      el('targetMoment').hidden = true;
+      el('nextFastCard').hidden = true;
     } else {
       timer.textContent = '00:00:00';
       friendlyTimer.textContent = `0${t('unit.h')} 0${t('unit.m')}`;
@@ -185,6 +216,7 @@
   }
 
   function startFast() {
+    data.scheduledStart = null;
     clearShorterGoalState();
     const createdAt = new Date().toISOString();
     data.activeStart = createdAt;
@@ -426,6 +458,7 @@
     toggleFast.disabled = true;
     try {
       if (data.activeStart) stopFast();
+      else if (data.scheduledStart) { data.scheduledStart = null; if (!save()) { renderAll(); return; } renderAll(); }
       else { clearStopUndo(); startFast(); }
     } finally {
       setTimeout(() => {
