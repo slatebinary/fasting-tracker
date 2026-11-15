@@ -727,4 +727,4 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .textScalePreviewBadge { padding:3px 8px; border-radius:6px; background:var(--surface-alt, var(--card)); font-weight:700; }
     .textScalePreviewSample button { min-height:36px; font-size:1em; }
     .srOnly { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important; }
-    @media (max-width:420px) { .textScaleSetting { align-items:flex-start; flex-direction:column; } .textScaleControl { width:100%; justify-content:space-between; } #textScaleRange { flex:1; width:auto; } }
+    @media (max-width:420px) { .textScaleControl { width:100%; gap:4px; } #textScaleRange { min-width:55px; } .textScaleStep { flex-basis:36px; width:36px; min-width:36px; } #textScaleNumber { width:48px; min-width:48px; } .textScaleReset { padding-inline:7px; } }
