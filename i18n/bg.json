@@ -1135,5 +1135,10 @@
   "backup.pendingNone": "Няма чакащи промени в гладуването или теглото.",
   "settings.textSize": "Размер на текста",
   "settings.textSizeHelp": "Променяйте размера на текста във Fasting Tracker независимо от настройката на устройството.",
-  "settings.textSizeReset": "По подразбиране"
+  "settings.textSizeReset": "По подразбиране",
+  "settings.textSizePreview": "Преглед",
+  "settings.textSizePreviewButton": "Примерен бутон",
+  "fasting.status": "Състояние на гладуването",
+  "fasting.elapsed": "Изминало време на гладуване",
+  "fasting.active": "Гладуване"
 }

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.17.106",
+  "version": "1.17.107",
   "released": "2026-11-15",
-  "notes": "Add independent in-app text-size control",
+  "notes": "Improve text-size controls with compact layout, precise adjustment and preview",
   "entry": "./index.html",
   "shell": [
     "./",

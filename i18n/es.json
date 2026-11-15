@@ -1135,5 +1135,10 @@
   "backup.pendingNone": "No hay cambios pendientes de ayuno o peso.",
   "settings.textSize": "Tamaño del texto",
   "settings.textSizeHelp": "Ajusta el tamaño del texto de Fasting Tracker independientemente del ajuste del dispositivo.",
-  "settings.textSizeReset": "Restablecer"
+  "settings.textSizeReset": "Restablecer",
+  "settings.textSizePreview": "Vista previa",
+  "settings.textSizePreviewButton": "Botón de ejemplo",
+  "fasting.status": "Estado del ayuno",
+  "fasting.elapsed": "Tiempo de ayuno transcurrido",
+  "fasting.active": "Ayunando"
 }

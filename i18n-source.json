@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 42,
-  "appVersion": "1.17.106",
+  "sourceRevision": 43,
+  "appVersion": "1.17.107",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1139,6 +1139,11 @@
     "backup.pendingNone": "No fasting or weight changes are pending.",
     "settings.textSize": "Text size",
     "settings.textSizeHelp": "Adjust text size inside Fasting Tracker independently of your device text-size setting.",
-    "settings.textSizeReset": "Reset"
+    "settings.textSizeReset": "Reset",
+    "settings.textSizePreview": "Preview",
+    "settings.textSizePreviewButton": "Example button",
+    "fasting.status": "Fasting status",
+    "fasting.elapsed": "Elapsed fasting time",
+    "fasting.active": "Fasting"
   }
 }
