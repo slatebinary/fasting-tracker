@@ -17,7 +17,7 @@ assert "data.scheduledStart && Date.now() >= new Date(data.scheduledStart.at).ge
 assert "data.scheduledStart = null;" in timer
 assert "t('fasting.cancelScheduled')" in timer
 assert "scheduledStart:" in validation and "parsed.scheduledStart.at" in validation
-assert "fastTimingBtn').addEventListener('click', openFastTimingModal)" in navigation
+assert "bindResponsiveAction(el('fastTimingBtn'), openFastTimingModal)" in navigation
 assert "fastTimingConfirm').addEventListener('click', confirmFastTiming)" in startup
 assert "fastTimingMode').addEventListener('change', updateFastTimingHint)" in startup
 assert "data.scheduledStart.goalHours" in timer or "scheduled.goalHours" in timer

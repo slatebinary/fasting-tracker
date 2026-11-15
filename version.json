@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.18.0",
+  "version": "1.18.1",
   "released": "2026-11-15",
-  "notes": "Configurable fast start and active-fast editing, including automatic non-fasting remainder recalculation",
+  "notes": "Fix responsive touch activation of Timing options and narrow-screen Text size Reset visibility",
   "entry": "./index.html",
   "shell": [
     "./",
