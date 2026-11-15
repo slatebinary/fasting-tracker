@@ -1132,5 +1132,8 @@
   "backup.pendingFasting": "historial de ayuno",
   "backup.pendingWeight": "mediciones de peso",
   "backup.pendingDetail": "Sin copia externa: {items}",
-  "backup.pendingNone": "No hay cambios pendientes de ayuno o peso."
+  "backup.pendingNone": "No hay cambios pendientes de ayuno o peso.",
+  "settings.textSize": "Tamaño del texto",
+  "settings.textSizeHelp": "Ajusta el tamaño del texto de Fasting Tracker independientemente del ajuste del dispositivo.",
+  "settings.textSizeReset": "Restablecer"
 }

@@ -1,3 +1,9 @@
+## v1.17.106 — 2026-11-15
+
+- Add a persistent, live in-app text-size slider (80–150%) with reset to 100%, independent of iOS/Android system Dynamic Type or font-size preferences.
+- Apply the app's typography scale consistently, remove the iOS system-body-font override, and keep the selected scale across reloads and app updates.
+- Add English, Bulgarian and Spanish labels/help text.
+
 ## v1.17.105 — 2026-11-14
 
 - Show pending external JSON backup changes by category: fasting history and/or weight measurements.

@@ -424,6 +424,12 @@
     el(id).addEventListener('change', () => { el('shareStatus').textContent=''; renderSharePreview(); });
   }
 
+  const textScaleRange=el('textScaleRange'), textScaleValue=el('textScaleValue'), textScaleReset=el('textScaleReset');
+  const applyTextScale=(percent,save=true)=>{const n=Math.max(80,Math.min(150,Math.round(Number(percent)/5)*5));const scale=n/100;document.documentElement.style.setProperty('--ft-text-scale',String(scale));if(textScaleRange)textScaleRange.value=String(n);if(textScaleValue)textScaleValue.textContent=n+'%';if(save)try{localStorage.setItem('fastingTracker.textScale',String(scale));}catch{}};
+  let initialTextScale=100;try{const saved=Number(localStorage.getItem('fastingTracker.textScale'));if(Number.isFinite(saved)&&saved>=.8&&saved<=1.5)initialTextScale=Math.round(saved*100);}catch{}
+  applyTextScale(initialTextScale,false);
+  textScaleRange?.addEventListener('input',()=>applyTextScale(textScaleRange.value));
+  textScaleReset?.addEventListener('click',()=>applyTextScale(100));
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
   const patientTortoiseTrigger = el('appVersionLabel');
   let patientTortoiseTapCount = 0;

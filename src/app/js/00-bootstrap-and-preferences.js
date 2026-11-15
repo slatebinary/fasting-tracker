@@ -29,7 +29,7 @@
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 41;
+  const I18N_SOURCE_REVISION = 42;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
@@ -82,6 +82,7 @@
   // Initialize URL-dependent UI state and a safe default data object before loading
   // persisted data. Legacy-number normalization may ask currentLocale() ->
   // uiLanguage() during load(), so these bindings must never be in the TDZ.
+  try { const scale=Number(localStorage.getItem('fastingTracker.textScale')); if(Number.isFinite(scale)&&scale>=.8&&scale<=1.5)document.documentElement.style.setProperty('--ft-text-scale',String(scale)); } catch {}
   const initialUrlParams = new URLSearchParams(location.search);
   let initialAppMeta = {};
   try { initialAppMeta = JSON.parse(localStorage.getItem(APP_META_KEY) || '{}') || {}; } catch { initialAppMeta = {}; }
