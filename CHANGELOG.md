@@ -1,7 +1,7 @@
 ## v1.17.107 — 2026-11-15
 
 - Tighten the text-size setting layout to reduce unnecessary vertical space.
-- Add accessible 5% decrease/increase buttons and direct percentage entry for precise touch-friendly adjustments.
+- Add accessible 5% decrease/increase buttons and direct percentage entry for precise touch-friendly adjustments, including VoiceOver-friendly controls.
 - Add a live, representative preview that follows the selected app text scale; localize it in English, Bulgarian and Spanish.
 
 ## v1.17.106 — 2026-11-15
