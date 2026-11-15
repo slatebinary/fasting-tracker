@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 43,
-  "appVersion": "1.17.107",
+  "sourceRevision": 45,
+  "appVersion": "1.18.0",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1144,6 +1144,29 @@
     "settings.textSizePreviewButton": "Example button",
     "fasting.status": "Fasting status",
     "fasting.elapsed": "Elapsed fasting time",
-    "fasting.active": "Fasting"
+    "fasting.active": "Fasting",
+    "fasting.timingOptions": "Timing options",
+    "fasting.timingTitle": "Fast start timing",
+    "fasting.timingHelp": "Start later or record a fast that has already begun.",
+    "fasting.timingMode": "Timing",
+    "fasting.timingLater": "Start in",
+    "fasting.timingAgo": "Started",
+    "fasting.timingAmount": "Amount",
+    "fasting.timingLaterHint": "The fast will begin automatically at the selected time, even if the app is closed.",
+    "fasting.timingAgoHint": "Record the earlier start time; existing fast-history overlap checks still apply.",
+    "fasting.timingSchedule": "Schedule fast",
+    "fasting.timingRecord": "Record start",
+    "fasting.scheduledFor": "Scheduled to start {date}",
+    "fasting.cancelScheduled": "Cancel scheduled fast",
+    "fasting.scheduledCountdown": "Starts in {duration}",
+    "fasting.editFast": "Edit fast",
+    "fasting.editFastTitle": "Edit active fast",
+    "fasting.editFastHelp": "Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.",
+    "fasting.editFastStart": "Fasting start date and time",
+    "fasting.editFastGoal": "Target duration (hours)",
+    "fasting.editFastZone": "Time zone retained: {zone}",
+    "fasting.editFastErrStart": "Enter a valid fasting start date and time.",
+    "fasting.editFastErrGoal": "Enter a target from 0.25 to 120 hours.",
+    "fasting.editFastConfirm": "Apply these changes? Start: {start}; target: {goal}. This will recalculate elapsed time and the subsequent non-fasting remainder."
   }
 }
