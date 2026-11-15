@@ -477,9 +477,19 @@ layout: null
 </select>
 </div>
 <div id="appearancePaletteHint" class="small" role="status" aria-live="polite" hidden></div>
-<div class="row textScaleSetting">
-  <div><strong data-i18n="settings.textSize">Text size</strong><div class="small" data-i18n="settings.textSizeHelp">Adjust text size inside Fasting Tracker independently of your device text-size setting.</div></div>
-  <div class="textScaleControl"><label class="srOnly" for="textScaleRange" data-i18n="settings.textSize">Text size</label><input id="textScaleRange" type="range" min="80" max="150" step="5" value="100" aria-describedby="textScaleValue"><output id="textScaleValue" for="textScaleRange" aria-live="polite">100%</output><button id="textScaleReset" class="secondary textScaleReset" type="button" data-i18n="settings.textSizeReset">Reset</button></div>
+<div class="textScaleSetting">
+  <div><strong data-i18n="settings.textSize">Text size</strong><div class="small textScaleHelp" data-i18n="settings.textSizeHelp">Adjust text size inside Fasting Tracker independently of your device text-size setting.</div></div>
+  <div class="textScaleControl">
+    <button id="textScaleDecrease" class="secondary textScaleStep" type="button" aria-label="Decrease text size">−</button>
+    <input id="textScaleRange" type="range" min="80" max="150" step="5" value="100" aria-label="Text size" aria-describedby="textScaleValue">
+    <button id="textScaleIncrease" class="secondary textScaleStep" type="button" aria-label="Increase text size">+</button>
+    <label class="textScaleNumber"><input id="textScaleNumber" type="number" min="80" max="150" step="5" value="100" inputmode="numeric" aria-label="Text size percentage"><span>%</span></label>
+    <button id="textScaleReset" class="secondary textScaleReset" type="button" data-i18n="settings.textSizeReset">Reset</button>
+  </div>
+  <div class="textScalePreview" aria-live="polite">
+    <strong data-i18n="settings.textSizePreview">Preview</strong>
+    <div class="textScalePreviewSample"><span class="small" data-i18n="fasting.status">Fasting status</span><strong>12:34:56</strong><span data-i18n="fasting.elapsed">Elapsed fasting time</span><span class="textScalePreviewBadge" data-i18n="fasting.active">Fasting</span><button class="secondary" type="button" tabindex="-1" aria-hidden="true" data-i18n="settings.textSizePreviewButton">Example button</button></div>
+  </div>
 </div>
 <div class="timeZoneSettings">
   <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
