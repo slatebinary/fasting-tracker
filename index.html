@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.17.106" />
+  <meta name="ft-app-version" content="1.18.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -794,12 +794,21 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .notificationDetailSnoozeRow { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top:10px; }
     .notificationDetailSnoozeDuration { min-height:40px; max-width:130px; }
 
-    .textScaleControl { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
-    #textScaleRange { width:min(34vw,150px); min-width:100px; min-height:44px; padding:0; }
-    #textScaleValue { min-width:42px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
-    .textScaleReset { min-height:44px; padding:8px 10px; }
+    .textScaleSetting { display:grid; gap:8px; }
+    .textScaleHelp { margin-top:3px; }
+    .textScaleControl { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+    #textScaleRange { flex:1 1 110px; width:auto; min-width:80px; max-width:240px; min-height:40px; padding:0; margin:0; }
+    .textScaleStep { flex:0 0 40px; width:40px; min-width:40px; height:40px; min-height:40px; padding:0; font-size:1.25rem; }
+    .textScaleNumber { display:flex; align-items:center; gap:2px; font-weight:700; font-variant-numeric:tabular-nums; }
+    #textScaleNumber { width:54px; min-width:54px; min-height:40px; padding:5px 3px; text-align:center; font:inherit; }
+    .textScaleReset { min-height:40px; padding:6px 9px; }
+    .textScalePreview { display:grid; gap:5px; margin-top:2px; }
+    .textScalePreviewSample { display:flex; flex-direction:column; align-items:flex-start; gap:5px; padding:10px; border:1px solid var(--border); border-radius:10px; font-size:calc(1rem * var(--ft-text-scale,1)); }
+    .textScalePreviewSample > strong { font-size:1.35em; font-variant-numeric:tabular-nums; }
+    .textScalePreviewBadge { padding:3px 8px; border-radius:6px; background:var(--surface-alt, var(--card)); font-weight:700; }
+    .textScalePreviewSample button { min-height:36px; font-size:1em; }
     .srOnly { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important; }
-    @media (max-width:420px) { .textScaleSetting { align-items:flex-start; flex-direction:column; } .textScaleControl { width:100%; justify-content:space-between; } #textScaleRange { flex:1; width:auto; } }
+    @media (max-width:420px) { .textScaleControl { width:100%; gap:4px; } #textScaleRange { min-width:55px; } .textScaleStep { flex-basis:36px; width:36px; min-width:36px; } #textScaleNumber { width:48px; min-width:48px; } .textScaleReset { padding-inline:7px; } }
 </style>
 </head>
 <body>
@@ -848,7 +857,9 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       <div class="targetMoment" id="targetMoment" hidden></div>
       <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
       <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
+      <button id="editActiveFastBtn" class="secondary heroSecondary" data-i18n="fasting.editFast" hidden>Edit fast</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
+      <button id="fastTimingBtn" class="secondary heroSecondary" data-i18n="fasting.timingOptions">Timing options</button>
     </div>
     <div class="card nextFastCard" id="nextFastCard" hidden>
       <div class="sectionHeader"><h2 data-i18n="fasting.nextTitle">24-hour cycle</h2><span class="levelPill" data-i18n="fasting.nextCycleBadge">Optional timing</span></div>
@@ -1198,9 +1209,19 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 </select>
 </div>
 <div id="appearancePaletteHint" class="small" role="status" aria-live="polite" hidden></div>
-<div class="row textScaleSetting">
-  <div><strong data-i18n="settings.textSize">Text size</strong><div class="small" data-i18n="settings.textSizeHelp">Adjust text size inside Fasting Tracker independently of your device text-size setting.</div></div>
-  <div class="textScaleControl"><label class="srOnly" for="textScaleRange" data-i18n="settings.textSize">Text size</label><input id="textScaleRange" type="range" min="80" max="150" step="5" value="100" aria-describedby="textScaleValue"><output id="textScaleValue" for="textScaleRange" aria-live="polite">100%</output><button id="textScaleReset" class="secondary textScaleReset" type="button" data-i18n="settings.textSizeReset">Reset</button></div>
+<div class="textScaleSetting">
+  <div><strong data-i18n="settings.textSize">Text size</strong><div class="small textScaleHelp" data-i18n="settings.textSizeHelp">Adjust text size inside Fasting Tracker independently of your device text-size setting.</div></div>
+  <div class="textScaleControl">
+    <button id="textScaleDecrease" class="secondary textScaleStep" type="button" aria-label="Decrease text size">−</button>
+    <input id="textScaleRange" type="range" min="80" max="150" step="5" value="100" aria-label="Text size" aria-describedby="textScaleValue">
+    <button id="textScaleIncrease" class="secondary textScaleStep" type="button" aria-label="Increase text size">+</button>
+    <label class="textScaleNumber"><input id="textScaleNumber" type="number" min="80" max="150" step="5" value="100" inputmode="numeric" aria-label="Text size percentage"><span>%</span></label>
+    <button id="textScaleReset" class="secondary textScaleReset" type="button" data-i18n="settings.textSizeReset">Reset</button>
+  </div>
+  <div class="textScalePreview" aria-live="polite">
+    <strong data-i18n="settings.textSizePreview">Preview</strong>
+    <div class="textScalePreviewSample"><span class="small" data-i18n="fasting.status">Fasting status</span><strong>12:34:56</strong><span data-i18n="fasting.elapsed">Elapsed fasting time</span><span class="textScalePreviewBadge" data-i18n="fasting.active">Fasting</span><button class="secondary" type="button" tabindex="-1" aria-hidden="true" data-i18n="settings.textSizePreviewButton">Example button</button></div>
+  </div>
 </div>
 <div class="timeZoneSettings">
   <div><strong data-i18n="settings.timeZone">Time zone</strong><div class="small" data-i18n="settings.timeZoneHelp">Choose the time zone for new entries and current calendar views. Existing records keep their original time zone; daylight-saving rules follow the selected region.</div></div>
@@ -1586,7 +1607,20 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   </div>
 </div>
 
-<div class="modalBackdrop" id="backdateModal" hidden>
+<div class="modalBackdrop" id="fastTimingModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="fastTimingTitle">
+    <h2 id="fastTimingTitle" data-i18n="fasting.timingTitle">Fast start timing</h2>
+    <div class="small" data-i18n="fasting.timingHelp">Start later or record a fast that has already begun.</div>
+    <div class="formGroup"><label for="fastTimingMode" data-i18n="fasting.timingMode">Timing</label>
+      <select id="fastTimingMode"><option value="later" data-i18n="fasting.timingLater">Start in</option><option value="ago" data-i18n="fasting.timingAgo">Started</option></select>
+    </div>
+    <div class="formGroup"><label for="fastTimingAmount" data-i18n="fasting.timingAmount">Amount</label><div class="row"><input id="fastTimingAmount" type="number" min="1" max="120" step="1" value="30" inputmode="numeric"><select id="fastTimingUnit" aria-label="Time unit"><option value="minutes" data-i18n="unit.m">minutes</option><option value="hours" data-i18n="unit.h">hours</option></select></div></div>
+    <div class="small" id="fastTimingHint" aria-live="polite"></div>
+    <div class="modalActions"><button id="fastTimingCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="fastTimingConfirm" class="primary" type="button" data-i18n="fasting.timingConfirm">Continue</button></div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="backdateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
     <h2 id="backdateModalTitle" data-i18n="backdate.title">Start an ongoing fast</h2>
     <div class="small" data-i18n="backdate.help">Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.</div>
@@ -1955,7 +1989,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.17.106';
+  const APP_VERSION = '1.18.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -1989,7 +2023,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const MAX_DATE_MS = 8.64e15;
   // Fixed conservative ceiling keeps target-date arithmetic inside ECMAScript Date's representable range.
   const MAX_SAFE_GOAL_HOURS = 2_000_000_000;
-  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false, weightSnoozeMinutes: 1440, fastingSnoozeMinutes: 60 }, language: 'system', appearance: 'system', iconChoice: 'plate' };
+  const defaultData = { dataVersion: DATA_VERSION, revision: 0, updatedAt: null, goalHours: 16, activeStart: null, activeGoalHours: null, activeTimeZone: null, activeCreatedAt: null, activeModifiedAt: null, scheduledStart: null, records: [], deletedFasts: [], weights: [], deletedWeights: [], weightUnit: 'kg', targetWeightKg: null, gamificationEnabled: true, notificationPreferences: { enabled: false, targetReached: true, backupDue: true, longFastSafety: true, weighIn: false, weighInCadence: 'weekly', cycleComplete: false, weightSnoozeMinutes: 1440, fastingSnoozeMinutes: 60 }, language: 'system', appearance: 'system', iconChoice: 'plate' };
   const timeZoneValidityCache = new Map();
   const numberSymbolsCache = new Map();
   let preferredTimeZone = null;
@@ -3630,6 +3664,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       activeTimeZone: activeValid ? normalizeTimeZone(parsed.activeTimeZone) : null,
       activeCreatedAt: activeValid ? normalizeAuditTimestamp(parsed.activeCreatedAt) : null,
       activeModifiedAt: activeValid ? normalizeAuditTimestamp(parsed.activeModifiedAt) : null,
+      scheduledStart: !activeValid && parsed.scheduledStart && validDate(parsed.scheduledStart.at)
+        ? {at: validDate(parsed.scheduledStart.at).toISOString(), goalHours: sanitizeGoal(parsed.scheduledStart.goalHours, goal), timeZone: normalizeTimeZone(parsed.scheduledStart.timeZone), createdAt: normalizeAuditTimestamp(parsed.scheduledStart.createdAt)}
+        : null,
       records: Array.isArray(parsed.records) ? parsed.records.map(normalizeRecord).filter(Boolean) : [],
       deletedFasts: Array.isArray(parsed.deletedFasts) ? parsed.deletedFasts.map(normalizeDeletedFast).filter(Boolean) : [],
       weights: Array.isArray(parsed.weights) ? parsed.weights.map(normalizeWeightEntry).filter(Boolean) : [],
@@ -4031,6 +4068,69 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     data.activeModifiedAt = null;
     if (!save()) { renderAll(); return; }
     closeBackdateModal();
+    renderAll();
+  }
+
+
+  function openEditActiveFastModal() {
+    if (!data.activeStart || recoveryMode) return;
+    el('editActiveFastStart').value=toLocalInputValue(new Date(data.activeStart),data.activeTimeZone||currentTimeZone());
+    el('editActiveFastGoal').value=String(activeTargetHours());
+    el('editActiveFastZone').textContent=t('fasting.editFastZone',{zone:data.activeTimeZone||currentTimeZone()});
+    el('editActiveFastError').hidden=true; showModal('editActiveFastModal','editActiveFastStart');
+  }
+  function saveEditedActiveFast() {
+    if (!data.activeStart || recoveryMode) { hideModal('editActiveFastModal'); return; }
+    const tz=normalizeTimeZone(data.activeTimeZone||currentTimeZone()), start=zonedLocalToDate(el('editActiveFastStart').value,tz), goal=parseLocalizedNumber(el('editActiveFastGoal').value), error=el('editActiveFastError');
+    const fail=key=>{error.textContent=t(key);error.hidden=false;}; error.hidden=true;
+    if(!start){fail('fasting.editFastErrStart');return;}
+    if(start.getTime()>Date.now()+FUTURE_TOLERANCE_MS){fail('backdate.errFuture');return;}
+    if(!Number.isFinite(goal)||goal<0.25||goal>120){fail('fasting.editFastErrGoal');return;}
+    if(backdateConflicts(start,new Date()).length){fail('backdate.errOverlap');return;}
+    const nextGoal=sanitizeGoal(goal,activeTargetHours());
+    if(!confirm(t('fasting.editFastConfirm',{start:localDateTimeLabel(start,tz),goal:formatGoal(nextGoal)})))return;
+    data.activeStart=start.toISOString();data.activeGoalHours=nextGoal;data.activeTimeZone=tz;data.activeModifiedAt=new Date().toISOString();
+    if(!save()){renderAll();return;}hideModal('editActiveFastModal');invalidateDerivedCaches();renderAll();
+  }
+
+  function openFastTimingModal() {
+    if (data.activeStart || data.scheduledStart || recoveryMode) return;
+    el('fastTimingMode').value = 'later';
+    el('fastTimingAmount').value = '30';
+    el('fastTimingUnit').value = 'minutes';
+    el('fastTimingHint').textContent = t('fasting.timingLaterHint');
+    el('fastTimingConfirm').textContent = t('fasting.timingSchedule');
+    showModal('fastTimingModal', 'fastTimingMode');
+  }
+
+  function updateFastTimingHint() {
+    const mode = el('fastTimingMode').value;
+    el('fastTimingHint').textContent = t(mode === 'later' ? 'fasting.timingLaterHint' : 'fasting.timingAgoHint');
+    el('fastTimingConfirm').textContent = t(mode === 'later' ? 'fasting.timingSchedule' : 'fasting.timingRecord');
+  }
+
+  function confirmFastTiming() {
+    if (data.activeStart || data.scheduledStart) { hideModal('fastTimingModal'); return; }
+    const amount = Number(el('fastTimingAmount').value);
+    const unit = el('fastTimingUnit').value;
+    if (!Number.isInteger(amount) || amount < 1 || amount > 120 || !['minutes','hours'].includes(unit)) {
+      el('fastTimingAmount').focus(); return;
+    }
+    const delta = amount * (unit === 'hours' ? 3600000 : 60000);
+    const now = Date.now(), tz = currentTimeZone();
+    if (el('fastTimingMode').value === 'ago') {
+      const start = new Date(now - delta);
+      el('backdateStart').value = toLocalInputValue(start, tz);
+      el('backdateTargetSummary').textContent = t('backdate.target', {goal:formatGoal(data.goalHours)});
+      showBackdateError(''); clearBackdateConflict();
+      hideModal('fastTimingModal');
+      showModal('backdateModal','backdateStart');
+      return;
+    }
+    const at = new Date(now + delta);
+    data.scheduledStart = {at:at.toISOString(),goalHours:data.goalHours,timeZone:tz,createdAt:new Date(now).toISOString()};
+    if (!save()) { data.scheduledStart=null; renderAll(); return; }
+    hideModal('fastTimingModal');
     renderAll();
   }
 
@@ -4673,6 +4773,17 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function updateTimer() {
+    if (data.scheduledStart && Date.now() >= new Date(data.scheduledStart.at).getTime()) {
+      const scheduled = data.scheduledStart;
+      data.scheduledStart = null;
+      data.activeStart = scheduled.at;
+      data.activeGoalHours = scheduled.goalHours;
+      data.activeTimeZone = scheduled.timeZone;
+      data.activeCreatedAt = new Date().toISOString();
+      data.activeModifiedAt = null;
+      clearShorterGoalState();
+      save();
+    }
     const targetHours = activeTargetHours();
     goalText.textContent = data.activeStart ? t('fasting.targetLocked', {goal: formatGoal(targetHours)}) : t('fasting.target', {goal: formatGoal(data.goalHours)});
     if (document.activeElement !== goalHours) goalHours.value = formatNumber(data.goalHours, 0, 3);
@@ -4691,6 +4802,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
       editActiveTargetBtn.hidden = false;
+      el('editActiveFastBtn').hidden = false;
       const visualPct = Math.min(100, Math.max(0, pct));
       fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
       fastProgressTrack.classList.toggle('reached', pct >= 100);
@@ -4730,6 +4842,25 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
         progressDetail.textContent = t('fasting.progress', {pct: formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration: friendlyDuration(remaining)});
         progressDetail.classList.remove('good');
       }
+    } else if (data.scheduledStart) {
+      const remaining = Math.max(0, new Date(data.scheduledStart.at).getTime() - Date.now());
+      timer.textContent = exactDuration(remaining);
+      friendlyTimer.textContent = friendlyDuration(remaining);
+      statusText.textContent = t('fasting.scheduledFor', {date:localDateTimeLabel(data.scheduledStart.at,data.scheduledStart.timeZone)});
+      toggleFast.textContent = t('fasting.cancelScheduled');
+      toggleFast.classList.add('stop');
+      startEarlierBtn.hidden = true;
+      editActiveTargetBtn.hidden = true;
+      el('editActiveFastBtn').hidden = true;
+      fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
+      fastProgressTrack.classList.remove('reached');
+      fastProgressTrack.setAttribute('aria-valuenow', '0');
+      fastProgressTrack.setAttribute('aria-valuetext', t('fasting.zeroProgress'));
+      progressDetail.textContent = t('fasting.scheduledCountdown', {duration:friendlyDuration(remaining)});
+      progressDetail.classList.remove('good');
+      el('fastingEncouragement').hidden = true;
+      el('targetMoment').hidden = true;
+      el('nextFastCard').hidden = true;
     } else {
       timer.textContent = '00:00:00';
       friendlyTimer.textContent = `0${t('unit.h')} 0${t('unit.m')}`;
@@ -4756,6 +4887,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function startFast() {
+    data.scheduledStart = null;
     clearShorterGoalState();
     const createdAt = new Date().toISOString();
     data.activeStart = createdAt;
@@ -4997,6 +5129,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     toggleFast.disabled = true;
     try {
       if (data.activeStart) stopFast();
+      else if (data.scheduledStart) { data.scheduledStart = null; if (!save()) { renderAll(); return; } renderAll(); }
       else { clearStopUndo(); startFast(); }
     } finally {
       setTimeout(() => {
@@ -8993,6 +9126,10 @@ function mergeImportedData(imported) {
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
+  el('fastTimingBtn').addEventListener('click', openFastTimingModal);
+  el('editActiveFastBtn').addEventListener('click', openEditActiveFastModal);
+  el('editActiveFastCancel').addEventListener('click',()=>hideModal('editActiveFastModal'));
+  el('editActiveFastSave').addEventListener('click',saveEditedActiveFast);
   function isIOSDevice() {
     return /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }
@@ -9502,6 +9639,10 @@ function mergeImportedData(imported) {
     syncActiveTargetPresetState();
   }));
   el('activeTargetModal').addEventListener('click', e => { if (e.target === el('activeTargetModal')) closeActiveTargetModal(); });
+  el('fastTimingCancel').addEventListener('click', () => hideModal('fastTimingModal'));
+  el('fastTimingConfirm').addEventListener('click', confirmFastTiming);
+  el('fastTimingMode').addEventListener('change', updateFastTimingHint);
+  el('fastTimingModal').addEventListener('click', e => { if (e.target === el('fastTimingModal')) hideModal('fastTimingModal'); });
   el('backdateCancelBtn').addEventListener('click', closeBackdateModal);
   el('backdateStartBtn').addEventListener('click', saveBackdatedActiveFast);
   el('backdateStart').addEventListener('input', () => { showBackdateError(''); clearBackdateConflict(); });
@@ -9821,11 +9962,14 @@ function mergeImportedData(imported) {
     el(id).addEventListener('change', () => { el('shareStatus').textContent=''; renderSharePreview(); });
   }
 
-  const textScaleRange=el('textScaleRange'), textScaleValue=el('textScaleValue'), textScaleReset=el('textScaleReset');
-  const applyTextScale=(percent,save=true)=>{const n=Math.max(80,Math.min(150,Math.round(Number(percent)/5)*5));const scale=n/100;document.documentElement.style.setProperty('--ft-text-scale',String(scale));if(textScaleRange)textScaleRange.value=String(n);if(textScaleValue)textScaleValue.textContent=n+'%';if(save)try{localStorage.setItem('fastingTracker.textScale',String(scale));}catch{}};
+  const textScaleRange=el('textScaleRange'), textScaleNumber=el('textScaleNumber'), textScaleReset=el('textScaleReset');
+  const applyTextScale=(percent,save=true)=>{const raw=Number(percent);if(!Number.isFinite(raw))return;const n=Math.max(80,Math.min(150,Math.round(raw/5)*5));const scale=n/100;document.documentElement.style.setProperty('--ft-text-scale',String(scale));if(textScaleRange)textScaleRange.value=String(n);if(textScaleNumber)textScaleNumber.value=String(n);if(save)try{localStorage.setItem('fastingTracker.textScale',String(scale));}catch{}};
   let initialTextScale=100;try{const saved=Number(localStorage.getItem('fastingTracker.textScale'));if(Number.isFinite(saved)&&saved>=.8&&saved<=1.5)initialTextScale=Math.round(saved*100);}catch{}
   applyTextScale(initialTextScale,false);
   textScaleRange?.addEventListener('input',()=>applyTextScale(textScaleRange.value));
+  textScaleNumber?.addEventListener('change',()=>applyTextScale(textScaleNumber.value));
+  el('textScaleDecrease')?.addEventListener('click',()=>applyTextScale(Number(textScaleRange.value)-5));
+  el('textScaleIncrease')?.addEventListener('click',()=>applyTextScale(Number(textScaleRange.value)+5));
   textScaleReset?.addEventListener('click',()=>applyTextScale(100));
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
   const patientTortoiseTrigger = el('appVersionLabel');
