@@ -424,11 +424,14 @@
     el(id).addEventListener('change', () => { el('shareStatus').textContent=''; renderSharePreview(); });
   }
 
-  const textScaleRange=el('textScaleRange'), textScaleValue=el('textScaleValue'), textScaleReset=el('textScaleReset');
-  const applyTextScale=(percent,save=true)=>{const n=Math.max(80,Math.min(150,Math.round(Number(percent)/5)*5));const scale=n/100;document.documentElement.style.setProperty('--ft-text-scale',String(scale));if(textScaleRange)textScaleRange.value=String(n);if(textScaleValue)textScaleValue.textContent=n+'%';if(save)try{localStorage.setItem('fastingTracker.textScale',String(scale));}catch{}};
+  const textScaleRange=el('textScaleRange'), textScaleNumber=el('textScaleNumber'), textScaleReset=el('textScaleReset');
+  const applyTextScale=(percent,save=true)=>{const raw=Number(percent);if(!Number.isFinite(raw))return;const n=Math.max(80,Math.min(150,Math.round(raw/5)*5));const scale=n/100;document.documentElement.style.setProperty('--ft-text-scale',String(scale));if(textScaleRange)textScaleRange.value=String(n);if(textScaleNumber)textScaleNumber.value=String(n);if(save)try{localStorage.setItem('fastingTracker.textScale',String(scale));}catch{}};
   let initialTextScale=100;try{const saved=Number(localStorage.getItem('fastingTracker.textScale'));if(Number.isFinite(saved)&&saved>=.8&&saved<=1.5)initialTextScale=Math.round(saved*100);}catch{}
   applyTextScale(initialTextScale,false);
   textScaleRange?.addEventListener('input',()=>applyTextScale(textScaleRange.value));
+  textScaleNumber?.addEventListener('change',()=>applyTextScale(textScaleNumber.value));
+  el('textScaleDecrease')?.addEventListener('click',()=>applyTextScale(Number(textScaleRange.value)-5));
+  el('textScaleIncrease')?.addEventListener('click',()=>applyTextScale(Number(textScaleRange.value)+5));
   textScaleReset?.addEventListener('click',()=>applyTextScale(100));
   el('appVersionLabel').textContent = `v${APP_VERSION}`;
   const patientTortoiseTrigger = el('appVersionLabel');
