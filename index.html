@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.18.0" />
+  <meta name="ft-app-version" content="1.18.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -808,7 +808,15 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .textScalePreviewBadge { padding:3px 8px; border-radius:6px; background:var(--surface-alt, var(--card)); font-weight:700; }
     .textScalePreviewSample button { min-height:36px; font-size:1em; }
     .srOnly { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important; }
-    @media (max-width:420px) { .textScaleControl { width:100%; gap:4px; } #textScaleRange { min-width:55px; } .textScaleStep { flex-basis:36px; width:36px; min-width:36px; } #textScaleNumber { width:48px; min-width:48px; } .textScaleReset { padding-inline:7px; } }
+    @media (max-width:420px) {
+      .textScaleControl { display:grid; grid-template-columns:36px 36px minmax(0,1fr) auto; width:100%; gap:6px; align-items:center; }
+      #textScaleRange { grid-column:1 / -1; grid-row:1; width:100%; min-width:0; max-width:none; }
+      #textScaleDecrease { grid-column:1; grid-row:2; }
+      #textScaleIncrease { grid-column:2; grid-row:2; }
+      .textScaleNumber { grid-column:3; grid-row:2; justify-self:end; }
+      #textScaleNumber { width:48px; min-width:48px; }
+      .textScaleReset { grid-column:4; grid-row:2; min-width:68px; padding-inline:10px; white-space:nowrap; }
+    }
 </style>
 </head>
 <body>
@@ -1989,7 +1997,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.18.0';
+  const APP_VERSION = '1.18.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -9126,7 +9134,7 @@ function mergeImportedData(imported) {
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
-  el('fastTimingBtn').addEventListener('click', openFastTimingModal);
+  bindResponsiveAction(el('fastTimingBtn'), openFastTimingModal);
   el('editActiveFastBtn').addEventListener('click', openEditActiveFastModal);
   el('editActiveFastCancel').addEventListener('click',()=>hideModal('editActiveFastModal'));
   el('editActiveFastSave').addEventListener('click',saveEditedActiveFast);
