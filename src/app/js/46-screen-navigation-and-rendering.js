@@ -225,7 +225,7 @@
   window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
 
   startEarlierBtn.addEventListener('click', openBackdateModal);
-  el('fastTimingBtn').addEventListener('click', openFastTimingModal);
+  bindResponsiveAction(el('fastTimingBtn'), openFastTimingModal);
   el('editActiveFastBtn').addEventListener('click', openEditActiveFastModal);
   el('editActiveFastCancel').addEventListener('click',()=>hideModal('editActiveFastModal'));
   el('editActiveFastSave').addEventListener('click',saveEditedActiveFast);
