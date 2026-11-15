@@ -1,3 +1,8 @@
+# v1.18.2 — 2026-11-15
+
+- Make Timing options actionable during an active fast by opening the existing Edit fast dialog, allowing correction of the start time and target.
+- Add a regression assertion for the active-fast route.
+
 ## v1.18.1 — 2026-11-15
 
 - Fix the Timing options control on touch devices by binding it through the app's responsive action handler.
