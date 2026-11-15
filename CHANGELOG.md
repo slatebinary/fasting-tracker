@@ -1,6 +1,7 @@
 ## v1.18.1 — 2026-11-15
 
 - Fix the Timing options control on touch devices by binding it through the app's responsive action handler.
+- Reflow the Text size controls on narrow screens so the Reset button remains fully visible.
 - Add a regression assertion to prevent the control from reverting to a click-only binding.
 
 ## v1.18.0 — 2026-11-15
