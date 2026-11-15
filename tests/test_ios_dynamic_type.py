@@ -39,6 +39,11 @@ assert style == css, "Generated index stylesheet is out of sync with source"
 assert "font: -apple-system-body" not in style
 assert 'id="textScaleRange"' in html and 'min="80" max="150" step="5"' in html
 assert 'id="textScaleReset"' in html and "fastingTracker.textScale" in html
+# On narrow iPhone widths, the slider gets its own row and Reset remains fully visible.
+assert ".textScaleControl { display:grid; grid-template-columns:36px 36px minmax(0,1fr) auto;" in css
+assert "#textScaleRange { grid-column:1 / -1; grid-row:1;" in css
+assert ".textScaleReset { grid-column:4; grid-row:2; min-width:68px;" in css
+assert "white-space:nowrap" in css
 settings_js = (ROOT / "src" / "app" / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
 assert "textScaleRange?.addEventListener('input'" in settings_js
 assert "textScaleReset?.addEventListener('click'" in settings_js
