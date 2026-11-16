@@ -93,13 +93,49 @@
   }
 
 
+  let pendingEditFastStart = null;
+
+  function syncEditFastPresetState() {
+    const goal = parseLocalizedNumber(el('editActiveFastGoal').value);
+    document.querySelectorAll('[data-edit-goal]').forEach(btn => {
+      const selected = Number.isFinite(goal) && Number(btn.dataset.editGoal) === goal;
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function setEditFastStartAgo(hours) {
+    const start = new Date(Date.now() - Number(hours) * 3600000);
+    el('editActiveFastStart').value = toLocalInputValue(start, data.activeTimeZone || currentTimeZone());
+    document.querySelectorAll('[data-edit-start-hours]').forEach(btn => {
+      const selected = Number(btn.dataset.editStartHours) === Number(hours);
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+    el('editActiveFastError').hidden = true;
+  }
+
   function openEditActiveFastModal() {
     if (!data.activeStart || recoveryMode) return;
     el('editActiveFastStart').value=toLocalInputValue(new Date(data.activeStart),data.activeTimeZone||currentTimeZone());
     el('editActiveFastGoal').value=String(activeTargetHours());
     el('editActiveFastZone').textContent=t('fasting.editFastZone',{zone:data.activeTimeZone||currentTimeZone()});
-    el('editActiveFastError').hidden=true; showModal('editActiveFastModal','editActiveFastStart');
+    el('editActiveFastError').hidden=true;
+    document.querySelectorAll('[data-edit-start-hours]').forEach(btn=>{btn.classList.remove('active');btn.setAttribute('aria-pressed','false');});
+    syncEditFastPresetState();
+    showModal('editActiveFastModal','editActiveFastStart');
   }
+
+  function commitEditedActiveFast(start, goal) {
+    if (!data.activeStart || recoveryMode) return false;
+    const tz=normalizeTimeZone(data.activeTimeZone||currentTimeZone());
+    const nextGoal=sanitizeGoal(goal,activeTargetHours());
+    if(!confirm(t('fasting.editFastConfirm',{start:localDateTimeLabel(start,tz),goal:formatGoal(nextGoal)})))return false;
+    data.activeStart=start.toISOString();data.activeGoalHours=nextGoal;data.activeTimeZone=tz;data.activeModifiedAt=new Date().toISOString();
+    if(!save()){renderAll();return false;}
+    hideModal('editActiveFastModal');invalidateDerivedCaches();renderAll();return true;
+  }
+
   function saveEditedActiveFast() {
     if (!data.activeStart || recoveryMode) { hideModal('editActiveFastModal'); return; }
     const tz=normalizeTimeZone(data.activeTimeZone||currentTimeZone()), start=zonedLocalToDate(el('editActiveFastStart').value,tz), goal=parseLocalizedNumber(el('editActiveFastGoal').value), error=el('editActiveFastError');
@@ -109,9 +145,13 @@
     if(!Number.isFinite(goal)||goal<0.25||goal>120){fail('fasting.editFastErrGoal');return;}
     if(backdateConflicts(start,new Date()).length){fail('backdate.errOverlap');return;}
     const nextGoal=sanitizeGoal(goal,activeTargetHours());
-    if(!confirm(t('fasting.editFastConfirm',{start:localDateTimeLabel(start,tz),goal:formatGoal(nextGoal)})))return;
-    data.activeStart=start.toISOString();data.activeGoalHours=nextGoal;data.activeTimeZone=tz;data.activeModifiedAt=new Date().toISOString();
-    if(!save()){renderAll();return;}hideModal('editActiveFastModal');invalidateDerivedCaches();renderAll();
+    if(nextGoal>=LONG_FAST_NOTICE_HOURS&&!longFastNoticeSeen()){
+      pendingLongFastGoal=nextGoal;pendingLongFastScope='editFast';pendingEditFastStart=start.toISOString();
+      hideModal('editActiveFastModal');
+      el('longFastModalText').textContent=t('safety.longFastText',{goal:formatGoal(nextGoal)});
+      showModal('longFastModal','longFastCancelBtn');return;
+    }
+    commitEditedActiveFast(start,nextGoal);
   }
 
   function openFastTimingModal() {
