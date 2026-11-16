@@ -2,7 +2,7 @@
 
 - Make Timing options actionable during an active fast by opening the existing Edit fast dialog, allowing correction of the start time and target.
 - Add a regression assertion ensuring active-fast Timing options route to Edit fast.
-- Stabilize the Timeline selection-persistence browser test with a completed, current-day segment.
+- Stabilize the Timeline selection-persistence test fixture and align its assertion with the displayed detail label.
 
 ## v1.18.1 — 2026-11-15
 
