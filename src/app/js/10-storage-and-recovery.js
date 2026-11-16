@@ -489,7 +489,7 @@
       const openModal = visibleModal();
       const activeField = document.activeElement;
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
-        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal' || openModal.id === 'activeTargetModal')) ||
+        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal')) ||
         activeField === goalHours || activeField === el('weightTargetInput'));
       if (!Array.isArray(next.deletedFasts)) next.deletedFasts = [];
       if (!Array.isArray(next.deletedWeights)) next.deletedWeights = [];
