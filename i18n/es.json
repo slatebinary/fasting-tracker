@@ -1164,5 +1164,9 @@
   "fasting.editFastErrStart": "Introduce una fecha y hora de inicio válidas.",
   "fasting.editFastErrGoal": "Introduce un objetivo de 0,25 a 120 horas.",
   "fasting.editFastConfirm": "¿Aplicar estos cambios? Inicio: {start}; objetivo: {goal}. Se recalcularán el tiempo transcurrido y el periodo posterior sin ayuno.",
-  "fasting.timingConfirm": "Continuar"
+  "fasting.timingConfirm": "Continuar",
+  "fasting.editFastGoalQuick": "Objetivo rápido (horas)",
+  "fasting.editFastGoalQuickAria": "Objetivos rápidos de ayuno",
+  "fasting.editFastStartQuick": "Comenzó hace cuánto",
+  "fasting.editFastStartQuickAria": "Horas rápidas desde el inicio del ayuno"
 }
