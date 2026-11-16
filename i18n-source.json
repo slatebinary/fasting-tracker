@@ -1,6 +1,6 @@
 {
   "sourceRevision": 44,
-  "appVersion": "1.18.4",
+  "appVersion": "1.19.0",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1168,6 +1168,10 @@
     "fasting.editFastErrStart": "Enter a valid fasting start date and time.",
     "fasting.editFastErrGoal": "Enter a target from 0.25 to 120 hours.",
     "fasting.editFastConfirm": "Apply these changes? Start: {start}; target: {goal}. This will recalculate elapsed time and the subsequent non-fasting remainder.",
-    "fasting.timingConfirm": "Continue"
+    "fasting.timingConfirm": "Continue",
+    "fasting.editFastGoalQuick": "Quick target (hours)",
+    "fasting.editFastGoalQuickAria": "Quick fasting target presets",
+    "fasting.editFastStartQuick": "Started how long ago",
+    "fasting.editFastStartQuickAria": "Quick fasting start-time presets"
   }
 }

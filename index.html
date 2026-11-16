@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.18.4" />
+  <meta name="ft-app-version" content="1.19.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -864,7 +864,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       <div class="fastingEncouragement" id="fastingEncouragement" aria-live="off" hidden></div>
       <div class="targetMoment" id="targetMoment" hidden></div>
       <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
-      <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
       <button id="editActiveFastBtn" class="secondary heroSecondary" data-i18n="fasting.editFast" hidden>Edit fast</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
       <button id="fastTimingBtn" class="secondary heroSecondary" data-i18n="fasting.timingOptions">Timing options</button>
@@ -1628,7 +1627,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   </div>
 </div>
 
-<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="backdateModal" hidden>
+<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"><div class="small" data-i18n="fasting.editFastStartQuick">Quick start time (how long ago)</div><div class="presetWrap" id="editFastStartPresets" data-i18n-aria="fasting.editFastStartQuickAria"><button type="button" class="chip" data-edit-start-hours="0.5">30m</button><button type="button" class="chip" data-edit-start-hours="1">1h</button><button type="button" class="chip" data-edit-start-hours="2">2h</button><button type="button" class="chip" data-edit-start-hours="3">3h</button><button type="button" class="chip" data-edit-start-hours="4">4h</button><button type="button" class="chip" data-edit-start-hours="6">6h</button><button type="button" class="chip" data-edit-start-hours="8">8h</button><button type="button" class="chip" data-edit-start-hours="12">12h</button></div></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"><div class="small" data-i18n="fasting.editFastGoalQuick">Quick target (hours)</div><div class="presetWrap" id="editFastGoalPresets" data-i18n-aria="fasting.editFastGoalQuickAria"><button type="button" class="chip" data-edit-goal="12">12h</button><button type="button" class="chip" data-edit-goal="14">14h</button><button type="button" class="chip" data-edit-goal="16">16h</button><button type="button" class="chip" data-edit-goal="18">18h</button><button type="button" class="chip" data-edit-goal="20">20h</button><button type="button" class="chip" data-edit-goal="22">22h</button><button type="button" class="chip" data-edit-goal="23">23h</button><button type="button" class="chip" data-edit-goal="24">24h</button><button type="button" class="chip" data-edit-goal="36">36h</button><button type="button" class="chip" data-edit-goal="48">48h</button><button type="button" class="chip" data-edit-goal="72">72h</button><button type="button" class="chip" data-edit-goal="96">96h</button><button type="button" class="chip" data-edit-goal="120">120h</button></div></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="backdateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
     <h2 id="backdateModalTitle" data-i18n="backdate.title">Start an ongoing fast</h2>
     <div class="small" data-i18n="backdate.help">Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.</div>
@@ -1659,38 +1658,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     <div class="modalActions">
       <button id="backdateCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
       <button id="backdateStartBtn" class="primary" data-i18n="backdate.startFast">Start fast</button>
-    </div>
-  </div>
-</div>
-
-<div class="modalBackdrop" id="activeTargetModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="activeTargetModalTitle">
-    <h2 id="activeTargetModalTitle" data-i18n="activeTarget.title">Change active fasting target</h2>
-    <div class="small" data-i18n="activeTarget.help">This changes the target for the current fast. When this fast is saved, that target becomes the default for the next fast.</div>
-    <div class="formGroup" style="margin-top:14px">
-      <label for="activeTargetInput" data-i18n="activeTarget.targetHours">Target hours</label>
-      <input id="activeTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
-    </div>
-    <div class="presetWrap" id="activeTargetPresets" aria-label="Quick active fasting targets" data-i18n-aria="activeTarget.quickAria">
-      <button type="button" class="chip" data-active-goal="12">12h</button>
-      <button type="button" class="chip" data-active-goal="14">14h</button>
-      <button type="button" class="chip" data-active-goal="16">16h</button>
-      <button type="button" class="chip" data-active-goal="18">18h</button>
-      <button type="button" class="chip" data-active-goal="20">20h</button>
-      <button type="button" class="chip" data-active-goal="22">22h</button>
-      <button type="button" class="chip" data-active-goal="23">23h</button>
-      <button type="button" class="chip" data-active-goal="24">24h</button>
-      <button type="button" class="chip" data-active-goal="36">36h</button>
-      <button type="button" class="chip" data-active-goal="48">48h</button>
-      <button type="button" class="chip" data-active-goal="72">72h</button>
-      <button type="button" class="chip" data-active-goal="96">96h</button>
-      <button type="button" class="chip" data-active-goal="120">120h</button>
-    </div>
-    <div class="small cycleHelp" id="activeGoalCycleHelp"></div>
-    <div class="formError" id="activeTargetError" hidden></div>
-    <div class="modalActions">
-      <button id="activeTargetCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="activeTargetSaveBtn" class="primary" data-i18n="common.save">Save</button>
     </div>
   </div>
 </div>
@@ -1997,7 +1964,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.18.4';
+  const APP_VERSION = '1.19.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2125,7 +2092,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const statusText = el('statusText');
   const toggleFast = el('toggleFast');
   const startEarlierBtn = el('startEarlierBtn');
-  const editActiveTargetBtn = el('editActiveTargetBtn');
   const fastProgressTrack = el('fastProgressTrack');
   const progressDetail = el('progressDetail');
   const goalText = el('goalText');
@@ -3062,8 +3028,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       const openModal = visibleModal();
       const activeField = document.activeElement;
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
-        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal' || openModal.id === 'activeTargetModal')) ||
-        activeField === goalHours || activeField === el('weightTargetInput') || activeField === el('activeTargetInput'));
+        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal')) ||
+        activeField === goalHours || activeField === el('weightTargetInput'));
       if (!Array.isArray(next.deletedFasts)) next.deletedFasts = [];
       if (!Array.isArray(next.deletedWeights)) next.deletedWeights = [];
       data = next;
@@ -3082,7 +3048,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
         editingRecordId = null; editingWeightId = null;
         editingRecordTimeZone = null; editingWeightTimeZone = null;
         const modal = visibleModal();
-        if (modal && (modal.id === 'entryModal' || modal.id === 'weightModal' || modal.id === 'backdateModal' || modal.id === 'activeTargetModal')) hideModal(modal.id);
+        if (modal && (modal.id === 'entryModal' || modal.id === 'weightModal' || modal.id === 'backdateModal')) hideModal(modal.id);
         if (activeField instanceof HTMLElement) activeField.blur();
       }
       renderAll();
@@ -4080,13 +4046,49 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
 
+  let pendingEditFastStart = null;
+
+  function syncEditFastPresetState() {
+    const goal = parseLocalizedNumber(el('editActiveFastGoal').value);
+    document.querySelectorAll('[data-edit-goal]').forEach(btn => {
+      const selected = Number.isFinite(goal) && Number(btn.dataset.editGoal) === goal;
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function setEditFastStartAgo(hours) {
+    const start = new Date(Date.now() - Number(hours) * 3600000);
+    el('editActiveFastStart').value = toLocalInputValue(start, data.activeTimeZone || currentTimeZone());
+    document.querySelectorAll('[data-edit-start-hours]').forEach(btn => {
+      const selected = Number(btn.dataset.editStartHours) === Number(hours);
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+    el('editActiveFastError').hidden = true;
+  }
+
   function openEditActiveFastModal() {
     if (!data.activeStart || recoveryMode) return;
     el('editActiveFastStart').value=toLocalInputValue(new Date(data.activeStart),data.activeTimeZone||currentTimeZone());
     el('editActiveFastGoal').value=String(activeTargetHours());
     el('editActiveFastZone').textContent=t('fasting.editFastZone',{zone:data.activeTimeZone||currentTimeZone()});
-    el('editActiveFastError').hidden=true; showModal('editActiveFastModal','editActiveFastStart');
+    el('editActiveFastError').hidden=true;
+    document.querySelectorAll('[data-edit-start-hours]').forEach(btn=>{btn.classList.remove('active');btn.setAttribute('aria-pressed','false');});
+    syncEditFastPresetState();
+    showModal('editActiveFastModal','editActiveFastStart');
   }
+
+  function commitEditedActiveFast(start, goal) {
+    if (!data.activeStart || recoveryMode) return false;
+    const tz=normalizeTimeZone(data.activeTimeZone||currentTimeZone());
+    const nextGoal=sanitizeGoal(goal,activeTargetHours());
+    if(!confirm(t('fasting.editFastConfirm',{start:localDateTimeLabel(start,tz),goal:formatGoal(nextGoal)})))return false;
+    data.activeStart=start.toISOString();data.activeGoalHours=nextGoal;data.activeTimeZone=tz;data.activeModifiedAt=new Date().toISOString();
+    if(!save()){renderAll();return false;}
+    hideModal('editActiveFastModal');invalidateDerivedCaches();renderAll();return true;
+  }
+
   function saveEditedActiveFast() {
     if (!data.activeStart || recoveryMode) { hideModal('editActiveFastModal'); return; }
     const tz=normalizeTimeZone(data.activeTimeZone||currentTimeZone()), start=zonedLocalToDate(el('editActiveFastStart').value,tz), goal=parseLocalizedNumber(el('editActiveFastGoal').value), error=el('editActiveFastError');
@@ -4096,9 +4098,13 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if(!Number.isFinite(goal)||goal<0.25||goal>120){fail('fasting.editFastErrGoal');return;}
     if(backdateConflicts(start,new Date()).length){fail('backdate.errOverlap');return;}
     const nextGoal=sanitizeGoal(goal,activeTargetHours());
-    if(!confirm(t('fasting.editFastConfirm',{start:localDateTimeLabel(start,tz),goal:formatGoal(nextGoal)})))return;
-    data.activeStart=start.toISOString();data.activeGoalHours=nextGoal;data.activeTimeZone=tz;data.activeModifiedAt=new Date().toISOString();
-    if(!save()){renderAll();return;}hideModal('editActiveFastModal');invalidateDerivedCaches();renderAll();
+    if(nextGoal>=LONG_FAST_NOTICE_HOURS&&!longFastNoticeSeen()){
+      pendingLongFastGoal=nextGoal;pendingLongFastScope='editFast';pendingEditFastStart=start.toISOString();
+      hideModal('editActiveFastModal');
+      el('longFastModalText').textContent=t('safety.longFastText',{goal:formatGoal(nextGoal)});
+      showModal('longFastModal','longFastCancelBtn');return;
+    }
+    commitEditedActiveFast(start,nextGoal);
   }
 
   function openFastTimingModal() {
@@ -4172,67 +4178,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     saveBackdatedActiveFast();
   }
 
-  function showActiveTargetError(message) {
-    const box = el('activeTargetError');
-    box.textContent = message || '';
-    box.hidden = !message;
-  }
-
-  function syncActiveTargetPresetState() {
-    const current = parseLocalizedNumber(el('activeTargetInput').value);
-    document.querySelectorAll('[data-active-goal]').forEach(btn => {
-      const selected = Number.isFinite(current) && Number(btn.dataset.activeGoal) === current;
-      btn.classList.toggle('active', selected);
-      btn.setAttribute('aria-pressed', String(selected));
-    });
-    updateCycleHelpers();
-  }
-
-  function openActiveTargetModal() {
-    if (!data.activeStart || recoveryMode) return;
-    el('activeTargetInput').value = formatNumber(activeTargetHours(), 0, 3);
-    showActiveTargetError('');
-    syncActiveTargetPresetState();
-    showModal('activeTargetModal', 'activeTargetInput');
-  }
-
-  function closeActiveTargetModal() {
-    showActiveTargetError('');
-    hideModal('activeTargetModal');
-  }
-
-  function applyActiveGoalValue(value) {
-    if (!data.activeStart) return false;
-    const next = sanitizeGoal(value, activeTargetHours());
-    if (next === activeTargetHours()) { closeActiveTargetModal(); return true; }
-    data.activeGoalHours = next;
-    data.activeModifiedAt = new Date().toISOString();
-    if (!save({ invalidateDerived:false, dirtyViews:['fasting','settings'] })) { renderAll(); return false; }
-    closeActiveTargetModal();
-    updateTimer();
-    viewDirty.fasting = false;
-    renderBackupStatus();
-    return true;
-  }
-
-  function requestActiveGoalChange(value) {
-    const parsed = parseLocalizedNumber(value);
-    if (!Number.isFinite(parsed) || parsed <= 0 || parsed > MAX_SAFE_GOAL_HOURS) {
-      showActiveTargetError(t('activeTarget.errGoal'));
-      return;
-    }
-    const next = sanitizeGoal(parsed, activeTargetHours());
-    if (next >= LONG_FAST_NOTICE_HOURS && !longFastNoticeSeen()) {
-      pendingLongFastGoal = next;
-      pendingLongFastScope = 'active';
-      closeActiveTargetModal();
-      el('longFastModalText').textContent = t('safety.longFastText', { goal: formatGoal(next) });
-      showModal('longFastModal', 'longFastCancelBtn');
-      return;
-    }
-    applyActiveGoalValue(next);
-  }
-
+// Active target editing is consolidated into the Edit fast workflow in 15-backdated-fast-workflows.js.
   function exactDuration(ms) {
     ms = Math.max(0, ms);
     const totalSec = Math.floor(ms / 1000);
@@ -4706,11 +4652,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   function updateCycleHelpers() {
     const goalHelp = el('goalCycleHelp');
     if (goalHelp) goalHelp.textContent = cycleHelperText(data.goalHours);
-    const activeHelp = el('activeGoalCycleHelp');
-    if (activeHelp) {
-      const parsed = parseLocalizedNumber(el('activeTargetInput')?.value);
-      activeHelp.textContent = cycleHelperText(Number.isFinite(parsed) && parsed > 0 ? parsed : activeTargetHours());
-    }
   }
 
   function latestCompletedFast() {
@@ -4812,7 +4753,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       toggleFast.textContent = t('fasting.stop');
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
-      editActiveTargetBtn.hidden = false;
       el('editActiveFastBtn').hidden = false;
       el('fastTimingBtn').hidden = true;
       const visualPct = Math.min(100, Math.max(0, pct));
@@ -4862,7 +4802,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       toggleFast.textContent = t('fasting.cancelScheduled');
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
-      editActiveTargetBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
       el('fastTimingBtn').hidden = true;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
@@ -4881,7 +4820,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       toggleFast.textContent = t('fasting.start');
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
-      editActiveTargetBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
       el('fastTimingBtn').hidden = false;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
@@ -9641,19 +9579,15 @@ function mergeImportedData(imported) {
   bindReliableModalAction(el('keepFastingBtn'), keepFastingAndReturnHome);
   bindReliableModalAction(el('stopAndSaveBtn'), confirmStopFast);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
-  bindResponsiveAction(editActiveTargetBtn, openActiveTargetModal);
-  el('activeTargetCancelBtn').addEventListener('click', closeActiveTargetModal);
-  bindResponsiveAction(el('activeTargetSaveBtn'), () => requestActiveGoalChange(el('activeTargetInput').value));
-  el('activeTargetInput').addEventListener('input', () => { showActiveTargetError(''); syncActiveTargetPresetState(); });
-  el('activeTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') requestActiveGoalChange(el('activeTargetInput').value); });
-  el('activeTargetInput').addEventListener('input', syncActiveTargetPresetState);
-
-  document.querySelectorAll('[data-active-goal]').forEach(btn => bindResponsiveAction(btn, () => {
-    el('activeTargetInput').value = formatNumber(Number(btn.dataset.activeGoal), 0, 3);
-    showActiveTargetError('');
-    syncActiveTargetPresetState();
+  el('editActiveFastCancel').addEventListener('click', () => hideModal('editActiveFastModal'));
+  bindResponsiveAction(el('editActiveFastSave'), saveEditedActiveFast);
+  el('editActiveFastGoal').addEventListener('input', syncEditFastPresetState);
+  el('editActiveFastStart').addEventListener('input', () => document.querySelectorAll('[data-edit-start-hours]').forEach(btn => { btn.classList.remove('active'); btn.setAttribute('aria-pressed','false'); }));
+  document.querySelectorAll('[data-edit-goal]').forEach(btn => bindResponsiveAction(btn, () => {
+    el('editActiveFastGoal').value=String(btn.dataset.editGoal);syncEditFastPresetState();
   }));
-  el('activeTargetModal').addEventListener('click', e => { if (e.target === el('activeTargetModal')) closeActiveTargetModal(); });
+  document.querySelectorAll('[data-edit-start-hours]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartHours)));
+  el('editActiveFastModal').addEventListener('click',e=>{if(e.target===el('editActiveFastModal'))hideModal('editActiveFastModal');});
   el('fastTimingCancel').addEventListener('click', () => hideModal('fastTimingModal'));
   el('fastTimingConfirm').addEventListener('click', confirmFastTiming);
   el('fastTimingMode').addEventListener('change', updateFastTimingHint);
@@ -9711,7 +9645,6 @@ function mergeImportedData(imported) {
     const modal = visibleModal();
     if (e.key === 'Escape' && modal) {
       if (modal.id === 'backdateModal') closeBackdateModal();
-      else if (modal.id === 'activeTargetModal') closeActiveTargetModal();
       else if (modal.id === 'entryModal') closeEntryModal();
       else if (modal.id === 'weightModal') closeWeightModal();
       else if (modal.id === 'updateModal') closeUpdateModal();
@@ -9744,17 +9677,18 @@ function mergeImportedData(imported) {
     }
   });
 
-  el('longFastCancelBtn').addEventListener('click', () => { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); });
+  el('longFastCancelBtn').addEventListener('click', () => { pendingLongFastGoal = null; pendingLongFastScope = 'default'; pendingEditFastStart = null; hideModal('longFastModal'); renderAll(); });
   el('longFastContinueBtn').addEventListener('click', () => {
     const next = pendingLongFastGoal;
     const scope = pendingLongFastScope;
     pendingLongFastGoal = null;
     pendingLongFastScope = 'default';
     hideModal('longFastModal');
-    const applied = next != null && (scope === 'active' ? applyActiveGoalValue(next) : applyGoalValue(next));
+    const applied = next != null && (scope === 'editFast' ? commitEditedActiveFast(new Date(pendingEditFastStart),next) : applyGoalValue(next));
+    pendingEditFastStart = null;
     if (applied) { try { localStorage.setItem(LONG_FAST_NOTICE_KEY, '1'); } catch {} }
   });
-  el('longFastModal').addEventListener('click', e => { if (e.target === el('longFastModal')) { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); } });
+  el('longFastModal').addEventListener('click', e => { if (e.target === el('longFastModal')) { pendingLongFastGoal = null; pendingLongFastScope = 'default'; pendingEditFastStart = null; hideModal('longFastModal'); renderAll(); } });
 
   el('recoveryExportBtn').addEventListener('click', exportRecoveryRaw);
   el('recoverySnapshotsBtn').addEventListener('click', openSnapshotModal);
