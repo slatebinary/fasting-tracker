@@ -1,3 +1,8 @@
+## v1.18.4 — 2026-11-16
+
+- Increase the text-size percentage input height and tune its line-height/padding so values remain fully visible through the 150% app text-size setting.
+- Add a regression assertion for the percentage field's sizing and accessible label.
+
 ## v1.18.3 — 2026-11-16
 
 - Restore distinct actions: Edit fast corrects an active fast; Timing options schedules a future start or records a retrospective start only while idle.
