@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.19.0",
+  "version": "1.19.1",
   "released": "2026-11-16",
-  "notes": "Consolidate active fast editing with quick start-time and target presets",
+  "notes": "Add minute-level quick start-time presets to Edit fast",
   "entry": "./index.html",
   "shell": [
     "./",
