@@ -14,8 +14,9 @@ except Exception as exc:
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 now = datetime.now(timezone.utc)
-end = now - timedelta(minutes=1)
-start = end - timedelta(hours=2)
+today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+start = today_start - timedelta(hours=1)
+end = today_start + timedelta(hours=1)  # completed at 01:00 UTC, safely before this test runs
 iso = lambda value: value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 data = build_data(240)
 data["records"].append({
@@ -51,7 +52,7 @@ with sync_playwright() as p:
       const x=r.right-12;
       const y=r.top+18+(hour/24)*(c.clientHeight-18-38);
       return {x,y,canvasRight:r.right,canvasLeft:r.left,scrollRight:c.parentElement.getBoundingClientRect().right};
-    }""", (start + (end-start)/2).hour + ((start + (end-start)/2).minute/60))
+    }""", 0.5)
     if point["x"] > point["scrollRight"] or point["x"] < 0:
         raise AssertionError(f"Latest Timeline column is not in the viewport: {point}")
     canvas.evaluate("""(c,p) => {
@@ -62,7 +63,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(100)
     title = page.locator("#chartDetailTitle").inner_text().strip()
     detail = page.locator("#chartDetailText").inner_text().strip()
-    if not title or "Fasting:" not in detail or "2h 0m of 16h 0m" not in detail:
+    if not title or "Fasting this day:" not in detail or "2h 0m of 16h 0m" not in detail:
         raise AssertionError(f"Tap did not select today's two-hour fast segment: {title!r} / {detail!r}; point={point}")
 
     page.locator('.tab[data-screen="weight"]').click()
