@@ -719,7 +719,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     #textScaleRange { flex:1 1 110px; width:auto; min-width:80px; max-width:240px; min-height:40px; padding:0; margin:0; }
     .textScaleStep { flex:0 0 40px; width:40px; min-width:40px; height:40px; min-height:40px; padding:0; font-size:1.25rem; }
     .textScaleNumber { display:flex; align-items:center; gap:2px; font-weight:700; font-variant-numeric:tabular-nums; }
-    #textScaleNumber { width:54px; min-width:54px; min-height:40px; padding:5px 3px; text-align:center; font:inherit; }
+    #textScaleNumber { box-sizing:border-box; width:54px; min-width:54px; height:48px; min-height:48px; padding:3px 2px; line-height:1.2; text-align:center; font:inherit; }
     .textScaleReset { min-height:40px; padding:6px 9px; }
     .textScalePreview { display:grid; gap:5px; margin-top:2px; }
     .textScalePreviewSample { display:flex; flex-direction:column; align-items:flex-start; gap:5px; padding:10px; border:1px solid var(--border); border-radius:10px; font-size:calc(1rem * var(--ft-text-scale,1)); }

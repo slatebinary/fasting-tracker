@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.18.3",
+  "version": "1.18.4",
   "released": "2026-11-16",
-  "notes": "Restore distinct Timing options and Edit fast actions; hide timing controls when unavailable",
+  "notes": "Prevent clipping of the Text size percentage value",
   "entry": "./index.html",
   "shell": [
     "./",
