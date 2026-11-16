@@ -1,6 +1,6 @@
 {
   "sourceRevision": 44,
-  "appVersion": "1.19.0",
+  "appVersion": "1.19.1",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1172,6 +1172,10 @@
     "fasting.editFastGoalQuick": "Quick target (hours)",
     "fasting.editFastGoalQuickAria": "Quick fasting target presets",
     "fasting.editFastStartQuick": "Started how long ago",
-    "fasting.editFastStartQuickAria": "Quick fasting start-time presets"
+    "fasting.editFastStartQuickAria": "Quick fasting start-time presets",
+    "fasting.editFastStartMinutesLabel": "Minutes ago",
+    "fasting.editFastStartHoursLabel": "Hours ago",
+    "fasting.editFastStartMinutesAria": "Quick start time in minutes ago",
+    "fasting.editFastStartHoursAria": "Quick start time in hours ago"
   }
 }
