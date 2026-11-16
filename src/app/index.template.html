@@ -126,7 +126,6 @@ layout: null
       <div class="fastingEncouragement" id="fastingEncouragement" aria-live="off" hidden></div>
       <div class="targetMoment" id="targetMoment" hidden></div>
       <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
-      <button id="editActiveTargetBtn" class="secondary heroSecondary" data-i18n="fasting.changeTarget" hidden>Change target</button>
       <button id="editActiveFastBtn" class="secondary heroSecondary" data-i18n="fasting.editFast" hidden>Edit fast</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
       <button id="fastTimingBtn" class="secondary heroSecondary" data-i18n="fasting.timingOptions">Timing options</button>
@@ -890,7 +889,7 @@ layout: null
   </div>
 </div>
 
-<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="backdateModal" hidden>
+<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"><div class="small" data-i18n="fasting.editFastStartQuick">Quick start time (how long ago)</div><div class="presetWrap" id="editFastStartPresets" data-i18n-aria="fasting.editFastStartQuickAria"><button type="button" class="chip" data-edit-start-hours="0.5">30m</button><button type="button" class="chip" data-edit-start-hours="1">1h</button><button type="button" class="chip" data-edit-start-hours="2">2h</button><button type="button" class="chip" data-edit-start-hours="3">3h</button><button type="button" class="chip" data-edit-start-hours="4">4h</button><button type="button" class="chip" data-edit-start-hours="6">6h</button><button type="button" class="chip" data-edit-start-hours="8">8h</button><button type="button" class="chip" data-edit-start-hours="12">12h</button></div></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"><div class="small" data-i18n="fasting.editFastGoalQuick">Quick target (hours)</div><div class="presetWrap" id="editFastGoalPresets" data-i18n-aria="fasting.editFastGoalQuickAria"><button type="button" class="chip" data-edit-goal="12">12h</button><button type="button" class="chip" data-edit-goal="14">14h</button><button type="button" class="chip" data-edit-goal="16">16h</button><button type="button" class="chip" data-edit-goal="18">18h</button><button type="button" class="chip" data-edit-goal="20">20h</button><button type="button" class="chip" data-edit-goal="22">22h</button><button type="button" class="chip" data-edit-goal="23">23h</button><button type="button" class="chip" data-edit-goal="24">24h</button><button type="button" class="chip" data-edit-goal="36">36h</button><button type="button" class="chip" data-edit-goal="48">48h</button><button type="button" class="chip" data-edit-goal="72">72h</button><button type="button" class="chip" data-edit-goal="96">96h</button><button type="button" class="chip" data-edit-goal="120">120h</button></div></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="backdateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
     <h2 id="backdateModalTitle" data-i18n="backdate.title">Start an ongoing fast</h2>
     <div class="small" data-i18n="backdate.help">Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.</div>
@@ -921,38 +920,6 @@ layout: null
     <div class="modalActions">
       <button id="backdateCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
       <button id="backdateStartBtn" class="primary" data-i18n="backdate.startFast">Start fast</button>
-    </div>
-  </div>
-</div>
-
-<div class="modalBackdrop" id="activeTargetModal" hidden>
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="activeTargetModalTitle">
-    <h2 id="activeTargetModalTitle" data-i18n="activeTarget.title">Change active fasting target</h2>
-    <div class="small" data-i18n="activeTarget.help">This changes the target for the current fast. When this fast is saved, that target becomes the default for the next fast.</div>
-    <div class="formGroup" style="margin-top:14px">
-      <label for="activeTargetInput" data-i18n="activeTarget.targetHours">Target hours</label>
-      <input id="activeTargetInput" class="numericInput" type="text" inputmode="decimal" autocomplete="off" />
-    </div>
-    <div class="presetWrap" id="activeTargetPresets" aria-label="Quick active fasting targets" data-i18n-aria="activeTarget.quickAria">
-      <button type="button" class="chip" data-active-goal="12">12h</button>
-      <button type="button" class="chip" data-active-goal="14">14h</button>
-      <button type="button" class="chip" data-active-goal="16">16h</button>
-      <button type="button" class="chip" data-active-goal="18">18h</button>
-      <button type="button" class="chip" data-active-goal="20">20h</button>
-      <button type="button" class="chip" data-active-goal="22">22h</button>
-      <button type="button" class="chip" data-active-goal="23">23h</button>
-      <button type="button" class="chip" data-active-goal="24">24h</button>
-      <button type="button" class="chip" data-active-goal="36">36h</button>
-      <button type="button" class="chip" data-active-goal="48">48h</button>
-      <button type="button" class="chip" data-active-goal="72">72h</button>
-      <button type="button" class="chip" data-active-goal="96">96h</button>
-      <button type="button" class="chip" data-active-goal="120">120h</button>
-    </div>
-    <div class="small cycleHelp" id="activeGoalCycleHelp"></div>
-    <div class="formError" id="activeTargetError" hidden></div>
-    <div class="modalActions">
-      <button id="activeTargetCancelBtn" class="secondary" data-i18n="common.cancel">Cancel</button>
-      <button id="activeTargetSaveBtn" class="primary" data-i18n="common.save">Save</button>
     </div>
   </div>
 </div>

@@ -489,8 +489,8 @@
       const openModal = visibleModal();
       const activeField = document.activeElement;
       const interruptedEdit = !!(editingRecordId || editingWeightId ||
-        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal' || openModal.id === 'activeTargetModal')) ||
-        activeField === goalHours || activeField === el('weightTargetInput') || activeField === el('activeTargetInput'));
+        (openModal && (openModal.id === 'entryModal' || openModal.id === 'weightModal' || openModal.id === 'backdateModal')) ||
+        activeField === goalHours || activeField === el('weightTargetInput'));
       if (!Array.isArray(next.deletedFasts)) next.deletedFasts = [];
       if (!Array.isArray(next.deletedWeights)) next.deletedWeights = [];
       data = next;
@@ -509,7 +509,7 @@
         editingRecordId = null; editingWeightId = null;
         editingRecordTimeZone = null; editingWeightTimeZone = null;
         const modal = visibleModal();
-        if (modal && (modal.id === 'entryModal' || modal.id === 'weightModal' || modal.id === 'backdateModal' || modal.id === 'activeTargetModal')) hideModal(modal.id);
+        if (modal && (modal.id === 'entryModal' || modal.id === 'weightModal' || modal.id === 'backdateModal')) hideModal(modal.id);
         if (activeField instanceof HTMLElement) activeField.blur();
       }
       renderAll();
