@@ -157,7 +157,6 @@
     const modal = visibleModal();
     if (e.key === 'Escape' && modal) {
       if (modal.id === 'backdateModal') closeBackdateModal();
-      else if (modal.id === 'activeTargetModal') closeActiveTargetModal();
       else if (modal.id === 'entryModal') closeEntryModal();
       else if (modal.id === 'weightModal') closeWeightModal();
       else if (modal.id === 'updateModal') closeUpdateModal();
