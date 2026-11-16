@@ -1171,6 +1171,6 @@
   "fasting.editFastStartQuickAria": "Quick fasting start-time presets",
   "fasting.editFastStartMinutesLabel": "Minutes ago",
   "fasting.editFastStartHoursLabel": "Hours ago",
-  "fasting.editFastStartMinutesAria": "Quick start-time presets in minutes ago",
-  "fasting.editFastStartHoursAria": "Quick start-time presets in hours ago"
+  "fasting.editFastStartMinutesAria": "Quick start time in minutes ago",
+  "fasting.editFastStartHoursAria": "Quick start time in hours ago"
 }
