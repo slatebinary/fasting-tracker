@@ -645,7 +645,7 @@ ok('entryAuditHelp' in index and 'history.editMaterialConfirm' in en_source, 'co
 
 # v1.12.2 fasting-cycle preset/countdown regression checks
 ok('data-goal="12"' in index and 'data-goal="14"' in index and 'data-goal="20"' in index, '12h/14h/20h settings presets missing')
-ok('data-active-goal="12"' in index and 'data-active-goal="14"' in index and 'data-active-goal="20"' in index, '12h/14h/20h active-target presets missing')
+ok('data-edit-goal="12"' in index and 'data-edit-goal="14"' in index and 'data-edit-goal="20"' in index, '12h/14h/20h Edit fast target presets missing')
 ok('id="nextFastCard"' in index and 'function nextFastCycleInfo' in index and 'durationMs >= dayMs' in index, 'next-fast countdown implementation missing')
 ok('data.goalHours = activeSnapshot.activeGoalHours;' in index, 'last used target is not carried forward as next default')
 ok((ROOT/'tests'/'test_fasting_cycle.py').is_file(), 'fasting-cycle browser regression test missing')
@@ -658,10 +658,10 @@ if errors:
 
 
 ok('activeModifiedAt: null' in index, 'active fast modification audit field missing from canonical data')
-ok("data.activeModifiedAt = new Date().toISOString();" in index, 'editing active fasting target does not stamp modification time')
+ok('data.activeModifiedAt=new Date().toISOString()' in index, 'editing active fast does not stamp modification time')
 ok('createdAt: activeSnapshot.activeCreatedAt' in index and 'modifiedAt: activeSnapshot.activeModifiedAt' in index, 'active fast modification time is not carried into completed record')
-ok('id="editActiveTargetBtn"' in index and 'id="activeTargetModal"' in index, 'active target editing UI is missing')
-ok("function requestActiveGoalChange(value)" in index and "function applyActiveGoalValue(value)" in index, 'active target editing logic is missing')
+ok('id="editActiveFastBtn"' in index and 'id="editActiveFastModal"' in index and 'id="editActiveTargetBtn"' not in index, 'consolidated Edit fast UI is missing')
+ok('function saveEditedActiveFast()' in index and 'function commitEditedActiveFast(start, goal)' in index, 'Edit fast workflow is missing')
 
 # v1.7.10 active-target edit and newest-first timeline regression checks
 ok("let timelineScrollToLatestPending = true;" in index, 'timeline latest-position state missing')

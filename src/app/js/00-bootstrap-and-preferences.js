@@ -164,7 +164,6 @@
   const statusText = el('statusText');
   const toggleFast = el('toggleFast');
   const startEarlierBtn = el('startEarlierBtn');
-  const editActiveTargetBtn = el('editActiveTargetBtn');
   const fastProgressTrack = el('fastProgressTrack');
   const progressDetail = el('progressDetail');
   const goalText = el('goalText');

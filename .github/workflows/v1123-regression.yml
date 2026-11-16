@@ -13,6 +13,7 @@ on:
       - fix/palette-hints-integrity-stats-v1.17.35
       - refactor/storage-recovery-service-v1.17.38
       - main
+      - feat/v1.19.0-edit-fast-presets
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -52,6 +53,7 @@ jobs:
           python3 tests/test_changelog_unique_versions.py
           python3 tests/test_palette_hint_initialization.py
           python3 tests/test_scheduled_fast_start.py
+          python3 tests/test_v1190_edit_fast_presets.py
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
@@ -105,6 +107,7 @@ jobs:
           python3 tests/test_stats_month_comparison_selection.py
           python3 tests/test_v11773_timeline_selection_persistence.py
           python3 tests/test_fasting_encouragement_v1179.py
+          python3 tests/test_v1190_edit_fast_browser.py
       - name: Execute statistics performance regression
         run: python3 tests/test_performance.py
       - name: Execute extended migration, accessibility and lifetime performance regressions
