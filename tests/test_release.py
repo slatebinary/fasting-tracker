@@ -660,7 +660,7 @@ if errors:
 ok('activeModifiedAt: null' in index, 'active fast modification audit field missing from canonical data')
 ok("data.activeModifiedAt = new Date().toISOString();" in index, 'editing active fasting target does not stamp modification time')
 ok('createdAt: activeSnapshot.activeCreatedAt' in index and 'modifiedAt: activeSnapshot.activeModifiedAt' in index, 'active fast modification time is not carried into completed record')
-ok('id="editActiveTargetBtn"' in index and 'id="activeTargetModal"' in index, 'active target editing UI is missing')
+ok('id="editActiveFastBtn"' in index and 'id="editActiveFastModal"' in index and 'id="editActiveTargetBtn"' not in index, 'consolidated Edit fast UI is missing')
 ok("function requestActiveGoalChange(value)" in index and "function applyActiveGoalValue(value)" in index, 'active target editing logic is missing')
 
 # v1.7.10 active-target edit and newest-first timeline regression checks
