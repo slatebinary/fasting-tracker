@@ -95,6 +95,7 @@
   el('editActiveFastCancel').addEventListener('click', () => hideModal('editActiveFastModal'));
   bindResponsiveAction(el('editActiveFastSave'), saveEditedActiveFast);
   el('editActiveFastGoal').addEventListener('input', syncEditFastPresetState);
+  el('editActiveFastStart').addEventListener('input', () => document.querySelectorAll('[data-edit-start-hours]').forEach(btn => { btn.classList.remove('active'); btn.setAttribute('aria-pressed','false'); }));
   document.querySelectorAll('[data-edit-goal]').forEach(btn => bindResponsiveAction(btn, () => {
     el('editActiveFastGoal').value=String(btn.dataset.editGoal);syncEditFastPresetState();
   }));
