@@ -14,7 +14,7 @@ except Exception as exc:
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 now = datetime.now(timezone.utc)
-end = now - timedelta(minutes=1)
+end = now - timedelta(hours=2, minutes=1)  # keep the two-hour segment fully completed during browser execution
 start = end - timedelta(hours=2)
 iso = lambda value: value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 data = build_data(240)
