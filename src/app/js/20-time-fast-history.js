@@ -132,6 +132,7 @@
       startEarlierBtn.hidden = true;
       editActiveTargetBtn.hidden = false;
       el('editActiveFastBtn').hidden = false;
+      el('fastTimingBtn').hidden = true;
       const visualPct = Math.min(100, Math.max(0, pct));
       fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
       fastProgressTrack.classList.toggle('reached', pct >= 100);
@@ -181,6 +182,7 @@
       startEarlierBtn.hidden = true;
       editActiveTargetBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
+      el('fastTimingBtn').hidden = true;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
       fastProgressTrack.setAttribute('aria-valuenow', '0');
@@ -198,6 +200,8 @@
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
       editActiveTargetBtn.hidden = true;
+      el('editActiveFastBtn').hidden = true;
+      el('fastTimingBtn').hidden = false;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
       fastProgressTrack.setAttribute('aria-valuenow', '0');
