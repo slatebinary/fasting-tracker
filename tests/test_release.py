@@ -645,7 +645,7 @@ ok('entryAuditHelp' in index and 'history.editMaterialConfirm' in en_source, 'co
 
 # v1.12.2 fasting-cycle preset/countdown regression checks
 ok('data-goal="12"' in index and 'data-goal="14"' in index and 'data-goal="20"' in index, '12h/14h/20h settings presets missing')
-ok('data-active-goal="12"' in index and 'data-active-goal="14"' in index and 'data-active-goal="20"' in index, '12h/14h/20h active-target presets missing')
+ok('data-edit-goal="12"' in index and 'data-edit-goal="14"' in index and 'data-edit-goal="20"' in index, '12h/14h/20h Edit fast target presets missing')
 ok('id="nextFastCard"' in index and 'function nextFastCycleInfo' in index and 'durationMs >= dayMs' in index, 'next-fast countdown implementation missing')
 ok('data.goalHours = activeSnapshot.activeGoalHours;' in index, 'last used target is not carried forward as next default')
 ok((ROOT/'tests'/'test_fasting_cycle.py').is_file(), 'fasting-cycle browser regression test missing')
