@@ -38,6 +38,8 @@ style = html.split("<style>", 1)[1].split("</style>", 1)[0]
 assert style == css, "Generated index stylesheet is out of sync with source"
 assert "font: -apple-system-body" not in style
 assert 'id="textScaleRange"' in html and 'min="80" max="150" step="5"' in html
+assert '#textScaleNumber { box-sizing:border-box; width:54px; min-width:54px; height:48px; min-height:48px; padding:3px 2px; line-height:1.2; text-align:center; font:inherit; }' in css, "Percentage input must have sufficient height at 150% app text scale"
+assert 'id="textScaleNumber"' in html and 'aria-label="Text size percentage"' in html
 assert 'id="textScaleReset"' in html and "fastingTracker.textScale" in html
 # On narrow iPhone widths, the slider gets its own row and Reset remains fully visible.
 assert ".textScaleControl { display:grid; grid-template-columns:36px 36px minmax(0,1fr) auto;" in css
