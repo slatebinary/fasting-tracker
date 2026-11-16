@@ -44,9 +44,19 @@ with sync_playwright() as p:
     page.locator("#editActiveFastBtn").click()
     page.locator("#editActiveFastModal").wait_for(state="visible", timeout=5000)
 
+    # Minute presets must update the editable field and expose their selected state.
+    page.locator('[data-edit-start-minutes="5"]').click()
+    minute_start = page.locator("#editActiveFastStart").input_value()
+    assert minute_start
+    assert page.locator('[data-edit-start-minutes="5"]').get_attribute("aria-pressed") == "true"
+    assert page.locator('[data-edit-start-hours="4"]').get_attribute("aria-pressed") == "false"
+    minute_delta_ms = page.evaluate("Date.now() - new Date(document.querySelector('#editActiveFastStart').value).getTime()")
+    assert 4 * 60000 <= minute_delta_ms <= 6 * 60000, f"5-minute preset produced {minute_delta_ms}ms elapsed"
+
     page.locator('[data-edit-start-hours="4"]').click()
     assert page.locator("#editActiveFastStart").input_value()
     assert page.locator('[data-edit-start-hours="4"]').get_attribute("aria-pressed") == "true"
+    assert page.locator('[data-edit-start-minutes="5"]').get_attribute("aria-pressed") == "false"
 
     page.locator('[data-edit-goal="20"]').click()
     assert page.locator("#editActiveFastGoal").input_value() == "20"

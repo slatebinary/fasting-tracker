@@ -1,3 +1,10 @@
+## v1.19.1 — 2026-11-16
+
+- Add minute-level Edit fast start presets (1, 2, 5, 10, 15, 20, 30 and 45 minutes ago), grouped separately from hour presets.
+- Retain direct date/time editing and the existing hour presets; selecting a preset updates the draft only and does not save the fast.
+- Synchronize preset selection state with the start-time field and localize the new labels and accessible group names in English, Bulgarian and Spanish.
+- Extend regression checks for all minute/hour presets, bindings and locale coverage.
+
 ## v1.19.0 — 2026-11-16
 
 - Consolidate active-fast start-time and target editing into the single Edit fast workflow; remove the duplicate Change target control.

@@ -1168,5 +1168,9 @@
   "fasting.editFastGoalQuick": "Бърза цел (часове)",
   "fasting.editFastGoalQuickAria": "Бързи предварителни настройки за целта на гладуването",
   "fasting.editFastStartQuick": "Започнало преди колко време",
-  "fasting.editFastStartQuickAria": "Бързи настройки за началото на гладуването"
+  "fasting.editFastStartQuickAria": "Бързи настройки за началото на гладуването",
+  "fasting.editFastStartMinutesLabel": "Минути назад",
+  "fasting.editFastStartHoursLabel": "Часове назад",
+  "fasting.editFastStartMinutesAria": "Бърз избор на начален час в минути назад",
+  "fasting.editFastStartHoursAria": "Бърз избор на начален час в часове назад"
 }

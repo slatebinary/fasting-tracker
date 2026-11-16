@@ -104,14 +104,26 @@
     });
   }
 
-  function setEditFastStartAgo(hours) {
-    const start = new Date(Date.now() - Number(hours) * 3600000);
-    el('editActiveFastStart').value = toLocalInputValue(start, data.activeTimeZone || currentTimeZone());
-    document.querySelectorAll('[data-edit-start-hours]').forEach(btn => {
-      const selected = Number(btn.dataset.editStartHours) === Number(hours);
+  function syncEditFastStartPresetState() {
+    const current = el('editActiveFastStart').value;
+    const zone = data.activeTimeZone || currentTimeZone();
+    document.querySelectorAll('[data-edit-start-minutes], [data-edit-start-hours]').forEach(btn => {
+      const minutes = btn.dataset.editStartMinutes;
+      const hours = btn.dataset.editStartHours;
+      const delta = minutes !== undefined ? Number(minutes) * 60000 : Number(hours) * 3600000;
+      const presetValue = toLocalInputValue(new Date(Date.now() - delta), zone);
+      const selected = current === presetValue;
       btn.classList.toggle('active', selected);
       btn.setAttribute('aria-pressed', String(selected));
     });
+  }
+
+  function setEditFastStartAgo(value, unit = 'hours') {
+    const amount = Number(value);
+    const delta = amount * (unit === 'minutes' ? 60000 : 3600000);
+    const start = new Date(Date.now() - delta);
+    el('editActiveFastStart').value = toLocalInputValue(start, data.activeTimeZone || currentTimeZone());
+    syncEditFastStartPresetState();
     el('editActiveFastError').hidden = true;
   }
 
