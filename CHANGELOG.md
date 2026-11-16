@@ -1,3 +1,9 @@
+## v1.18.3 — 2026-11-16
+
+- Restore distinct actions: Edit fast corrects an active fast; Timing options schedules a future start or records a retrospective start only while idle.
+- Hide Timing options during active or scheduled fasting and keep Edit fast exclusive to active fasting.
+- Add regression checks for the separate workflows and their state-dependent visibility.
+
 ## v1.18.2 — 2026-11-15
 
 - Make Timing options actionable during an active fast by opening the existing Edit fast dialog, allowing correction of the start time and target.
