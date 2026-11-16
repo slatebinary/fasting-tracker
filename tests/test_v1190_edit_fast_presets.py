@@ -20,5 +20,7 @@ assert "pendingLongFastScope='editFast'" in workflow
 assert "commitEditedActiveFast(new Date(pendingEditFastStart),next)" in bindings
 assert "data-edit-start-hours" in bindings and "data-edit-goal" in bindings
 assert "editActiveTargetBtn" not in timer and "activeGoalCycleHelp" not in timer
-assert all("fasting.editFastStartQuick" in locale and "fasting.editFastGoalQuick" in locale for locale in locales)
+assert all("fasting.editFastStartQuick" in locale and "fasting.editFastGoalQuick" in locale and "fasting.editFastStartQuickAria" in locale for locale in locales)
+version = __import__("json").loads((ROOT / "version.json").read_text(encoding="utf-8"))
+assert version["version"] == "1.19.0"
 print("PASS: Edit fast owns target/start changes, quick presets, safety and overlap validation")
