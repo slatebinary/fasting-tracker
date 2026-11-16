@@ -1,3 +1,11 @@
+## v1.19.0 — 2026-11-16
+
+- Consolidate active-fast start-time and target editing into the single Edit fast workflow; remove the duplicate Change target control.
+- Add quick elapsed-start presets (30 minutes, 1, 2, 3, 4, 6, 8 and 12 hours ago) alongside direct date/time editing.
+- Add quick target-duration presets from 12 to 120 hours alongside direct numeric editing.
+- Apply preset selections only when Save changes is confirmed; validate future starts, overlaps and the 120-hour limit, and recalculate fasting progress and the derived non-fasting remainder.
+- Localize the controls in English, Bulgarian and Spanish.
+
 ## v1.18.4 — 2026-11-16
 
 - Increase the text-size percentage input height and tune its line-height/padding so values remain fully visible through the 150% app text-size setting.
