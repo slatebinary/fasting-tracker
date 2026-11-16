@@ -2,7 +2,7 @@
   "protocolVersion": 1,
   "version": "1.18.2",
   "released": "2026-11-15",
-  "notes": "Make Timing options open Edit fast while a fast is active",
+  "notes": "Make Timing options open Edit fast while a fast is active (correct start and target)",
   "entry": "./index.html",
   "shell": [
     "./",
