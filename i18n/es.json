@@ -1168,5 +1168,9 @@
   "fasting.editFastGoalQuick": "Objetivo rápido (horas)",
   "fasting.editFastGoalQuickAria": "Objetivos rápidos de ayuno",
   "fasting.editFastStartQuick": "Comenzó hace cuánto",
-  "fasting.editFastStartQuickAria": "Horas rápidas desde el inicio del ayuno"
+  "fasting.editFastStartQuickAria": "Horas rápidas desde el inicio del ayuno",
+  "fasting.editFastStartMinutesLabel": "Hace (minutos)",
+  "fasting.editFastStartHoursLabel": "Hace (horas)",
+  "fasting.editFastStartMinutesAria": "Ajustes rápidos de inicio en minutos atrás",
+  "fasting.editFastStartHoursAria": "Ajustes rápidos de inicio en horas atrás"
 }
