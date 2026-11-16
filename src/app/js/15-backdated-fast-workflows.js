@@ -115,11 +115,10 @@
   }
 
   function openFastTimingModal() {
-    // While a fast is active, Timing options must remain actionable: route to
-    // the existing editor that corrects its start time and target. The timing
-    // modal itself is only valid before a fast has started.
-    if (data.activeStart) { openEditActiveFastModal(); return; }
-    if (data.scheduledStart || recoveryMode) return;
+    // Timing options configure a future or retrospective start only. Active
+    // fast corrections belong exclusively to Edit fast; scheduled/recovery
+    // states cannot open this workflow.
+    if (data.activeStart || data.scheduledStart || recoveryMode) return;
     el('fastTimingMode').value = 'later';
     el('fastTimingAmount').value = '30';
     el('fastTimingUnit').value = 'minutes';
