@@ -13,6 +13,7 @@ on:
       - fix/palette-hints-integrity-stats-v1.17.35
       - refactor/storage-recovery-service-v1.17.38
       - main
+      - feat/v1.19.0-edit-fast-presets
   pull_request:
     branches: [main]
   workflow_dispatch:
