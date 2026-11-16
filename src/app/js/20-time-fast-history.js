@@ -24,11 +24,6 @@
   function updateCycleHelpers() {
     const goalHelp = el('goalCycleHelp');
     if (goalHelp) goalHelp.textContent = cycleHelperText(data.goalHours);
-    const activeHelp = el('activeGoalCycleHelp');
-    if (activeHelp) {
-      const parsed = parseLocalizedNumber(el('activeTargetInput')?.value);
-      activeHelp.textContent = cycleHelperText(Number.isFinite(parsed) && parsed > 0 ? parsed : activeTargetHours());
-    }
   }
 
   function latestCompletedFast() {
@@ -130,7 +125,6 @@
       toggleFast.textContent = t('fasting.stop');
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
-      editActiveTargetBtn.hidden = false;
       el('editActiveFastBtn').hidden = false;
       el('fastTimingBtn').hidden = true;
       const visualPct = Math.min(100, Math.max(0, pct));
@@ -180,7 +174,6 @@
       toggleFast.textContent = t('fasting.cancelScheduled');
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
-      editActiveTargetBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
       el('fastTimingBtn').hidden = true;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
