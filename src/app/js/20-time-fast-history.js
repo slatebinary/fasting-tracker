@@ -192,7 +192,6 @@
       toggleFast.textContent = t('fasting.start');
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
-      editActiveTargetBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
       el('fastTimingBtn').hidden = false;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
