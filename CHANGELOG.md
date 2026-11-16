@@ -1,4 +1,4 @@
-# v1.18.2 — 2026-11-15
+## v1.18.2 — 2026-11-15
 
 - Make Timing options actionable during an active fast by opening the existing Edit fast dialog, allowing correction of the start time and target.
 - Add a regression assertion ensuring active-fast Timing options route to Edit fast.
