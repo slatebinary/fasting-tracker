@@ -92,19 +92,14 @@
   bindReliableModalAction(el('keepFastingBtn'), keepFastingAndReturnHome);
   bindReliableModalAction(el('stopAndSaveBtn'), confirmStopFast);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
-  bindResponsiveAction(editActiveTargetBtn, openActiveTargetModal);
-  el('activeTargetCancelBtn').addEventListener('click', closeActiveTargetModal);
-  bindResponsiveAction(el('activeTargetSaveBtn'), () => requestActiveGoalChange(el('activeTargetInput').value));
-  el('activeTargetInput').addEventListener('input', () => { showActiveTargetError(''); syncActiveTargetPresetState(); });
-  el('activeTargetInput').addEventListener('keydown', e => { if (e.key === 'Enter') requestActiveGoalChange(el('activeTargetInput').value); });
-  el('activeTargetInput').addEventListener('input', syncActiveTargetPresetState);
-
-  document.querySelectorAll('[data-active-goal]').forEach(btn => bindResponsiveAction(btn, () => {
-    el('activeTargetInput').value = formatNumber(Number(btn.dataset.activeGoal), 0, 3);
-    showActiveTargetError('');
-    syncActiveTargetPresetState();
+  el('editActiveFastCancel').addEventListener('click', () => hideModal('editActiveFastModal'));
+  bindResponsiveAction(el('editActiveFastSave'), saveEditedActiveFast);
+  el('editActiveFastGoal').addEventListener('input', syncEditFastPresetState);
+  document.querySelectorAll('[data-edit-goal]').forEach(btn => bindResponsiveAction(btn, () => {
+    el('editActiveFastGoal').value=String(btn.dataset.editGoal);syncEditFastPresetState();
   }));
-  el('activeTargetModal').addEventListener('click', e => { if (e.target === el('activeTargetModal')) closeActiveTargetModal(); });
+  document.querySelectorAll('[data-edit-start-hours]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartHours)));
+  el('editActiveFastModal').addEventListener('click',e=>{if(e.target===el('editActiveFastModal'))hideModal('editActiveFastModal');});
   el('fastTimingCancel').addEventListener('click', () => hideModal('fastTimingModal'));
   el('fastTimingConfirm').addEventListener('click', confirmFastTiming);
   el('fastTimingMode').addEventListener('change', updateFastTimingHint);
@@ -195,17 +190,18 @@
     }
   });
 
-  el('longFastCancelBtn').addEventListener('click', () => { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); });
+  el('longFastCancelBtn').addEventListener('click', () => { pendingLongFastGoal = null; pendingLongFastScope = 'default'; pendingEditFastStart = null; hideModal('longFastModal'); renderAll(); });
   el('longFastContinueBtn').addEventListener('click', () => {
     const next = pendingLongFastGoal;
     const scope = pendingLongFastScope;
     pendingLongFastGoal = null;
     pendingLongFastScope = 'default';
     hideModal('longFastModal');
-    const applied = next != null && (scope === 'active' ? applyActiveGoalValue(next) : applyGoalValue(next));
+    const applied = next != null && (scope === 'editFast' ? commitEditedActiveFast(new Date(pendingEditFastStart),next) : applyGoalValue(next));
+    pendingEditFastStart = null;
     if (applied) { try { localStorage.setItem(LONG_FAST_NOTICE_KEY, '1'); } catch {} }
   });
-  el('longFastModal').addEventListener('click', e => { if (e.target === el('longFastModal')) { pendingLongFastGoal = null; pendingLongFastScope = 'default'; hideModal('longFastModal'); renderAll(); } });
+  el('longFastModal').addEventListener('click', e => { if (e.target === el('longFastModal')) { pendingLongFastGoal = null; pendingLongFastScope = 'default'; pendingEditFastStart = null; hideModal('longFastModal'); renderAll(); } });
 
   el('recoveryExportBtn').addEventListener('click', exportRecoveryRaw);
   el('recoverySnapshotsBtn').addEventListener('click', openSnapshotModal);
