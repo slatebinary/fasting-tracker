@@ -95,11 +95,12 @@
   el('editActiveFastCancel').addEventListener('click', () => hideModal('editActiveFastModal'));
   bindResponsiveAction(el('editActiveFastSave'), saveEditedActiveFast);
   el('editActiveFastGoal').addEventListener('input', syncEditFastPresetState);
-  el('editActiveFastStart').addEventListener('input', () => document.querySelectorAll('[data-edit-start-hours]').forEach(btn => { btn.classList.remove('active'); btn.setAttribute('aria-pressed','false'); }));
+  el('editActiveFastStart').addEventListener('input', syncEditFastStartPresetState);
   document.querySelectorAll('[data-edit-goal]').forEach(btn => bindResponsiveAction(btn, () => {
     el('editActiveFastGoal').value=String(btn.dataset.editGoal);syncEditFastPresetState();
   }));
-  document.querySelectorAll('[data-edit-start-hours]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartHours)));
+  document.querySelectorAll('[data-edit-start-minutes]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartMinutes, 'minutes')));
+  document.querySelectorAll('[data-edit-start-hours]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartHours, 'hours')));
   el('editActiveFastModal').addEventListener('click',e=>{if(e.target===el('editActiveFastModal'))hideModal('editActiveFastModal');});
   el('fastTimingCancel').addEventListener('click', () => hideModal('fastTimingModal'));
   el('fastTimingConfirm').addEventListener('click', confirmFastTiming);
