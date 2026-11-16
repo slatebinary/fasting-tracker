@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.18.2" />
+  <meta name="ft-app-version" content="1.18.3" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1997,7 +1997,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.18.2';
+  const APP_VERSION = '1.18.3';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4102,11 +4102,10 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function openFastTimingModal() {
-    // While a fast is active, Timing options must remain actionable: route to
-    // the existing editor that corrects its start time and target. The timing
-    // modal itself is only valid before a fast has started.
-    if (data.activeStart) { openEditActiveFastModal(); return; }
-    if (data.scheduledStart || recoveryMode) return;
+    // Timing options configure a future or retrospective start only. Active
+    // fast corrections belong exclusively to Edit fast; scheduled/recovery
+    // states cannot open this workflow.
+    if (data.activeStart || data.scheduledStart || recoveryMode) return;
     el('fastTimingMode').value = 'later';
     el('fastTimingAmount').value = '30';
     el('fastTimingUnit').value = 'minutes';
@@ -4815,6 +4814,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       startEarlierBtn.hidden = true;
       editActiveTargetBtn.hidden = false;
       el('editActiveFastBtn').hidden = false;
+      el('fastTimingBtn').hidden = true;
       const visualPct = Math.min(100, Math.max(0, pct));
       fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
       fastProgressTrack.classList.toggle('reached', pct >= 100);
@@ -4864,6 +4864,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       startEarlierBtn.hidden = true;
       editActiveTargetBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
+      el('fastTimingBtn').hidden = true;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
       fastProgressTrack.setAttribute('aria-valuenow', '0');
@@ -4881,6 +4882,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
       editActiveTargetBtn.hidden = true;
+      el('editActiveFastBtn').hidden = true;
+      el('fastTimingBtn').hidden = false;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
       fastProgressTrack.setAttribute('aria-valuenow', '0');
