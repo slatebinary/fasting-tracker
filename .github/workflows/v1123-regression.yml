@@ -14,6 +14,7 @@ on:
       - refactor/storage-recovery-service-v1.17.38
       - main
       - feat/v1.19.0-edit-fast-presets
+      - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
     branches: [main]
   workflow_dispatch:
