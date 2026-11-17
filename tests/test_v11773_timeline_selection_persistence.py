@@ -50,7 +50,7 @@ with sync_playwright() as p:
     point = canvas.evaluate("""(c, hour) => {
       const r=c.getBoundingClientRect();
       const x=r.right-12;
-      const y=r.top+18+(hour/24)*(c.clientHeight-18-38);
+      const y=r.top+18+(1-hour/24)*(c.clientHeight-18-38);
       return {x,y,canvasRight:r.right,canvasLeft:r.left,scrollRight:c.parentElement.getBoundingClientRect().right};
     }""", 0.5)
     if point["x"] > point["scrollRight"] or point["x"] < 0:
