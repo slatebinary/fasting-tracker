@@ -1,4 +1,10 @@
-## v1.19.2 — 2026-11-17\n\n- Reverse the Timeline's vertical clock axis so 00:00 is at the bottom and 23:59 is at the top.\n- Reverse the fasting/non-fasting segment placement and touch hit-testing together, preserving correct time selection and detail display.\n- Keep date/month labels and horizontal history navigation unchanged; add orientation and interaction regression coverage.\n\n## v1.19.1 — 2026-11-16
+## v1.19.2 — 2026-11-17
+
+- Reverse the Timeline's vertical clock axis so 00:00 is at the bottom and 23:59 is at the top.
+- Reverse fasting/non-fasting segment placement and touch hit-testing together, preserving correct time selection and detail display.
+- Keep date/month labels and horizontal history navigation unchanged; add orientation and interaction regression coverage.
+
+## v1.19.1 — 2026-11-16
 
 - Add minute-level Edit fast start presets (1, 2, 5, 10, 15, 20, 30 and 45 minutes ago), grouped separately from hour presets.
 - Retain direct date/time editing and the existing hour presets; selecting a preset updates the draft only and does not save the fast.
