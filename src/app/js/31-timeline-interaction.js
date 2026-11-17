@@ -90,7 +90,9 @@
     // corresponding fasting or non-fasting segment. Every point in the 24 h
     // column therefore has a selectable segment, even if that segment is only
     // a few pixels tall visually.
-    const fraction = Math.max(0, Math.min(0.999999, (y - g.top) / g.h));
+    // Invert the canvas coordinate so the bottom is 00:00 and the top is 24:00.
+    // Clamp the upper boundary to the final instant inside this calendar day.
+    const fraction = Math.max(0, Math.min(0.999999, 1 - (y - g.top) / g.h));
     const instant = day.startMs + fraction * (day.endMs - day.startMs);
     let segmentIndex = day.segments.findIndex(seg => instant >= seg.start && instant < seg.end);
     if (segmentIndex < 0 && day.segments.length) segmentIndex = day.segments.length - 1;

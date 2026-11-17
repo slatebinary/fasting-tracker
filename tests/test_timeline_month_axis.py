@@ -19,3 +19,16 @@ assert release_version >= (1, 15, 3), "release version must include the chart fi
 app_version = re.search(r'<meta name="ft-app-version" content="([^"]+)"', html)
 assert app_version and tuple(int(part) for part in app_version.group(1).split(".")) == release_version, "application version must match version.json"
 print("PASS: fasting timeline includes localized month labels and month-boundary separators")
+
+# Vertical clock orientation: midnight at bottom, end of day at top.
+renderer = (root / "src/app/js/39-primary-chart-renderer.js").read_text(encoding="utf-8")
+interaction = (root / "src/app/js/31-timeline-interaction.js").read_text(encoding="utf-8")
+template = (root / "src/app/index.template.html").read_text(encoding="utf-8")
+assert "const y = top + h * (1 - frac);" in renderer, "hour grid must be vertically reversed"
+assert "const segEndFraction =" in renderer and "top + (1 - segEndFraction) * h" in renderer, "segments must be positioned from their end boundary"
+assert "1 - (y - g.top) / g.h" in interaction, "touch selection must map the reversed vertical axis back to clock time"
+for axis_class in ("timelineAxisLeft", "timelineAxisRight"):
+    axis = re.search(r'<div class="timelineAxis ' + axis_class + r'"[^>]*>(.*?)</div>', template, re.S)
+    assert axis, f"missing {axis_class}"
+    labels = re.findall(r"<span>([^<]+)</span>", axis.group(1))
+    assert labels == ["23:59", "18:00", "12:00", "06:00", "00:00"], f"{axis_class} labels are not top-to-bottom: {labels}"

@@ -132,7 +132,7 @@
     ctx.strokeStyle = line; ctx.lineWidth = 1;
     [0, 6, 12, 18, 24].forEach(hour => {
       const frac = hour / 24;
-      const y = top + h * frac;
+      const y = top + h * (1 - frac);
       ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(cssW - right, y); ctx.stroke();
     });
 
@@ -173,9 +173,13 @@
       chartInteractiveLayout.push({ kind: 'day', dayKey: day.key, x: x0, y: cssH - bottom + 4, w: bw, h: bottom - 4 });
 
       day.segments.forEach((segment, segIndex) => {
-        const segTop = top + ((segment.start - day.startMs) / (day.endMs - day.startMs)) * h;
-        const segHeight = Math.max(2, ((segment.end - segment.start) / (day.endMs - day.startMs)) * h);
-        const rectY = Math.min(top + h - 2, segTop);
+        // Clock time runs bottom-to-top: midnight is the lower boundary and
+        // the final minute of the day is the upper boundary.
+        const dayDuration = day.endMs - day.startMs;
+        const segEndFraction = (segment.end - day.startMs) / dayDuration;
+        const segTop = top + (1 - segEndFraction) * h;
+        const segHeight = Math.max(2, ((segment.end - segment.start) / dayDuration) * h);
+        const rectY = Math.max(top, Math.min(top + h - 2, segTop));
         const rectH = Math.min(h, segHeight);
         chartInteractiveLayout.push({ kind: 'segment', dayKey: day.key, segmentIndex: segIndex, x: x0 - gap/2, y: rectY, w: bw + gap, h: rectH });
         if (segment.type === 'fast') {

@@ -27,5 +27,5 @@ assert "syncEditFastStartPresetState" in bindings
 assert "editActiveTargetBtn" not in timer and "activeGoalCycleHelp" not in timer
 assert all("fasting.editFastStartQuick" in locale and "fasting.editFastGoalQuick" in locale and "fasting.editFastStartQuickAria" in locale and "fasting.editFastStartMinutesLabel" in locale and "fasting.editFastStartHoursLabel" in locale and "fasting.editFastStartMinutesAria" in locale and "fasting.editFastStartHoursAria" in locale for locale in locales)
 version = __import__("json").loads((ROOT / "version.json").read_text(encoding="utf-8"))
-assert version["version"] == "1.19.1"
+assert tuple(int(part) for part in version["version"].split(".")) >= (1, 19, 1)
 print("PASS: Edit fast owns target/start changes, quick presets, safety and overlap validation")

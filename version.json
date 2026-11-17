@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.19.1",
-  "released": "2026-11-16",
-  "notes": "Add minute-level quick start-time presets to Edit fast",
+  "version": "1.19.2",
+  "released": "2026-11-17",
+  "notes": "Reverse the Timeline vertical clock axis; preserve correct segment selection",
   "entry": "./index.html",
   "shell": [
     "./",
