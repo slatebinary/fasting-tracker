@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.19.2" />
+  <meta name="ft-app-version" content="1.20.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -867,6 +867,12 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       <button id="editActiveFastBtn" class="secondary heroSecondary" data-i18n="fasting.editFast" hidden>Edit fast</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
       <button id="fastTimingBtn" class="secondary heroSecondary" data-i18n="fasting.timingOptions">Timing options</button>
+    </div>
+    <div class="card nextFastCard nonFastingCard" id="nonFastingCard" hidden>
+      <h2 data-i18n="fasting.nonFastingTitle">Non-fasting period</h2>
+      <div class="nextFastCountdownValue" id="nonFastingTimer" role="timer" aria-live="off" aria-label="Non-fasting period elapsed" data-i18n-aria="fasting.nonFastingTimer">00:00:00</div>
+      <div class="small" id="nonFastingSince"></div>
+      <div class="small cycleHelp" data-i18n="fasting.nonFastingHelp">Elapsed time since the most recently completed fast. This is a tracking reference, not a recommended eating window.</div>
     </div>
     <div class="card nextFastCard" id="nextFastCard" hidden>
       <div class="sectionHeader"><h2 data-i18n="fasting.nextTitle">24-hour cycle</h2><span class="levelPill" data-i18n="fasting.nextCycleBadge">Optional timing</span></div>
@@ -1957,14 +1963,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 44;
+  const I18N_SOURCE_REVISION = 45;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.19.2';
+  const APP_VERSION = '1.20.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4677,8 +4683,32 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return latest;
   }
 
-  function nextFastCycleInfo(nowMs = Date.now()) {
+  // The non-fasting period is derived from the latest completed record rather
+  // than stored separately, so it survives reloads and follows record edits.
+  function nonFastingPeriodInfo(nowMs = Date.now()) {
     if (data.activeStart) return null;
+    const record = latestCompletedFast();
+    if (!record) return null;
+    const startMs = new Date(record.start).getTime();
+    const endMs = new Date(record.end).getTime();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || endMs > nowMs) return null;
+    return { record, elapsedMs: Math.max(0, nowMs - endMs) };
+  }
+
+  function updateNonFastingPeriodTimer(nowMs = Date.now()) {
+    const card = el('nonFastingCard');
+    if (!card) return;
+    const info = nonFastingPeriodInfo(nowMs);
+    card.hidden = !info;
+    if (!info) return;
+    el('nonFastingTimer').textContent = exactDuration(info.elapsedMs);
+    el('nonFastingSince').textContent = t('fasting.nonFastingSince', {
+      date: localDateTimeLabel(info.record.end, info.record.timeZone)
+    });
+  }
+
+  function nextFastCycleInfo(nowMs = Date.now()) {
+    if (data.activeStart || data.scheduledStart) return null;
     const record = latestCompletedFast();
     if (!record) return null;
     const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
@@ -4754,6 +4784,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     updateGoalChips();
 
     if (data.activeStart) {
+      updateNonFastingPeriodTimer();
       el('nextFastCard').hidden = true;
       const startMs = new Date(data.activeStart).getTime();
       const elapsed = Math.max(0, Date.now() - startMs);
@@ -4807,6 +4838,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
         progressDetail.classList.remove('good');
       }
     } else if (data.scheduledStart) {
+      updateNonFastingPeriodTimer();
       const remaining = Math.max(0, new Date(data.scheduledStart.at).getTime() - Date.now());
       timer.textContent = exactDuration(remaining);
       friendlyTimer.textContent = friendlyDuration(remaining);
@@ -4844,6 +4876,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       el('fastingEncouragement').textContent = '';
       el('targetMoment').hidden = true;
       el('targetMoment').textContent = '';
+      updateNonFastingPeriodTimer();
       updateNextFastCountdown();
     }
 
@@ -9994,7 +10027,10 @@ function mergeImportedData(imported) {
   setInterval(() => {
     if (document.hidden || activeScreenId() !== 'fasting') return;
     if (data.activeStart) updateTimer();
-    else updateNextFastCountdown();
+    else {
+      updateNonFastingPeriodTimer();
+      updateNextFastCountdown();
+    }
   }, 1000);
   setTimeout(() => { checkFastNotifications(); checkMaintenanceNotifications(); }, 700);
   setInterval(checkFastNotifications, 15000);
