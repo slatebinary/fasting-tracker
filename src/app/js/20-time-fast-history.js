@@ -37,8 +37,32 @@
     return latest;
   }
 
-  function nextFastCycleInfo(nowMs = Date.now()) {
+  // The non-fasting period is derived from the latest completed record rather
+  // than stored separately, so it survives reloads and follows record edits.
+  function nonFastingPeriodInfo(nowMs = Date.now()) {
     if (data.activeStart) return null;
+    const record = latestCompletedFast();
+    if (!record) return null;
+    const startMs = new Date(record.start).getTime();
+    const endMs = new Date(record.end).getTime();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || endMs > nowMs) return null;
+    return { record, elapsedMs: Math.max(0, nowMs - endMs) };
+  }
+
+  function updateNonFastingPeriodTimer(nowMs = Date.now()) {
+    const card = el('nonFastingCard');
+    if (!card) return;
+    const info = nonFastingPeriodInfo(nowMs);
+    card.hidden = !info;
+    if (!info) return;
+    el('nonFastingTimer').textContent = exactDuration(info.elapsedMs);
+    el('nonFastingSince').textContent = t('fasting.nonFastingSince', {
+      date: localDateTimeLabel(info.record.end, info.record.timeZone)
+    });
+  }
+
+  function nextFastCycleInfo(nowMs = Date.now()) {
+    if (data.activeStart || data.scheduledStart) return null;
     const record = latestCompletedFast();
     if (!record) return null;
     const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
@@ -114,6 +138,7 @@
     updateGoalChips();
 
     if (data.activeStart) {
+      updateNonFastingPeriodTimer();
       el('nextFastCard').hidden = true;
       const startMs = new Date(data.activeStart).getTime();
       const elapsed = Math.max(0, Date.now() - startMs);
@@ -167,6 +192,7 @@
         progressDetail.classList.remove('good');
       }
     } else if (data.scheduledStart) {
+      updateNonFastingPeriodTimer();
       const remaining = Math.max(0, new Date(data.scheduledStart.at).getTime() - Date.now());
       timer.textContent = exactDuration(remaining);
       friendlyTimer.textContent = friendlyDuration(remaining);
@@ -204,6 +230,7 @@
       el('fastingEncouragement').textContent = '';
       el('targetMoment').hidden = true;
       el('targetMoment').textContent = '';
+      updateNonFastingPeriodTimer();
       updateNextFastCountdown();
     }
 

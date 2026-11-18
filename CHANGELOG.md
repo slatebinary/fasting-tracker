@@ -1,3 +1,10 @@
+## v1.20.0 — 2026-11-18
+
+- Add a non-fasting period timer that starts from the saved end time of the latest completed fast and counts upward in real time.
+- Derive the timer from existing fasting records, so it persists across reloads without adding a separate timer state or changing stored data.
+- Hide it automatically while a fast is active; keep it available during a future scheduled start and resume correctly after returning to the app.
+- Localize the title, accessible timer label, start timestamp and neutral explanatory text in English, Bulgarian and Spanish.
+
 ## v1.19.2 — 2026-11-17
 
 - Reverse the Timeline's vertical clock axis so 00:00 is at the bottom and 23:59 is at the top.

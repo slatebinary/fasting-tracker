@@ -489,7 +489,10 @@
   setInterval(() => {
     if (document.hidden || activeScreenId() !== 'fasting') return;
     if (data.activeStart) updateTimer();
-    else updateNextFastCountdown();
+    else {
+      updateNonFastingPeriodTimer();
+      updateNextFastCountdown();
+    }
   }, 1000);
   setTimeout(() => { checkFastNotifications(); checkMaintenanceNotifications(); }, 700);
   setInterval(checkFastNotifications, 15000);

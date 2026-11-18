@@ -130,6 +130,12 @@ layout: null
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
       <button id="fastTimingBtn" class="secondary heroSecondary" data-i18n="fasting.timingOptions">Timing options</button>
     </div>
+    <div class="card nextFastCard nonFastingCard" id="nonFastingCard" hidden>
+      <h2 data-i18n="fasting.nonFastingTitle">Non-fasting period</h2>
+      <div class="nextFastCountdownValue" id="nonFastingTimer" role="timer" aria-live="off" aria-label="Non-fasting period elapsed" data-i18n-aria="fasting.nonFastingTimer">00:00:00</div>
+      <div class="small" id="nonFastingSince"></div>
+      <div class="small cycleHelp" data-i18n="fasting.nonFastingHelp">Elapsed time since the most recently completed fast. This is a tracking reference, not a recommended eating window.</div>
+    </div>
     <div class="card nextFastCard" id="nextFastCard" hidden>
       <div class="sectionHeader"><h2 data-i18n="fasting.nextTitle">24-hour cycle</h2><span class="levelPill" data-i18n="fasting.nextCycleBadge">Optional timing</span></div>
       <div class="small" data-i18n="fasting.nextIn">Time remaining in this cycle</div>

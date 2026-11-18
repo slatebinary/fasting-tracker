@@ -1172,5 +1172,9 @@
   "fasting.editFastStartMinutesLabel": "Минути назад",
   "fasting.editFastStartHoursLabel": "Часове назад",
   "fasting.editFastStartMinutesAria": "Бърз избор на начален час в минути назад",
-  "fasting.editFastStartHoursAria": "Бърз избор на начален час в часове назад"
+  "fasting.editFastStartHoursAria": "Бърз избор на начален час в часове назад",
+  "fasting.nonFastingTitle": "Период без гладуване",
+  "fasting.nonFastingTimer": "Изминало време без гладуване",
+  "fasting.nonFastingSince": "От {date}",
+  "fasting.nonFastingHelp": "Изминалото време от последното завършено гладуване. Това е ориентир за проследяване, а не препоръчителен прозорец за хранене."
 }
