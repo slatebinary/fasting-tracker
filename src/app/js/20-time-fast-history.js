@@ -62,7 +62,7 @@
   }
 
   function nextFastCycleInfo(nowMs = Date.now()) {
-    if (data.activeStart) return null;
+    if (data.activeStart || data.scheduledStart) return null;
     const record = latestCompletedFast();
     if (!record) return null;
     const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
