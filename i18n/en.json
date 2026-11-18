@@ -1172,5 +1172,9 @@
   "fasting.editFastStartMinutesLabel": "Minutes ago",
   "fasting.editFastStartHoursLabel": "Hours ago",
   "fasting.editFastStartMinutesAria": "Quick start time in minutes ago",
-  "fasting.editFastStartHoursAria": "Quick start time in hours ago"
+  "fasting.editFastStartHoursAria": "Quick start time in hours ago",
+  "fasting.nonFastingTitle": "Non-fasting period",
+  "fasting.nonFastingTimer": "Elapsed non-fasting time",
+  "fasting.nonFastingSince": "Since {date}",
+  "fasting.nonFastingHelp": "Elapsed time since the most recently completed fast. This is a tracking reference, not a recommended eating window."
 }
