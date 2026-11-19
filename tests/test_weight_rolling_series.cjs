@@ -43,6 +43,6 @@ assert.equal(result[11].windowEndDay,'2026-11-12');
 assert.equal(build([], 'month', calendarBuckets, dayForEntry, keyForDay, 7, '2026-11-12').length, 0);
 assert.equal(build(records, 'month', calendarBuckets, () => 'invalid', keyForDay, 7, '2026-11-12').length, 0);
 assert.equal(build(records, 'month', calendarBuckets, dayForEntry, keyForDay, 0, '2026-11-12').length, 0);
-assert.deepEqual(build(records, 'month', calendarBuckets, dayForEntry, keyForDay, 7, 'invalid').map(x=>x.calendarDay), ['2026-11-01','2026-11-02','2026-11-03','2026-11-04','2026-11-05','2026-11-06','2026-11-07','2026-11-08','2026-11-09','2026-11-10']);
+assert.deepEqual(Array.from(build(records, 'month', calendarBuckets, dayForEntry, keyForDay, 7, 'invalid'), x=>x.calendarDay), ['2026-11-01','2026-11-02','2026-11-03','2026-11-04','2026-11-05','2026-11-06','2026-11-07','2026-11-08','2026-11-09','2026-11-10']);
 assert.equal(JSON.stringify(records),before,'rolling aggregation must not mutate source records');
 console.log('PASS: isolated rolling Weight series, trailing-window continuity, extrema, calendar context, empty input and immutability');
