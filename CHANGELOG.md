@@ -1,3 +1,9 @@
+## v1.20.12 — 2026-11-19
+
+- Extract Weight History month/half-year/year cutoff calculation into a pure helper with an explicit current-date input.
+- Preserve local-calendar semantics and month-end/leap-day clamping; add focused regression coverage for year rollover and input immutability.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.11 — 2026-11-19
 
 - Extract Weight period date-range label formatting into a pure helper with an explicit locale input.
