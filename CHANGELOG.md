@@ -1,3 +1,9 @@
+## v1.20.10 — 2026-11-19
+
+- Extract the active-record lifetime Weight maximum into a pure helper, keeping invalid, non-finite and non-positive values out of the result.
+- Add focused regression coverage for numeric strings, tied maxima, invalid values, empty input and input immutability.
+- Preserve the existing lifetime-high display and active-record semantics; no interface, storage, record-schema or backup changes.
+
 ## v1.20.9 — 2026-11-19
 
 - Extract Weight-record calendar-day resolution into a pure helper with an injected time-zone-aware date resolver.
