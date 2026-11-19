@@ -15,6 +15,7 @@ on:
       - main
       - refactor/v1.20.9-weight-calendar-day-resolution
       - refactor/v1.20.10-weight-lifetime-maximum
+      - refactor/v1.20.11-weight-period-date-range-label
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -143,6 +144,7 @@ jobs:
           node tests/test_weight_period_labels.cjs
           node tests/test_weight_entry_calendar_day.cjs
           node tests/test_weight_lifetime_maximum.cjs
+          node tests/test_weight_period_date_range_label.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
