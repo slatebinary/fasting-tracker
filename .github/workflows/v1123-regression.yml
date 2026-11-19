@@ -16,6 +16,7 @@ on:
       - refactor/v1.20.9-weight-calendar-day-resolution
       - refactor/v1.20.10-weight-lifetime-maximum
       - refactor/v1.20.11-weight-period-date-range-label
+      - refactor/v1.20.12-weight-history-range-cutoff
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -145,6 +146,7 @@ jobs:
           node tests/test_weight_entry_calendar_day.cjs
           node tests/test_weight_lifetime_maximum.cjs
           node tests/test_weight_period_date_range_label.cjs
+          node tests/test_weight_history_range_cutoff.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
