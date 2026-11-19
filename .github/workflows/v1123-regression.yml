@@ -136,6 +136,7 @@ jobs:
           node tests/test_weight_period_filter.cjs
           node tests/test_weight_calendar_aggregation.cjs
           node tests/test_weight_rolling_series.cjs
+          node tests/test_weight_period_summary.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
