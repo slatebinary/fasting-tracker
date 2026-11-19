@@ -32,7 +32,7 @@
     if (weightAggregateCache.size > 10) weightAggregateCache.clear();
     const entries = Array.isArray(asc) ? asc : sortedWeightsAsc();
     if (mode === 'daily') {
-      const result = entries.map(entry => ({key:`entry:${entry.id}`,count:1,sumKg:entry.kg,averageKg:entry.kg,lowKg:entry.kg,highKg:entry.kg,first:entry,latest:entry,entry}));
+      const result = buildWeightDailyBuckets(entries);
       weightAggregateCache.set(key,result); return result;
     }
     // Calendar-period aggregates remain available for context. The plotted

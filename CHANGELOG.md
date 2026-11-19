@@ -1,3 +1,9 @@
+## v1.20.14 — 2026-11-20
+
+- Extract one-record-per-entry daily Weight chart bucket construction into a pure helper.
+- Preserve bucket keys, values, record references and ordering; add focused regression coverage for empty and invalid inputs and input immutability.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.13 — 2026-11-19
 
 - Extract Weight History range selection (recent seven, all, and date-cutoff ranges) into a pure helper.
