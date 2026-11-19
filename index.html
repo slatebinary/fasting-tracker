@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.6" />
+  <meta name="ft-app-version" content="1.20.7" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.6';
+  const APP_VERSION = '1.20.7';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6110,6 +6110,36 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     }
     return {first,latest,count:entries.length,totalKg,changeKg:latest.kg-first.kg,averageKg:totalKg/entries.length,lowKg,highKg};
   }
+// Pure selected Weight-period bounds. Calendar-day and fallback resolution are injected.
+  function resolveSelectedWeightPeriodBounds(options = {}) {
+    const {buckets,selectedId,mode='daily',chartStyle='rolling',todayCalendarDay,calendarDayForEntry,rollingWindowDays,fallbackBounds} = options;
+    const list = Array.isArray(buckets) ? buckets : [];
+    let selected = list.find(bucket => bucket.key === selectedId && bucket.count > 0);
+    if (!selected) selected = [...list].reverse().find(bucket => bucket.count > 0) || null;
+    let endDay = mode === 'daily' && selected?.entry
+      ? (typeof calendarDayForEntry === 'function' ? calendarDayForEntry(selected.entry) : null)
+      : selected?.calendarDay;
+    if (!endDay) endDay = todayCalendarDay;
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(endDay || ''));
+    if (!match) return typeof fallbackBounds === 'function' ? fallbackBounds(mode) : null;
+    const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+    if (chartStyle === 'fixed' && mode !== 'daily') {
+      const start = new Date(year, month - 1, day);
+      const end = new Date(start);
+      if (mode === 'week') end.setDate(end.getDate()+6);
+      else if (mode === 'month') end.setMonth(end.getMonth()+1,0);
+      else if (mode === 'quarter') end.setMonth(end.getMonth()+3,0);
+      else if (mode === 'halfyear') end.setMonth(end.getMonth()+6,0);
+      else end.setFullYear(end.getFullYear()+1,0,0);
+      end.setHours(23,59,59,999); start.setHours(0,0,0,0); return {start,end};
+    }
+    const end = new Date(year, month - 1, day, 23, 59, 59, 999);
+    const days = mode === 'daily' ? 30 : (typeof rollingWindowDays === 'function' ? rollingWindowDays(mode) : 0);
+    const start = new Date(year, month - 1, day);
+    start.setDate(start.getDate() - Math.max(0, days - 1));
+    start.setHours(0, 0, 0, 0);
+    return {start, end};
+  }
   function sortedWeightsAsc() {
     if (!sortedWeightsAscCache) sortedWeightsAscCache = [...data.weights].sort((a, b) => String(a.when).localeCompare(String(b.when)));
     return sortedWeightsAscCache;
@@ -6193,31 +6223,13 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
   function selectedWeightPeriodBounds(asc = sortedWeightsAsc(), mode = weightPeriodMode) {
     const buckets = buildWeightAggregateBuckets(asc, mode);
-    let selected = buckets.find(bucket => bucket.key === weightChartSelectedId && bucket.count > 0);
-    if (!selected) selected = [...buckets].reverse().find(bucket => bucket.count > 0) || null;
-    let endDay = mode === 'daily' && selected?.entry
-      ? weightEntryCalendarDay(selected.entry)
-      : selected?.calendarDay;
-    if (!endDay) endDay = dayKeyFast(new Date(), currentTimeZone());
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(endDay));
-    if (!match) return weightPeriodBounds(mode);
-    const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
-    if (weightChartStyle === 'fixed' && mode !== 'daily') {
-      const start = new Date(year, month - 1, day);
-      const end = new Date(start);
-      if (mode === 'week') end.setDate(end.getDate()+6);
-      else if (mode === 'month') end.setMonth(end.getMonth()+1,0);
-      else if (mode === 'quarter') end.setMonth(end.getMonth()+3,0);
-      else if (mode === 'halfyear') end.setMonth(end.getMonth()+6,0);
-      else end.setFullYear(end.getFullYear()+1,0,0);
-      end.setHours(23,59,59,999); start.setHours(0,0,0,0); return {start,end};
-    }
-    const end = new Date(year, month - 1, day, 23, 59, 59, 999);
-    const days = mode === 'daily' ? 30 : weightRollingWindowDays(mode);
-    const start = new Date(year, month - 1, day);
-    start.setDate(start.getDate() - Math.max(0, days - 1));
-    start.setHours(0, 0, 0, 0);
-    return {start, end};
+    return resolveSelectedWeightPeriodBounds({
+      buckets, selectedId:weightChartSelectedId, mode, chartStyle:weightChartStyle,
+      todayCalendarDay:dayKeyFast(new Date(), currentTimeZone()),
+      calendarDayForEntry:weightEntryCalendarDay,
+      rollingWindowDays:weightRollingWindowDays,
+      fallbackBounds:weightPeriodBounds
+    });
   }
 
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
