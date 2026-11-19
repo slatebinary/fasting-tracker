@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 42, f"Expected forty-two ordered app fragments, found {len(parts)}"
+assert len(parts) == 43, f"Expected forty-three ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -31,6 +31,10 @@ assert (source / "js" / "33d-weight-rolling-series.js").is_file()
 assert (source / "js" / "33e-weight-period-summary.js").is_file()
 assert (source / "js" / "33f-weight-selected-period-bounds.js").is_file()
 assert (source / "js" / "33g-weight-period-labels.js").is_file()
+assert (source / "js" / "33h-weight-entry-calendar-day.js").is_file()
+weight_entry_day = (source / "js" / "33h-weight-entry-calendar-day.js").read_text(encoding="utf-8")
+assert "function resolveWeightEntryCalendarDay" in weight_entry_day
+assert "function resolveWeightEntryCalendarDay" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
 weight_labels = (source / "js" / "33g-weight-period-labels.js").read_text(encoding="utf-8")
 assert "function resolveWeightBucketLabel" in weight_labels
 assert "function resolveWeightBucketLabel" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
