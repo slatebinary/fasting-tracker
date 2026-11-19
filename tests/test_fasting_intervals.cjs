@@ -39,6 +39,8 @@ assert.deepEqual(JSON.parse(JSON.stringify(records)),JSON.parse(before),'interva
 
 const bounded = build({
   records,
+  activeStart:'2026-11-19T10:00:00.000Z',
+  activeGoalHours:20,
   defaultGoalHours:16,
   rangeStart:Date.parse('2026-11-18T20:00:00.000Z'),
   rangeEnd:Date.parse('2026-11-19T11:00:00.000Z'),
