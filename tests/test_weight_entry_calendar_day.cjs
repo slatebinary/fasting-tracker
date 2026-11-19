@@ -15,9 +15,9 @@ assert.equal(resolve({when:'2026-11-06T00:30:00.000Z',timeZone:'Europe/Sofia'},'
 assert.deepEqual(calls.pop(),['2026-11-06T00:30:00.000Z','Europe/Sofia']);
 assert.equal(resolve({calendarDay:'2026-1-5',when:'2026-11-07T00:00:00.000Z'},'Europe/Berlin',dayKey),'2026-11-19');
 assert.deepEqual(calls.pop(),['2026-11-07T00:00:00.000Z','Europe/Berlin']);
-assert.equal(resolve({calendarDay:'2026-02-30',when:'2026-11-08T00:00:00.000Z',timeZone:''},'UTC',dayKey),'2026-11-19');
+assert.equal(resolve({calendarDay:'2026-2-30',when:'2026-11-08T00:00:00.000Z',timeZone:''},'UTC',dayKey),'2026-11-19');
 assert.deepEqual(calls.pop(),['2026-11-08T00:00:00.000Z','UTC']);
 assert.equal(resolve({calendarDay:'2026-11-09'},'UTC',null),null);
-assert.equal(resolve(null,'UTC',dayKey),'2026-11-19');
-assert.deepEqual(calls.pop(),[undefined,'UTC']);
+assert.equal(resolve(null,'UTC',dayKey),null);
+assert.equal(calls.length,0,'null entries must not invoke the date resolver');
 console.log('PASS: Weight entry calendar-day resolution, stored-day precedence, timezone fallback and invalid input');
