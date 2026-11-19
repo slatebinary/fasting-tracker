@@ -1,6 +1,6 @@
 {
   "sourceRevision": 45,
-  "appVersion": "1.20.0",
+  "appVersion": "1.20.1",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -472,7 +472,6 @@
     "weight.periodChange": "Change",
     "weight.average": "Average",
     "weight.lowest": "Lowest",
-    "weight.highest": "Highest",
     "weight.measurement.one": "measurement",
     "weight.measurement.other": "measurements",
     "weight.periodSummary": "{range} • {count} {measurementWord}",
@@ -1180,6 +1179,8 @@
     "fasting.nonFastingTitle": "Non-fasting period",
     "fasting.nonFastingTimer": "Elapsed non-fasting time",
     "fasting.nonFastingSince": "Since {date}",
-    "fasting.nonFastingHelp": "Elapsed time since the most recently completed fast. This is a tracking reference, not a recommended eating window."
+    "fasting.nonFastingHelp": "Elapsed time since the most recently completed fast. This is a tracking reference, not a recommended eating window.",
+    "weight.periodHighest": "Period highest",
+    "weight.allTimeHighest": "All-time highest"
   }
 }

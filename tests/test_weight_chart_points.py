@@ -1,22 +1,26 @@
 #!/usr/bin/env python3
 """Regression: Daily and aggregate weight-chart points reveal value plus exact time/period."""
-import sys
+import sys, json, datetime
+from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
     print(f'SKIP: Playwright unavailable: {exc}'); sys.exit(0)
 
-data=build_data(5)
+today=datetime.datetime.now(datetime.timezone.utc).date() - datetime.timedelta(days=3)
+now_ms=int(datetime.datetime.combine(today,datetime.time(),tzinfo=datetime.timezone.utc).timestamp()*1000)
+data=build_data(5, base=now_ms)
+APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':390,'height':844})
     errors=[]
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("arg => { __seedFastingDb(arg.data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:arg.version,seenAt:new Date().toISOString()})); }", {'data':data,'version':APP_VERSION})
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function("v => document.querySelector('#appVersionLabel')?.textContent === 'v' + v", arg=APP_VERSION, timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_function("document.querySelector('#weight')?.classList.contains('active')",timeout=5000)
     # Daily is the default. Five individual measurements should remain five points.
@@ -53,7 +57,7 @@ with sync_playwright() as p:
     page.locator('#weightChart').click(position={'x':pos['x'],'y':pos['y']})
     page.wait_for_function("!document.querySelector('#weightChartDetail')?.hidden",timeout=5000)
     detail=page.locator('#weightChartDetail').inner_text()
-    if '365-day rolling average' not in detail or 'kg' not in detail or 'Ending' not in detail or '5 measurements in this window' not in detail or 'Calendar year average' not in detail:
+    if '365-day rolling average' not in detail or 'kg' not in detail or 'Window' not in detail or '5 measurements in this window' not in detail or 'Calendar year average' not in detail:
         print('FAIL: rolling point did not show clearly separated rolling and calendar summaries:', detail); sys.exit(1)
 
     # Fixed mode must describe the selected calendar bucket directly. It must

@@ -468,7 +468,6 @@
   "weight.periodChange": "Cambio",
   "weight.average": "Promedio",
   "weight.lowest": "Mínimo",
-  "weight.highest": "Máximo",
   "weight.measurement.one": "medición",
   "weight.measurement.other": "mediciones",
   "weight.periodSummary": "{range} • {count} {measurementWord}",
@@ -1176,5 +1175,7 @@
   "fasting.nonFastingTitle": "Periodo sin ayuno",
   "fasting.nonFastingTimer": "Tiempo transcurrido sin ayuno",
   "fasting.nonFastingSince": "Desde {date}",
-  "fasting.nonFastingHelp": "Tiempo transcurrido desde el último ayuno completado. Es una referencia de seguimiento, no una ventana de alimentación recomendada."
+  "fasting.nonFastingHelp": "Tiempo transcurrido desde el último ayuno completado. Es una referencia de seguimiento, no una ventana de alimentación recomendada.",
+  "weight.periodHighest": "Máximo del período",
+  "weight.allTimeHighest": "Máximo histórico"
 }
