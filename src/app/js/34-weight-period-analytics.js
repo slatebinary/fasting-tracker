@@ -13,8 +13,7 @@
   }
 
   function weightEntryCalendarDay(entry) {
-    const stored = typeof entry?.calendarDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(entry.calendarDay) ? entry.calendarDay : null;
-    return stored || dayKeyFast(entry.when, entry.timeZone || currentTimeZone());
+    return resolveWeightEntryCalendarDay(entry, currentTimeZone(), dayKeyFast);
   }
   function weightBucketLongLabel(bucket, mode = weightPeriodMode) {
     return resolveWeightBucketLabel({bucket,mode,variant:'long',locale:currentLocale(),timeZone:currentTimeZone(),bucketDate:weightBucketDate,localDateTimeLabel,translate:t});
