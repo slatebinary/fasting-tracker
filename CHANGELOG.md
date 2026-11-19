@@ -1,3 +1,9 @@
+## v1.20.8 — 2026-11-19
+
+- Extract Weight chart bucket long, short and selected-point callout label formatting into a pure helper with injected locale, date and translation functions.
+- Add isolated regression coverage for Daily, Week, Month, Quarter, Half-year, Year and rolling-window labels.
+- Preserve existing localized output, time-zone handling and chart interaction; no interface, stored-data, record-schema or backup changes.
+
 ## v1.20.7 — 2026-11-19
 
 - Extract selected Weight-period date-bound calculations into a pure helper with explicit bucket, chart-style, calendar-day and fallback inputs.
