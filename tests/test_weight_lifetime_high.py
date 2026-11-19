@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Regression: lifetime highest weight is independent of the selected chart period."""
 import sys
+import datetime
 from pathlib import Path
 from browser_perf_common import build_data, inlined_html, STORAGE_SHIM
 try:
@@ -11,7 +12,14 @@ except Exception as exc:
 
 ROOT = Path(__file__).resolve().parents[1]
 version = __import__('json').loads((ROOT / 'version.json').read_text())['version']
-data = build_data(400)
+
+# Anchor the fixture to the current date. Keep the oldest measurement within
+# the app's supported one-year history, but outside the latest 30-day window.
+# This makes the test deterministic without relying on a stale fixed date.
+desired_latest = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1)
+base_ms = int((desired_latest + datetime.timedelta(hours=16)).timestamp() * 1000)
+data = build_data(300, base=base_ms)
+
 # The oldest active measurement is the lifetime maximum and is outside the
 # most recent 30-day window. A larger soft-deleted record must not be counted.
 data['weights'][0]['kg'] = 120.0
