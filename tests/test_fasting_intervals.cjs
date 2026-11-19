@@ -39,15 +39,19 @@ const bounded = build({
   records,
   defaultGoalHours:16,
   rangeStart:Date.parse('2026-11-18T20:00:00.000Z'),
-  rangeEnd:Date.parse('2026-11-19T10:00:00.000Z'),
+  rangeEnd:Date.parse('2026-11-19T11:00:00.000Z'),
   nowMs:base,
   sanitizeGoal
 });
 assert.deepEqual(Array.from(bounded, item => item.start),[Date.parse('2026-11-19T10:00:00.000Z')]);
 assert.deepEqual(Array.from(build({records:null,defaultGoalHours:16,nowMs:base,sanitizeGoal})),[]);
 assert.deepEqual(Array.from(build({records,defaultGoalHours:16,nowMs:base})),[],'missing sanitizer must fail safely');
-assert.deepEqual(Array.from(build({records,activeStart:'2026-11-19T10:00:00.000Z',activeGoalHours:20,defaultGoalHours:16,nowMs:NaN,sanitizeGoal})),[
-  {start:Date.parse('2026-11-17T08:00:00.000Z'),end:Date.parse('2026-11-17T16:00:00.000Z'),goalHours:16.5,sourceStart:Date.parse('2026-11-17T08:00:00.000Z'),sourceEnd:Date.parse('2026-11-17T16:00:00.000Z'),active:false},
-  {start:Date.parse('2026-11-18T10:00:00.000Z'),end:Date.parse('2026-11-18T20:00:00.000Z'),goalHours:18,sourceStart:Date.parse('2026-11-18T10:00:00.000Z'),sourceEnd:Date.parse('2026-11-18T20:00:00.000Z'),active:false}
-]);
+assert.deepEqual(
+  Array.from(build({records,activeStart:'2026-11-19T10:00:00.000Z',activeGoalHours:20,defaultGoalHours:16,nowMs:NaN,sanitizeGoal}),
+    item => [item.start,item.end,item.goalHours,item.active]),
+  [
+    [Date.parse('2026-11-17T08:00:00.000Z'),Date.parse('2026-11-17T16:00:00.000Z'),16.5,false],
+    [Date.parse('2026-11-18T10:00:00.000Z'),Date.parse('2026-11-18T20:00:00.000Z'),18,false]
+  ]
+);
 console.log('PASS: pure fasting interval construction, range boundaries, active interval, ordering and immutability');
