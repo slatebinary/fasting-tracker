@@ -1,3 +1,10 @@
+## v1.20.11 — 2026-11-19
+
+- Extract Weight period date-range label formatting into a pure helper with an explicit locale input.
+- Preserve the existing locale-sensitive date style and en-dash range separator.
+- Add regression coverage for locale-specific output, same-day ranges and invalid dates.
+- Update the documented source-fragment count; no interface, stored data, record-schema or backup changes.
+
 ## v1.20.10 — 2026-11-19
 
 - Extract the active-record lifetime Weight maximum into a pure helper, keeping invalid, non-finite and non-positive values out of the result.

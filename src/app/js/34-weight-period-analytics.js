@@ -8,8 +8,7 @@
     return weightEntriesWithinBounds(asc, start, end);
   }
   function weightPeriodDateRangeLabel(start, end) {
-    const fmt = new Intl.DateTimeFormat(currentLocale(), {day:'numeric',month:'short',year:'numeric'});
-    return `${fmt.format(start)} – ${fmt.format(end)}`;
+    return formatWeightPeriodDateRange(start, end, currentLocale());
   }
 
   function weightEntryCalendarDay(entry) {

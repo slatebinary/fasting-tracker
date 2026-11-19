@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.10",
+  "version": "1.20.11",
   "released": "2026-11-19",
-  "notes": "Extract pure lifetime Weight maximum calculation and add focused regression coverage",
+  "notes": "Extract locale-aware Weight period date-range formatting into a pure helper and add focused regression coverage",
   "entry": "./index.html",
   "shell": [
     "./",
