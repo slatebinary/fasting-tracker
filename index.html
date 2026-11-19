@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.13" />
+  <meta name="ft-app-version" content="1.20.14" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.13';
+  const APP_VERSION = '1.20.14';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6228,6 +6228,21 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       return Number.isFinite(timestamp) && timestamp >= cutoff;
     });
   }
+// Pure construction of one-record-per-entry daily Weight chart buckets.
+  function buildWeightDailyBuckets(entries) {
+    if (!Array.isArray(entries)) return [];
+    return entries.map(entry => ({
+      key: `entry:${entry.id}`,
+      count: 1,
+      sumKg: entry.kg,
+      averageKg: entry.kg,
+      lowKg: entry.kg,
+      highKg: entry.kg,
+      first: entry,
+      latest: entry,
+      entry
+    }));
+  }
   function sortedWeightsAsc() {
     if (!sortedWeightsAscCache) sortedWeightsAscCache = [...data.weights].sort((a, b) => String(a.when).localeCompare(String(b.when)));
     return sortedWeightsAscCache;
@@ -6262,7 +6277,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if (weightAggregateCache.size > 10) weightAggregateCache.clear();
     const entries = Array.isArray(asc) ? asc : sortedWeightsAsc();
     if (mode === 'daily') {
-      const result = entries.map(entry => ({key:`entry:${entry.id}`,count:1,sumKg:entry.kg,averageKg:entry.kg,lowKg:entry.kg,highKg:entry.kg,first:entry,latest:entry,entry}));
+      const result = buildWeightDailyBuckets(entries);
       weightAggregateCache.set(key,result); return result;
     }
     // Calendar-period aggregates remain available for context. The plotted
