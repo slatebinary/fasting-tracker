@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.3",
+  "version": "1.20.4",
   "released": "2026-11-19",
-  "notes": "Extract pure weight-period filtering and add isolated boundary regression coverage",
+  "notes": "Extract pure Weight calendar-bucket aggregation and add focused regression coverage",
   "entry": "./index.html",
   "shell": [
     "./",
