@@ -6,7 +6,7 @@ const vm = require('node:vm');
 process.env.TZ = 'UTC';
 const source = fs.readFileSync('src/app/js/33k-weight-history-range-cutoff.js', 'utf8');
 const context = {};
-vm.runInNewContext(source + '\\nthis.api = { resolveWeightHistoryRangeCutoff };', context, {filename:'33k-weight-history-range-cutoff.js'});
+vm.runInNewContext(source + '\nthis.api = { resolveWeightHistoryRangeCutoff };', context, {filename:'33k-weight-history-range-cutoff.js'});
 const cutoff = context.api.resolveWeightHistoryRangeCutoff;
 const timestamp = value => new Date(value).getTime();
 
