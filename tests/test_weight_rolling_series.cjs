@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync('src/app/js/33d-weight-rolling-series.js', 'utf8');
 const context = {};
-vm.runInNewContext(source + '\\nthis.api = { buildWeightRollingAverageBuckets };', context, {filename:'33d-weight-rolling-series.js'});
+vm.runInNewContext(source + '\nthis.api = { buildWeightRollingAverageBuckets };', context, {filename:'33d-weight-rolling-series.js'});
 const build = context.api.buildWeightRollingAverageBuckets;
 const records = [
   {id:'third',when:'2026-11-10T09:00:00.000Z',kg:78},
