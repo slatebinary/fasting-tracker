@@ -1,3 +1,9 @@
+## v1.20.4 — 2026-11-19
+
+- Extract calendar-bucket aggregation into a pure helper with explicit calendar-day and bucket-key resolvers.
+- Add isolated tests for bucket grouping, counts, averages, extrema, chronological first/latest records, invalid keys and input immutability.
+- Preserve the existing Weight analytics wrapper and output shape; no interface, storage, record-schema or backup changes.
+
 ## v1.20.3 — 2026-11-19
 
 - Extract inclusive binary-search filtering of chronologically sorted weight records into a pure helper with explicit date bounds.

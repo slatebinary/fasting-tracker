@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 37, f"Expected thirty-seven ordered app fragments, found {len(parts)}"
+assert len(parts) == 38, f"Expected thirty-eight ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -26,6 +26,10 @@ assert "function drawGenericBarChart" not in (source / "js" / "30-statistics-and
 assert (source / "js" / "34-weight-period-analytics.js").is_file()
 assert (source / "js" / "33a-weight-calendar-primitives.js").is_file()
 assert (source / "js" / "33b-weight-period-filter.js").is_file()
+assert (source / "js" / "33c-weight-calendar-aggregation.js").is_file()
+weight_aggregation = (source / "js" / "33c-weight-calendar-aggregation.js").read_text(encoding="utf-8")
+assert "function aggregateWeightCalendarBuckets" in weight_aggregation
+assert "function aggregateWeightCalendarBuckets" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
 weight_filter = (source / "js" / "33b-weight-period-filter.js").read_text(encoding="utf-8")
 assert "function weightEntriesWithinBounds" in weight_filter
 assert "function weightEntriesWithinBounds" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
