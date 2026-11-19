@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 44, f"Expected forty-four ordered app fragments, found {len(parts)}"
+assert len(parts) == 45, f"Expected forty-five ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -35,6 +35,9 @@ assert (source / "js" / "33h-weight-entry-calendar-day.js").is_file()
 weight_entry_day = (source / "js" / "33h-weight-entry-calendar-day.js").read_text(encoding="utf-8")
 assert "function resolveWeightEntryCalendarDay" in weight_entry_day
 assert "function resolveWeightEntryCalendarDay" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
+weight_date_range = (source / "js" / "33j-weight-period-date-range-label.js").read_text(encoding="utf-8")
+assert "function formatWeightPeriodDateRange" in weight_date_range
+assert "function formatWeightPeriodDateRange" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
 weight_lifetime = (source / "js" / "33i-weight-lifetime-maximum.js").read_text(encoding="utf-8")
 assert "function highestValidWeightKg" in weight_lifetime
 assert "function highestValidWeightKg" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
