@@ -1,33 +1,14 @@
   function allFastingIntervals(rangeStart = -Infinity, rangeEnd = Infinity) {
-    const intervals = [];
-    for (const r of data.records) {
-      const start = Date.parse(r.start), end = Date.parse(r.end);
-      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
-      if (end <= rangeStart || start >= rangeEnd) continue;
-      intervals.push({
-        start,
-        end,
-        goalHours: sanitizeGoal(r.goalHours, data.goalHours),
-        sourceStart: start,
-        sourceEnd: end,
-        active: false
-      });
-    }
-    if (data.activeStart) {
-      const start = Date.parse(data.activeStart), end = Date.now();
-      if (Number.isFinite(start) && end > start && end > rangeStart && start < rangeEnd) {
-        intervals.push({
-          start,
-          end,
-          goalHours: sanitizeGoal(data.activeGoalHours, data.goalHours),
-          sourceStart: start,
-          sourceEnd: end,
-          active: true
-        });
-      }
-    }
-    intervals.sort((a,b)=>a.start-b.start);
-    return intervals;
+    return buildFastingIntervals({
+      records:data.records,
+      activeStart:data.activeStart,
+      activeGoalHours:data.activeGoalHours,
+      defaultGoalHours:data.goalHours,
+      rangeStart,
+      rangeEnd,
+      nowMs:Date.now(),
+      sanitizeGoal
+    });
   }
 
   function currentZoneDaySummaries(timeZone = currentTimeZone(), rangeStart = -Infinity, rangeEnd = Infinity) {
