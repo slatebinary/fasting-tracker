@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 45, f"Expected forty-five ordered app fragments, found {len(parts)}"
+assert len(parts) == 46, f"Expected forty-six ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -23,6 +23,10 @@ assert (source / "js" / "33-statistics-generic-chart.js").is_file()
 generic_chart = (source / "js" / "33-statistics-generic-chart.js").read_text(encoding="utf-8")
 assert "function drawGenericBarChart" in generic_chart and "function handleGenericChartPointer" in generic_chart
 assert "function drawGenericBarChart" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
+assert (source / "js" / "33k-weight-history-range-cutoff.js").is_file()
+weight_history_cutoff = (source / "js" / "33k-weight-history-range-cutoff.js").read_text(encoding="utf-8")
+assert "function resolveWeightHistoryRangeCutoff" in weight_history_cutoff
+assert "function resolveWeightHistoryRangeCutoff" not in (source / "js" / "42-weight-history-management.js").read_text(encoding="utf-8")
 assert (source / "js" / "34-weight-period-analytics.js").is_file()
 assert (source / "js" / "33a-weight-calendar-primitives.js").is_file()
 assert (source / "js" / "33b-weight-period-filter.js").is_file()
