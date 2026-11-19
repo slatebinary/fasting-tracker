@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.14" />
+  <meta name="ft-app-version" content="1.20.15" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.14';
+  const APP_VERSION = '1.20.15';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -8683,35 +8683,16 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function allFastingIntervals(rangeStart = -Infinity, rangeEnd = Infinity) {
-    const intervals = [];
-    for (const r of data.records) {
-      const start = Date.parse(r.start), end = Date.parse(r.end);
-      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
-      if (end <= rangeStart || start >= rangeEnd) continue;
-      intervals.push({
-        start,
-        end,
-        goalHours: sanitizeGoal(r.goalHours, data.goalHours),
-        sourceStart: start,
-        sourceEnd: end,
-        active: false
-      });
-    }
-    if (data.activeStart) {
-      const start = Date.parse(data.activeStart), end = Date.now();
-      if (Number.isFinite(start) && end > start && end > rangeStart && start < rangeEnd) {
-        intervals.push({
-          start,
-          end,
-          goalHours: sanitizeGoal(data.activeGoalHours, data.goalHours),
-          sourceStart: start,
-          sourceEnd: end,
-          active: true
-        });
-      }
-    }
-    intervals.sort((a,b)=>a.start-b.start);
-    return intervals;
+    return buildFastingIntervals({
+      records:data.records,
+      activeStart:data.activeStart,
+      activeGoalHours:data.activeGoalHours,
+      defaultGoalHours:data.goalHours,
+      rangeStart,
+      rangeEnd,
+      nowMs:Date.now(),
+      sanitizeGoal
+    });
   }
 
   function currentZoneDaySummaries(timeZone = currentTimeZone(), rangeStart = -Infinity, rangeEnd = Infinity) {
@@ -8761,6 +8742,48 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return statsSummaryCache;
   }
 
+  function buildFastingIntervals({
+    records,
+    activeStart = null,
+    activeGoalHours,
+    defaultGoalHours,
+    rangeStart = -Infinity,
+    rangeEnd = Infinity,
+    nowMs,
+    sanitizeGoal
+  }) {
+    if (typeof sanitizeGoal !== 'function') return [];
+    const intervals = [];
+    for (const record of Array.isArray(records) ? records : []) {
+      if (!record || typeof record !== 'object') continue;
+      const start = Date.parse(record.start), end = Date.parse(record.end);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
+      if (end <= rangeStart || start >= rangeEnd) continue;
+      intervals.push({
+        start,
+        end,
+        goalHours: sanitizeGoal(record.goalHours, defaultGoalHours),
+        sourceStart: start,
+        sourceEnd: end,
+        active: false
+      });
+    }
+    if (activeStart) {
+      const start = Date.parse(activeStart), end = nowMs;
+      if (Number.isFinite(start) && Number.isFinite(end) && end > start && end > rangeStart && start < rangeEnd) {
+        intervals.push({
+          start,
+          end,
+          goalHours: sanitizeGoal(activeGoalHours, defaultGoalHours),
+          sourceStart: start,
+          sourceEnd: end,
+          active: true
+        });
+      }
+    }
+    intervals.sort((a,b)=>a.start-b.start);
+    return intervals;
+  }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
     el('updateModalText').textContent = t('update.modalText', {version:latestVersion});
