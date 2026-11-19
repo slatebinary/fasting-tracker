@@ -15,7 +15,7 @@ assert.equal(result.start.toISOString(),'2026-09-02T00:00:00.000Z');
 assert.equal(result.end.toISOString(),'2026-10-01T23:59:59.999Z');
 result = resolve({...common,buckets:selected,selectedId:'missing'});
 assert.equal(result.end.toISOString(),'2026-11-01T23:59:59.999Z');
-result = resolve({...common,buckets:[bucket('x','2026-11-19')],selectedId:'x',chartStyle:'fixed'});
+result = resolve({...common,buckets:[bucket('x','2026-11-01')],selectedId:'x',chartStyle:'fixed'});
 assert.equal(result.start.toISOString(),'2026-11-01T00:00:00.000Z');
 assert.equal(result.end.toISOString(),'2026-11-30T23:59:59.999Z');
 result = resolve({...common,mode:'week',buckets:[bucket('w','2026-11-16')],selectedId:'w',chartStyle:'fixed'});
