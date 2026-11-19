@@ -18,7 +18,10 @@ assert.deepEqual(ids(select(entries,'unknown',null)), ['0','1','2','3','4','5','
 assert.deepEqual(ids(select(entries,'month',NaN)), ['0','1','2','3','4','5','6']);
 const malformed = [{id:'valid',when:'2026-11-19T00:00:00.000Z'},{id:'bad',when:'not-a-date'},{id:'missing'},{id:'old',when:'2026-11-01T00:00:00.000Z'}];
 assert.deepEqual(ids(select(malformed,'month',cutoff)), ['valid']);
-assert.deepEqual(select(null,'all',0), []);
-assert.deepEqual(select({},'all',0), []);
+for (const value of [null, {}]) {
+  const result = select(value,'all',0);
+  assert.equal(Array.isArray(result), true, 'non-array input returns an array');
+  assert.equal(result.length, 0, 'non-array input returns an empty array');
+}
 assert.deepEqual(ids(entries), Array.from({length:12},(_,i)=>String(i)), 'selection must not mutate input');
 console.log('PASS: pure Weight History display-range selection, limits, cutoff filtering, fallback and immutability');
