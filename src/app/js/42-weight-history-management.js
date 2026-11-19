@@ -18,15 +18,7 @@
   }
 
   function weightHistoryRangeCutoff(range) {
-    const months = ({month:1,halfyear:6,year:12})[range];
-    if (!months) return null;
-    const now = new Date();
-    const cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
-    cutoff.setMonth(cutoff.getMonth() - months);
-    const day = Math.min(now.getDate(), new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0).getDate());
-    cutoff.setDate(day);
-    cutoff.setHours(0, 0, 0, 0);
-    return cutoff.getTime();
+    return resolveWeightHistoryRangeCutoff(range, new Date());
   }
 
   function weightHistoryRecordsForDisplay(sortedDesc) {
