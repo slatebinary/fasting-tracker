@@ -2,13 +2,13 @@
   function buildWeightRollingAverageBuckets(entries, mode, calendarBuckets, calendarDayForEntry, bucketKeyForDay, windowDays, todayCalendarDay) {
     if (!Array.isArray(entries) || entries.length === 0 || typeof calendarDayForEntry !== 'function' || typeof bucketKeyForDay !== 'function' || !Number.isInteger(windowDays) || windowDays <= 0) return [];
     const ordered = entries.map(entry => {
-      const day = calendarDayForEntry(entry), match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(day || ''));
+      const day = calendarDayForEntry(entry), match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(day || ''));
       if (!match) return null;
       return {entry,day,dayNumber:Math.floor(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))/86400000)};
     }).filter(Boolean).sort((x,y)=>x.dayNumber-y.dayNumber||String(x.entry.when).localeCompare(String(y.entry.when)));
     if (!ordered.length) return [];
     const firstDayNumber=ordered[0].dayNumber,lastMeasurementDayNumber=ordered[ordered.length-1].dayNumber;
-    const todayMatch=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(todayCalendarDay || ''));
+    const todayMatch=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(todayCalendarDay || ''));
     const todayDayNumber=todayMatch?Math.floor(Date.UTC(Number(todayMatch[1]),Number(todayMatch[2])-1,Number(todayMatch[3]))/86400000):lastMeasurementDayNumber;
     const lastDayNumber=Math.max(lastMeasurementDayNumber,todayDayNumber),result=[];
     let end=0,start=0;
