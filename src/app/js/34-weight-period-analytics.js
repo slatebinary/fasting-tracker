@@ -75,36 +75,8 @@
       weightAggregateCache.set(key,fixed); return fixed;
     }
     const windowDays = weightRollingWindowDays(mode);
-    const ordered = entries.map(entry => {
-      const day = weightEntryCalendarDay(entry), match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
-      if (!match) return null;
-      return {entry,day,dayNumber:Math.floor(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))/86400000)};
-    }).filter(Boolean).sort((x,y)=>x.dayNumber-y.dayNumber||String(x.entry.when).localeCompare(String(y.entry.when)));
-    const firstDayNumber=ordered[0].dayNumber,lastMeasurementDayNumber=ordered[ordered.length-1].dayNumber;
-    // Continue the latest rolling series through today's local calendar day.
-    // A trailing average remains valid after the last weigh-in while at least
-    // one real measurement is still inside its window; no raw measurement is
-    // created and the series naturally stops when the window becomes empty.
-    const todayMatch=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dayKeyFast(new Date(),currentTimeZone()));
-    const todayDayNumber=todayMatch?Math.floor(Date.UTC(Number(todayMatch[1]),Number(todayMatch[2])-1,Number(todayMatch[3]))/86400000):lastMeasurementDayNumber;
-    const lastDayNumber=Math.max(lastMeasurementDayNumber,todayDayNumber),result=[];
-    let end=0,start=0;
-    // Sample once per calendar day, not only on measurement days. A rolling
-    // average therefore remains a continuous daily series when measurements
-    // are several days apart; each point is still based exclusively on real
-    // entries inside its trailing window.
-    for(let dayNumber=firstDayNumber;dayNumber<=lastDayNumber;dayNumber++){
-      while(end<ordered.length&&ordered[end].dayNumber<=dayNumber)end++;
-      const firstDay=dayNumber-windowDays+1;
-      while(start<end&&ordered[start].dayNumber<firstDay)start++;
-      const count=end-start;
-      if(!count)continue;
-      let sumKg=0,lowKg=Infinity,highKg=-Infinity;
-      for(let i=start;i<end;i++){const kg=ordered[i].entry.kg;sumKg+=kg;lowKg=Math.min(lowKg,kg);highKg=Math.max(highKg,kg);}
-      const calendarDay=new Date(dayNumber*86400000).toISOString().slice(0,10);
-      const calendarKey=weightBucketKeyForDay(calendarDay,mode),calendarBucket=calendarBuckets.get(calendarKey)||null;
-      result.push({key:`rolling:${mode}:${calendarDay}`,calendarDay,rollingWindowDays:windowDays,windowStartDay:new Date(firstDay*86400000).toISOString().slice(0,10),windowEndDay:calendarDay,count,sumKg,averageKg:sumKg/count,lowKg,highKg,first:ordered[start].entry,latest:ordered[end-1].entry,calendarBucket});
-    }
+    const todayCalendarDay = dayKeyFast(new Date(),currentTimeZone());
+    const result = buildWeightRollingAverageBuckets(entries,mode,calendarBuckets,weightEntryCalendarDay,weightBucketKeyForDay,windowDays,todayCalendarDay);
     weightAggregateCache.set(key,result); return result;
   }
   function selectedWeightPeriodBounds(asc = sortedWeightsAsc(), mode = weightPeriodMode) {
