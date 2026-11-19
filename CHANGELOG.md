@@ -1,3 +1,10 @@
+## v1.20.9 — 2026-11-19
+
+- Extract Weight-record calendar-day resolution into a pure helper with an injected time-zone-aware date resolver.
+- Preserve valid stored calendar days and existing record-time-zone/application-time-zone fallback precedence.
+- Add isolated regression coverage for stored values, malformed values, time-zone fallback and missing dependencies.
+- Preserve Weight chart grouping and saved records; no interface, storage, record-schema or backup changes.
+
 ## v1.20.8 — 2026-11-19
 
 - Extract Weight chart bucket long, short and selected-point callout label formatting into a pure helper with injected locale, date and translation functions.
