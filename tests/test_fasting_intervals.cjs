@@ -25,9 +25,11 @@ const records = [
 const before = JSON.stringify(records);
 const all = build({records,activeStart:'2026-11-19T10:00:00.000Z',activeGoalHours:20,defaultGoalHours:16,nowMs:base,sanitizeGoal});
 assert.deepEqual(Array.from(all, item => [item.start,item.end,item.goalHours,item.active]), [
+  [Date.parse('2026-11-15T00:00:00.000Z'),Date.parse('2026-11-16T00:00:00.000Z'),16,false],
   [Date.parse('2026-11-17T08:00:00.000Z'),Date.parse('2026-11-17T16:00:00.000Z'),16.5,false],
   [Date.parse('2026-11-18T10:00:00.000Z'),Date.parse('2026-11-18T20:00:00.000Z'),18,false],
-  [Date.parse('2026-11-19T10:00:00.000Z'),base,20,true]
+  [Date.parse('2026-11-19T10:00:00.000Z'),base,20,true],
+  [Date.parse('2026-11-21T00:00:00.000Z'),Date.parse('2026-11-21T12:00:00.000Z'),16,false]
 ]);
 assert.equal(all[0].sourceStart, all[0].start);
 assert.equal(all[0].sourceEnd, all[0].end);
@@ -50,8 +52,10 @@ assert.deepEqual(
   Array.from(build({records,activeStart:'2026-11-19T10:00:00.000Z',activeGoalHours:20,defaultGoalHours:16,nowMs:NaN,sanitizeGoal}),
     item => [item.start,item.end,item.goalHours,item.active]),
   [
+    [Date.parse('2026-11-15T00:00:00.000Z'),Date.parse('2026-11-16T00:00:00.000Z'),16,false],
     [Date.parse('2026-11-17T08:00:00.000Z'),Date.parse('2026-11-17T16:00:00.000Z'),16.5,false],
-    [Date.parse('2026-11-18T10:00:00.000Z'),Date.parse('2026-11-18T20:00:00.000Z'),18,false]
+    [Date.parse('2026-11-18T10:00:00.000Z'),Date.parse('2026-11-18T20:00:00.000Z'),18,false],
+    [Date.parse('2026-11-21T00:00:00.000Z'),Date.parse('2026-11-21T12:00:00.000Z'),16,false]
   ]
 );
 console.log('PASS: pure fasting interval construction, range boundaries, active interval, ordering and immutability');
