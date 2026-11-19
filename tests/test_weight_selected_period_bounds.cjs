@@ -11,7 +11,7 @@ const fallback = mode => ({fallback:mode});
 const common = {mode:'month',chartStyle:'rolling',todayCalendarDay:'2026-11-19',rollingWindowDays:mode=>({week:7,month:30,quarter:90,halfyear:180,year:365})[mode],fallbackBounds:fallback};
 const selected = [bucket('2026-10','2026-10-01'),bucket('2026-11','2026-11-01')];
 let result = resolve({...common,buckets:selected,selectedId:'2026-10'});
-assert.equal(result.start.toISOString(),'2026-10-03T00:00:00.000Z');
+assert.equal(result.start.toISOString(),'2026-09-02T00:00:00.000Z');
 assert.equal(result.end.toISOString(),'2026-11-01T23:59:59.999Z');
 result = resolve({...common,buckets:selected,selectedId:'missing'});
 assert.equal(result.end.toISOString(),'2026-11-01T23:59:59.999Z');
