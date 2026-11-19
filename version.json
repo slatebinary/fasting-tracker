@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.5",
+  "version": "1.20.6",
   "released": "2026-11-19",
-  "notes": "Extract pure rolling Weight series construction and add empty-input regression coverage",
+  "notes": "Extract pure Weight period summary calculations and add focused regression coverage",
   "entry": "./index.html",
   "shell": [
     "./",

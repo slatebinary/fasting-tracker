@@ -1,3 +1,9 @@
+## v1.20.6 — 2026-11-19
+
+- Extract selected-period Weight summary calculations into a pure helper, covering first/latest measurements, change, average, minimum and maximum.
+- Add focused regression tests for multi-entry and single-entry periods, empty/invalid input and input immutability.
+- Preserve the existing Weight period display and record ordering; no interface, storage, record-schema or backup changes.
+
 ## v1.20.5 — 2026-11-19
 
 - Extract trailing rolling-average Weight series construction into a pure helper with explicit calendar-day, bucket-key, window-length and current-day inputs.

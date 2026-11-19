@@ -140,15 +140,12 @@
     const ids = ['wPeriodStart','wPeriodEnd','wPeriodChange','wPeriodAverage','wPeriodLow','wPeriodHigh'];
     if (!entries.length) { ids.forEach(id => { const node=el(id); if(node) node.textContent='—'; }); return entries; }
     const unit = data.weightUnit;
-    const first = entries[0], latest = entries[entries.length - 1];
-    let total = 0, low = entries[0].kg, high = entries[0].kg;
-    for (const entry of entries) { total += entry.kg; if (entry.kg < low) low = entry.kg; if (entry.kg > high) high = entry.kg; }
-    const average = total / entries.length;
-    el('wPeriodStart').textContent = formatWeight(first.kg, unit);
-    el('wPeriodEnd').textContent = formatWeight(latest.kg, unit);
-    el('wPeriodChange').textContent = formatWeight(latest.kg - first.kg, unit, true);
-    el('wPeriodAverage').textContent = formatWeight(average, unit);
-    el('wPeriodLow').textContent = formatWeight(low, unit);
-    el('wPeriodHigh').textContent = formatWeight(high, unit);
+    const periodStats = summarizeWeightPeriodEntries(entries);
+    el('wPeriodStart').textContent = formatWeight(periodStats.first.kg, unit);
+    el('wPeriodEnd').textContent = formatWeight(periodStats.latest.kg, unit);
+    el('wPeriodChange').textContent = formatWeight(periodStats.changeKg, unit, true);
+    el('wPeriodAverage').textContent = formatWeight(periodStats.averageKg, unit);
+    el('wPeriodLow').textContent = formatWeight(periodStats.lowKg, unit);
+    el('wPeriodHigh').textContent = formatWeight(periodStats.highKg, unit);
     return entries;
   }
