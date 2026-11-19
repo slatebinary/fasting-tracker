@@ -7,7 +7,7 @@ const context = {};
 vm.runInNewContext(source + '\nthis.api = { resolveWeightBucketLabel };', context, {filename:'33g-weight-period-labels.js'});
 const resolve = context.api.resolveWeightBucketLabel;
 const bucketDate = key => {
-  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(key || ''));
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || ''));
   if (!match) return new Date(NaN);
   const [year,month,day] = match.slice(1).map(Number);
   return new Date(Date.UTC(year,month-1,day,12));
