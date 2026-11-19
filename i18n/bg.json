@@ -468,7 +468,6 @@
   "weight.periodChange": "Промяна",
   "weight.average": "Средно",
   "weight.lowest": "Най-ниско",
-  "weight.highest": "Най-високо",
   "weight.measurement.one": "измерване",
   "weight.measurement.other": "измервания",
   "weight.periodSummary": "{range} • {count} {measurementWord}",
@@ -1176,5 +1175,7 @@
   "fasting.nonFastingTitle": "Период без гладуване",
   "fasting.nonFastingTimer": "Изминало време без гладуване",
   "fasting.nonFastingSince": "От {date}",
-  "fasting.nonFastingHelp": "Изминалото време от последното завършено гладуване. Това е ориентир за проследяване, а не препоръчителен прозорец за хранене."
+  "fasting.nonFastingHelp": "Изминалото време от последното завършено гладуване. Това е ориентир за проследяване, а не препоръчителен прозорец за хранене.",
+  "weight.periodHighest": "Най-високо за периода",
+  "weight.allTimeHighest": "Най-високо за всички времена"
 }

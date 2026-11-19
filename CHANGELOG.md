@@ -1,3 +1,10 @@
+## v1.20.1 — 2026-11-19
+
+- Separate the selected-period highest weight from the all-time highest active measurement.
+- Keep the all-time maximum independent of chart selection, horizontal scrolling and period navigation.
+- Exclude soft-deleted measurements from the lifetime maximum, consistent with chart and statistics behaviour.
+- Localize both labels in English, Bulgarian and Spanish; add regression coverage for scrolling, period changes and deleted records.
+
 ## v1.20.0 — 2026-11-18
 
 - Add a non-fasting period timer that starts from the saved end time of the latest completed fast and counts upward in real time.

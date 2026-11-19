@@ -216,6 +216,17 @@
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-selected', String(active));
     });
+    // Lifetime extrema are independent of the selected chart period and viewport.
+    // data.weights contains active records only; soft-deleted entries live separately.
+    const lifetimeHigh = asc.reduce((highest, entry) => {
+      const kg = Number(entry?.kg);
+      return Number.isFinite(kg) && kg > 0 ? Math.max(highest, kg) : highest;
+    }, -Infinity);
+    const lifetimeHighNode = el('wAllTimeHigh');
+    if (lifetimeHighNode) lifetimeHighNode.textContent = Number.isFinite(lifetimeHigh)
+      ? formatWeight(lifetimeHigh, data.weightUnit)
+      : '—';
+
     const bounds = selectedWeightPeriodBounds(asc, weightPeriodMode);
     const entries = weightEntriesForPeriod(asc, weightPeriodMode, bounds.end, bounds);
     const range = weightPeriodDateRangeLabel(bounds.start, bounds.end);

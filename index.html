@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.0" />
+  <meta name="ft-app-version" content="1.20.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1038,7 +1038,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
         <div class="metric"><div class="value weightValue" id="wPeriodChange">—</div><div class="label" data-i18n="weight.periodChange">Change</div></div>
         <div class="metric"><div class="value weightValue" id="wPeriodAverage">—</div><div class="label" data-i18n="weight.average">Average</div></div>
         <div class="metric"><div class="value weightValue" id="wPeriodLow">—</div><div class="label" data-i18n="weight.lowest">Lowest</div></div>
-        <div class="metric"><div class="value weightValue" id="wPeriodHigh">—</div><div class="label" data-i18n="weight.highest">Highest</div></div>
+        <div class="metric"><div class="value weightValue" id="wPeriodHigh">—</div><div class="label" data-i18n="weight.periodHighest">Period highest</div></div>
+        <div class="metric"><div class="value weightValue" id="wAllTimeHigh">—</div><div class="label" data-i18n="weight.allTimeHighest">All-time highest</div></div>
       </div>
     </div>
     <div class="card weightHistory"><div class="historyListControls weightHistoryControls" id="weightHistoryControls"><span class="small historyVisibleCount" id="weightHistoryVisibleCount" aria-live="polite"></span><div class="historyRangeActions"><button id="weightHistoryMoreBtn" class="secondary" type="button" aria-expanded="false" aria-controls="weightHistoryRange" data-i18n="history.rangeMore">More…</button><select id="weightHistoryRange" aria-label="Older weight history range" data-i18n-aria="weight.historyRangeAria" hidden><option value="" selected disabled data-i18n="history.rangePrompt">Period</option><option value="month" data-i18n="history.range.month">1 mo</option><option value="halfyear" data-i18n="history.range.halfyear">6 mo</option><option value="year" data-i18n="history.range.year">1 yr</option><option value="all" data-i18n="history.range.all">All</option></select></div></div><div class="bulkActionBar" id="weightBulkBar" hidden><button id="weightSelectVisibleBtn" class="secondary" type="button" data-i18n="bulk.selectVisible">Select visible</button><button id="weightBulkExportBtn" class="secondary" type="button" data-i18n="bulk.export">Export selected</button><button id="weightBulkDeleteBtn" class="dangerText" type="button" data-i18n="bulk.delete">Delete selected</button><span class="small" id="weightBulkCount"></span></div><div id="weightHistoryList"></div></div>
@@ -1970,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.0';
+  const APP_VERSION = '1.20.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6181,6 +6182,17 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-selected', String(active));
     });
+    // Lifetime extrema are independent of the selected chart period and viewport.
+    // data.weights contains active records only; soft-deleted entries live separately.
+    const lifetimeHigh = asc.reduce((highest, entry) => {
+      const kg = Number(entry?.kg);
+      return Number.isFinite(kg) && kg > 0 ? Math.max(highest, kg) : highest;
+    }, -Infinity);
+    const lifetimeHighNode = el('wAllTimeHigh');
+    if (lifetimeHighNode) lifetimeHighNode.textContent = Number.isFinite(lifetimeHigh)
+      ? formatWeight(lifetimeHigh, data.weightUnit)
+      : '—';
+
     const bounds = selectedWeightPeriodBounds(asc, weightPeriodMode);
     const entries = weightEntriesForPeriod(asc, weightPeriodMode, bounds.end, bounds);
     const range = weightPeriodDateRangeLabel(bounds.start, bounds.end);
