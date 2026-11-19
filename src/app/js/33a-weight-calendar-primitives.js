@@ -27,7 +27,7 @@
   }
 
   function weightBucketKeyForDay(calendarDay, mode = 'daily') {
-    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(calendarDay || ''));
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(calendarDay || ''));
     if (!match) return null;
     const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
     const d = new Date(Date.UTC(year, month - 1, day));
@@ -42,7 +42,7 @@
   }
 
   function nextWeightBucketKey(key, mode = 'daily') {
-    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(key || ''));
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || ''));
     if (!match) return null;
     const [year, month, day] = match.slice(1).map(Number);
     const d = new Date(Date.UTC(year, month - 1, day));
@@ -55,7 +55,7 @@
   }
 
   function weightBucketDate(key) {
-    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(key || ''));
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || ''));
     if (!match) return new Date(NaN);
     const [year, month, day] = match.slice(1).map(Number);
     return new Date(Date.UTC(year, month - 1, day, 12));
