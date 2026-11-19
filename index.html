@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.12" />
+  <meta name="ft-app-version" content="1.20.13" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.12';
+  const APP_VERSION = '1.20.13';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6217,6 +6217,17 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     cutoff.setHours(0, 0, 0, 0);
     return cutoff.getTime();
   }
+// Pure selection of Weight History records for the currently selected display range.
+  function selectWeightHistoryRecordsForDisplay(sortedDesc, range, cutoff) {
+    if (!Array.isArray(sortedDesc)) return [];
+    if (range === 'recent7') return sortedDesc.slice(0, 7);
+    if (range === 'all') return sortedDesc;
+    if (!Number.isFinite(cutoff)) return sortedDesc.slice(0, 7);
+    return sortedDesc.filter(entry => {
+      const timestamp = Date.parse(entry?.when);
+      return Number.isFinite(timestamp) && timestamp >= cutoff;
+    });
+  }
   function sortedWeightsAsc() {
     if (!sortedWeightsAscCache) sortedWeightsAscCache = [...data.weights].sort((a, b) => String(a.when).localeCompare(String(b.when)));
     return sortedWeightsAscCache;
@@ -8570,13 +8581,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function weightHistoryRecordsForDisplay(sortedDesc) {
-    if (weightHistoryRange === 'recent7') return sortedDesc.slice(0, 7);
-    if (weightHistoryRange === 'all') return sortedDesc;
-    const cutoff = weightHistoryRangeCutoff(weightHistoryRange);
-    return cutoff == null ? sortedDesc.slice(0, 7) : sortedDesc.filter(w => {
-      const timestamp = Date.parse(w.when);
-      return Number.isFinite(timestamp) && timestamp >= cutoff;
-    });
+    const cutoff = weightHistoryRange === 'recent7' || weightHistoryRange === 'all' ? null : weightHistoryRangeCutoff(weightHistoryRange);
+    return selectWeightHistoryRecordsForDisplay(sortedDesc, weightHistoryRange, cutoff);
   }
 
   function visibleWeightHistoryRecords() {
