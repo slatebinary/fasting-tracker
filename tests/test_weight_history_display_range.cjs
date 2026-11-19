@@ -1,0 +1,27 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync('src/app/js/33l-weight-history-display-range.js', 'utf8');
+const context = {};
+vm.runInNewContext(source + '\nthis.api = { selectWeightHistoryRecordsForDisplay };', context, {filename:'33l-weight-history-display-range.js'});
+const select = context.api.selectWeightHistoryRecordsForDisplay;
+const entries = Array.from({length:12}, (_,i)=>({id:String(i),when:new Date(Date.UTC(2026,10,19-i)).toISOString()}));
+const ids = rows => Array.from(rows, row => row.id);
+assert.deepEqual(ids(select(entries,'recent7',0)), ['0','1','2','3','4','5','6']);
+assert.deepEqual(ids(select(entries,'all',0)), ids(entries));
+assert.equal(select(entries,'all',0), entries, 'all-range selection preserves the original array reference');
+const cutoff = Date.parse('2026-11-15T00:00:00.000Z');
+assert.deepEqual(ids(select(entries,'month',cutoff)), ['0','1','2','3','4']);
+assert.deepEqual(ids(select(entries,'year',cutoff)), ['0','1','2','3','4']);
+assert.deepEqual(ids(select(entries,'unknown',null)), ['0','1','2','3','4','5','6']);
+assert.deepEqual(ids(select(entries,'month',NaN)), ['0','1','2','3','4','5','6']);
+const malformed = [{id:'valid',when:'2026-11-19T00:00:00.000Z'},{id:'bad',when:'not-a-date'},{id:'missing'},{id:'old',when:'2026-11-01T00:00:00.000Z'}];
+assert.deepEqual(ids(select(malformed,'month',cutoff)), ['valid']);
+for (const value of [null, {}]) {
+  const result = select(value,'all',0);
+  assert.equal(Array.isArray(result), true, 'non-array input returns an array');
+  assert.equal(result.length, 0, 'non-array input returns an empty array');
+}
+assert.deepEqual(ids(entries), Array.from({length:12},(_,i)=>String(i)), 'selection must not mutate input');
+console.log('PASS: pure Weight History display-range selection, limits, cutoff filtering, fallback and immutability');

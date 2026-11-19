@@ -1,3 +1,10 @@
+## v1.20.13 — 2026-11-19
+
+- Extract Weight History range selection (recent seven, all, and date-cutoff ranges) into a pure helper.
+- Preserve the seven-record fallback for unsupported or invalid cutoffs, and retain date parsing/invalid-record filtering for cutoff ranges.
+- Add focused regression coverage for range boundaries, fallback behaviour, malformed records and input immutability.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.12 — 2026-11-19
 
 - Extract Weight History month/half-year/year cutoff calculation into a pure helper with an explicit current-date input.

@@ -22,13 +22,8 @@
   }
 
   function weightHistoryRecordsForDisplay(sortedDesc) {
-    if (weightHistoryRange === 'recent7') return sortedDesc.slice(0, 7);
-    if (weightHistoryRange === 'all') return sortedDesc;
-    const cutoff = weightHistoryRangeCutoff(weightHistoryRange);
-    return cutoff == null ? sortedDesc.slice(0, 7) : sortedDesc.filter(w => {
-      const timestamp = Date.parse(w.when);
-      return Number.isFinite(timestamp) && timestamp >= cutoff;
-    });
+    const cutoff = weightHistoryRange === 'recent7' || weightHistoryRange === 'all' ? null : weightHistoryRangeCutoff(weightHistoryRange);
+    return selectWeightHistoryRecordsForDisplay(sortedDesc, weightHistoryRange, cutoff);
   }
 
   function visibleWeightHistoryRecords() {
