@@ -1,3 +1,10 @@
+## v1.20.5 — 2026-11-19
+
+- Extract trailing rolling-average Weight series construction into a pure helper with explicit calendar-day, bucket-key, window-length and current-day inputs.
+- Preserve daily sampling, trailing-window inclusion, real-measurement counts, extrema and calendar-period context; return an empty series safely when no valid measurements exist.
+- Add isolated regression coverage for continuity across days without weigh-ins, window expiry, current-day continuation, empty/invalid input and input immutability.
+- Preserve the existing chart output shape and saved data; no interface, storage, record-schema or backup changes.
+
 ## v1.20.4 — 2026-11-19
 
 - Extract calendar-bucket aggregation into a pure helper with explicit calendar-day and bucket-key resolvers.
