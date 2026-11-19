@@ -81,31 +81,13 @@
   }
   function selectedWeightPeriodBounds(asc = sortedWeightsAsc(), mode = weightPeriodMode) {
     const buckets = buildWeightAggregateBuckets(asc, mode);
-    let selected = buckets.find(bucket => bucket.key === weightChartSelectedId && bucket.count > 0);
-    if (!selected) selected = [...buckets].reverse().find(bucket => bucket.count > 0) || null;
-    let endDay = mode === 'daily' && selected?.entry
-      ? weightEntryCalendarDay(selected.entry)
-      : selected?.calendarDay;
-    if (!endDay) endDay = dayKeyFast(new Date(), currentTimeZone());
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(endDay));
-    if (!match) return weightPeriodBounds(mode);
-    const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
-    if (weightChartStyle === 'fixed' && mode !== 'daily') {
-      const start = new Date(year, month - 1, day);
-      const end = new Date(start);
-      if (mode === 'week') end.setDate(end.getDate()+6);
-      else if (mode === 'month') end.setMonth(end.getMonth()+1,0);
-      else if (mode === 'quarter') end.setMonth(end.getMonth()+3,0);
-      else if (mode === 'halfyear') end.setMonth(end.getMonth()+6,0);
-      else end.setFullYear(end.getFullYear()+1,0,0);
-      end.setHours(23,59,59,999); start.setHours(0,0,0,0); return {start,end};
-    }
-    const end = new Date(year, month - 1, day, 23, 59, 59, 999);
-    const days = mode === 'daily' ? 30 : weightRollingWindowDays(mode);
-    const start = new Date(year, month - 1, day);
-    start.setDate(start.getDate() - Math.max(0, days - 1));
-    start.setHours(0, 0, 0, 0);
-    return {start, end};
+    return resolveSelectedWeightPeriodBounds({
+      buckets, selectedId:weightChartSelectedId, mode, chartStyle:weightChartStyle,
+      todayCalendarDay:dayKeyFast(new Date(), currentTimeZone()),
+      calendarDayForEntry:weightEntryCalendarDay,
+      rollingWindowDays:weightRollingWindowDays,
+      fallbackBounds:weightPeriodBounds
+    });
   }
 
   function renderWeightPeriodAnalytics(asc = sortedWeightsAsc()) {
