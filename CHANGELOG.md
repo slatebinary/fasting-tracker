@@ -1,3 +1,9 @@
+## v1.20.7 — 2026-11-19
+
+- Extract selected Weight-period date-bound calculations into a pure helper with explicit bucket, chart-style, calendar-day and fallback inputs.
+- Add regression coverage for selected and latest populated periods, Fixed and Rolling bounds, daily measurement dates and invalid-date fallback.
+- Preserve existing period selection and date-range semantics; no interface, stored data, record-schema or backup changes.
+
 ## v1.20.6 — 2026-11-19
 
 - Extract selected-period Weight summary calculations into a pure helper, covering first/latest measurements, change, average, minimum and maximum.
