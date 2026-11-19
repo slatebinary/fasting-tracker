@@ -731,7 +731,7 @@ ok((ROOT/'tests'/'test_share_progress.py').is_file(), 'progress-sharing browser 
 
 
 # v1.8.11+ fasting Timeline target-detail regression checks
-ok('goalHours: sanitizeGoal(r.goalHours, data.goalHours)' in index and 'goalHours: sanitizeGoal(data.activeGoalHours, data.goalHours)' in index, 'fasting Timeline intervals must retain their saved target')
+ok('goalHours: sanitizeGoal(record.goalHours, defaultGoalHours)' in index and 'goalHours: sanitizeGoal(activeGoalHours, defaultGoalHours)' in index, 'fasting Timeline intervals must retain their saved target')
 ok('stats.detailFastTarget' in en_source and 'stats.detailFastSplitTarget' in en_source, 'fasting Timeline target-detail localization missing')
 ok("t('stats.detailFastTarget'" in index and 'target: compactDuration(targetDuration)' in index, 'selected same-day fasting Timeline segment does not show duration versus target')
 ok((ROOT/'tests'/'test_fasting_timeline_target_detail.py').is_file(), 'fasting Timeline target-detail browser regression test missing')
