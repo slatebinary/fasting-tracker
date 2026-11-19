@@ -12,7 +12,7 @@ const common = {mode:'month',chartStyle:'rolling',todayCalendarDay:'2026-11-19',
 const selected = [bucket('2026-10','2026-10-01'),bucket('2026-11','2026-11-01')];
 let result = resolve({...common,buckets:selected,selectedId:'2026-10'});
 assert.equal(result.start.toISOString(),'2026-09-02T00:00:00.000Z');
-assert.equal(result.end.toISOString(),'2026-11-01T23:59:59.999Z');
+assert.equal(result.end.toISOString(),'2026-10-01T23:59:59.999Z');
 result = resolve({...common,buckets:selected,selectedId:'missing'});
 assert.equal(result.end.toISOString(),'2026-11-01T23:59:59.999Z');
 result = resolve({...common,buckets:[bucket('x','2026-11-19')],selectedId:'x',chartStyle:'fixed'});
