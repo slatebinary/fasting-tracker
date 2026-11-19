@@ -14,6 +14,7 @@ on:
       - refactor/storage-recovery-service-v1.17.38
       - main
       - refactor/v1.20.9-weight-calendar-day-resolution
+      - refactor/v1.20.10-weight-lifetime-maximum
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -141,6 +142,7 @@ jobs:
           node tests/test_weight_selected_period_bounds.cjs
           node tests/test_weight_period_labels.cjs
           node tests/test_weight_entry_calendar_day.cjs
+          node tests/test_weight_lifetime_maximum.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
