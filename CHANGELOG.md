@@ -1,3 +1,10 @@
+## v1.20.15 — 2026-11-20
+
+- Extract completed and active fasting-interval construction into a pure helper with explicit records, active-fast values, range bounds, current-time input and goal-sanitization dependency.
+- Preserve chronological ordering, overlap filtering, source timestamps, active-interval semantics and goal fallback behaviour.
+- Add focused regression coverage for range boundaries, malformed records, active intervals, invalid current time and input immutability.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.14 — 2026-11-20
 
 - Extract one-record-per-entry daily Weight chart bucket construction into a pure helper.
