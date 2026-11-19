@@ -17,43 +17,13 @@
     return stored || dayKeyFast(entry.when, entry.timeZone || currentTimeZone());
   }
   function weightBucketLongLabel(bucket, mode = weightPeriodMode) {
-    if (mode === 'daily' && bucket?.entry) return localDateTimeLabel(bucket.entry.when, bucket.entry.timeZone);
-    if (bucket?.rollingWindowDays && bucket.calendarDay) {
-      const start = weightBucketDate(bucket.windowStartDay || bucket.calendarDay);
-      const end = weightBucketDate(bucket.windowEndDay || bucket.calendarDay);
-      const options = {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'};
-      return `${start.toLocaleDateString(currentLocale(),options)} – ${end.toLocaleDateString(currentLocale(),options)}`;
-    }
-    const d = weightBucketDate(bucket.key);
-    const locale = currentLocale();
-    const year = d.getUTCFullYear(), month = d.getUTCMonth();
-    if (mode === 'week') return t('weight.weekOf', {date:d.toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})});
-    if (mode === 'month') return d.toLocaleDateString(locale,{month:'long',year:'numeric',timeZone:'UTC'});
-    if (mode === 'quarter') return t('weight.quarterLabel',{quarter:Math.floor(month/3)+1,year});
-    if (mode === 'halfyear') return t('weight.halfYearLabel',{half:month<6?1:2,year});
-    return String(year);
+    return resolveWeightBucketLabel({bucket,mode,variant:'long',locale:currentLocale(),timeZone:currentTimeZone(),bucketDate:weightBucketDate,localDateTimeLabel,translate:t});
   }
   function weightBucketShortLabel(bucket, mode = weightPeriodMode) {
-    if (bucket?.rollingWindowDays && bucket.calendarDay) return weightBucketDate(bucket.calendarDay).toLocaleDateString(currentLocale(),{day:'numeric',month:'short',timeZone:'UTC'});
-    if (mode === 'daily' && bucket?.entry) {
-      const d = new Date(bucket.entry.when), tz = bucket.entry.timeZone || currentTimeZone();
-      return d.toLocaleDateString(currentLocale(), {day:'numeric',month:'short',year:'2-digit',timeZone:tz});
-    }
-    const d = weightBucketDate(bucket.key);
-    const locale = currentLocale();
-    const year = d.getUTCFullYear(), month = d.getUTCMonth();
-    if (mode === 'week') return d.toLocaleDateString(locale,{day:'numeric',month:'short',timeZone:'UTC'});
-    if (mode === 'month') return d.toLocaleDateString(locale,{month:'short',year:'2-digit',timeZone:'UTC'});
-    if (mode === 'quarter') return t('weight.quarterShort',{quarter:Math.floor(month/3)+1,year:String(year).slice(-2)});
-    if (mode === 'halfyear') return t('weight.halfYearShort',{half:month<6?1:2,year:String(year).slice(-2)});
-    return String(year);
+    return resolveWeightBucketLabel({bucket,mode,variant:'short',locale:currentLocale(),timeZone:currentTimeZone(),bucketDate:weightBucketDate,localDateTimeLabel,translate:t});
   }
   function weightPointCalloutPeriod(bucket, mode = weightPeriodMode) {
-    if (mode === 'daily' && bucket?.entry) {
-      const d = new Date(bucket.entry.when), tz = bucket.entry.timeZone || currentTimeZone();
-      return d.toLocaleString(currentLocale(), {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:tz});
-    }
-    return weightBucketLongLabel(bucket, mode);
+    return resolveWeightBucketLabel({bucket,mode,variant:'callout',locale:currentLocale(),timeZone:currentTimeZone(),bucketDate:weightBucketDate,localDateTimeLabel,translate:t});
   }
   function buildWeightCalendarBuckets(entries, mode) {
     return aggregateWeightCalendarBuckets(entries, mode, weightEntryCalendarDay, weightBucketKeyForDay);
