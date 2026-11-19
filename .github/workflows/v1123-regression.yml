@@ -133,6 +133,7 @@ jobs:
           node tests/test_analytics.cjs
           node tests/test_time_primitives.cjs
           node tests/test_weight_calendar_primitives.cjs
+          node tests/test_weight_period_filter.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'

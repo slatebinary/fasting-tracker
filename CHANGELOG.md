@@ -1,3 +1,9 @@
+## v1.20.3 — 2026-11-19
+
+- Extract inclusive binary-search filtering of chronologically sorted weight records into a pure helper with explicit date bounds.
+- Add isolated regression coverage for exact start/end boundaries, single-instant ranges, empty and invalid ranges, and input immutability.
+- Preserve the existing Weight period API and sorted-record semantics; no user-interface, storage, record schema, or backup changes.
+
 ## v1.20.2 — 2026-11-19
 
 - Extract deterministic weight-period calendar calculations into a dedicated source fragment with no application-state or DOM dependencies.
