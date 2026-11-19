@@ -1,3 +1,9 @@
+## v1.20.2 — 2026-11-19
+
+- Extract deterministic weight-period calendar calculations into a dedicated source fragment with no application-state or DOM dependencies.
+- Add isolated regression tests for calendar-month clamping, leap years, week/month/quarter/half-year/year bucket boundaries, and rolling-window lengths.
+- Preserve existing function names and calling behaviour; no fasting/weight record schema, storage, backup, or user-interface changes.
+
 ## v1.20.1 — 2026-11-19
 
 - Separate the selected-period highest weight from the all-time highest active measurement.

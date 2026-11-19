@@ -132,6 +132,7 @@ jobs:
           node tests/test_integrity_primitives.cjs
           node tests/test_analytics.cjs
           node tests/test_time_primitives.cjs
+          node tests/test_weight_calendar_primitives.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
