@@ -139,6 +139,7 @@ jobs:
           node tests/test_weight_period_summary.cjs
           node tests/test_weight_selected_period_bounds.cjs
           node tests/test_weight_period_labels.cjs
+          node tests/test_weight_entry_calendar_day.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
