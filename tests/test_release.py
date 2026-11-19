@@ -705,7 +705,7 @@ ok("e.key==='ArrowLeft'||e.key==='ArrowRight'" in index and "const spacing=weigh
 ok('weight.aggregatePointDetail' in en_source and 'weight.weekOf' in en_source, 'aggregate weight point localization is missing')
 ok((ROOT/'tests'/'test_weight_aggregation_scroll.py').is_file(), 'weight aggregation/scroll browser regression test missing')
 ok("let weightPeriodMode = 'daily'" in index and 'weight.periodDaily' in en_source, 'Daily weight-chart mode/default is missing')
-ok("if (mode === 'daily')" in index and 'key:`entry:${entry.id}`' in index, 'Daily mode must preserve individual weight entries rather than aggregate them')
+ok("if (mode === 'daily')" in index and 'buildWeightDailyBuckets(entries)' in index and 'key: `entry:${entry.id}`' in (ROOT / "src" / "app" / "js" / "33m-weight-daily-buckets.js").read_text(encoding="utf-8"), 'Daily mode must preserve individual weight entries rather than aggregate them')
 ok('function weightPointCalloutPeriod(' in index and 'periodLabel=weightPointCalloutPeriod(bucket)' in index, 'selected weight points must label their exact time/calendar period')
 ok("weightPeriodMode==='daily'?buckets:buckets.filter" in index and 'weightChartScaleCache' in index, 'lifetime-scale Daily rendering optimization is missing')
 
