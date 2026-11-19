@@ -42,6 +42,13 @@ with sync_playwright() as p:
                            arg=version, timeout=20000)
     page.locator('.tab[data-screen="weight"]').click()
     page.wait_for_function("document.querySelector('#weight.screen')?.classList.contains('active')", timeout=5000)
+    # Wait for the asynchronous IndexedDB-backed data render, not merely the
+    # tab's active CSS state. Without this, the assertion can race startup.
+    page.wait_for_function("""() => {
+        const range = document.querySelector('#weightPeriodRange');
+        return range?.dataset.period === 'daily' && Number(range.dataset.count) > 0
+          && document.querySelector('#wPeriodHigh')?.textContent.trim() !== '—';
+    }""", timeout=10000)
 
     lifetime = page.locator('#wAllTimeHigh').inner_text().strip()
     if '120' not in lifetime:
