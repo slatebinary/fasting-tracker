@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.26",
+  "version": "1.20.27",
   "released": "2026-11-20",
-  "notes": "Extract Statistics weekly-summary row construction policy",
+  "notes": "Optimize rolling Weight averages with a linear-time sliding-window algorithm",
   "entry": "./index.html",
   "shell": [
     "./",
