@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.19" />
+  <meta name="ft-app-version" content="1.20.20" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.19';
+  const APP_VERSION = '1.20.20';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5587,28 +5587,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     // Use the whole day cell (bar plus half of each inter-column gap) as the
     // horizontal touch target. This is much easier to hit than the narrow
     // painted bar on a phone while still selecting the intended date.
-    const firstCenter = g.left + g.bw / 2;
-    const index = Math.round((x - firstCenter) / g.slot);
-    if (index < 0 || index >= timelineChartDays.length) return null;
-    const center = firstCenter + index * g.slot;
-    if (Math.abs(x - center) > g.slot / 2) return null;
-    const day = timelineChartDays[index];
-
-    // Tapping the date-label strip selects the whole day.
-    if (y >= g.top + g.h && y <= g.cssH) return { kind:'day', dayKey:day.key };
-    if (y < g.top || y > g.top + g.h) return null;
-
-    // Map the vertical touch position directly to clock time, then find the
-    // corresponding fasting or non-fasting segment. Every point in the 24 h
-    // column therefore has a selectable segment, even if that segment is only
-    // a few pixels tall visually.
-    // Invert the canvas coordinate so the bottom is 00:00 and the top is 24:00.
-    // Clamp the upper boundary to the final instant inside this calendar day.
-    const fraction = Math.max(0, Math.min(0.999999, 1 - (y - g.top) / g.h));
-    const instant = day.startMs + fraction * (day.endMs - day.startMs);
-    let segmentIndex = day.segments.findIndex(seg => instant >= seg.start && instant < seg.end);
-    if (segmentIndex < 0 && day.segments.length) segmentIndex = day.segments.length - 1;
-    return segmentIndex >= 0 ? { kind:'segment', dayKey:day.key, segmentIndex } : { kind:'day', dayKey:day.key };
+    return hitTestTimelineChart(x, y, g, timelineChartDays);
   }
 
   function selectTimelineAt(clientX, clientY) {
@@ -8807,6 +8786,31 @@ function buildChartContinuationKeys(days) {
       return continuationKey;
     });
   });
+}
+// Pure hit-testing policy for the Timeline canvas.
+// Coordinates are relative to the canvas; geometry and day models are read-only.
+function hitTestTimelineChart(x, y, geometry, days) {
+  if (!geometry || !Array.isArray(days) || !days.length) return null;
+  const { left, bw, slot, top, h, cssH } = geometry;
+  const firstCenter = left + bw / 2;
+  const index = Math.round((x - firstCenter) / slot);
+  if (index < 0 || index >= days.length) return null;
+  const center = firstCenter + index * slot;
+  if (Math.abs(x - center) > slot / 2) return null;
+  const day = days[index];
+
+  if (y >= top + h && y <= cssH) return { kind: 'day', dayKey: day.key };
+  if (y < top || y > top + h) return null;
+
+  // Invert the vertical coordinate: bottom is 00:00, top is 24:00.
+  // Clamp the upper edge inside the day's actual duration (23/24/25 h).
+  const fraction = Math.max(0, Math.min(0.999999, 1 - (y - top) / h));
+  const instant = day.startMs + fraction * (day.endMs - day.startMs);
+  let segmentIndex = day.segments.findIndex(segment => instant >= segment.start && instant < segment.end);
+  if (segmentIndex < 0 && day.segments.length) segmentIndex = day.segments.length - 1;
+  return segmentIndex >= 0
+    ? { kind: 'segment', dayKey: day.key, segmentIndex }
+    : { kind: 'day', dayKey: day.key };
 }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
