@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.16" />
+  <meta name="ft-app-version" content="1.20.17" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.16';
+  const APP_VERSION = '1.20.17';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6814,15 +6814,6 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return Array.from({length:7},(_,i)=>new Date(base.getTime()+i*86400000).toLocaleDateString(currentLocale(),{weekday:'narrow'}));
   }
 
-  // Completed days within one second of a full local day are treated as complete.
-  // The current day remains elapsed-only; DST days retain their real 23h/25h length.
-  function calendarDurationForDisplay(day, nowMs = Date.now()) {
-    const total = Math.max(0, Number(day?.totalFastMs) || 0);
-    const start = Number(day?.startMs), end = Number(day?.endMs);
-    const dayLength = end - start, shortfall = dayLength - total;
-    if (Number.isFinite(start) && Number.isFinite(end) && end <= nowMs && dayLength > 0 && total > 0 && shortfall >= 0 && shortfall <= 1000) return dayLength;
-    return total;
-  }
 
   function renderFastCalendar() {
     const title=el('calendarMonthTitle'), grid=el('fastCalendar'), heads=el('calendarWeekdays');
@@ -8794,6 +8785,16 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       }
     }
     return map;
+  }
+// Pure display-duration policy for completed local calendar days.
+  // A completed day within one second of its actual length is shown as complete;
+  // the current day stays elapsed-only, including 23-hour and 25-hour DST days.
+  function calendarDurationForDisplay(day, nowMs = Date.now()) {
+    const total = Math.max(0, Number(day?.totalFastMs) || 0);
+    const start = Number(day?.startMs), end = Number(day?.endMs);
+    const dayLength = end - start, shortfall = dayLength - total;
+    if (Number.isFinite(start) && Number.isFinite(end) && end <= nowMs && dayLength > 0 && total > 0 && shortfall >= 0 && shortfall <= 1000) return dayLength;
+    return total;
   }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
