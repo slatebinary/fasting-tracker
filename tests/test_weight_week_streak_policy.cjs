@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('src/app/js/43o-weight-week-streak-policy.js','utf8');
+const context={};vm.createContext(context);vm.runInContext(source+'\nthis.resolve=calculateWeightWeekStreak;',context);
+const resolve=context.resolve;
+const weeks=['2026-11-02','2026-11-09','2026-11-16'];
+assert.equal(resolve(weeks,'2026-11-16'),3,'count the current week and consecutive prior weeks');
+assert.equal(resolve(['2026-11-02','2026-11-09'],'2026-11-16'),2,'allow the current week to be empty and start from the previous week');
+assert.equal(resolve(['2026-11-02','2026-11-16'],'2026-11-16'),1,'stop at the first missing week');
+assert.equal(resolve(['2026-11-02','2026-11-09'],'2026-11-23'),0,'do not skip a missing previous week');
+assert.equal(resolve(['2026-11-02','2026-11-09','2026-11-09'],'2026-11-16'),2,'duplicate measurements do not inflate the weekly streak');
+assert.equal(resolve([],'2026-11-16'),0);
+assert.equal(resolve(null,'2026-11-16'),0);
+assert.equal(resolve(['2026-11-16'],'invalid'),0);
+assert.equal(resolve(['2026-11-16'],'2026-02-30'),0);
+assert.equal(resolve(['2026-11-16'],'2026-11-16'),1);
+console.log('PASS: Weight weekly streak policy covers current/previous-week rules, gaps, duplicates and invalid inputs');
