@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.32" />
+  <meta name="ft-app-version" content="1.20.33" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.32';
+  const APP_VERSION = '1.20.33';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -7085,7 +7085,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     scrollTimelineToLatest();
   }
 
-  function storagePressureFromEstimate(estimate){if(!estimate||!Number.isFinite(estimate.usage)||!Number.isFinite(estimate.quota)||estimate.quota<=0)return {known:false,warning:false,ratio:null,free:null};const ratio=estimate.usage/estimate.quota,free=Math.max(0,estimate.quota-estimate.usage);return {known:true,warning:ratio>=STORAGE_PRESSURE_RATIO||free<STORAGE_PRESSURE_FREE_BYTES,ratio,free};}
+  function storagePressureFromEstimate(estimate){return resolveStoragePressurePolicy(estimate,STORAGE_PRESSURE_RATIO,STORAGE_PRESSURE_FREE_BYTES);}
   async function allowStorageIntensiveOperation(){try{const est=await navigator.storage?.estimate?.();const pressure=storagePressureFromEstimate(est);if(pressure.warning)return confirm(t('storage.pressureContinue',{percent:formatNumber(pressure.ratio*100,0,0),free:humanBytes(pressure.free)}));}catch{}return true;}
   function installStateCode(){if(isStandaloneApp())return isIOSDevice()?'installed-ios':isAndroidDevice()?'installed-android':'installed-desktop';return isIOSDevice()?'browser-ios':isAndroidDevice()?'browser-android':'browser-desktop';}
   function loadPerformanceMeta(){try{return JSON.parse(localStorage.getItem(PERF_META_KEY)||'null');}catch{return null;}}
@@ -8940,6 +8940,15 @@ function resolveDueSnoozedNotificationDetailsPolicy(pending, active, nowMs, pars
     restored.push(detail);
   }
   return {due, remaining, restored, details:details.slice(0, limit)};
+}
+// Pure storage-pressure classification. Browser storage estimation and confirmation remain in the adapter.
+function resolveStoragePressurePolicy(estimate, ratioThreshold, freeBytesThreshold) {
+  if (!estimate || !Number.isFinite(estimate.usage) || !Number.isFinite(estimate.quota) || estimate.quota <= 0) {
+    return {known:false,warning:false,ratio:null,free:null};
+  }
+  const ratio = estimate.usage / estimate.quota;
+  const free = Math.max(0, estimate.quota - estimate.usage);
+  return {known:true,warning:ratio >= ratioThreshold || free < freeBytesThreshold,ratio,free};
 }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
