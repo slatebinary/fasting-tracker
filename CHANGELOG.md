@@ -1,3 +1,10 @@
+## v1.20.27 — 2026-11-20
+
+- Optimize rolling Weight averages with a single-pass sliding window and monotonic minimum/maximum queues instead of rescanning every measurement in each daily window.
+- Use compensated running-sum updates to retain numerical stability while preserving the existing 7/30/90/180/365-day windows, inclusive date ranges, extrema and measurement references.
+- Add direct-window oracle coverage for all rolling periods, duplicate same-day measurements, shuffled input and a 20,000-measurement lifetime dataset.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.26 — 2026-11-20
 
 - Extract the Statistics weekly-summary row builder into a pure, regression-tested policy helper.
