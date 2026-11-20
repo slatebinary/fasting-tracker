@@ -30,6 +30,7 @@ on:
       - refactor/v1.20.23-stats-marker-density-policy
       - refactor/v1.20.24-statistics-week-anchor-policy
       - refactor/v1.20.25-stats-month-comparison-policy
+      - refactor/v1.20.26-stats-weekly-summary-builder
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -73,6 +74,7 @@ jobs:
           python3 tests/test_scheduled_fast_start.py
           python3 tests/test_v1190_edit_fast_presets.py
           node tests/test_stats_month_comparison_policy.cjs
+          node tests/test_stats_weekly_summary_builder.cjs
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
