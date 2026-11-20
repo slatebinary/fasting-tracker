@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 56, f"Expected fifty-six ordered app fragments, found {len(parts)}"
+assert len(parts) == 57, f"Expected fifty-seven ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -335,6 +335,13 @@ specialized_charts = (source / "js" / "40-specialized-statistics-charts.js").rea
 assert "nearestStatsChartDayHit(x,y,trendPlotBounds,trendInteractiveLayout)" in specialized_charts
 assert "nearestStatsChartDayHit(x,y,cumulativePlotBounds,cumulativeInteractiveLayout)" in specialized_charts
 assert "let best=null,bestD=Infinity" not in specialized_charts
+
+# Trend and cumulative chart marker density is owned by a pure policy helper.
+stats_marker_density = (source / "js" / "43i-stats-chart-marker-density.js").read_text(encoding="utf-8")
+assert "function statsChartMarkerStep" in stats_marker_density
+assert "statsChartMarkerStep(days.length,w,chartRange('trend'))" in specialized_charts
+assert "statsChartMarkerStep(days.length,w,chartRange('cumulative'))" in specialized_charts
+assert "function markerStepForPlot" not in specialized_charts
 
 # Generic timing/duration bars support pointer selection and a completed-click fallback.
 generic_chart = (source / "js" / "33-statistics-generic-chart.js").read_text(encoding="utf-8")
