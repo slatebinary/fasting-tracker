@@ -33,6 +33,7 @@ on:
       - refactor/v1.20.26-stats-weekly-summary-builder
       - refactor/v1.20.28-backup-freshness-policy
       - refactor/v1.20.29-next-fast-cycle-policy
+      - refactor/v1.20.30-weight-week-streak-policy
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -79,6 +80,7 @@ jobs:
           node tests/test_stats_weekly_summary_builder.cjs
           node tests/test_backup_freshness_policy.cjs
           node tests/test_next_fast_cycle_policy.cjs
+          node tests/test_weight_week_streak_policy.cjs
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
