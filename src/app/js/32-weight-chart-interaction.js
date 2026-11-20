@@ -165,15 +165,14 @@
   }
 
   function weightChartPointAt(clientX,clientY){
-    const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;const rect=c.getBoundingClientRect(),x=clientX-rect.left,y=clientY-rect.top;let best=null,bestDistance=Infinity;
-    for(const point of weightChartHitPoints){const distance=Math.hypot(x-point.x,y-point.y);if(distance<bestDistance){best=point;bestDistance=distance;}}
-    return bestDistance<=28?best:null;
+    const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;const rect=c.getBoundingClientRect(),x=clientX-rect.left,y=clientY-rect.top;
+    return nearestWeightChartPoint(weightChartHitPoints,x,y,28);
   }
   function selectWeightChartPointAtX(clientX){
     const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;
-    const x=clientX-c.getBoundingClientRect().left;let best=null,distance=Infinity;
-    for(const point of weightChartHitPoints){const d=Math.abs(x-point.x);if(d<distance){distance=d;best=point;}}
-    return best&&distance<=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5)?best:null;
+    const x=clientX-c.getBoundingClientRect().left;
+    const maxDistance=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5);
+    return nearestWeightChartPointAtX(weightChartHitPoints,x,maxDistance);
   }
   function weightChartPointSpacing(){
     const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
@@ -243,7 +242,7 @@
   function finishWeightChartPointer(event){
     const start=weightChartPointerStart;weightChartPointerStart=null;
     if(!start||start.id!==event.pointerId)return;
-    if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
+    if(!isWeightChartPointerTap(start.x,start.y,event.clientX,event.clientY,start.scrollLeft,el('weightChartScroller')?.scrollLeft||0))return;
     const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;
     weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();renderWeightPeriodAnalytics();syncWeightChartNavigator();
   }

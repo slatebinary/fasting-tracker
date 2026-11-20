@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 54, f"Expected fifty-four ordered app fragments, found {len(parts)}"
+assert len(parts) == 55, f"Expected fifty-five ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -38,6 +38,16 @@ assert "function currentZoneDaySummaries" in stats_models and "buildCurrentZoneD
 calendar_duration = (source / "js" / "43c-calendar-duration-display.js").read_text(encoding="utf-8")
 assert "function calendarDurationForDisplay" in calendar_duration
 assert "function calendarDurationForDisplay" not in (source / "js" / "38-calendar-dst-rendering.js").read_text(encoding="utf-8")
+weight_hit_test = (source / "js" / "43g-weight-chart-hit-test-policy.js").read_text(encoding="utf-8")
+assert "function nearestWeightChartPoint" in weight_hit_test
+assert "function nearestWeightChartPointAtX" in weight_hit_test
+assert "function isWeightChartPointerTap" in weight_hit_test
+weight_chart_interaction = (source / "js" / "32-weight-chart-interaction.js").read_text(encoding="utf-8")
+assert "return nearestWeightChartPoint(weightChartHitPoints,x,y,28)" in weight_chart_interaction
+assert "return nearestWeightChartPointAtX(weightChartHitPoints,x,maxDistance)" in weight_chart_interaction
+assert "isWeightChartPointerTap(start.x,start.y,event.clientX,event.clientY" in weight_chart_interaction
+assert "function nearestWeightChartPoint" not in weight_chart_interaction
+
 timeline_hit_test = (source / "js" / "43f-timeline-hit-test-policy.js").read_text(encoding="utf-8")
 assert "function hitTestTimelineChart" in timeline_hit_test
 assert "function hitTestTimelineChart" not in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
