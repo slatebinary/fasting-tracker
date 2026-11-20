@@ -1,3 +1,10 @@
+## v1.20.16 — 2026-11-20
+
+- Extract time-zone calendar-day fasting totals into a pure aggregation helper with injected day-key and day-boundary functions.
+- Preserve range clipping, per-interval day counts, 10,000-iteration safety guard and cache ownership in the statistics caller.
+- Add focused regression coverage for multi-day splits, overlapping intervals, bounded ranges and invalid inputs.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.15 — 2026-11-20
 
 - Extract completed and active fasting-interval construction into a pure helper with explicit records, active-fast values, range bounds, current-time input and goal-sanitization dependency.

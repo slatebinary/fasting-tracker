@@ -20,6 +20,7 @@ on:
       - refactor/v1.20.13-weight-history-display-range
       - refactor/v1.20.14-weight-daily-buckets
       - refactor/v1.20.15-fasting-intervals
+      - refactor/v1.20.16-zone-day-summaries
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -153,6 +154,7 @@ jobs:
           node tests/test_weight_history_display_range.cjs
           node tests/test_weight_daily_buckets.cjs
           node tests/test_fasting_intervals.cjs
+          node tests/test_zone_day_summaries.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
