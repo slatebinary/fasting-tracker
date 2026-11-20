@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 63, f"Expected sixty-three ordered app fragments, found {len(parts)}"
+assert len(parts) == 64, f"Expected sixty-four ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 backup_freshness = (source / "js" / "43m-backup-freshness-policy.js").read_text(encoding="utf-8")
 assert "function resolveBackupFreshnessPolicy" in backup_freshness
