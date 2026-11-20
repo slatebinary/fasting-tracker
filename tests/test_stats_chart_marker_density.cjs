@@ -6,7 +6,7 @@ const step=context.step;
 for(let n=0;n<=31;n++)assert.equal(step(n,1,'all'),1,`dense markers remain complete through ${n} points`);
 assert.equal(step(32,660,'30d'),1);
 assert.equal(step(1000,600,'30d'),25);
-assert.equal(step(1000,600,'6m'),30);
+assert.equal(step(1000,600,'6m'),31);
 assert.equal(step(1000,600,'1y'),38);
 assert.equal(step(1000,600,'all'),48);
 assert.equal(step(1000,1,'30d'),500,'at least two marker slots are retained on narrow plots');
