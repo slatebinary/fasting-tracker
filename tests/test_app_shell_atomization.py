@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 57, f"Expected fifty-seven ordered app fragments, found {len(parts)}"
+assert len(parts) == 58, f"Expected fifty-eight ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -342,6 +342,12 @@ assert "function statsChartMarkerStep" in stats_marker_density
 assert "statsChartMarkerStep(days.length,w,chartRange('trend'))" in specialized_charts
 assert "statsChartMarkerStep(days.length,w,chartRange('cumulative'))" in specialized_charts
 assert "function markerStepForPlot" not in specialized_charts
+
+# Statistics weekly summaries use a pure local-noon Monday anchor policy.
+stats_week_anchor = (source / "js" / "43j-stats-week-anchor-policy.js").read_text(encoding="utf-8")
+assert "function startOfStatsWeekMonday" in stats_week_anchor
+assert "startOfStatsWeekMonday(new Date())" in specialized_charts
+assert "function startOfWeekMonday" not in specialized_charts
 
 # Generic timing/duration bars support pointer selection and a completed-click fallback.
 generic_chart = (source / "js" / "33-statistics-generic-chart.js").read_text(encoding="utf-8")
