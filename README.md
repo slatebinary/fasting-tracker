@@ -4,7 +4,7 @@ A privacy-focused Progressive Web App (PWA) for tracking intermittent and extend
 
 ## App-shell source layout
 
-The committed `index.html` is generated from `src/app/index.template.html`, `src/app/styles.css`, and 50 ordered JavaScript source fragments in `src/app/js/`. Edit the source fragments, then run `python3 tools/build_app_shell.py` to regenerate the app shell. The fragments are concatenated into the same classic script at build time, preserving the existing shared lexical scope and runtime execution order. CI checks that the generated shell is reproducible. See [ARCHITECTURE.md](ARCHITECTURE.md) for the current subsystem map and the incremental modularization plan.
+The committed `index.html` is generated from `src/app/index.template.html`, `src/app/styles.css`, and 51 ordered JavaScript source fragments in `src/app/js/`. Edit the source fragments, then run `python3 tools/build_app_shell.py` to regenerate the app shell. The fragments are concatenated into the same classic script at build time, preserving the existing shared lexical scope and runtime execution order. CI checks that the generated shell is reproducible. See [ARCHITECTURE.md](ARCHITECTURE.md) for the current subsystem map and the incremental modularization plan.
 
 - **[Changelog](CHANGELOG.md)** — release history is also available inside the app from Settings → Updates → Changelog.
 
