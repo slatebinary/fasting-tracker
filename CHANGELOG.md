@@ -1,3 +1,10 @@
+## v1.20.17 — 2026-11-20
+
+- Extract calendar-day display-duration policy into a pure helper.
+- Preserve the one-second completion tolerance and use each local day's actual duration, including 23-hour and 25-hour DST days; current days remain elapsed-only.
+- Add focused regression coverage for DST day lengths, completed-day tolerance, current days and invalid boundaries.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.16 — 2026-11-20
 
 - Extract time-zone calendar-day fasting totals into a pure aggregation helper with injected day-key and day-boundary functions.
