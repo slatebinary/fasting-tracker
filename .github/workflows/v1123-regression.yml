@@ -35,6 +35,7 @@ on:
       - refactor/v1.20.29-next-fast-cycle-policy
       - refactor/v1.20.30-weight-week-streak-policy
       - refactor/v1.20.31-notification-detail-normalization
+      - refactor/v1.20.32-notification-snooze-restoration-policy
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -83,6 +84,7 @@ jobs:
           node tests/test_next_fast_cycle_policy.cjs
           node tests/test_weight_week_streak_policy.cjs
           node tests/test_notification_detail_normalization_policy.cjs
+          node tests/test_notification_snooze_restoration_policy.cjs
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
