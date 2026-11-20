@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.18" />
+  <meta name="ft-app-version" content="1.20.19" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.18';
+  const APP_VERSION = '1.20.19';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6952,25 +6952,12 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz });
     }
 
-    // Give every segment a stable continuation key across midnight. Fast
-    // pieces share the original fast's exact source boundaries. Consecutive
-    // non-fasting pieces on adjacent days are grouped until another fast
-    // interrupts them. This lets selection reveal the rest of the same
-    // fast/gap without changing the underlying timeline data.
-    let gapSerial = 0;
-    let previousGap = null;
-    for (const day of days) {
-      for (const segment of day.segments) {
-        if (segment.type === 'fast') {
-          segment.continuationKey = `fast:${segment.sourceStart}:${segment.sourceEnd}`;
-          previousGap = null;
-          continue;
-        }
-        const contiguous = previousGap && Math.abs(previousGap.end - segment.start) < 1000;
-        segment.continuationKey = contiguous ? previousGap.continuationKey : `gap:${++gapSerial}`;
-        previousGap = segment;
-      }
-    }
+    // Stable keys let selection reveal the same fast/gap across midnight.
+    // Assign them in place after the pure policy returns a parallel key matrix.
+    const continuationKeys = buildChartContinuationKeys(days);
+    days.forEach((day, dayIndex) => day.segments.forEach((segment, segmentIndex) => {
+      segment.continuationKey = continuationKeys[dayIndex][segmentIndex];
+    }));
     return days;
   }
 
@@ -8802,6 +8789,24 @@ function calendarClockChangeMetrics(dayDeltaMinutes,startOffsetMs,endOffsetMs) {
   const deltaMinutes=isDayLengthChange?dayDeltaMinutes:offsetDeltaMinutes;
   const sign=deltaMinutes>0?'+':'−',duration=formatClockChangeDuration(deltaMinutes);
   return {offsetDeltaMinutes,isDayLengthChange,deltaMinutes,sign,duration,change:sign+duration};
+}
+// Pure policy for assigning stable continuation keys to chart segments.
+// The returned keys mirror the input day/segment structure without mutating it.
+function buildChartContinuationKeys(days) {
+  let gapSerial = 0;
+  let previousGap = null;
+  return (Array.isArray(days) ? days : []).map(day => {
+    return (Array.isArray(day?.segments) ? day.segments : []).map(segment => {
+      if (segment?.type === 'fast') {
+        previousGap = null;
+        return `fast:${segment.sourceStart}:${segment.sourceEnd}`;
+      }
+      const contiguous = previousGap && Math.abs(previousGap.end - segment.start) < 1000;
+      const continuationKey = contiguous ? previousGap.continuationKey : `gap:${++gapSerial}`;
+      previousGap = { end: segment.end, continuationKey };
+      return continuationKey;
+    });
+  });
 }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
