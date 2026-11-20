@@ -1,0 +1,18 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync('src/app/js/43c-calendar-duration-display.js', 'utf8');
+const context = {}; vm.createContext(context); vm.runInContext(source + '\nthis.display = calendarDurationForDisplay;', context);
+const display = context.display;
+const H = 3600000;
+assert.equal(display({startMs:0,endMs:23*H,totalFastMs:23*H-500},24*H),23*H);
+assert.equal(display({startMs:0,endMs:25*H,totalFastMs:25*H-1000},26*H),25*H);
+assert.equal(display({startMs:0,endMs:24*H,totalFastMs:24*H-1001},25*H),24*H-1001);
+assert.equal(display({startMs:0,endMs:25*H,totalFastMs:10*H},20*H),10*H);
+assert.equal(display({startMs:0,endMs:24*H,totalFastMs:8*H},25*H),8*H);
+assert.equal(display({startMs:0,endMs:24*H,totalFastMs:0},25*H),0);
+assert.equal(display({startMs:24*H,endMs:24*H,totalFastMs:1},25*H),1);
+assert.equal(display({startMs:0,endMs:24*H,totalFastMs:24*H+1},25*H),24*H+1);
+assert.equal(display(null,25*H),0);
+console.log('PASS: calendar display duration, completion tolerance and DST day lengths');
