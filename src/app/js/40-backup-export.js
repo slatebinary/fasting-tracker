@@ -55,19 +55,16 @@
   }
 
   function backupFreshnessState() {
-    const hasData = hasBackupWorthyData();
-    const last=validDate(backupMeta.lastExternalBackupAt);
-    if (!last) return {state:hasData?'never':'empty', changed:hasData, last:null};
+    const hasData=hasBackupWorthyData(),last=validDate(backupMeta.lastExternalBackupAt);
     const backedRevision=Math.max(0,Number(backupMeta.lastExternalBackupRevision)||0);
-    const updated=validDate(data.updatedAt), backedUpdated=validDate(backupMeta.lastExternalBackupDataUpdatedAt);
-    // Pre-v1.12.5 exports have no data-only signature. Retain the previous
-    // revision-based behavior for those exports until a new JSON is made.
-    const changed=backupMeta.lastExternalBackupDataSignature
-      ? backupDatasetSignature() !== backupMeta.lastExternalBackupDataSignature
-      : (backedRevision ? Number(data.revision)>backedRevision : (!!updated && updated.getTime()>last.getTime()+1000));
-    // A deletion of the FINAL fasting/weight record must still mark the
-    // previous export outdated, even though the live dataset is now empty.
-    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated,pending:changed?backupPendingCategories():{fasting:false,weight:false,known:true}};
+    const updated=validDate(data.updatedAt),backedUpdated=validDate(backupMeta.lastExternalBackupDataUpdatedAt);
+    const state=resolveBackupFreshnessPolicy({
+      hasData,last,revision:data.revision,updated,backedRevision,backedUpdated,
+      storedDataSignature:backupMeta.lastExternalBackupDataSignature||null,
+      currentDataSignature:backupMeta.lastExternalBackupDataSignature?backupDatasetSignature():null
+    });
+    state.pending=state.changed?backupPendingCategories():{fasting:false,weight:false,known:true};
+    return state;
   }
 
   function renderFastingBackupIndicator(freshness, due) {
