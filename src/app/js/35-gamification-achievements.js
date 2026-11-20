@@ -1,20 +1,7 @@
   function weightWeekStreak() {
-    const weeks = new Set(data.weights.map(w => weekKeyFromDayString(weightCalendarDay(w))).filter(Boolean));
-    if (!weeks.size) return 0;
-    let cursor = startOfWeek();
-    let key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-    if (!weeks.has(key)) {
-      cursor.setDate(cursor.getDate() - 7);
-      key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-      if (!weeks.has(key)) return 0;
-    }
-    let streak = 0;
-    while (weeks.has(key)) {
-      streak++;
-      cursor.setDate(cursor.getDate() - 7);
-      key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-    }
-    return streak;
+    const weekKeys = data.weights.map(w => weekKeyFromDayString(weightCalendarDay(w))).filter(Boolean);
+    const currentWeekKey = weekKeyFromDayString(dayKeyFast(startOfWeek(),currentTimeZone()));
+    return calculateWeightWeekStreak(weekKeys,currentWeekKey);
   }
 
   function hasComebackAchievement() {

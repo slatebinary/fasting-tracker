@@ -1,3 +1,9 @@
+## v1.20.30 — 2026-11-20
+
+- Extract consecutive Weight-week streak counting into a pure policy helper; keep time-zone-aware current-week resolution in the gamification caller.
+- Preserve the current-week preference, previous-week grace rule, consecutive-week count and empty-history result.
+- Add deterministic coverage for current/previous week starts, gaps, duplicate measurements and invalid inputs. No UI, stored data or gamification scoring changes.
+
 ## v1.20.29 — 2026-11-20
 
 - Extract the neutral 24-hour cycle countdown eligibility and timing calculation into a pure policy helper.
