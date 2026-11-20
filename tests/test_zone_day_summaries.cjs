@@ -1,0 +1,17 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync('src/app/js/43b-zone-day-summaries.js', 'utf8');
+const context = {}; vm.createContext(context); vm.runInContext(source + '\nthis.build = buildCurrentZoneDaySummaries;', context);
+const split = (ms, zone) => zone + ':' + (ms < 86400000 ? 'day-1' : 'day-2');
+const next = (ms) => ms < 86400000 ? 86400000 : 172800000;
+const intervals = [{start: 43200000, end: 129600000}, {start: 90000000, end: 100000000}, {start: 200000000, end: 210000000}];
+const result = context.build(intervals, 'Test/Zone', -Infinity, 150000000, split, next);
+assert.deepEqual(Array.from(result.entries()).map(([k,v])=>[k,v.totalFastMs,v.fastCount]), [['Test/Zone:day-1',43200000,1],['Test/Zone:day-2',57600000,2]]);
+const bounded = context.build([{start:0,end:100}], 'UTC', 20, 80, (x)=>'day', ()=>100);
+assert.equal(bounded.get('day').totalFastMs,60);
+assert.equal(bounded.get('day').fastCount,1);
+assert.equal(context.build(null,'UTC',0,1,()=> 'x',()=>1).size,0);
+assert.equal(context.build([{start:0,end:1}], '', 0, 1,()=> 'x',()=>1).size,0);
+assert.equal(context.build([{start:2,end:1}], 'UTC', 0, 3,()=> 'x',()=>3).size,0);
+console.log('PASS: time-zone day-summary aggregation');
