@@ -1,3 +1,9 @@
+## v1.20.32 — 2026-11-20
+
+- Extract due snoozed-notification restoration selection and restored-detail construction into a pure policy helper; notification delivery and persistence remain in the existing adapter.
+- Preserve due/future filtering, invalid-entry removal, active-ID duplicate suppression, newest-first restoration order, screen fallback, parameter handling and the configured detail cap.
+- Add deterministic tests for due boundaries, future and invalid snoozes, duplicate IDs, ordering, limits and input immutability. No notification storage format, scheduling rules or fasting/weight data changes.
+
 ## v1.20.31 — 2026-11-20
 
 - Extract persisted in-app notification-detail normalization into a pure helper with explicit time, date-validation, screen, retention and item-limit inputs.
