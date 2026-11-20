@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.29" />
+  <meta name="ft-app-version" content="1.20.30" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.29';
+  const APP_VERSION = '1.20.30';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6322,22 +6322,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     el('wPeriodHigh').textContent = formatWeight(periodStats.highKg, unit);
     return entries;
   }  function weightWeekStreak() {
-    const weeks = new Set(data.weights.map(w => weekKeyFromDayString(weightCalendarDay(w))).filter(Boolean));
-    if (!weeks.size) return 0;
-    let cursor = startOfWeek();
-    let key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-    if (!weeks.has(key)) {
-      cursor.setDate(cursor.getDate() - 7);
-      key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-      if (!weeks.has(key)) return 0;
-    }
-    let streak = 0;
-    while (weeks.has(key)) {
-      streak++;
-      cursor.setDate(cursor.getDate() - 7);
-      key=weekKeyFromDayString(dayKeyFast(cursor,currentTimeZone()));
-    }
-    return streak;
+    const weekKeys = data.weights.map(w => weekKeyFromDayString(weightCalendarDay(w))).filter(Boolean);
+    const currentWeekKey = weekKeyFromDayString(dayKeyFast(startOfWeek(),currentTimeZone()));
+    return calculateWeightWeekStreak(weekKeys,currentWeekKey);
   }
 
   function hasComebackAchievement() {
@@ -8908,6 +8895,29 @@ function buildStatsWeeklySummaryRows(monday,timeZone,summaries,chartDayForAnchor
     const remainingMs = suggestedStartMs - nowMs;
     if (remainingMs <= 0) return null;
     return {record,durationMs,nonFastingMs:dayMs-durationMs,suggestedStartMs,remainingMs};
+  }
+  function previousWeightWeekKey(key) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || ''));
+    if (!match) return '';
+    const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+    if (date.getUTCFullYear() !== Number(match[1]) || date.getUTCMonth() !== Number(match[2]) - 1 || date.getUTCDate() !== Number(match[3])) return '';
+    date.setUTCDate(date.getUTCDate() - 7);
+    return date.toISOString().slice(0, 10);
+  }
+
+  // Count consecutive logged Weight weeks, allowing the current week to be empty.
+  function calculateWeightWeekStreak(weekKeys, currentWeekKey) {
+    const weeks = new Set((Array.isArray(weekKeys) ? weekKeys : []).filter(Boolean));
+    if (!weeks.size) return 0;
+    let key = currentWeekKey;
+    if (!weeks.has(key)) key = previousWeightWeekKey(key);
+    if (!weeks.has(key)) return 0;
+    let streak = 0;
+    while (weeks.has(key)) {
+      streak++;
+      key = previousWeightWeekKey(key);
+    }
+    return streak;
   }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
