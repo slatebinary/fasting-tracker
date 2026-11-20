@@ -1,3 +1,10 @@
+## v1.20.25 — 2026-11-20
+
+- Extract Statistics month-over-month and year-over-year comparison period selection into a pure helper.
+- Preserve selected-month lookup, fallback to the latest month when the selected key is absent, and the previous-month / twelve-month-prior offsets.
+- Add isolated regression coverage for selected, missing, unmatched and short/empty month lists.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.24 — 2026-11-20
 
 - Extract Statistics weekly-summary Monday anchoring into a pure local-calendar helper.
