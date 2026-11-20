@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.31" />
+  <meta name="ft-app-version" content="1.20.32" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.31';
+  const APP_VERSION = '1.20.32';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -3500,19 +3500,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
   function restoreDueSnoozedNotificationDetails(nowMs = Date.now()) {
     const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
-    const due = [], remaining = [];
-    for (const item of pending) {
-      const until = validDate(item?.snoozedUntil);
-      if (!item || typeof item !== 'object' || !String(item.id || '') || !until) continue;
-      if (until.getTime() <= nowMs) due.push(item);
-      else remaining.push(item);
-    }
-    if (!due.length) return false;
-    const active = notificationDetailItems();
-    for (const item of due) {
-      if (active.some(entry => entry.id === item.id)) continue;
-      const restored = {id:String(item.id),kind:String(item.kind),screen:APP_SCREENS.includes(item.screen)?item.screen:'fasting',createdAt:new Date(nowMs).toISOString(),params:item.params&&typeof item.params==='object'?item.params:{}};
-      active.unshift(restored);
+    const result = resolveDueSnoozedNotificationDetailsPolicy(pending, notificationDetailItems(), nowMs, validDate, APP_SCREENS, NOTIFICATION_DETAIL_LIMIT);
+    if (!result.due.length) return false;
+    for (const restored of result.restored) {
       const copy = notificationDetailCopy(restored.kind, restored.params);
       let deviceBody = copy.body;
       if (restored.kind === 'target') deviceBody = t('notifications.targetBodyShort',{target:formatGoal(sanitizeGoal(restored.params.targetHours,activeTargetHours()))});
@@ -3524,8 +3514,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       }
       void sendDeviceNotification(restored.kind, copy.title, deviceBody, {screen:restored.screen,tag:restored.id,detailParams:restored.params,recordDetail:false});
     }
-    notificationRuntimeState.snoozedDetails = remaining;
-    notificationRuntimeState.details = active.slice(0, NOTIFICATION_DETAIL_LIMIT);
+    notificationRuntimeState.snoozedDetails = result.remaining;
+    notificationRuntimeState.details = result.details;
     saveNotificationRuntimeState();
     return true;
   }
@@ -8923,6 +8913,33 @@ function normalizeNotificationDetailItemsPolicy(raw, nowMs, parseDate, allowedSc
     if (out.length >= limit) break;
   }
   return out;
+}
+// Pure policy for deciding which persisted snoozed notification details are due.
+// Notification delivery and persistence remain in the caller.
+function resolveDueSnoozedNotificationDetailsPolicy(pending, active, nowMs, parseDate, allowedScreens, limit) {
+  const due = [], remaining = [];
+  for (const item of Array.isArray(pending) ? pending : []) {
+    if (!item || typeof item !== 'object' || !String(item.id || '')) continue;
+    const until = parseDate(item.snoozedUntil);
+    if (!until) continue;
+    if (until.getTime() <= nowMs) due.push(item);
+    else remaining.push(item);
+  }
+  const details = Array.isArray(active) ? active.slice() : [];
+  const restored = [];
+  for (const item of due) {
+    if (details.some(entry => entry.id === item.id)) continue;
+    const detail = {
+      id:String(item.id),
+      kind:String(item.kind),
+      screen:allowedScreens.includes(item.screen) ? item.screen : 'fasting',
+      createdAt:new Date(nowMs).toISOString(),
+      params:item.params && typeof item.params === 'object' ? item.params : {}
+    };
+    details.unshift(detail);
+    restored.push(detail);
+  }
+  return {due, remaining, restored, details:details.slice(0, limit)};
 }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
