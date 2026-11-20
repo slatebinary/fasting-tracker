@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 61, f"Expected sixty-one ordered app fragments, found {len(parts)}"
+assert len(parts) == 62, f"Expected sixty-two ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 backup_freshness = (source / "js" / "43m-backup-freshness-policy.js").read_text(encoding="utf-8")
 assert "function resolveBackupFreshnessPolicy" in backup_freshness
@@ -258,6 +258,10 @@ fast_history = (source / "js" / "21-fast-history-management.js").read_text(encod
 assert "function historyFilterSpec" in fast_history and "function renderHistory" in fast_history
 assert "function bulkDeleteFasts" in fast_history and "function restoreDeletedFast" in fast_history
 time_fast = (source / "js" / "20-time-fast-history.js").read_text(encoding="utf-8")
+next_fast_cycle = (source / "js" / "43n-next-fast-cycle-policy.js").read_text(encoding="utf-8")
+assert "function resolveNextFastCycleInfo" in next_fast_cycle
+assert "function resolveNextFastCycleInfo" not in time_fast
+assert "function nextFastCycleInfo" in time_fast
 assert "function historyFilterSpec" not in time_fast and "function renderHistory" not in time_fast
 
 
