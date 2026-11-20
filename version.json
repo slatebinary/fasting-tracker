@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.34",
-  "released": "2026-11-20",
-  "notes": "Extract imported fasting and weight dataset merge conflict policy into a pure helper",
+  "version": "1.20.35",
+  "released": "2026-11-21",
+  "notes": "Extract deterministic category-specific external-backup signature construction into a pure helper",
   "entry": "./index.html",
   "shell": [
     "./",
