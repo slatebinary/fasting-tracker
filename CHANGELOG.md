@@ -1,3 +1,9 @@
+## v1.20.26 — 2026-11-20
+
+- Extract the Statistics weekly-summary row builder into a pure, regression-tested policy helper.
+- Preserve the eight-week oldest-to-newest window, seven local-calendar day lookups per week, noon-normalized anchors, totals, active-day counts and localized labels.
+- Keep time-zone day resolution and caching in the Statistics caller; no UI, data, backup or PWA lifecycle changes.
+
 ## v1.20.25 — 2026-11-20
 
 - Extract Statistics month-over-month and year-over-year comparison period selection into a pure helper.
