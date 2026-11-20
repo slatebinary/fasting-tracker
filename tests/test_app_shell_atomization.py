@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 50, f"Expected fifty ordered app fragments, found {len(parts)}"
+assert len(parts) == 51, f"Expected fifty-one ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -35,6 +35,9 @@ assert "function buildFastingIntervals" in fast_intervals
 stats_models = (source / "js" / "43-statistics-data-models.js").read_text(encoding="utf-8")
 assert "function buildFastingIntervals" not in stats_models
 assert "function currentZoneDaySummaries" in stats_models and "buildCurrentZoneDaySummaries(" in stats_models
+calendar_duration = (source / "js" / "43c-calendar-duration-display.js").read_text(encoding="utf-8")
+assert "function calendarDurationForDisplay" in calendar_duration
+assert "function calendarDurationForDisplay" not in (source / "js" / "38-calendar-dst-rendering.js").read_text(encoding="utf-8")
 zone_summaries = (source / "js" / "43b-zone-day-summaries.js").read_text(encoding="utf-8")
 assert "function buildCurrentZoneDaySummaries" in zone_summaries
 assert "function buildCurrentZoneDaySummaries" not in stats_models
