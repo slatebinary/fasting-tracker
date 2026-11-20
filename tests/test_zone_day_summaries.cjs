@@ -7,7 +7,7 @@ const split = (ms, zone) => zone + ':' + (ms < 86400000 ? 'day-1' : 'day-2');
 const next = (ms) => ms < 86400000 ? 86400000 : 172800000;
 const intervals = [{start: 43200000, end: 129600000}, {start: 90000000, end: 100000000}, {start: 200000000, end: 210000000}];
 const result = context.build(intervals, 'Test/Zone', -Infinity, 150000000, split, next);
-assert.equal(JSON.stringify(Array.from(result.entries()).map(([k,v])=>[k,v.totalFastMs,v.fastCount])), JSON.stringify( [['Test/Zone:day-1',43200000,1],['Test/Zone:day-2',50400000,2]]));
+assert.equal(JSON.stringify(Array.from(result.entries()).map(([k,v])=>[k,v.totalFastMs,v.fastCount])), JSON.stringify( [['Test/Zone:day-1',43200000,1],['Test/Zone:day-2',53200000,2]]));
 const bounded = context.build([{start:0,end:100}], 'UTC', 20, 80, (x)=>'day', ()=>100);
 assert.equal(bounded.get('day').totalFastMs,60);
 assert.equal(bounded.get('day').fastCount,1);
