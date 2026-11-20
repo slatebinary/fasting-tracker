@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('src/app/js/43d-calendar-clock-change-policy.js','utf8'),context={};
+vm.createContext(context);vm.runInContext(source+'\nthis.metrics=calendarClockChangeMetrics;this.format=formatClockChangeDuration;',context);
+const metrics=context.metrics,format=context.format,H=3600000;
+assert.deepEqual(JSON.parse(JSON.stringify(metrics(60,0,H))),{offsetDeltaMinutes:60,isDayLengthChange:true,deltaMinutes:60,sign:'+',duration:'1h',change:'+1h'});
+assert.equal(metrics(-60,H,0).change,'−1h');
+assert.equal(metrics(30,0,30*60000).duration,'30m');
+assert.equal(metrics(-30,30*60000,0).change,'−30m');
+assert.equal(metrics(45,0,45*60000).deltaMinutes,45);
+assert.equal(metrics(0,0,30*60000).isDayLengthChange,false);
+assert.equal(metrics(0,0,30*60000).deltaMinutes,30);
+assert.equal(format(0),'0m');assert.equal(format(90),'1h 30m');assert.equal(format(-15),'15m');
+console.log('PASS: calendar clock-change metrics, signs, rounding and duration formatting');
