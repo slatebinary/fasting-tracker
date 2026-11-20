@@ -1,3 +1,10 @@
+## v1.20.21 — 2026-11-20
+
+- Extract Weight chart nearest-point selection, horizontal selection tolerance and pointer-tap movement/scroll thresholds into pure policy functions.
+- Preserve the existing 28 px hit radius, dynamic horizontal tolerance, first-point tie resolution and 10 px/8 px pointer activation thresholds.
+- Add isolated regression coverage for hit boundaries, tie handling, empty inputs and pointer movement/scroll limits.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.20 — 2026-11-20
 
 - Extract Timeline canvas hit-testing into a pure policy helper.
