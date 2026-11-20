@@ -23,10 +23,12 @@ print("PASS: fasting timeline includes localized month labels and month-boundary
 # Vertical clock orientation: midnight at bottom, end of day at top.
 renderer = (root / "src/app/js/39-primary-chart-renderer.js").read_text(encoding="utf-8")
 interaction = (root / "src/app/js/31-timeline-interaction.js").read_text(encoding="utf-8")
+hit_test_policy = (root / "src/app/js/43f-timeline-hit-test-policy.js").read_text(encoding="utf-8")
 template = (root / "src/app/index.template.html").read_text(encoding="utf-8")
 assert "const y = top + h * (1 - frac);" in renderer, "hour grid must be vertically reversed"
 assert "const segEndFraction =" in renderer and "top + (1 - segEndFraction) * h" in renderer, "segments must be positioned from their end boundary"
-assert "1 - (y - g.top) / g.h" in interaction, "touch selection must map the reversed vertical axis back to clock time"
+assert "return hitTestTimelineChart(x, y, g, timelineChartDays);" in interaction, "Timeline interaction must delegate hit-testing to the pure policy"
+assert "1 - (y - top) / h" in hit_test_policy, "touch selection must map the reversed vertical axis back to clock time"
 for axis_class in ("timelineAxisLeft", "timelineAxisRight"):
     axis = re.search(r'<div class="timelineAxis ' + axis_class + r'"[^>]*>(.*?)</div>', template, re.S)
     assert axis, f"missing {axis_class}"

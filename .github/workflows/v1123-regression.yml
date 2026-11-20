@@ -24,6 +24,7 @@ on:
       - refactor/v1.20.17-calendar-duration-display
       - refactor/v1.20.18-calendar-clock-change-policy
       - refactor/v1.20.19-chart-continuation-keys
+      - refactor/v1.20.20-timeline-hit-test-policy
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -161,6 +162,7 @@ jobs:
           node tests/test_calendar_duration_display.cjs
           node tests/test_calendar_clock_change_policy.cjs
           node tests/test_chart_continuation_keys.cjs
+          node tests/test_timeline_hit_test_policy.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
