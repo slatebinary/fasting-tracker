@@ -75,28 +75,7 @@
     // Use the whole day cell (bar plus half of each inter-column gap) as the
     // horizontal touch target. This is much easier to hit than the narrow
     // painted bar on a phone while still selecting the intended date.
-    const firstCenter = g.left + g.bw / 2;
-    const index = Math.round((x - firstCenter) / g.slot);
-    if (index < 0 || index >= timelineChartDays.length) return null;
-    const center = firstCenter + index * g.slot;
-    if (Math.abs(x - center) > g.slot / 2) return null;
-    const day = timelineChartDays[index];
-
-    // Tapping the date-label strip selects the whole day.
-    if (y >= g.top + g.h && y <= g.cssH) return { kind:'day', dayKey:day.key };
-    if (y < g.top || y > g.top + g.h) return null;
-
-    // Map the vertical touch position directly to clock time, then find the
-    // corresponding fasting or non-fasting segment. Every point in the 24 h
-    // column therefore has a selectable segment, even if that segment is only
-    // a few pixels tall visually.
-    // Invert the canvas coordinate so the bottom is 00:00 and the top is 24:00.
-    // Clamp the upper boundary to the final instant inside this calendar day.
-    const fraction = Math.max(0, Math.min(0.999999, 1 - (y - g.top) / g.h));
-    const instant = day.startMs + fraction * (day.endMs - day.startMs);
-    let segmentIndex = day.segments.findIndex(seg => instant >= seg.start && instant < seg.end);
-    if (segmentIndex < 0 && day.segments.length) segmentIndex = day.segments.length - 1;
-    return segmentIndex >= 0 ? { kind:'segment', dayKey:day.key, segmentIndex } : { kind:'day', dayKey:day.key };
+    return hitTestTimelineChart(x, y, g, timelineChartDays);
   }
 
   function selectTimelineAt(clientX, clientY) {

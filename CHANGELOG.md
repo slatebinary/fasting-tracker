@@ -1,3 +1,10 @@
+## v1.20.20 — 2026-11-20
+
+- Extract Timeline canvas hit-testing into a pure policy helper.
+- Preserve horizontal day-cell tolerance, date-strip selection, vertical clock inversion, segment-boundary handling and the upper-edge clamp against each calendar day's actual duration.
+- Add focused regression coverage for hit boundaries, empty inputs and 23-hour/25-hour DST days.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.19 — 2026-11-20
 
 - Extract cross-midnight chart fast/gap continuation-key assignment into a pure policy helper.
