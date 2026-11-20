@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.32",
+  "version": "1.20.33",
   "released": "2026-11-20",
-  "notes": "Extract due snoozed-notification restoration into a pure policy helper",
+  "notes": "Extract browser storage-pressure classification into a pure policy helper",
   "entry": "./index.html",
   "shell": [
     "./",

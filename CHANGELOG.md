@@ -1,5 +1,12 @@
 ## v1.20.32 — 2026-11-20
 
+## v1.20.33 — 2026-11-20
+
+- Extract browser storage-pressure classification into a pure policy helper; keep storage estimation and user confirmation in the existing adapter.
+- Preserve the inclusive 80% quota warning and the below-50 MiB free-space warning, including unavailable/invalid estimate handling.
+- Add deterministic boundary tests for quota ratio, free space, over-quota estimates and input immutability. No storage, backup or persisted-data changes.
+
+
 - Extract due snoozed-notification restoration selection and restored-detail construction into a pure policy helper; notification delivery and persistence remain in the existing adapter.
 - Preserve due/future filtering, invalid-entry removal, active-ID duplicate suppression, newest-first restoration order, screen fallback, parameter handling and the configured detail cap.
 - Add deterministic tests for due boundaries, future and invalid snoozes, duplicate IDs, ordering, limits and input immutability. No notification storage format, scheduling rules or fasting/weight data changes.
