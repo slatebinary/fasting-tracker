@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.25",
+  "version": "1.20.26",
   "released": "2026-11-20",
-  "notes": "Extract Statistics month-comparison period selection policy",
+  "notes": "Extract Statistics weekly-summary row construction policy",
   "entry": "./index.html",
   "shell": [
     "./",

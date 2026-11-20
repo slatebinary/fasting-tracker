@@ -74,9 +74,8 @@
 
   function buildWeeklySummaries() {
     if (weeklySummariesCache) return weeklySummariesCache;
-    const tz=currentTimeZone(), thisMonday=startOfStatsWeekMonday(new Date()), rangeStart=thisMonday.getTime()-8*7*86400000-2*86400000, rangeEnd=Date.now()+2*86400000, summaries=currentZoneDaySummaries(tz,rangeStart,rangeEnd), weeks=[];
-    for(let wi=7;wi>=0;wi--){const start=new Date(thisMonday);start.setDate(start.getDate()-wi*7);let total=0,daysWithFast=0;for(let di=0;di<7;di++){const d=new Date(start);d.setDate(start.getDate()+di);const day=chartDayForAnchor(d,tz,summaries);if(day){total+=day.totalFastMs;if(day.totalFastMs>0)daysWithFast++;}}const key=dayKey(start,tz);weeks.push({key,start,totalFastMs:total,daysWithFast,label:start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'})});}
-    weeklySummariesCache=weeks;
+    const tz=currentTimeZone(),thisMonday=startOfStatsWeekMonday(new Date()),rangeStart=thisMonday.getTime()-8*7*86400000-2*86400000,rangeEnd=Date.now()+2*86400000,summaries=currentZoneDaySummaries(tz,rangeStart,rangeEnd);
+    weeklySummariesCache=buildStatsWeeklySummaryRows(thisMonday,tz,summaries,chartDayForAnchor,dayKey,start=>start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'}));
     return weeklySummariesCache;
   }
 
