@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 58, f"Expected fifty-eight ordered app fragments, found {len(parts)}"
+assert len(parts) == 59, f"Expected fifty-nine ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -348,6 +348,12 @@ stats_week_anchor = (source / "js" / "43j-stats-week-anchor-policy.js").read_tex
 assert "function startOfStatsWeekMonday" in stats_week_anchor
 assert "startOfStatsWeekMonday(new Date())" in specialized_charts
 assert "function startOfWeekMonday" not in specialized_charts
+
+# Monthly comparison period selection is a pure, index-stable policy.
+stats_month_comparison = (source / "js" / "43k-stats-month-comparison-policy.js").read_text(encoding="utf-8")
+assert "function selectStatsMonthComparisonPeriods" in stats_month_comparison
+assert "selectStatsMonthComparisonPeriods(items,genericChartSelectedKey)" in specialized_charts
+assert "selectedIndex=genericChartSelectedKey?items.findIndex" not in specialized_charts
 
 # Generic timing/duration bars support pointer selection and a completed-click fallback.
 generic_chart = (source / "js" / "33-statistics-generic-chart.js").read_text(encoding="utf-8")
