@@ -79,19 +79,9 @@
   }
   function restoreDueSnoozedNotificationDetails(nowMs = Date.now()) {
     const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
-    const due = [], remaining = [];
-    for (const item of pending) {
-      const until = validDate(item?.snoozedUntil);
-      if (!item || typeof item !== 'object' || !String(item.id || '') || !until) continue;
-      if (until.getTime() <= nowMs) due.push(item);
-      else remaining.push(item);
-    }
-    if (!due.length) return false;
-    const active = notificationDetailItems();
-    for (const item of due) {
-      if (active.some(entry => entry.id === item.id)) continue;
-      const restored = {id:String(item.id),kind:String(item.kind),screen:APP_SCREENS.includes(item.screen)?item.screen:'fasting',createdAt:new Date(nowMs).toISOString(),params:item.params&&typeof item.params==='object'?item.params:{}};
-      active.unshift(restored);
+    const result = resolveDueSnoozedNotificationDetailsPolicy(pending, notificationDetailItems(), nowMs, validDate, APP_SCREENS, NOTIFICATION_DETAIL_LIMIT);
+    if (!result.due.length) return false;
+    for (const restored of result.restored) {
       const copy = notificationDetailCopy(restored.kind, restored.params);
       let deviceBody = copy.body;
       if (restored.kind === 'target') deviceBody = t('notifications.targetBodyShort',{target:formatGoal(sanitizeGoal(restored.params.targetHours,activeTargetHours()))});
@@ -103,8 +93,8 @@
       }
       void sendDeviceNotification(restored.kind, copy.title, deviceBody, {screen:restored.screen,tag:restored.id,detailParams:restored.params,recordDetail:false});
     }
-    notificationRuntimeState.snoozedDetails = remaining;
-    notificationRuntimeState.details = active.slice(0, NOTIFICATION_DETAIL_LIMIT);
+    notificationRuntimeState.snoozedDetails = result.remaining;
+    notificationRuntimeState.details = result.details;
     saveNotificationRuntimeState();
     return true;
   }
