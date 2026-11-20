@@ -79,15 +79,6 @@
     return Array.from({length:7},(_,i)=>new Date(base.getTime()+i*86400000).toLocaleDateString(currentLocale(),{weekday:'narrow'}));
   }
 
-  // Completed days within one second of a full local day are treated as complete.
-  // The current day remains elapsed-only; DST days retain their real 23h/25h length.
-  function calendarDurationForDisplay(day, nowMs = Date.now()) {
-    const total = Math.max(0, Number(day?.totalFastMs) || 0);
-    const start = Number(day?.startMs), end = Number(day?.endMs);
-    const dayLength = end - start, shortfall = dayLength - total;
-    if (Number.isFinite(start) && Number.isFinite(end) && end <= nowMs && dayLength > 0 && total > 0 && shortfall >= 0 && shortfall <= 1000) return dayLength;
-    return total;
-  }
 
   function renderFastCalendar() {
     const title=el('calendarMonthTitle'), grid=el('fastCalendar'), heads=el('calendarWeekdays');
