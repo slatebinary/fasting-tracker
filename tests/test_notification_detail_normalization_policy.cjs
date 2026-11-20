@@ -5,7 +5,7 @@ const context={};vm.createContext(context);vm.runInContext(source+'\nthis.resolv
 const resolve=context.resolve;
 const now=Date.parse('2026-11-20T12:00:00.000Z'), ttl=30*24*60*60*1000, screens=['fasting','history','weight','stats','settings'];
 const parse=value=>{const date=new Date(value);return Number.isFinite(date.getTime())?date:null;};
-const item=(id,createdAt=now,extra={})=>({id,kind:'target',screen:'stats',createdAt:new Date(createdAt).toISOString(),params:{targetHours:18},...extra});
+const item=(id,createdAt=now,extra={})=>({id,kind:'target',screen:'stats',createdAt:typeof createdAt==='number'?new Date(createdAt).toISOString():createdAt,params:{targetHours:18},...extra});
 const input=[
   item('newest',now),
   item('old-boundary',now-ttl),
