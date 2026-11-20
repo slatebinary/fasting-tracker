@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.27" />
+  <meta name="ft-app-version" content="1.20.28" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.27';
+  const APP_VERSION = '1.20.28';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -7868,19 +7868,16 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function backupFreshnessState() {
-    const hasData = hasBackupWorthyData();
-    const last=validDate(backupMeta.lastExternalBackupAt);
-    if (!last) return {state:hasData?'never':'empty', changed:hasData, last:null};
+    const hasData=hasBackupWorthyData(),last=validDate(backupMeta.lastExternalBackupAt);
     const backedRevision=Math.max(0,Number(backupMeta.lastExternalBackupRevision)||0);
-    const updated=validDate(data.updatedAt), backedUpdated=validDate(backupMeta.lastExternalBackupDataUpdatedAt);
-    // Pre-v1.12.5 exports have no data-only signature. Retain the previous
-    // revision-based behavior for those exports until a new JSON is made.
-    const changed=backupMeta.lastExternalBackupDataSignature
-      ? backupDatasetSignature() !== backupMeta.lastExternalBackupDataSignature
-      : (backedRevision ? Number(data.revision)>backedRevision : (!!updated && updated.getTime()>last.getTime()+1000));
-    // A deletion of the FINAL fasting/weight record must still mark the
-    // previous export outdated, even though the live dataset is now empty.
-    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated,pending:changed?backupPendingCategories():{fasting:false,weight:false,known:true}};
+    const updated=validDate(data.updatedAt),backedUpdated=validDate(backupMeta.lastExternalBackupDataUpdatedAt);
+    const state=resolveBackupFreshnessPolicy({
+      hasData,last,revision:data.revision,updated,backedRevision,backedUpdated,
+      storedDataSignature:backupMeta.lastExternalBackupDataSignature||null,
+      currentDataSignature:backupMeta.lastExternalBackupDataSignature?backupDatasetSignature():null
+    });
+    if(state.last) state.pending=state.changed?backupPendingCategories():{fasting:false,weight:false,known:true};
+    return state;
   }
 
   function renderFastingBackupIndicator(freshness, due) {
@@ -8891,6 +8888,20 @@ function buildStatsWeeklySummaryRows(monday,timeZone,summaries,chartDayForAnchor
   }
   return weeks;
 }
+// Pure classification of the last external JSON backup against the current dataset.
+  // Date parsing, signatures and category-diff calculation remain in the backup adapter.
+  function resolveBackupFreshnessPolicy({
+    hasData,last,revision,updated,backedRevision,backedUpdated,
+    storedDataSignature,currentDataSignature
+  }) {
+    if (!last) return {state:hasData?'never':'empty',changed:hasData,last:null};
+    // Older exports have no data-only signature. Preserve their revision/time fallback.
+    const changed=storedDataSignature
+      ? currentDataSignature!==storedDataSignature
+      : (backedRevision ? Number(revision)>backedRevision : (!!updated&&updated.getTime()>last.getTime()+1000));
+    // A deletion of the final fasting/weight record still invalidates the prior export.
+    return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
+  }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
     el('updateModalText').textContent = t('update.modalText', {version:latestVersion});
