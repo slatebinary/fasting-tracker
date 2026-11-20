@@ -1,3 +1,10 @@
+## v1.20.18 — 2026-11-20
+
+- Extract clock-change duration formatting and day-length/UTC-offset selection into a pure calendar presentation helper.
+- Preserve existing labels, signs, minute rounding and the ordinary 24-hour-day fast path.
+- Add focused regression coverage for positive and negative DST changes, non-hour transitions and offset selection.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.17 — 2026-11-20
 
 - Extract calendar-day display-duration policy into a pure helper.
