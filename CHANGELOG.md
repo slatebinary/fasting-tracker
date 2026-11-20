@@ -1,3 +1,9 @@
+## v1.20.31 — 2026-11-20
+
+- Extract persisted in-app notification-detail normalization into a pure helper with explicit time, date-validation, screen, retention and item-limit inputs.
+- Preserve 30-day retention boundary, duplicate-ID handling, 240-character ID and 40-character kind limits, fallback screen, parameter sanitization and item cap.
+- Add deterministic regression tests for expiry, boundary timestamps, duplicate/truncated IDs, invalid entries, future timestamps and input immutability. No notification scheduling, stored format or UI changes.
+
 ## v1.20.30 — 2026-11-20
 
 - Extract consecutive Weight-week streak counting into a pure policy helper; keep time-zone-aware current-week resolution in the gamification caller.

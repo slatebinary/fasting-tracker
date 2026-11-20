@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.30",
+  "version": "1.20.31",
   "released": "2026-11-20",
-  "notes": "Extract consecutive Weight-week streak counting into a pure policy helper",
+  "notes": "Extract persisted notification-detail normalization into a pure policy helper",
   "entry": "./index.html",
   "shell": [
     "./",
