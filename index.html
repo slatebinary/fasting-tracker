@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.20" />
+  <meta name="ft-app-version" content="1.20.21" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.20';
+  const APP_VERSION = '1.20.21';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5812,15 +5812,14 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function weightChartPointAt(clientX,clientY){
-    const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;const rect=c.getBoundingClientRect(),x=clientX-rect.left,y=clientY-rect.top;let best=null,bestDistance=Infinity;
-    for(const point of weightChartHitPoints){const distance=Math.hypot(x-point.x,y-point.y);if(distance<bestDistance){best=point;bestDistance=distance;}}
-    return bestDistance<=28?best:null;
+    const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;const rect=c.getBoundingClientRect(),x=clientX-rect.left,y=clientY-rect.top;
+    return nearestWeightChartPoint(weightChartHitPoints,x,y,28);
   }
   function selectWeightChartPointAtX(clientX){
     const c=el('weightChart');if(!c||!weightChartHitPoints.length)return null;
-    const x=clientX-c.getBoundingClientRect().left;let best=null,distance=Infinity;
-    for(const point of weightChartHitPoints){const d=Math.abs(x-point.x);if(d<distance){distance=d;best=point;}}
-    return best&&distance<=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5)?best:null;
+    const x=clientX-c.getBoundingClientRect().left;
+    const maxDistance=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5);
+    return nearestWeightChartPointAtX(weightChartHitPoints,x,maxDistance);
   }
   function weightChartPointSpacing(){
     const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
@@ -5890,7 +5889,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   function finishWeightChartPointer(event){
     const start=weightChartPointerStart;weightChartPointerStart=null;
     if(!start||start.id!==event.pointerId)return;
-    if(Math.hypot(event.clientX-start.x,event.clientY-start.y)>10||Math.abs((el('weightChartScroller')?.scrollLeft||0)-start.scrollLeft)>8)return;
+    if(!isWeightChartPointerTap(start.x,start.y,event.clientX,event.clientY,start.scrollLeft,el('weightChartScroller')?.scrollLeft||0))return;
     const point=weightChartPointAt(event.clientX,event.clientY);if(!point)return;
     weightChartSelectedId=point.id;drawWeightChart();renderWeightChartData();renderWeightPeriodAnalytics();syncWeightChartNavigator();
   }
@@ -8811,6 +8810,28 @@ function hitTestTimelineChart(x, y, geometry, days) {
   return segmentIndex >= 0
     ? { kind: 'segment', dayKey: day.key, segmentIndex }
     : { kind: 'day', dayKey: day.key };
+}
+// Pure Weight chart hit-testing and pointer activation policies.
+function nearestWeightChartPoint(points,x,y,maxDistance=28){
+  if(!Array.isArray(points)||!points.length)return null;
+  let best=null,bestDistance=Infinity;
+  for(const point of points){
+    const distance=Math.hypot(x-point.x,y-point.y);
+    if(distance<bestDistance){best=point;bestDistance=distance;}
+  }
+  return bestDistance<=maxDistance?best:null;
+}
+function nearestWeightChartPointAtX(points,x,maxDistance){
+  if(!Array.isArray(points)||!points.length)return null;
+  let best=null,bestDistance=Infinity;
+  for(const point of points){
+    const distance=Math.abs(x-point.x);
+    if(distance<bestDistance){best=point;bestDistance=distance;}
+  }
+  return best&&bestDistance<=maxDistance?best:null;
+}
+function isWeightChartPointerTap(startX,startY,endX,endY,startScrollLeft,endScrollLeft){
+  return Math.hypot(endX-startX,endY-startY)<=10&&Math.abs(endScrollLeft-startScrollLeft)<=8;
 }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
