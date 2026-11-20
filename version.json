@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.16",
+  "version": "1.20.17",
   "released": "2026-11-20",
-  "notes": "Extract pure time-zone calendar-day fasting summary aggregation",
+  "notes": "Extract calendar-day completion and display-duration policy",
   "entry": "./index.html",
   "shell": [
     "./",
