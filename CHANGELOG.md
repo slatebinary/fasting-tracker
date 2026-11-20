@@ -1,3 +1,10 @@
+## v1.20.23 — 2026-11-20
+
+- Extract Statistics Trend and Cumulative chart marker-density selection into a pure helper.
+- Preserve the 31-point full-marker threshold and range-specific minimum spacing (15/18/22/28 px), including narrow-plot minimum slot handling.
+- Add isolated regression coverage for point counts, plot widths, range policies and invalid inputs.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.22 — 2026-11-20
 
 - Extract the shared nearest-day hit-testing policy for the Statistics Trend and Cumulative charts into a pure helper.

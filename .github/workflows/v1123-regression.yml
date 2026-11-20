@@ -27,6 +27,7 @@ on:
       - refactor/v1.20.20-timeline-hit-test-policy
       - refactor/v1.20.21-weight-chart-hit-test-policy
       - refactor/v1.20.22-stats-chart-hit-test-policy
+      - refactor/v1.20.23-stats-marker-density-policy
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -167,6 +168,7 @@ jobs:
           node tests/test_timeline_hit_test_policy.cjs
           node tests/test_weight_chart_hit_test_policy.cjs
           node tests/test_stats_chart_hit_test_policy.cjs
+          node tests/test_stats_chart_marker_density.cjs
       - name: Verify release archive
         run: |
           python3 - <<'PY'
