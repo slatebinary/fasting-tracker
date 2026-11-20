@@ -1,3 +1,10 @@
+## v1.20.19 — 2026-11-20
+
+- Extract cross-midnight chart fast/gap continuation-key assignment into a pure policy helper.
+- Preserve source-boundary keys for fasting segments, gap grouping across adjacent days, the one-second continuity threshold and fast-interruption behaviour.
+- Add isolated regression coverage for midnight continuity, interrupted gaps, repeated fast segments and input immutability.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.18 — 2026-11-20
 
 - Extract clock-change duration formatting and day-length/UTC-offset selection into a pure calendar presentation helper.

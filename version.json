@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.18",
+  "version": "1.20.19",
   "released": "2026-11-20",
-  "notes": "Extract calendar clock-change presentation policy",
+  "notes": "Extract chart continuation-key policy",
   "entry": "./index.html",
   "shell": [
     "./",
