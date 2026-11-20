@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.25" />
+  <meta name="ft-app-version" content="1.20.26" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.25';
+  const APP_VERSION = '1.20.26';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -8205,9 +8205,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
 
   function buildWeeklySummaries() {
     if (weeklySummariesCache) return weeklySummariesCache;
-    const tz=currentTimeZone(), thisMonday=startOfStatsWeekMonday(new Date()), rangeStart=thisMonday.getTime()-8*7*86400000-2*86400000, rangeEnd=Date.now()+2*86400000, summaries=currentZoneDaySummaries(tz,rangeStart,rangeEnd), weeks=[];
-    for(let wi=7;wi>=0;wi--){const start=new Date(thisMonday);start.setDate(start.getDate()-wi*7);let total=0,daysWithFast=0;for(let di=0;di<7;di++){const d=new Date(start);d.setDate(start.getDate()+di);const day=chartDayForAnchor(d,tz,summaries);if(day){total+=day.totalFastMs;if(day.totalFastMs>0)daysWithFast++;}}const key=dayKey(start,tz);weeks.push({key,start,totalFastMs:total,daysWithFast,label:start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'})});}
-    weeklySummariesCache=weeks;
+    const tz=currentTimeZone(),thisMonday=startOfStatsWeekMonday(new Date()),rangeStart=thisMonday.getTime()-8*7*86400000-2*86400000,rangeEnd=Date.now()+2*86400000,summaries=currentZoneDaySummaries(tz,rangeStart,rangeEnd);
+    weeklySummariesCache=buildStatsWeeklySummaryRows(thisMonday,tz,summaries,chartDayForAnchor,dayKey,start=>start.toLocaleDateString(currentLocale(),{day:'numeric',month:'short'}));
     return weeklySummariesCache;
   }
 
@@ -8864,6 +8863,24 @@ function selectStatsMonthComparisonPeriods(items,selectedKey){
     yearAgo:items[index-12],
     index
   };
+}
+// Pure builder for the eight local-calendar weekly summaries shown in Statistics.
+function buildStatsWeeklySummaryRows(monday,timeZone,summaries,chartDayForAnchor,dayKey,formatLabel,weekCount=8){
+  const anchor=new Date(monday);
+  if(!Number.isFinite(anchor.getTime())||typeof chartDayForAnchor!=='function'||typeof dayKey!=='function'||typeof formatLabel!=='function')return[];
+  anchor.setHours(12,0,0,0);
+  const count=Number.isInteger(weekCount)&&weekCount>0?weekCount:8,weeks=[];
+  for(let wi=count-1;wi>=0;wi--){
+    const start=new Date(anchor);start.setDate(start.getDate()-wi*7);
+    let total=0,daysWithFast=0;
+    for(let di=0;di<7;di++){
+      const date=new Date(start);date.setDate(start.getDate()+di);
+      const day=chartDayForAnchor(date,timeZone,summaries);
+      if(day){total+=day.totalFastMs;if(day.totalFastMs>0)daysWithFast++;}
+    }
+    weeks.push({key:dayKey(start,timeZone),start,totalFastMs:total,daysWithFast,label:formatLabel(start)});
+  }
+  return weeks;
 }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
