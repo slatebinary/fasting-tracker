@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.28" />
+  <meta name="ft-app-version" content="1.20.29" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.28';
+  const APP_VERSION = '1.20.29';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4709,18 +4709,12 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function nextFastCycleInfo(nowMs = Date.now()) {
-    if (data.activeStart || data.scheduledStart) return null;
-    const record = latestCompletedFast();
-    if (!record) return null;
-    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
-    const durationMs = endMs - startMs;
-    const dayMs = 24 * 3600000;
-    if (durationMs >= dayMs) return null;
-    const suggestedStartMs = startMs + dayMs;
-    const remainingMs = suggestedStartMs - nowMs;
-    if (remainingMs <= 0) return null;
-    return { record, durationMs, nonFastingMs: dayMs - durationMs, suggestedStartMs, remainingMs };
+    return resolveNextFastCycleInfo({
+      record:latestCompletedFast(),
+      nowMs,
+      active:!!data.activeStart,
+      scheduled:!!data.scheduledStart
+    });
   }
 
   function updateNextFastCountdown() {
@@ -8901,6 +8895,19 @@ function buildStatsWeeklySummaryRows(monday,timeZone,summaries,chartDayForAnchor
       : (backedRevision ? Number(revision)>backedRevision : (!!updated&&updated.getTime()>last.getTime()+1000));
     // A deletion of the final fasting/weight record still invalidates the prior export.
     return {state:changed?'stale':hasData?'current':'empty',changed,last,backedRevision,backedUpdated};
+  }
+// Pure eligibility and timing policy for the neutral 24-hour cycle countdown.
+  function resolveNextFastCycleInfo({record,nowMs,active=false,scheduled=false}) {
+    if (active || scheduled || !record) return null;
+    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
+    const durationMs = endMs - startMs;
+    const dayMs = 24 * 3600000;
+    if (durationMs >= dayMs) return null;
+    const suggestedStartMs = startMs + dayMs;
+    const remainingMs = suggestedStartMs - nowMs;
+    if (remainingMs <= 0) return null;
+    return {record,durationMs,nonFastingMs:dayMs-durationMs,suggestedStartMs,remainingMs};
   }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
