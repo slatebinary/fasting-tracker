@@ -62,18 +62,12 @@
   }
 
   function nextFastCycleInfo(nowMs = Date.now()) {
-    if (data.activeStart || data.scheduledStart) return null;
-    const record = latestCompletedFast();
-    if (!record) return null;
-    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
-    const durationMs = endMs - startMs;
-    const dayMs = 24 * 3600000;
-    if (durationMs >= dayMs) return null;
-    const suggestedStartMs = startMs + dayMs;
-    const remainingMs = suggestedStartMs - nowMs;
-    if (remainingMs <= 0) return null;
-    return { record, durationMs, nonFastingMs: dayMs - durationMs, suggestedStartMs, remainingMs };
+    return resolveNextFastCycleInfo({
+      record:latestCompletedFast(),
+      nowMs,
+      active:!!data.activeStart,
+      scheduled:!!data.scheduledStart
+    });
   }
 
   function updateNextFastCountdown() {

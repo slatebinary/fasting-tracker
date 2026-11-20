@@ -1,3 +1,9 @@
+## v1.20.29 — 2026-11-20
+
+- Extract the neutral 24-hour cycle countdown eligibility and timing calculation into a pure policy helper.
+- Preserve active/scheduled-fast suppression, the strict under-24-hour duration boundary, the original start-plus-24-hours target and second-accurate remaining time.
+- Add deterministic regression coverage for invalid intervals, boundary instants and active/scheduled states; no UI, persisted data or fasting-record changes.
+
 ## v1.20.28 — 2026-11-20
 
 - Extract external JSON backup freshness classification into a pure policy helper, keeping date parsing, dataset signatures and pending-category calculations in the backup adapter.

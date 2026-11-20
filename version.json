@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.28",
+  "version": "1.20.29",
   "released": "2026-11-20",
-  "notes": "Extract external JSON backup freshness classification into a pure policy helper",
+  "notes": "Extract neutral 24-hour cycle countdown calculation into a pure policy helper",
   "entry": "./index.html",
   "shell": [
     "./",

@@ -3,6 +3,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 html = (ROOT / "src/app/index.template.html").read_text(encoding="utf-8")
 timer = (ROOT / "src/app/js/20-time-fast-history.js").read_text(encoding="utf-8")
+cycle_policy = (ROOT / "src/app/js/43n-next-fast-cycle-policy.js").read_text(encoding="utf-8")
 backdate = (ROOT / "src/app/js/15-backdated-fast-workflows.js").read_text(encoding="utf-8")
 validation = (ROOT / "src/app/js/14-data-validation.js").read_text(encoding="utf-8")
 navigation = (ROOT / "src/app/js/46-screen-navigation-and-rendering.js").read_text(encoding="utf-8")
@@ -35,10 +36,12 @@ assert "data.activeGoalHours=nextGoal" in backdate
 assert "el('editActiveFastBtn').hidden = false;" in timer
 assert "el('editActiveFastBtn').hidden = true;" in timer
 assert "editActiveFastSave').addEventListener('click',saveEditedActiveFast)" in navigation
-assert "const suggestedStartMs = startMs + dayMs;" in timer
-assert "nonFastingMs: dayMs - durationMs" in timer
-assert "const remainingMs = suggestedStartMs - nowMs;" in timer
-assert "return { record, durationMs, nonFastingMs: dayMs - durationMs, suggestedStartMs, remainingMs };" in timer
+assert "return resolveNextFastCycleInfo({" in timer
+assert "function resolveNextFastCycleInfo" in cycle_policy
+assert "const suggestedStartMs = startMs + dayMs;" in cycle_policy
+assert "nonFastingMs:dayMs-durationMs" in cycle_policy
+assert "const remainingMs = suggestedStartMs - nowMs;" in cycle_policy
+assert "return {record,durationMs,nonFastingMs:dayMs-durationMs,suggestedStartMs,remainingMs};" in cycle_policy
 for lang in ("en","bg","es"):
     locale = (ROOT / f"i18n/{lang}.json").read_text(encoding="utf-8")
     assert '"fasting.editFast"' in locale and '"fasting.editFastConfirm"' in locale

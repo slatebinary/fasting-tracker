@@ -1,0 +1,33 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('src/app/js/43n-next-fast-cycle-policy.js','utf8');
+const context={};vm.createContext(context);vm.runInContext(source+'\nthis.resolve=resolveNextFastCycleInfo;',context);
+const resolve=context.resolve;
+const hour=3600000,day=24*hour;
+const record={id:'cycle-1',start:'2026-11-19T00:00:00.000Z',end:'2026-11-19T02:00:00.000Z'};
+const start=Date.parse(record.start),end=Date.parse(record.end);
+let result=resolve({record,nowMs:start+3*hour});
+assert.equal(result.record,record);
+assert.equal(result.durationMs,2*hour);
+assert.equal(result.nonFastingMs,22*hour);
+assert.equal(result.suggestedStartMs,start+day);
+assert.equal(result.remainingMs,21*hour);
+assert.equal(resolve({record,nowMs:start+day-1}).remainingMs,1);
+assert.equal(resolve({record,nowMs:start+day}),null,'the countdown expires at the exact 24-hour boundary');
+assert.equal(resolve({record,nowMs:start+day+1}),null);
+assert.equal(resolve({record,nowMs:start+3*hour,active:true}),null);
+assert.equal(resolve({record,nowMs:start+3*hour,scheduled:true}),null);
+assert.equal(resolve({record:null,nowMs:start+3*hour}),null);
+assert.equal(resolve({record:{start:'invalid',end:record.end},nowMs:start}),null);
+assert.equal(resolve({record:{start:record.start,end:'invalid'},nowMs:start}),null);
+assert.equal(resolve({record:{start:record.start,end:record.start},nowMs:start}),null);
+assert.equal(resolve({record:{start:record.end,end:record.start},nowMs:start}),null);
+for(const duration of [day,day+1]){
+  const long={start:record.start,end:new Date(start+duration).toISOString()};
+  assert.equal(resolve({record:long,nowMs:start+hour}),null,'24-hour and longer fasts have no cycle countdown');
+}
+const almostDay={start:record.start,end:new Date(start+day-1).toISOString()};
+result=resolve({record:almostDay,nowMs:start+hour});
+assert.equal(result.durationMs,day-1);
+assert.equal(result.nonFastingMs,1);
+console.log('PASS: neutral 24-hour cycle policy covers eligibility, timing, invalid intervals and exact boundaries');
