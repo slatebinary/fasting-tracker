@@ -63,7 +63,7 @@
       storedDataSignature:backupMeta.lastExternalBackupDataSignature||null,
       currentDataSignature:backupMeta.lastExternalBackupDataSignature?backupDatasetSignature():null
     });
-    state.pending=state.changed?backupPendingCategories():{fasting:false,weight:false,known:true};
+    if(state.last) state.pending=state.changed?backupPendingCategories():{fasting:false,weight:false,known:true};
     return state;
   }
 
