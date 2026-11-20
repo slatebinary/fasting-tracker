@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.17",
+  "version": "1.20.18",
   "released": "2026-11-20",
-  "notes": "Extract calendar-day completion and display-duration policy",
+  "notes": "Extract calendar clock-change presentation policy",
   "entry": "./index.html",
   "shell": [
     "./",
