@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 66, f"Expected sixty-six ordered app fragments, found {len(parts)}"
+assert len(parts) == 67, f"Expected sixty-seven ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 storage_pressure = (source / "js" / "43r-storage-pressure-policy.js").read_text(encoding="utf-8")
 assert "function resolveStoragePressurePolicy" in storage_pressure
@@ -416,6 +416,12 @@ assert "async function refreshStorageProtection" not in (source / "js" / "50-set
 
 # Import merge primitives are isolated from settings/startup orchestration.
 import_merge = (source / "js" / "45-import-merge-workflows.js").read_text(encoding="utf-8")
-for owned_function in ("backupDateRange", "stableRecordString", "mergeByIdAndFingerprint", "mergeImportedData"):
-    assert f"function {owned_function}" in import_merge, f"{owned_function} must remain in import merge fragment"
-    assert f"function {owned_function}" not in (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in settings/startup fragment"
+assert "function backupDateRange" in import_merge
+assert "function mergeImportedData(imported)" in import_merge
+assert "resolveImportedDataMergePolicy(data, imported, normalizeStopReason, validateCompatibleData)" in import_merge
+assert "function stableRecordString" not in import_merge
+assert "function mergeByIdAndFingerprint" not in import_merge
+import_merge_policy = (source / "js" / "43s-import-merge-policy.js").read_text(encoding="utf-8")
+for owned_function in ("stableRecordString", "mergeByIdAndFingerprint", "resolveImportedDataMergePolicy"):
+    assert f"function {owned_function}" in import_merge_policy, f"{owned_function} must be owned by the pure import merge policy"
+    assert f"function {owned_function}" not in import_merge, f"{owned_function} must not remain in import merge orchestration"
