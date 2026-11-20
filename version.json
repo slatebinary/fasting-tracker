@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.33",
+  "version": "1.20.34",
   "released": "2026-11-20",
-  "notes": "Extract browser storage-pressure classification into a pure policy helper",
+  "notes": "Extract imported fasting and weight dataset merge conflict policy into a pure helper",
   "entry": "./index.html",
   "shell": [
     "./",
