@@ -2,7 +2,7 @@
 
 ## Current build model
 
-The deployed `index.html` is generated from `src/app/index.template.html`, `src/app/styles.css`, and 62 ordered JavaScript source fragments under `src/app/js/`. `tools/build_app_shell.py` concatenates the fragments in filename order into one classic script. This preserves offline operation and the existing shared lexical scope, but it does **not** create independent ECMAScript modules: declarations and mutable state remain shared, and fragment order is a runtime dependency.
+The deployed `index.html` is generated from `src/app/index.template.html`, `src/app/styles.css`, and 63 ordered JavaScript source fragments under `src/app/js/`. `tools/build_app_shell.py` concatenates the fragments in filename order into one classic script. This preserves offline operation and the existing shared lexical scope, but it does **not** create independent ECMAScript modules: declarations and mutable state remain shared, and fragment order is a runtime dependency.
 
 The source is substantially better organized than one monolithic file. The fragments generally have responsibility-oriented boundaries, and `tests/test_app_shell_atomization.py` guards the generated shell and several function-ownership boundaries. The current architecture should therefore be described as **atomized source with shared runtime scope**, not as a fully modular application.
 
