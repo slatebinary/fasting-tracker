@@ -68,25 +68,12 @@
       days.push({ key, startMs, endMs, totalFastMs, fastCount, segments, timeZone: tz });
     }
 
-    // Give every segment a stable continuation key across midnight. Fast
-    // pieces share the original fast's exact source boundaries. Consecutive
-    // non-fasting pieces on adjacent days are grouped until another fast
-    // interrupts them. This lets selection reveal the rest of the same
-    // fast/gap without changing the underlying timeline data.
-    let gapSerial = 0;
-    let previousGap = null;
-    for (const day of days) {
-      for (const segment of day.segments) {
-        if (segment.type === 'fast') {
-          segment.continuationKey = `fast:${segment.sourceStart}:${segment.sourceEnd}`;
-          previousGap = null;
-          continue;
-        }
-        const contiguous = previousGap && Math.abs(previousGap.end - segment.start) < 1000;
-        segment.continuationKey = contiguous ? previousGap.continuationKey : `gap:${++gapSerial}`;
-        previousGap = segment;
-      }
-    }
+    // Stable keys let selection reveal the same fast/gap across midnight.
+    // Assign them in place after the pure policy returns a parallel key matrix.
+    const continuationKeys = buildChartContinuationKeys(days);
+    days.forEach((day, dayIndex) => day.segments.forEach((segment, segmentIndex) => {
+      segment.continuationKey = continuationKeys[dayIndex][segmentIndex];
+    }));
     return days;
   }
 
