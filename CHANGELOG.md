@@ -1,3 +1,10 @@
+## v1.20.22 — 2026-11-20
+
+- Extract the shared nearest-day hit-testing policy for the Statistics Trend and Cumulative charts into a pure helper.
+- Preserve the existing 12 px horizontal and 24 px vertical plot-boundary tolerances and first-point tie resolution.
+- Add isolated regression coverage for plot-boundary inclusion, nearest-day selection, stable tie resolution, and empty/missing inputs.
+- No interface, stored data, record-schema or backup changes.
+
 ## v1.20.21 — 2026-11-20
 
 - Extract Weight chart nearest-point selection, horizontal selection tolerance and pointer-tap movement/scroll thresholds into pure policy functions.

@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 55, f"Expected fifty-five ordered app fragments, found {len(parts)}"
+assert len(parts) == 56, f"Expected fifty-six ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -327,6 +327,14 @@ for owned_function in (
     assert f"function {owned_function}" not in (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in backup/recovery fragment"
 assert "async function installUpdate" in app_update_workflows
 assert "async function requestShellRefresh" in app_update_workflows
+
+# Trend and cumulative Statistics charts share the same pure day-hit selection policy.
+stats_hit_test = (source / "js" / "43h-stats-chart-hit-test-policy.js").read_text(encoding="utf-8")
+assert "function nearestStatsChartDayHit" in stats_hit_test
+specialized_charts = (source / "js" / "40-specialized-statistics-charts.js").read_text(encoding="utf-8")
+assert "nearestStatsChartDayHit(x,y,trendPlotBounds,trendInteractiveLayout)" in specialized_charts
+assert "nearestStatsChartDayHit(x,y,cumulativePlotBounds,cumulativeInteractiveLayout)" in specialized_charts
+assert "let best=null,bestD=Infinity" not in specialized_charts
 
 # Generic timing/duration bars support pointer selection and a completed-click fallback.
 generic_chart = (source / "js" / "33-statistics-generic-chart.js").read_text(encoding="utf-8")
