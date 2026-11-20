@@ -25,21 +25,7 @@
   }
 
   function normalizeNotificationDetailItems(raw) {
-    const now = Date.now();
-    const items = Array.isArray(raw) ? raw : [];
-    const seen = new Set(), out = [];
-    for (const item of items) {
-      if (!item || typeof item !== 'object') continue;
-      const id = String(item.id || '').slice(0, 240);
-      const kind = String(item.kind || '').slice(0, 40);
-      const screen = APP_SCREENS.includes(item.screen) ? item.screen : 'fasting';
-      const created = validDate(item.createdAt);
-      if (!id || !kind || !created || now - created.getTime() > NOTIFICATION_DETAIL_TTL_MS || seen.has(id)) continue;
-      const params = item.params && typeof item.params === 'object' && !Array.isArray(item.params) ? item.params : {};
-      seen.add(id); out.push({id, kind, screen, createdAt:created.toISOString(), params});
-      if (out.length >= NOTIFICATION_DETAIL_LIMIT) break;
-    }
-    return out;
+    return normalizeNotificationDetailItemsPolicy(raw, Date.now(), validDate, APP_SCREENS, NOTIFICATION_DETAIL_TTL_MS, NOTIFICATION_DETAIL_LIMIT);
   }
 
   function notificationDetailCopy(kind, params = {}) {
