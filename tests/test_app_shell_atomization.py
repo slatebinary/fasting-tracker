@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 49, f"Expected forty-nine ordered app fragments, found {len(parts)}"
+assert len(parts) == 50, f"Expected fifty ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
@@ -34,6 +34,10 @@ fast_intervals = (source / "js" / "43a-fasting-intervals.js").read_text(encoding
 assert "function buildFastingIntervals" in fast_intervals
 stats_models = (source / "js" / "43-statistics-data-models.js").read_text(encoding="utf-8")
 assert "function buildFastingIntervals" not in stats_models
+assert "function currentZoneDaySummaries" in stats_models and "buildCurrentZoneDaySummaries(" in stats_models
+zone_summaries = (source / "js" / "43b-zone-day-summaries.js").read_text(encoding="utf-8")
+assert "function buildCurrentZoneDaySummaries" in zone_summaries
+assert "function buildCurrentZoneDaySummaries" not in stats_models
 assert "return buildFastingIntervals(" in stats_models
 assert "function allFastingIntervals" in stats_models
 weight_daily = (source / "js" / "33m-weight-daily-buckets.js").read_text(encoding="utf-8")
