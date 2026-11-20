@@ -1,3 +1,10 @@
+## v1.20.24 — 2026-11-20
+
+- Extract Statistics weekly-summary Monday anchoring into a pure local-calendar helper.
+- Preserve local-noon normalization, Monday alignment, input immutability and existing DST-safe calendar arithmetic.
+- Add focused regression coverage for weekday boundaries, month transitions, DST dates and invalid input.
+- Restore the original v1.20.22 localized changelog text; no interface, stored data, record-schema or backup changes.
+
 ## v1.20.23 — 2026-11-20
 
 - Extract Statistics Trend and Cumulative chart marker-density selection into a pure helper.
