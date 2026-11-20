@@ -120,6 +120,12 @@ weight_week_streak = (source / "js" / "43o-weight-week-streak-policy.js").read_t
 assert "function calculateWeightWeekStreak" in weight_week_streak
 assert "function calculateWeightWeekStreak" not in gamification
 assert "calculateWeightWeekStreak(weekKeys,currentWeekKey)" in gamification
+
+notification_detail_policy = (source / "js" / "43p-notification-detail-normalization-policy.js").read_text(encoding="utf-8")
+notification_state = (source / "js" / "13-notification-state.js").read_text(encoding="utf-8")
+assert "function normalizeNotificationDetailItemsPolicy" in notification_detail_policy
+assert "function normalizeNotificationDetailItemsPolicy" not in notification_state
+assert "return normalizeNotificationDetailItemsPolicy(raw, Date.now(), validDate, APP_SCREENS, NOTIFICATION_DETAIL_TTL_MS, NOTIFICATION_DETAIL_LIMIT)" in notification_state
 assert "function achievementDefinitions" in gamification and "function renderGamificationDetail" in gamification
 assert "function achievementDefinitions" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert "function renderGamificationDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
