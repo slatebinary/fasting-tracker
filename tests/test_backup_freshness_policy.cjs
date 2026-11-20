@@ -1,0 +1,35 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('src/app/js/43m-backup-freshness-policy.js','utf8');
+const context={};vm.createContext(context);vm.runInContext(source+'\nthis.resolve=resolveBackupFreshnessPolicy;',context);
+const resolve=context.resolve;
+const date=value=>new Date(value);
+const last=date('2026-11-20T10:00:00.000Z');
+const backedUpdated=date('2026-11-19T08:00:00.000Z');
+const base={hasData:true,last,revision:8,updated:date('2026-11-20T09:00:00.000Z'),backedRevision:8,backedUpdated,storedDataSignature:'v1:abc',currentDataSignature:'v1:abc'};
+let result=resolve(base);
+assert.equal(result.state,'current');assert.equal(result.changed,false);assert.equal(result.last,last);assert.equal(result.backedUpdated,backedUpdated);
+result=resolve({...base,hasData:false});
+assert.equal(result.state,'empty');assert.equal(result.changed,false);
+result=resolve({...base,last:null});
+assert.equal(result.state,'never');assert.equal(result.changed,true);assert.equal(result.last,null);
+result=resolve({...base,last:null,hasData:false});
+assert.equal(result.state,'empty');assert.equal(result.changed,false);
+result=resolve({...base,currentDataSignature:'v1:changed'});
+assert.equal(result.state,'stale');assert.equal(result.changed,true);
+result=resolve({...base,hasData:false,currentDataSignature:'v1:changed'});
+assert.equal(result.state,'stale');assert.equal(result.changed,true,'deleting the final record must not hide an outdated export');
+result=resolve({...base,storedDataSignature:null,revision:9,backedRevision:8});
+assert.equal(result.state,'stale','legacy exports use revision comparison');
+result=resolve({...base,storedDataSignature:null,revision:8,backedRevision:8});
+assert.equal(result.state,'current');
+result=resolve({...base,storedDataSignature:null,revision:1,backedRevision:0,updated:date(last.getTime()+1000)});
+assert.equal(result.state,'current','the legacy timestamp tolerance is strictly greater than one second');
+result=resolve({...base,storedDataSignature:null,revision:1,backedRevision:0,updated:date(last.getTime()+1001)});
+assert.equal(result.state,'stale');
+result=resolve({...base,storedDataSignature:null,revision:1,backedRevision:0,updated:null});
+assert.equal(result.state,'current','missing legacy update timestamps preserve previous behavior');
+assert.deepEqual(JSON.parse(JSON.stringify(resolve({...base,currentDataSignature:'v1:changed'}))),{
+ state:'stale',changed:true,last:'2026-11-20T10:00:00.000Z',backedRevision:8,backedUpdated:'2026-11-19T08:00:00.000Z'
+});
+console.log('PASS: external-backup freshness policy covers current, empty, never, stale, final-record deletion and legacy fallbacks');

@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.27",
+  "version": "1.20.28",
   "released": "2026-11-20",
-  "notes": "Optimize rolling Weight averages with a linear-time sliding-window algorithm",
+  "notes": "Extract external JSON backup freshness classification into a pure policy helper",
   "entry": "./index.html",
   "shell": [
     "./",

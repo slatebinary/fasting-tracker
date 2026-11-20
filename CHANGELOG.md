@@ -1,3 +1,9 @@
+## v1.20.28 — 2026-11-20
+
+- Extract external JSON backup freshness classification into a pure policy helper, keeping date parsing, dataset signatures and pending-category calculations in the backup adapter.
+- Preserve current, stale, aged, never-exported and empty states, final-record deletion invalidation, and legacy revision/timestamp fallbacks.
+- Add isolated regression coverage for state transitions and the one-second legacy timestamp tolerance; no persisted data or backup format changes.
+
 ## v1.20.27 — 2026-11-20
 
 - Optimize rolling Weight averages with a single-pass sliding window and monotonic minimum/maximum queues instead of rescanning every measurement in each daily window.

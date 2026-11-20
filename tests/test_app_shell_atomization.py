@@ -11,8 +11,11 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 60, f"Expected sixty ordered app fragments, found {len(parts)}"
+assert len(parts) == 61, f"Expected sixty-one ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
+backup_freshness = (source / "js" / "43m-backup-freshness-policy.js").read_text(encoding="utf-8")
+assert "function resolveBackupFreshnessPolicy" in backup_freshness
+assert "function resolveBackupFreshnessPolicy" not in (source / "js" / "40-backup-export.js").read_text(encoding="utf-8")
 assert "function chartSelectionDetail" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert "function selectTimelineAt" in (source / "js" / "31-timeline-interaction.js").read_text(encoding="utf-8")
 assert (source / "js" / "32-weight-chart-interaction.js").is_file()
