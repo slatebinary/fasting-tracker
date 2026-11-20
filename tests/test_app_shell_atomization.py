@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 62, f"Expected sixty-two ordered app fragments, found {len(parts)}"
+assert len(parts) == 63, f"Expected sixty-three ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 backup_freshness = (source / "js" / "43m-backup-freshness-policy.js").read_text(encoding="utf-8")
 assert "function resolveBackupFreshnessPolicy" in backup_freshness
@@ -116,6 +116,10 @@ assert "function buildWeightAggregateBuckets" in weight_analytics and "function 
 assert "function buildWeightAggregateBuckets" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert (source / "js" / "35-gamification-achievements.js").is_file()
 gamification = (source / "js" / "35-gamification-achievements.js").read_text(encoding="utf-8")
+weight_week_streak = (source / "js" / "43o-weight-week-streak-policy.js").read_text(encoding="utf-8")
+assert "function calculateWeightWeekStreak" in weight_week_streak
+assert "function calculateWeightWeekStreak" not in gamification
+assert "calculateWeightWeekStreak(weekKeys,currentWeekKey)" in gamification
 assert "function achievementDefinitions" in gamification and "function renderGamificationDetail" in gamification
 assert "function achievementDefinitions" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert "function renderGamificationDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
