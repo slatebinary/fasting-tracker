@@ -1,3 +1,9 @@
+## v1.20.34 — 2026-11-20
+
+- Extract imported fasting/weight dataset deduplication and conflict detection into a pure merge-policy helper; retain preview date-range calculation and import UI orchestration in the existing adapter.
+- Preserve same-ID content checks, fingerprint duplicate suppression, deleted/live exclusivity, fasting-interval overlap rejection and active-fast conflict handling.
+- Add deterministic coverage for all four record collections, duplicate counts, conflict boundaries, active-fast adoption and input immutability. No backup format or persisted-data changes.
+
 ## v1.20.33 — 2026-11-20
 
 - Extract browser storage-pressure classification into a pure policy helper; keep storage estimation and user confirmation in the existing adapter.
