@@ -7,7 +7,7 @@ const points=[{id:'a',x:0,y:0},{id:'b',x:10,y:10},{id:'c',x:20,y:0}];
 assert.equal(nearest(points,9,9),points[1]);
 assert.equal(nearest([{id:'edge',x:0,y:0}],28,0).id,'edge');
 assert.equal(nearest([{id:'outside',x:0,y:0}],28.01,0),null);
-assert.equal(nearest(points,0,29),null);
+assert.equal(nearest([{id:'outside',x:0,y:0}],0,29),null);
 assert.equal(nearest([],0,0),null);
 assert.equal(nearest(null,0,0),null);
 assert.equal(nearest(points,5,5),points[0],'equal-distance ties retain the first point');
