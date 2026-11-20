@@ -25,12 +25,12 @@ const incoming = {
     fast('fingerprint-duplicate','2026-01-01T00:00:00Z','2026-01-01T16:00:00Z'),
     fast('f2','2026-01-04T00:00:00Z','2026-01-04T16:00:00Z')
   ],
-  deletedFasts:[fast('df2','2026-01-05T00:00:00Z','2026-01-05T16:00:00Z',{deletedAt:'2026-01-06T00:00:00Z'})],
+  deletedFasts:[fast('df1','2026-01-02T00:00:00Z','2026-01-02T16:00:00Z',{deleted:true,deletedAt:'2026-02-01T00:00:00Z'}),fast('df2','2026-01-05T00:00:00Z','2026-01-05T16:00:00Z',{deletedAt:'2026-01-06T00:00:00Z'})],
   weights:[
     weight('w1','2026-01-01T08:00:00Z',80,{deleted:true}),
     weight('w2','2026-01-04T08:00:00Z',79)
   ],
-  deletedWeights:[weight('dw2','2026-01-05T08:00:00Z',78,{deletedAt:'2026-01-06T00:00:00Z'})],
+  deletedWeights:[weight('dw1','2026-01-02T08:00:00Z',81,{deleted:true,deletedAt:'2026-02-01T00:00:00Z'}),weight('dw2','2026-01-05T08:00:00Z',78,{deletedAt:'2026-01-06T00:00:00Z'})],
   activeStart:null
 };
 const before = JSON.stringify({base,incoming});
@@ -39,7 +39,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(merged.data.records.map(x=>x.id))),['
 assert.deepEqual(JSON.parse(JSON.stringify(merged.data.deletedFasts.map(x=>x.id))),['df1','df2']);
 assert.deepEqual(JSON.parse(JSON.stringify(merged.data.weights.map(x=>x.id))),['w1','w2']);
 assert.deepEqual(JSON.parse(JSON.stringify(merged.data.deletedWeights.map(x=>x.id))),['dw1','dw2']);
-assert.equal(merged.duplicates,4,'same-ID and fingerprint duplicates across all four collections are counted');
+assert.equal(merged.duplicates,5,'same-ID and fingerprint duplicates across all four collections are counted');
 assert.equal(JSON.stringify({base,incoming}),before,'merge policy must not mutate either input');
 
 const rejects = (current,remote,pattern) => assert.throws(
