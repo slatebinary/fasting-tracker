@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 64, f"Expected sixty-four ordered app fragments, found {len(parts)}"
+assert len(parts) == 65, f"Expected sixty-five ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 backup_freshness = (source / "js" / "43m-backup-freshness-policy.js").read_text(encoding="utf-8")
 assert "function resolveBackupFreshnessPolicy" in backup_freshness
@@ -126,6 +126,10 @@ notification_state = (source / "js" / "13-notification-state.js").read_text(enco
 assert "function normalizeNotificationDetailItemsPolicy" in notification_detail_policy
 assert "function normalizeNotificationDetailItemsPolicy" not in notification_state
 assert "return normalizeNotificationDetailItemsPolicy(raw, Date.now(), validDate, APP_SCREENS, NOTIFICATION_DETAIL_TTL_MS, NOTIFICATION_DETAIL_LIMIT)" in notification_state
+notification_snooze_policy = (source / "js" / "43q-notification-snooze-restoration-policy.js").read_text(encoding="utf-8")
+assert "function resolveDueSnoozedNotificationDetailsPolicy" in notification_snooze_policy
+assert "function resolveDueSnoozedNotificationDetailsPolicy" not in notification_state
+assert "resolveDueSnoozedNotificationDetailsPolicy(pending, notificationDetailItems(), nowMs, validDate, APP_SCREENS, NOTIFICATION_DETAIL_LIMIT)" in notification_state
 assert "function achievementDefinitions" in gamification and "function renderGamificationDetail" in gamification
 assert "function achievementDefinitions" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
 assert "function renderGamificationDetail" not in (source / "js" / "30-statistics-and-charts.js").read_text(encoding="utf-8")
