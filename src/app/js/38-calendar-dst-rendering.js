@@ -2,10 +2,6 @@
     const d = new Date(); d.setHours(12,0,0,0); d.setDate(1); d.setMonth(d.getMonth() + offset); return d;
   }
 
-  function formatClockChangeDuration(minutes) {
-    const total=Math.abs(Math.round(Number(minutes)||0)),hours=Math.floor(total/60),mins=total%60;
-    return [hours?hours+'h':'',mins?mins+'m':''].filter(Boolean).join(' ')||'0m';
-  }
   // A local calendar day is not always 24 elapsed hours. Compare its actual
   // boundaries and its UTC offsets so unusual non-hour transitions are handled.
   function dayClockChangeInfo(day) {
@@ -16,9 +12,8 @@
     // net UTC-offset change. Ordinary 24-hour days need no extra Intl calls.
     if(Math.abs(dayDelta)<1)return null;
     const startOffset=timeZoneOffsetMs(day.startMs+1000,tz),endOffset=timeZoneOffsetMs(day.endMs-1000,tz);
-    const offsetDelta=Math.round((endOffset-startOffset)/60000);
-    const isDayLengthChange=Math.abs(dayDelta)>=1,delta=isDayLengthChange?dayDelta:offsetDelta;
-    const sign=delta>0?'+':'−',duration=formatClockChangeDuration(delta),change=sign+duration;
+    const metrics=calendarClockChangeMetrics(dayDelta,startOffset,endOffset);
+    const {offsetDeltaMinutes:offsetDelta,isDayLengthChange,deltaMinutes:delta,sign,duration,change}=metrics;
     const label=t(isDayLengthChange?'stats.clockDayChangeLabel':'stats.clockOffsetChangeLabel',{sign,duration});
     const description=t(isDayLengthChange?'stats.clockDayChangeHelp':'stats.clockOffsetChangeHelp',{
       date:day.label||localDateLabel(day.startMs,tz),dayLength:totalHoursDuration(elapsed),change,zone:tz
