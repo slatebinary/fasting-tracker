@@ -15,20 +15,7 @@
     const tz = normalizeTimeZone(timeZone);
     const cacheKey = `${tz}|${Number.isFinite(rangeStart)?Math.floor(rangeStart/86400000):'all'}|${Number.isFinite(rangeEnd)?Math.ceil(rangeEnd/86400000):'all'}|${data.revision}`;
     if (currentZoneDaySummaryCache?.key === cacheKey) return currentZoneDaySummaryCache.map;
-    const map = new Map();
-    for (const interval of allFastingIntervals(rangeStart, rangeEnd)) {
-      let cursor = Math.max(interval.start, Number.isFinite(rangeStart) ? rangeStart : interval.start), guard = 0;
-      const intervalEnd = Math.min(interval.end, Number.isFinite(rangeEnd) ? rangeEnd : interval.end);
-      while (cursor < intervalEnd && guard++ < 10000) {
-        const key = dayKey(cursor, tz);
-        const boundary = Math.min(intervalEnd, nextZonedDayBoundary(cursor, tz));
-        const item = map.get(key) || { totalFastMs:0, fastCount:0 };
-        item.totalFastMs += Math.max(0, boundary - cursor);
-        item.fastCount += 1;
-        map.set(key, item);
-        cursor = Math.max(boundary, cursor + 1);
-      }
-    }
+    const map = buildCurrentZoneDaySummaries(allFastingIntervals(rangeStart, rangeEnd), tz, rangeStart, rangeEnd, dayKey, nextZonedDayBoundary);
     currentZoneDaySummaryCache = { key:cacheKey, map };
     return map;
   }
