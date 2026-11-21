@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.0",
+  "version": "1.21.1",
   "released": "2026-11-21",
-  "notes": "Add a 30-minute post-start option to extend the non-fasting period while preserving the selected fasting target",
+  "notes": "Extract dotted-version comparison into a pure policy helper without changing update behavior",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -87,14 +87,15 @@
     "./icons/colorblind/icon-192.png",
     "./icons/colorblind/icon-512.png",
     "./src/app/js/43y-notification-snooze-category-policy.js",
-    "./src/app/js/43z-post-start-extension-policy.js"
+    "./src/app/js/43z-post-start-extension-policy.js",
+    "./src/app/js/43zz-semantic-version-policy.js"
   ],
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "b4594f7a2e2103aab32d11b3d2983fc8d2b68d80191e9a0b7e12495547594dc0",
-    "./index.html": "b4594f7a2e2103aab32d11b3d2983fc8d2b68d80191e9a0b7e12495547594dc0",
-    "./changelog.html": "51d940b18e91a9478c85c0bcd99c4a2615f732786d013f5e4942984f7a3ca5f0",
+    "./": "1fd2ff7b439574bdaa8b769df30f84a184beb9d68185d79e7e7e6c96629eaf6f",
+    "./index.html": "1fd2ff7b439574bdaa8b769df30f84a184beb9d68185d79e7e7e6c96629eaf6f",
+    "./changelog.html": "87e391eee23be8800632729256b006427d84d99d920d0e1ee5ecdb0e4e86ffb8",
     "./i18n/en.js": "183f2511c381cf4b324d9b08c3b06741c74ffe74e114550ab4c7382f34904bc9",
     "./i18n/bg.js": "e1bad6ff32863c7810e704728e3c4929d4b156eaf15c6b9a090532cd712173e7",
     "./i18n/es.js": "918c28e5cbd52160a21dd33fcb941beac0b62d15e62169f0077f9a2239507366",
@@ -106,10 +107,10 @@
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "03ebab2d847660b3d9d257415d2efcd5175e705f6d459d128c0aefa9f5fc92b3",
     "./js/release-health.js": "3c561d7a4326cf161b9c7a17b37913264b72437a0c84819f9cbdc0369b97ba6e",
-    "./privacy.html": "5512472df323478eb8bbbd721c7f389d5b9b5a47db9583d2feb93b1c8a9987a1",
-    "./about.html": "19ff8c0feb57db50d7b7312d75e59450d1c813a0a16ce90d0837a867081f8a75",
-    "./branding.html": "2e1a3a395f4b231febda6a193d0d6470e3ffe089baa214d08869eaba40219a37",
-    "./license.html": "48ef21852d729877d5c64f4463d26d30dc205cf48b755f5064279dc090a09f2c",
+    "./privacy.html": "84e4433d9bdf8cd4c8eeb92b428e5e93755853e0ce41c44e81307edefda2b1b5",
+    "./about.html": "3ddc8df771b9e0ff042317f0c073a73a7af709bf0ca9d52366a668c4368d6937",
+    "./branding.html": "d9b1729405280889b6336ba3bfc27158a388e1b63a6095755828e459753a1242",
+    "./license.html": "84fad60afc57816ac3a6a131f0be6629d34f1354ee586bd17f60b6a264e5c910",
     "./404.html": "afa92afe8dd7cd8f4e3878b22f27a9fd89f469e5d01da9b8cb7bfc94898a1f7d",
     "./en/": "43a8e58e8c09ebab103418781c6f32bfb2b837870c62049368258727ae4d29ed",
     "./bg/": "ea495c81b191e3ad009de3578666dbd59415e637320922685a45af22b5de21ec",
@@ -174,6 +175,7 @@
     "./icons/colorblind/icon-192.png": "73b5a3ecaa90a784441dbd15322957446aecf910d7f1312777682a8af2f9afd8",
     "./icons/colorblind/icon-512.png": "e21ab0a100c3569b7572dc9c22ca974448624077a5330de889f590be1140b855",
     "./src/app/js/43y-notification-snooze-category-policy.js": "0ed7e2139d48dcd6d6cb06b696f1b9731c75dd8a9436afeda9a4c4e4d9ef5374",
-    "./src/app/js/43z-post-start-extension-policy.js": "52944d6269d5faf937e99e1abd3865c0a901d5692e71e1380ceafac39f642787"
+    "./src/app/js/43z-post-start-extension-policy.js": "52944d6269d5faf937e99e1abd3865c0a901d5692e71e1380ceafac39f642787",
+    "./src/app/js/43zz-semantic-version-policy.js": "59ae699daf078d023703c9af35957636edc7fd5698ea1b0e6d8f5ed0af15b844"
   }
 }

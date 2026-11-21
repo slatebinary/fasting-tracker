@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.0" />
+  <meta name="ft-app-version" content="1.21.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.0';
+  const APP_VERSION = '1.21.1';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -9273,14 +9273,6 @@ function resolvePostStartExtendedTimestamp(startAt, minutes) {
   if (!Number.isFinite(startMs) || !POST_START_EXTENSION_MINUTES.includes(amount)) return null;
   return startMs + amount * 60000;
 }
-  function openUpdateModal() {
-    if (!updateAvailable) { checkForUpdates(); return; }
-    el('updateModalText').textContent = t('update.modalText', {version:latestVersion});
-    showModal('updateModal', 'updateCancelBtn');
-  }
-
-  function closeUpdateModal() { hideModal('updateModal'); }
-
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
     const pb = String(b).split('.').map(x => Number.parseInt(x, 10) || 0);
@@ -9292,6 +9284,13 @@ function resolvePostStartExtendedTimestamp(startAt, minutes) {
     }
     return 0;
   }
+  function openUpdateModal() {
+    if (!updateAvailable) { checkForUpdates(); return; }
+    el('updateModalText').textContent = t('update.modalText', {version:latestVersion});
+    showModal('updateModal', 'updateCancelBtn');
+  }
+
+  function closeUpdateModal() { hideModal('updateModal'); }
 
   function setUpdateUI(state, message = '') {
     const status = el('updateStatus');

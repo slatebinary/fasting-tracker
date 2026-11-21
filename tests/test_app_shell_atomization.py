@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 75, f"Expected seventy-five ordered app fragments, found {len(parts)}"
+assert len(parts) == 76, f"Expected seventy-six ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -367,7 +367,7 @@ assert "function updateTimer" in (source / "js" / "20-time-fast-history.js").rea
 
 app_update_workflows = (source / "js" / "44-app-update-workflows.js").read_text(encoding="utf-8")
 for owned_function in (
-    "openUpdateModal", "closeUpdateModal", "compareVersions", "setUpdateUI",
+    "openUpdateModal", "closeUpdateModal", "setUpdateUI",
     "saveUpdateStatusMeta", "loadUpdateStatusMeta", "fetchLiveReleaseStatus",
     "checkForUpdates", "getCurrentServiceWorkerController",
     "requestShellRefresh", "installUpdate",
@@ -376,6 +376,11 @@ for owned_function in (
     assert f"function {owned_function}" not in (source / "js" / "40-backup-and-update.js").read_text(encoding="utf-8"), f"{owned_function} must not remain in backup/recovery fragment"
 assert "async function installUpdate" in app_update_workflows
 assert "async function requestShellRefresh" in app_update_workflows
+
+semantic_version_policy = (source / "js" / "43zz-semantic-version-policy.js").read_text(encoding="utf-8")
+assert "function compareVersions" in semantic_version_policy
+assert "function compareVersions" not in app_update_workflows
+assert "compareVersions(remote, APP_VERSION)" in app_update_workflows
 
 # Trend and cumulative Statistics charts share the same pure day-hit selection policy.
 stats_hit_test = (source / "js" / "43h-stats-chart-hit-test-policy.js").read_text(encoding="utf-8")

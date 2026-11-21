@@ -1,3 +1,9 @@
+## v1.21.1 — 2026-11-21
+
+- Extract dotted-version comparison into a pure policy helper used by the update workflow.
+- Preserve existing numeric component ordering, including multi-digit components and equality when trailing components are omitted.
+- Add deterministic regression coverage. No update lifecycle, deployment validation, storage or user-data behavior changes.
+
 ## v1.21.0 — 2026-11-21
 
 - Add a post-start **Extend non-fasting period** action for the first 30 minutes after starting or scheduling a fast, with 5, 10, 15 and 30-minute choices.
