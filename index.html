@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.40" />
+  <meta name="ft-app-version" content="1.20.41" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1972,7 +1972,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.40';
+  const APP_VERSION = '1.20.41';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -3462,8 +3462,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
 
 
   function notificationSnoozeCategory(kind) {
-    if (kind === 'weigh-in') return 'weight';
-    return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
+    return notificationSnoozeCategoryPolicy(kind);
   }
   function notificationSnoozeDefaultMinutes(kind) {
     const prefs = notificationPrefs();
@@ -9104,6 +9103,11 @@ function weightChartVisibleRangePolicy(bucketCount, viewportWidth, scrollLeft, p
       weightSnoozeMinutes: snoozeMinutes(value.weightSnoozeMinutes),
       fastingSnoozeMinutes: snoozeMinutes(value.fastingSnoozeMinutes)
     };
+  }
+  // Classify notification details for the existing fasting/weight snooze preference groups.
+  function notificationSnoozeCategoryPolicy(kind) {
+    if (kind === 'weigh-in') return 'weight';
+    return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
   }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
