@@ -70,3 +70,4 @@
   queueStorageProtectionRefresh();
   setTimeout(maybeAutoOpenSetupGuide, 180);
 
+})();
