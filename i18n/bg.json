@@ -1177,5 +1177,13 @@
   "fasting.nonFastingSince": "От {date}",
   "fasting.nonFastingHelp": "Изминалото време от последното завършено гладуване. Това е ориентир за проследяване, а не препоръчителен прозорец за хранене.",
   "weight.periodHighest": "Най-високо за периода",
-  "weight.allTimeHighest": "Най-високо за всички времена"
+  "weight.allTimeHighest": "Най-високо за всички времена",
+  "fasting.extendNonFasting": "Удължи периода за хранене",
+  "fasting.extendNonFastingTitle": "Удължаване на периода за хранене",
+  "fasting.extendNonFastingHelp": "Ако сте натиснали „Започни гладуване“, преди да приключите с храненето, преместете началото на гладуването по-късно. Опцията е достъпна 30 минути след първоначалното начало. Избраната цел за гладуване остава същата.",
+  "fasting.extendNonFastingAmount": "Добавено време",
+  "fasting.extendNonFastingPreview": "Ново начало на гладуването: {date}",
+  "fasting.extendNonFastingConfirm": "Приложи удължаването",
+  "fasting.startDelayedFor": "Гладуването ще започне в {date}",
+  "fasting.cancelDelayedStart": "Отмени отложеното начало"
 }
