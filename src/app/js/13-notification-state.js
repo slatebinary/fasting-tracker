@@ -88,9 +88,12 @@
 
   function recordNotificationDetail(kind, {screen='fasting', tag=null, params={}} = {}) {
     const id = String(tag || `fasting-tracker-${kind}-${Date.now()}`);
-    const current = notificationDetailItems().filter(item => item.id !== id);
-    notificationRuntimeState.snoozedDetails = (Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : []).filter(item => item?.id !== id);
-    notificationRuntimeState.details = [{id, kind, screen:APP_SCREENS.includes(screen)?screen:'fasting', createdAt:new Date().toISOString(), params}, ...current].slice(0, NOTIFICATION_DETAIL_LIMIT);
+    const result = recordNotificationDetailPolicy(
+      id, kind, screen, new Date().toISOString(), params, notificationDetailItems(),
+      notificationRuntimeState.snoozedDetails, APP_SCREENS, NOTIFICATION_DETAIL_LIMIT
+    );
+    notificationRuntimeState.details = result.details;
+    notificationRuntimeState.snoozedDetails = result.snoozedDetails;
     saveNotificationRuntimeState();
     renderNotificationDetails();
   }
