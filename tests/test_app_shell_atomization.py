@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 78, f"Expected seventy-eight ordered app fragments, found {len(parts)}"
+assert len(parts) == 79, f"Expected seventy-nine ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -495,6 +495,11 @@ assert "function recordNotificationDetailPolicy" in notification_detail_recordin
 assert "recordNotificationDetailPolicy(" in notification_state
 assert "function recordNotificationDetailPolicy" not in notification_state
 assert "notificationRuntimeState.snoozedDetails = result.snoozedDetails" in notification_state
+
+notification_detail_dismissal = (source / "js" / "43zc-notification-detail-dismissal-policy.js").read_text(encoding="utf-8")
+assert "function dismissNotificationDetailPolicy" in notification_detail_dismissal
+assert "dismissNotificationDetailPolicy(" in notification_state
+assert "function dismissNotificationDetailPolicy" not in notification_state
 
 
 # External-backup manifest record counts are checked by a pure policy.

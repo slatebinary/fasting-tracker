@@ -99,7 +99,7 @@
   }
 
   function dismissNotificationDetail(id) {
-    notificationRuntimeState.details = notificationDetailItems().filter(item => item.id !== id);
+    notificationRuntimeState.details = dismissNotificationDetailPolicy(id, notificationDetailItems());
     saveNotificationRuntimeState(); renderNotificationDetails();
   }
 
