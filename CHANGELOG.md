@@ -1,3 +1,9 @@
+## v1.20.35 — 2026-11-21
+
+- Extract fasting and weight external-backup category signature construction into a pure helper; retain stable serialization and SHA-256-independent FNV signature generation in the existing adapter.
+- Preserve order-independent record identity and category isolation: fasting records, deleted fasts and active-fast state affect only the fasting signature; weight and deleted-weight records affect only the weight signature.
+- Add deterministic tests for reordered collections, category-specific changes, active-fast metadata, empty inputs and input immutability. No backup format or persisted-data changes.
+
 ## v1.20.34 — 2026-11-20
 
 - Extract imported fasting/weight dataset deduplication and conflict detection into a pure merge-policy helper; retain preview date-range calculation and import UI orchestration in the existing adapter.

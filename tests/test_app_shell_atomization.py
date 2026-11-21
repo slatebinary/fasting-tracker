@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 67, f"Expected sixty-seven ordered app fragments, found {len(parts)}"
+assert len(parts) == 68, f"Expected sixty-eight ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 storage_pressure = (source / "js" / "43r-storage-pressure-policy.js").read_text(encoding="utf-8")
 assert "function resolveStoragePressurePolicy" in storage_pressure
@@ -425,3 +425,12 @@ import_merge_policy = (source / "js" / "43s-import-merge-policy.js").read_text(e
 for owned_function in ("stableRecordString", "mergeByIdAndFingerprint", "resolveImportedDataMergePolicy"):
     assert f"function {owned_function}" in import_merge_policy, f"{owned_function} must be owned by the pure import merge policy"
     assert f"function {owned_function}" not in import_merge, f"{owned_function} must not remain in import merge orchestration"
+
+
+# Category-specific external-backup signatures are deterministic pure policy.
+backup_categories = (source / "js" / "43t-backup-category-signatures-policy.js").read_text(encoding="utf-8")
+assert "function buildBackupCategorySignatures" in backup_categories
+backup_export = (source / "js" / "40-backup-export.js").read_text(encoding="utf-8")
+assert "return buildBackupCategorySignatures(sourceData, value => fnv1a64Hex(stableStringify(value)))" in backup_export
+assert "function backupCategorySignatures" in backup_export
+assert "function buildBackupCategorySignatures" not in backup_export

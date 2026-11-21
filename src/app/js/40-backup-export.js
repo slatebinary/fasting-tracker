@@ -27,14 +27,7 @@
   }
 
   function backupCategorySignatures(sourceData = data) {
-    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => (String(a?.id ?? '') < String(b?.id ?? '') ? -1 : String(a?.id ?? '') > String(b?.id ?? '') ? 1 : 0));
-    const hash = value => 'v1:' + fnv1a64Hex(stableStringify(value));
-    return {
-      fasting:hash({records:byId(sourceData.records),deletedFasts:byId(sourceData.deletedFasts),
-        activeFast:{start:sourceData.activeStart||null,timeZone:sourceData.activeTimeZone||null,
-          goal:sourceData.activeGoalHours??null,createdAt:sourceData.activeCreatedAt||null,modifiedAt:sourceData.activeModifiedAt||null}}),
-      weight:hash({weights:byId(sourceData.weights),deletedWeights:byId(sourceData.deletedWeights)})
-    };
+    return buildBackupCategorySignatures(sourceData, value => fnv1a64Hex(stableStringify(value)));
   }
 
   function backupPendingCategories() {
