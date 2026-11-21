@@ -14,11 +14,11 @@ for(const width of [220,320,390,614,1024]){
  }
 }
 assert.equal(spacing(7,390),60);
-assert.deepEqual(visible(0,390,0,12),{first:0,last:-1});
-assert.deepEqual(visible(1,390,0,12),{first:0,last:0});
-assert.deepEqual(visible(100,390,0,12),{first:0,last:34});
-assert.deepEqual(visible(100,390,600,12),{first:46,last:84});
-assert.deepEqual(visible(100,390,999999,12),{first:Math.floor((999999-16)/12)-2,last:99});
-assert.deepEqual(visible(100,390,-100,12),{first:0,last:34});
-assert.deepEqual(visible(100,390,0,0),{first:0,last:34});
+assert.equal(JSON.stringify(visible(0,390,0,12)),JSON.stringify({first:0,last:-1}));
+assert.equal(JSON.stringify(visible(1,390,0,12)),JSON.stringify({first:0,last:0}));
+assert.equal(JSON.stringify(visible(100,390,0,12)),JSON.stringify({first:0,last:34}));
+assert.equal(JSON.stringify(visible(100,390,600,12)),JSON.stringify({first:46,last:84}));
+assert.equal(JSON.stringify(visible(100,390,999999,12)),JSON.stringify({first:Math.floor((999999-16)/12)-2,last:99}));
+assert.equal(JSON.stringify(visible(100,390,-100,12)),JSON.stringify({first:0,last:34}));
+assert.equal(JSON.stringify(visible(100,390,0,0)),JSON.stringify({first:0,last:34}));
 console.log('PASS: Weight chart spacing and visible-window policies preserve dense layout across mobile/desktop widths, period sizes and scroll positions');
