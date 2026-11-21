@@ -1,3 +1,9 @@
+## v1.21.2 — 2026-11-21
+
+- Extract notification-detail snooze scheduling into a pure policy helper; the existing state adapter continues to handle persistence and rendering.
+- Preserve supported snooze durations, fasting/weight category eligibility, duplicate-ID replacement, newest-first queue order and the existing queue limit.
+- Add deterministic tests for invalid requests, due-time calculation, queue ordering, replacement and input immutability. No notification delivery, preference, backup or user-data format changes.
+
 ## v1.21.1 — 2026-11-21
 
 - Extract dotted-version comparison into a pure policy helper used by the update workflow.
