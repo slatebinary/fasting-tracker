@@ -85,11 +85,13 @@ jobs:
           python3 tests/test_changelog_unique_versions.py
           python3 tests/test_palette_hint_initialization.py
           python3 tests/test_scheduled_fast_start.py
+          python3 tests/test_post_start_nonfasting_extension.py
           python3 tests/test_v1190_edit_fast_presets.py
           node tests/test_stats_month_comparison_policy.cjs
           node tests/test_stats_weekly_summary_builder.cjs
           node tests/test_backup_freshness_policy.cjs
           node tests/test_next_fast_cycle_policy.cjs
+          node tests/test_post_start_nonfasting_extension_policy.cjs
           node tests/test_weight_week_streak_policy.cjs
           node tests/test_notification_detail_normalization_policy.cjs
           node tests/test_notification_preferences_policy.cjs
