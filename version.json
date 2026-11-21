@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.3",
+  "version": "1.21.4",
   "released": "2026-11-21",
-  "notes": "Extract notification-detail recording and matching snooze cleanup into a pure policy helper without changing notification behavior",
+  "notes": "Extract notification-detail dismissal into a pure policy helper while preserving strict ID matching and adapter persistence/rendering",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -90,7 +90,8 @@
     "./src/app/js/43z-post-start-extension-policy.js",
     "./src/app/js/43zz-semantic-version-policy.js",
     "./src/app/js/43za-notification-snooze-scheduling-policy.js",
-    "./src/app/js/43zb-notification-detail-recording-policy.js"
+    "./src/app/js/43zb-notification-detail-recording-policy.js",
+    "./src/app/js/43zc-notification-detail-dismissal-policy.js"
   ],
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
