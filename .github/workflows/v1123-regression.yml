@@ -90,6 +90,7 @@ jobs:
           node tests/test_next_fast_cycle_policy.cjs
           node tests/test_weight_week_streak_policy.cjs
           node tests/test_notification_detail_normalization_policy.cjs
+          node tests/test_notification_preferences_policy.cjs
           node tests/test_notification_snooze_restoration_policy.cjs
           node tests/test_storage_pressure_policy.cjs
           node tests/test_import_merge_policy.cjs
