@@ -160,6 +160,7 @@ jobs:
           python3 tests/test_v11773_timeline_selection_persistence.py
           python3 tests/test_fasting_encouragement_v1179.py
           python3 tests/test_v1190_edit_fast_browser.py
+          python3 tests/test_post_start_nonfasting_extension_browser.py
       - name: Execute statistics performance regression
         run: python3 tests/test_performance.py
       - name: Execute extended migration, accessibility and lifetime performance regressions
