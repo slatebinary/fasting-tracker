@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.34" />
+  <meta name="ft-app-version" content="1.20.35" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.34';
+  const APP_VERSION = '1.20.35';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -7797,14 +7797,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function backupCategorySignatures(sourceData = data) {
-    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => (String(a?.id ?? '') < String(b?.id ?? '') ? -1 : String(a?.id ?? '') > String(b?.id ?? '') ? 1 : 0));
-    const hash = value => 'v1:' + fnv1a64Hex(stableStringify(value));
-    return {
-      fasting:hash({records:byId(sourceData.records),deletedFasts:byId(sourceData.deletedFasts),
-        activeFast:{start:sourceData.activeStart||null,timeZone:sourceData.activeTimeZone||null,
-          goal:sourceData.activeGoalHours??null,createdAt:sourceData.activeCreatedAt||null,modifiedAt:sourceData.activeModifiedAt||null}}),
-      weight:hash({weights:byId(sourceData.weights),deletedWeights:byId(sourceData.deletedWeights)})
-    };
+    return buildBackupCategorySignatures(sourceData, value => fnv1a64Hex(stableStringify(value)));
   }
 
   function backupPendingCategories() {
@@ -9019,6 +9012,33 @@ function resolveImportedDataMergePolicy(currentData, imported, normalizeStopReas
   return {
     data: validateCompatibleDataFn(result).data,
     duplicates: live.duplicates + del.duplicates + weights.duplicates + delWeights.duplicates
+  };
+}
+// Pure category-specific backup signature construction.
+// The caller injects the stable serializer/hash so this policy has no storage or runtime dependencies.
+function buildBackupCategorySignatures(sourceData, hashValue) {
+  if (typeof hashValue !== 'function') throw new TypeError('Backup signature hash function is required');
+  const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => {
+    const left=String(a?.id ?? ''), right=String(b?.id ?? '');
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
+  const hash = value => 'v1:' + hashValue(value);
+  return {
+    fasting:hash({
+      records:byId(sourceData.records),
+      deletedFasts:byId(sourceData.deletedFasts),
+      activeFast:{
+        start:sourceData.activeStart||null,
+        timeZone:sourceData.activeTimeZone||null,
+        goal:sourceData.activeGoalHours??null,
+        createdAt:sourceData.activeCreatedAt||null,
+        modifiedAt:sourceData.activeModifiedAt||null
+      }
+    }),
+    weight:hash({
+      weights:byId(sourceData.weights),
+      deletedWeights:byId(sourceData.deletedWeights)
+    })
   };
 }
   function openUpdateModal() {
