@@ -465,6 +465,9 @@ notification_preferences = (source / "js" / "43x-notification-preferences-policy
 assert "function normalizeNotificationPreferencesPolicy" in notification_preferences
 notification_state = (source / "js" / "13-notification-state.js").read_text(encoding="utf-8")
 assert "return normalizeNotificationPreferencesPolicy(raw, NOTIFICATION_SNOOZE_MINUTES)" in notification_state
+bootstrap = (source / "js" / "00-bootstrap-and-preferences.js").read_text(encoding="utf-8")
+assert "const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080])" in bootstrap
+assert "const NOTIFICATION_SNOOZE_MINUTES" not in notification_state
 assert "function normalizeNotificationPreferences(raw)" in notification_state
 assert "function normalizeNotificationPreferencesPolicy" not in notification_state
 
