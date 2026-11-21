@@ -20,14 +20,14 @@ const candidate = {
 };
 const before = JSON.stringify(candidate);
 const range = resolve(candidate, parseDate);
-assert.deepEqual(range.map(d => d.toISOString()), ['2026-08-05T06:00:00.000Z','2026-11-20T07:30:00.000Z'],
+assert.deepEqual(Array.from(range, d => d.toISOString()), ['2026-08-05T06:00:00.000Z','2026-11-20T07:30:00.000Z'],
   'all live/deleted fasting and weight dates must contribute to the range');
 assert.equal(JSON.stringify(candidate), before, 'date-range selection must not mutate its input');
 assert.deepEqual(resolve({records:[{start:'invalid',end:null}],deletedFasts:[],weights:[],deletedWeights:[]},parseDate), null,
   'invalid-only candidates must produce no range');
 assert.deepEqual(resolve({records:[],deletedFasts:[],weights:[],deletedWeights:[]},parseDate), null,
   'empty candidates must produce no range');
-assert.deepEqual(resolve({weights:[{when:'2026-11-21T00:00:00Z'}]},parseDate).map(d=>d.toISOString()),
+assert.deepEqual(Array.from(resolve({weights:[{when:'2026-11-21T00:00:00Z'}]},parseDate),d=>d.toISOString()),
   ['2026-11-21T00:00:00.000Z','2026-11-21T00:00:00.000Z'], 'a single valid date must be both bounds');
 assert.equal(resolve(null,parseDate), null);
 assert.equal(resolve(candidate,null), null);
