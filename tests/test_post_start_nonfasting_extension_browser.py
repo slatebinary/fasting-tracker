@@ -67,7 +67,16 @@ with sync_playwright() as p:
     page.locator("#extendNonFastingModal").wait_for(state="visible", timeout=5000)
     page.locator("#extendNonFastingAmount").select_option("30")
     page.locator("#extendNonFastingConfirm").click()
-    page.locator("#extendNonFastingModal").wait_for(state="hidden", timeout=10000)
+    try:
+        page.locator("#extendNonFastingModal").wait_for(state="hidden", timeout=10000)
+    except Exception:
+        print("DEBUG extension modal remained open:",
+              {"amount": page.locator("#extendNonFastingAmount").input_value(),
+               "preview": page.locator("#extendNonFastingPreview").inner_text(),
+               "status": page.locator("#statusText").inner_text(),
+               "recovery": page.locator("#recoveryBanner").is_visible(),
+               "errors": errors})
+        raise
     page.wait_for_function(
         "document.querySelector('#statusText')?.textContent.startsWith('Scheduled to start')",
         timeout=10000,
