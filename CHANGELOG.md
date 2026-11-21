@@ -1,3 +1,9 @@
+## v1.20.39 — 2026-11-21
+
+- Move online/offline, service-worker, storage, visibility, page lifecycle and resize listeners into a dedicated application lifecycle module.
+- Move recurring fasting timer, notification, backup-status and startup scheduling tasks into the same module, preserving their execution order after initial UI setup.
+- Add app-shell boundary regression coverage. No changes to persistence, timer calculations, notification rules, backup formats or user data.
+
 ## v1.20.38 — 2026-11-21
 
 - Extract Weight chart point-spacing and visible-window calculations into pure policies shared by rendering and navigation.
