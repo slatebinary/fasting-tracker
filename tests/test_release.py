@@ -485,12 +485,13 @@ ok('calendarNumericLegend' in index and all(label in index for label in ['0h','1
 # Execute the actual v1 compatibility/validation functions against data shapes that
 # previously could cause a false Recovery mode. Core timestamp corruption must still fail.
 try:
-    compat_names=['pad','normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','dayKey','dayKeyFast','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','normalizeDeletedWeight','normalizeStopReason','normalizeFastEditAuditEntry','normalizeFastEditHistory','migrateData','normalizeRecord','normalizeDeletedFast','normalizeNotificationPreferences','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
+    compat_names=['pad','normalizeLanguage','normalizeAppearance','normalizeIconChoice','validDate','numberSymbols','parseLocalizedNumber','currentTimeZone','isValidTimeZone','normalizeTimeZone','zonedParts','timeZoneOffsetMs','dayKey','dayKeyFast','normalizeAuditTimestamp','makeId','sanitizeGoal','sanitizeWeightKg','normalizeWeightUnit','normalizeWeightEntry','normalizeDeletedWeight','normalizeStopReason','normalizeFastEditAuditEntry','normalizeFastEditHistory','migrateData','normalizeRecord','normalizeDeletedFast','normalizeNotificationPreferencesPolicy','normalizeNotificationPreferences','normalizeData','prepareCompatibleData','validateImportedData','validateCompatibleData']
     compat_funcs='\n'.join(extract_func(n) for n in compat_names)
     compat_test=r'''
 const fs=require('fs'),vm=require('vm'); const window={}; vm.runInNewContext(fs.readFileSync('js/fasting-time.js','utf8'),{window});
 const DATA_VERSION=1, SUPPORTED_LANGUAGES=['en','bg','es'];
 const FUTURE_TOLERANCE_MS=60*1000, MAX_SAFE_GOAL_HOURS=2_000_000_000;
+const NOTIFICATION_SNOOZE_MINUTES=Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080]);
 const MAX_IMPORT_FASTS=100000, MAX_IMPORT_DELETED_FASTS=100000, MAX_IMPORT_WEIGHTS=100000, MAX_FAST_EDIT_AUDIT=100;
 const numberSymbolsCache=new Map(), timeZoneValidityCache=new Map(), zonedFormatterCache=new Map();
 function currentLocale(){return 'en-US'}

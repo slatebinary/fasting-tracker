@@ -1,3 +1,9 @@
+## v1.20.40 — 2026-11-21
+
+- Extract notification preference normalization into a pure policy helper, preserving strict boolean defaults, daily/weekly cadence selection and the established snooze-duration allowlist.
+- Add deterministic coverage for malformed input, defaults, every supported snooze duration, invalid values and input immutability.
+- No changes to notification delivery, stored preference keys, runtime state, or user data.
+
 ## v1.20.39 — 2026-11-21
 
 - Move online/offline, service-worker, storage, visibility, page lifecycle and resize listeners into a dedicated application lifecycle module.
