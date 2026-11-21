@@ -1,3 +1,9 @@
+## v1.20.38 — 2026-11-21
+
+- Extract Weight chart point-spacing and visible-window calculations into pure policies shared by rendering and navigation.
+- Preserve the existing 30-point spacing threshold, 10–22 px dense-series spacing bounds, 16 px chart inset and two-point render overscan.
+- Add deterministic coverage across mobile/desktop widths, short and lifetime-sized histories, scroll positions and empty inputs. No chart data, stored records or backup changes.
+
 ## v1.20.37 — 2026-11-21
 
 - Extract import-preview date-range calculation into a pure policy helper; retain date parsing and preview orchestration in the existing import adapter.
