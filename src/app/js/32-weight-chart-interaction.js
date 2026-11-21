@@ -58,12 +58,8 @@
     drawWeightChartYAxis(minV,maxV);
 
     const top=18,bottom=38,left=16,right=14,plotW=Math.max(1,viewportW-left-right),h=cssH-top-bottom;
-    const dailySpacing=buckets.length<=30
-      ? Math.max(1,plotW/Math.max(1,buckets.length-1))
-      : Math.max(10,Math.min(22,plotW/29));
-    // Every non-daily mode is a rolling series sampled on actual measurement
-    // dates. Keep the same dense, scrollable navigation model as Daily.
-    const pointSpacing=dailySpacing;
+    // Keep point spacing identical across rendering and chart navigation.
+    const pointSpacing=weightChartPointSpacingPolicy(buckets.length,viewportW);
     const virtualPlotW=Math.max(plotW,(buckets.length-1)*pointSpacing);
     const trackW=Math.ceil(left+virtualPlotW+right);
     track.style.width=`${Math.max(viewportW,trackW)}px`;
@@ -83,8 +79,8 @@
     [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();});
     if(target!=null){const y=yFor(target);ctx.save();ctx.strokeStyle=good;ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();ctx.restore();}
 
-    const firstVisible=Math.max(0,Math.floor((scrollX-left)/Math.max(1,pointSpacing))-2);
-    const lastVisible=Math.min(buckets.length-1,Math.ceil((scrollX+viewportW-left)/Math.max(1,pointSpacing))+2);
+    const visibleRange=weightChartVisibleRangePolicy(buckets.length,viewportW,scrollX,pointSpacing);
+    const firstVisible=visibleRange.first,lastVisible=visibleRange.last;
     ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
     let pathOpen=false;
     ctx.beginPath();
@@ -176,7 +172,7 @@
   }
   function weightChartPointSpacing(){
     const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
-    return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
+    return weightChartPointSpacingPolicy(buckets.length,viewportW);
   }
   function syncWeightChartNavigator(){
     const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
