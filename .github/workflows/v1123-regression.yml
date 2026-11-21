@@ -43,6 +43,7 @@ on:
       - refactor/v1.20.37-backup-date-range-policy
       - refactor/v1.20.38-weight-chart-layout-policy
       - refactor/v1.20.40-notification-preferences-policy
+      - refactor/v1.20.41-notification-snooze-category-policy
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -92,6 +93,7 @@ jobs:
           node tests/test_weight_week_streak_policy.cjs
           node tests/test_notification_detail_normalization_policy.cjs
           node tests/test_notification_preferences_policy.cjs
+          node tests/test_notification_snooze_category_policy.cjs
           node tests/test_notification_snooze_restoration_policy.cjs
           node tests/test_storage_pressure_policy.cjs
           node tests/test_import_merge_policy.cjs
