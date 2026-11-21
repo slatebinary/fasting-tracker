@@ -1,16 +1,5 @@
   function normalizeNotificationPreferences(raw) {
-    const value = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-    return {
-      enabled: value.enabled === true,
-      targetReached: value.targetReached !== false,
-      backupDue: value.backupDue !== false,
-      longFastSafety: value.longFastSafety !== false,
-      weighIn: value.weighIn === true,
-      weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
-      cycleComplete: value.cycleComplete === true,
-      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 60,
-      fastingSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.fastingSnoozeMinutes)) ? Number(value.fastingSnoozeMinutes) : 60
-    };
+    return normalizeNotificationPreferencesPolicy(raw, NOTIFICATION_SNOOZE_MINUTES);
   }
 
   function loadNotificationRuntimeState() {
