@@ -1,3 +1,10 @@
+## v1.21.0 — 2026-11-21
+
+- Add a post-start **Extend non-fasting period** action for the first 30 minutes after starting or scheduling a fast, with 5, 10, 15 and 30-minute choices.
+- Move the fasting start forward by the selected duration while preserving the chosen fasting target and original creation timestamp; if the revised start is in the future, convert it into a scheduled start and activate it automatically at the new time.
+- Add English, Bulgarian and Spanish translations, accessible dialog controls, cancellation for a delayed start, and deterministic policy/browser-structure regression coverage.
+- Existing records, backup format and fasting target duration are unchanged.
+
 ## v1.20.41 — 2026-11-21
 
 - Extract notification snooze-category classification into a pure policy helper, preserving the existing mapping of weigh-in reminders to weight and target/safety/cycle reminders to fasting.
