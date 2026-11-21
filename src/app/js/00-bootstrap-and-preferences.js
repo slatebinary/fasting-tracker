@@ -21,6 +21,7 @@
   const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';
   const NOTIFICATION_STATE_KEY = 'fastingTracker.notificationState';
   const NOTIFICATION_DETAIL_LIMIT = 5;
+  const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080]);
   const NOTIFICATION_DETAIL_TTL_MS = 14 * 24 * 60 * 60 * 1000;
   const DATA_VERSION = 1;
   // Bump when the daily-total cache calculation or storage semantics change.
