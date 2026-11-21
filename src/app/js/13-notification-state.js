@@ -40,8 +40,7 @@
 
 
   function notificationSnoozeCategory(kind) {
-    if (kind === 'weigh-in') return 'weight';
-    return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
+    return notificationSnoozeCategoryPolicy(kind);
   }
   function notificationSnoozeDefaultMinutes(kind) {
     const prefs = notificationPrefs();
