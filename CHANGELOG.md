@@ -1,3 +1,9 @@
+## v1.21.5 — 2026-11-21
+
+- Extract latest Weight-record selection into a pure policy helper; notification scheduling continues to call the same adapter function.
+- Preserve newest-valid-timestamp selection, first-record tie handling, invalid-date exclusion and the empty-history result.
+- Add deterministic regression coverage. No changes to reminder cadence, notification delivery, stored records or backup formats.
+
 ## v1.21.4 — 2026-11-21
 
 - Extract notification-detail dismissal into a pure policy helper; persistence and rendering remain in the existing notification state adapter.
