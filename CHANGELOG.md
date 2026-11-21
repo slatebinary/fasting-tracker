@@ -1,3 +1,9 @@
+## v1.20.36 — 2026-11-21
+
+- Extract external-backup manifest record-count validation into a pure policy helper; envelope checksum verification and import handling remain in the existing adapter.
+- Preserve active-fast presence checks, all four live/deleted fasting and weight collection counts, numeric-string compatibility and tolerance of unrelated manifest fields.
+- Add deterministic tests for every count boundary, missing/null collections, invalid envelopes and input immutability. No backup format, persisted-data or restore behavior changes.
+
 ## v1.20.35 — 2026-11-21
 
 - Extract fasting and weight external-backup category signature construction into a pure helper; retain stable serialization and SHA-256-independent FNV signature generation in the existing adapter.

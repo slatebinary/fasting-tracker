@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.35",
+  "version": "1.20.36",
   "released": "2026-11-21",
-  "notes": "Extract deterministic category-specific external-backup signature construction into a pure helper",
+  "notes": "Extract external-backup manifest record-count validation into a pure policy helper",
   "entry": "./index.html",
   "shell": [
     "./",
