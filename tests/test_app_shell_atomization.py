@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 68, f"Expected sixty-eight ordered app fragments, found {len(parts)}"
+assert len(parts) == 69, f"Expected sixty-nine ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 storage_pressure = (source / "js" / "43r-storage-pressure-policy.js").read_text(encoding="utf-8")
 assert "function resolveStoragePressurePolicy" in storage_pressure
@@ -434,3 +434,9 @@ backup_export = (source / "js" / "40-backup-export.js").read_text(encoding="utf-
 assert "return buildBackupCategorySignatures(sourceData, value => fnv1a64Hex(stableStringify(value)))" in backup_export
 assert "function backupCategorySignatures" in backup_export
 assert "function buildBackupCategorySignatures" not in backup_export
+
+# External-backup manifest record counts are checked by a pure policy.
+backup_manifest = (source / "js" / "43u-backup-manifest-policy.js").read_text(encoding="utf-8")
+assert "function backupManifestMatchesPolicy" in backup_manifest
+assert "return backupManifestMatchesPolicy(raw)" in backup_export
+assert "function backupManifestMatchesPolicy" not in backup_export
