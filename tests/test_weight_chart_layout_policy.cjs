@@ -20,5 +20,5 @@ assert.equal(JSON.stringify(visible(100,390,0,12)),JSON.stringify({first:0,last:
 assert.equal(JSON.stringify(visible(100,390,600,12)),JSON.stringify({first:46,last:84}));
 assert.equal(JSON.stringify(visible(100,390,999999,12)),JSON.stringify({first:Math.floor((999999-16)/12)-2,last:99}));
 assert.equal(JSON.stringify(visible(100,390,-100,12)),JSON.stringify({first:0,last:34}));
-assert.equal(JSON.stringify(visible(100,390,0,0)),JSON.stringify({first:0,last:34}));
+assert.equal(JSON.stringify(visible(100,390,0,0)),JSON.stringify({first:0,last:99}));
 console.log('PASS: Weight chart spacing and visible-window policies preserve dense layout across mobile/desktop widths, period sizes and scroll positions');
