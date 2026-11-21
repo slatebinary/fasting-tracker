@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.3" />
+  <meta name="ft-app-version" content="1.21.4" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.3';
+  const APP_VERSION = '1.21.4';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -3542,7 +3542,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function dismissNotificationDetail(id) {
-    notificationRuntimeState.details = notificationDetailItems().filter(item => item.id !== id);
+    notificationRuntimeState.details = dismissNotificationDetailPolicy(id, notificationDetailItems());
     saveNotificationRuntimeState(); renderNotificationDetails();
   }
 
@@ -9316,6 +9316,11 @@ function recordNotificationDetailPolicy(id, kind, screen, createdAt, params, act
     details: [item, ...details.filter(entry => entry?.id !== key)].slice(0, cap),
     snoozedDetails: queued.filter(entry => entry?.id !== key)
   };
+}
+// Pure policy for dismissing one in-app notification detail by its stable ID.
+function dismissNotificationDetailPolicy(id, active) {
+  const details = Array.isArray(active) ? active : [];
+  return details.filter(item => item?.id !== id);
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);

@@ -96,9 +96,9 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "65656182dde93a8abda1f208f8298050ec03b5bd69a04e7e61656fb33386b506",
-    "./index.html": "65656182dde93a8abda1f208f8298050ec03b5bd69a04e7e61656fb33386b506",
-    "./changelog.html": "ac04b19c910d319611ffb4d71e0ff82ec22d1cde2ddd0ed9c01e63f62c26e31e",
+    "./": "cfd4f4cf422475afbe2f2eb20fd6866a2486c4369a495cf898e8100708d329cb",
+    "./index.html": "cfd4f4cf422475afbe2f2eb20fd6866a2486c4369a495cf898e8100708d329cb",
+    "./changelog.html": "f91270ef6f8cedf0e47c11149f9d68706cc3c3f739d5a2bb9cbb7cc3e21ca930",
     "./i18n/en.js": "183f2511c381cf4b324d9b08c3b06741c74ffe74e114550ab4c7382f34904bc9",
     "./i18n/bg.js": "e1bad6ff32863c7810e704728e3c4929d4b156eaf15c6b9a090532cd712173e7",
     "./i18n/es.js": "918c28e5cbd52160a21dd33fcb941beac0b62d15e62169f0077f9a2239507366",
@@ -110,10 +110,10 @@
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "03ebab2d847660b3d9d257415d2efcd5175e705f6d459d128c0aefa9f5fc92b3",
     "./js/release-health.js": "3c561d7a4326cf161b9c7a17b37913264b72437a0c84819f9cbdc0369b97ba6e",
-    "./privacy.html": "d48ca3eb0c9a61f54ad8c2a78197f7b7609e44e778ccc36ddf1c0e236c6adfde",
-    "./about.html": "726fc6c11ccf3c56e499c5e2fe07d42c994b9618c1d0d9c68aeb39f74ddc991c",
-    "./branding.html": "c3e654e5d78417593fa844b68048f5843d40572750bfb41c0b57972f111c95a5",
-    "./license.html": "407bf0f75cf5fe19f99748f19b67cf1461a163ab303c53207956d55e56a85e1e",
+    "./privacy.html": "d4b3f9da1c24e5f87c0fbf419ff3a3abd427133b0a9511428ba742e5180671b0",
+    "./about.html": "aed513e4b2ba1f5445f6c535b1b096fb1cbb87a81cdbd77da57838c8c49dbc19",
+    "./branding.html": "de37990732c3b200687b5b00ab6ef2a97c6ea0bbb623220036ec9387fe14ccd7",
+    "./license.html": "0c1111e565be00606a761d8c51ef00bdc938e5600a07d424428bd6465cab666a",
     "./404.html": "afa92afe8dd7cd8f4e3878b22f27a9fd89f469e5d01da9b8cb7bfc94898a1f7d",
     "./en/": "43a8e58e8c09ebab103418781c6f32bfb2b837870c62049368258727ae4d29ed",
     "./bg/": "ea495c81b191e3ad009de3578666dbd59415e637320922685a45af22b5de21ec",
@@ -181,6 +181,7 @@
     "./src/app/js/43z-post-start-extension-policy.js": "52944d6269d5faf937e99e1abd3865c0a901d5692e71e1380ceafac39f642787",
     "./src/app/js/43zz-semantic-version-policy.js": "59ae699daf078d023703c9af35957636edc7fd5698ea1b0e6d8f5ed0af15b844",
     "./src/app/js/43za-notification-snooze-scheduling-policy.js": "8f1d00673c60bd57c090535e90c1a53b001848d7d11dca655b1f5c2bb6c7003e",
-    "./src/app/js/43zb-notification-detail-recording-policy.js": "ee1fb7b355170f5fd1b5a86095cfac9673f2541369f842dd1acea5ad408e2fea"
+    "./src/app/js/43zb-notification-detail-recording-policy.js": "ee1fb7b355170f5fd1b5a86095cfac9673f2541369f842dd1acea5ad408e2fea",
+    "./src/app/js/43zc-notification-detail-dismissal-policy.js": "a047dcb235a5aaf4b0422198b099e06c468555d47251ab6229689adb775e03dd"
   }
 }
