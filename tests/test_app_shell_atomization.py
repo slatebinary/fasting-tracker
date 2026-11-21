@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 72, f"Expected seventy-two ordered app fragments, found {len(parts)}"
+assert len(parts) == 73, f"Expected seventy-three ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -459,6 +459,15 @@ backup_export = (source / "js" / "40-backup-export.js").read_text(encoding="utf-
 assert "return buildBackupCategorySignatures(sourceData, value => fnv1a64Hex(stableStringify(value)))" in backup_export
 assert "function backupCategorySignatures" in backup_export
 assert "function buildBackupCategorySignatures" not in backup_export
+
+# Notification preference defaults, strict booleans and snooze bounds are owned by a pure policy.
+notification_preferences = (source / "js" / "43x-notification-preferences-policy.js").read_text(encoding="utf-8")
+assert "function normalizeNotificationPreferencesPolicy" in notification_preferences
+notification_state = (source / "js" / "13-notification-state.js").read_text(encoding="utf-8")
+assert "return normalizeNotificationPreferencesPolicy(raw, NOTIFICATION_SNOOZE_MINUTES)" in notification_state
+assert "function normalizeNotificationPreferences(raw)" in notification_state
+assert "function normalizeNotificationPreferencesPolicy" not in notification_state
+
 
 # External-backup manifest record counts are checked by a pure policy.
 backup_manifest = (source / "js" / "43u-backup-manifest-policy.js").read_text(encoding="utf-8")
