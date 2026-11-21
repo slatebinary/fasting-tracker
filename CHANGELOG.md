@@ -1,3 +1,9 @@
+## v1.21.4 — 2026-11-21
+
+- Extract notification-detail dismissal into a pure policy helper; persistence and rendering remain in the existing notification state adapter.
+- Preserve strict stable-ID matching, removal of all matching duplicate IDs, and unchanged handling of unrelated details.
+- Add deterministic tests for valid and unknown IDs, duplicate IDs, invalid collections and input immutability. No notification delivery, storage-schema or user-data format changes.
+
 ## v1.21.3 — 2026-11-21
 
 - Extract notification-detail recording and matching snooze cleanup into a pure policy helper; timestamp creation, persistence and rendering remain in the existing adapter.
