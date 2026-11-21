@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.20.41",
+  "version": "1.21.0",
   "released": "2026-11-21",
-  "notes": "Extract notification snooze category classification into a pure policy helper with deterministic regression coverage",
+  "notes": "Add a 30-minute post-start option to extend the non-fasting period while preserving the selected fasting target",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -86,7 +86,8 @@
     "./icons/highcontrast/icon-512.png",
     "./icons/colorblind/icon-192.png",
     "./icons/colorblind/icon-512.png",
-    "./src/app/js/43y-notification-snooze-category-policy.js"
+    "./src/app/js/43y-notification-snooze-category-policy.js",
+    "./src/app/js/43z-post-start-extension-policy.js"
   ],
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
