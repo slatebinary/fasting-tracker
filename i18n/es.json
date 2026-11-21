@@ -1180,7 +1180,7 @@
   "weight.allTimeHighest": "Máximo histórico",
   "fasting.extendNonFasting": "Ampliar el periodo sin ayuno",
   "fasting.extendNonFastingTitle": "Ampliar el periodo sin ayuno",
-  "fasting.extendNonFastingHelp": "Si pulsaste Iniciar ayuno antes de terminar de comer, retrasa el inicio del ayuno. Esta opción está disponible durante los 30 minutos posteriores al inicio original. El objetivo de ayuno no cambia.",
+  "fasting.extendNonFastingHelp": "Añade 5, 10, 15 o 30 minutos a la hora de inicio original del ayuno. Esta opción está disponible durante los 30 minutos posteriores al inicio. La duración objetivo del ayuno no cambia.",
   "fasting.extendNonFastingAmount": "Tiempo adicional",
   "fasting.extendNonFastingPreview": "Nuevo inicio del ayuno: {date}",
   "fasting.extendNonFastingConfirm": "Aplicar ampliación",
