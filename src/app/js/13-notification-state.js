@@ -53,14 +53,13 @@
     return `${formatNumber(count)} ${t(pluralKey('unit.day', count))}`;
   }
   function snoozeNotificationDetail(id, durationMinutes) {
-    const duration = Number(durationMinutes);
-    if (!NOTIFICATION_SNOOZE_MINUTES.includes(duration)) return false;
-    const item = notificationDetailItems().find(entry => entry.id === id);
-    if (!item || !notificationSnoozeCategory(item.kind)) return false;
-    const until = Date.now() + duration * 60000;
-    notificationRuntimeState.details = notificationDetailItems().filter(entry => entry.id !== id);
-    const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
-    notificationRuntimeState.snoozedDetails = [{...item, snoozedUntil:new Date(until).toISOString()}, ...pending.filter(entry => entry?.id !== id)].slice(0, NOTIFICATION_DETAIL_LIMIT);
+    const result = scheduleNotificationDetailSnoozePolicy(
+      id, durationMinutes, notificationDetailItems(), notificationRuntimeState.snoozedDetails,
+      Date.now(), NOTIFICATION_SNOOZE_MINUTES, notificationSnoozeCategory, NOTIFICATION_DETAIL_LIMIT
+    );
+    if (!result) return false;
+    notificationRuntimeState.details = result.details;
+    notificationRuntimeState.snoozedDetails = result.snoozedDetails;
     saveNotificationRuntimeState();
     renderNotificationDetails();
     return true;

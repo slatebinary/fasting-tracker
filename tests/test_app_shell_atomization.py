@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 76, f"Expected seventy-six ordered app fragments, found {len(parts)}"
+assert len(parts) == 77, f"Expected seventy-seven ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -484,6 +484,11 @@ notification_snooze_category = (source / "js" / "43y-notification-snooze-categor
 assert "function notificationSnoozeCategoryPolicy" in notification_snooze_category
 assert "return notificationSnoozeCategoryPolicy(kind)" in notification_state
 assert "function notificationSnoozeCategoryPolicy" not in notification_state
+
+notification_snooze_schedule = (source / "js" / "43za-notification-snooze-scheduling-policy.js").read_text(encoding="utf-8")
+assert "function scheduleNotificationDetailSnoozePolicy" in notification_snooze_schedule
+assert "scheduleNotificationDetailSnoozePolicy(" in notification_state
+assert "const until = Date.now() + duration * 60000" not in notification_state
 
 
 # External-backup manifest record counts are checked by a pure policy.
