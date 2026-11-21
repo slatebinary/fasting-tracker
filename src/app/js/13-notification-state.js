@@ -38,7 +38,7 @@
     return clean;
   }
 
-  const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080]);
+
   function notificationSnoozeCategory(kind) {
     if (kind === 'weigh-in') return 'weight';
     return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
