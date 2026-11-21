@@ -44,6 +44,7 @@ on:
       - refactor/v1.20.38-weight-chart-layout-policy
       - refactor/v1.20.40-notification-preferences-policy
       - refactor/v1.20.41-notification-snooze-category-policy
+      - feat/v1.21.0-extend-nonfasting-period
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -85,11 +86,13 @@ jobs:
           python3 tests/test_changelog_unique_versions.py
           python3 tests/test_palette_hint_initialization.py
           python3 tests/test_scheduled_fast_start.py
+          python3 tests/test_post_start_nonfasting_extension.py
           python3 tests/test_v1190_edit_fast_presets.py
           node tests/test_stats_month_comparison_policy.cjs
           node tests/test_stats_weekly_summary_builder.cjs
           node tests/test_backup_freshness_policy.cjs
           node tests/test_next_fast_cycle_policy.cjs
+          node tests/test_post_start_nonfasting_extension_policy.cjs
           node tests/test_weight_week_streak_policy.cjs
           node tests/test_notification_detail_normalization_policy.cjs
           node tests/test_notification_preferences_policy.cjs
@@ -157,6 +160,7 @@ jobs:
           python3 tests/test_v11773_timeline_selection_persistence.py
           python3 tests/test_fasting_encouragement_v1179.py
           python3 tests/test_v1190_edit_fast_browser.py
+          python3 tests/test_post_start_nonfasting_extension_browser.py
       - name: Execute statistics performance regression
         run: python3 tests/test_performance.py
       - name: Execute extended migration, accessibility and lifetime performance regressions

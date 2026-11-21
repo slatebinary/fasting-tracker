@@ -97,7 +97,7 @@
   function updateScienceCard() {
     const stages = [...document.querySelectorAll('.scienceStage')];
     stages.forEach(x => x.classList.remove('current'));
-    if (!data.activeStart) {
+    if (!data.activeStart || Date.now() < new Date(data.activeStart).getTime()) {
       el('scienceWindow').textContent = t('science.notFasting');
       el('scienceEvidence').textContent = t('science.limited');
       el('scienceText').textContent = t('science.idle');
@@ -121,7 +121,7 @@
       data.activeStart = scheduled.at;
       data.activeGoalHours = scheduled.goalHours;
       data.activeTimeZone = scheduled.timeZone;
-      data.activeCreatedAt = new Date().toISOString();
+      data.activeCreatedAt = scheduled.createdAt || new Date().toISOString();
       data.activeModifiedAt = null;
       clearShorterGoalState();
       save();
@@ -135,22 +135,28 @@
       updateNonFastingPeriodTimer();
       el('nextFastCard').hidden = true;
       const startMs = new Date(data.activeStart).getTime();
-      const elapsed = Math.max(0, Date.now() - startMs);
+      const nowMs = Date.now();
+      const pendingStart = startMs > nowMs;
+      const remainingToStart = Math.max(0, startMs - nowMs);
+      const elapsed = Math.max(0, nowMs - startMs);
       const targetMs = goalMs(targetHours);
       const pct = targetMs > 0 ? (elapsed / targetMs) * 100 : 0;
-      timer.textContent = exactDuration(elapsed);
-      friendlyTimer.textContent = friendlyDuration(elapsed);
-      statusText.textContent = t('fasting.started', {date: localDateTimeLabel(data.activeStart, data.activeTimeZone)});
-      toggleFast.textContent = t('fasting.stop');
+      timer.textContent = exactDuration(pendingStart ? remainingToStart : elapsed);
+      friendlyTimer.textContent = friendlyDuration(pendingStart ? remainingToStart : elapsed);
+      statusText.textContent = pendingStart
+        ? t('fasting.startDelayedFor', {date: localDateTimeLabel(data.activeStart, data.activeTimeZone)})
+        : t('fasting.started', {date: localDateTimeLabel(data.activeStart, data.activeTimeZone)});
+      toggleFast.textContent = pendingStart ? t('fasting.cancelDelayedStart') : t('fasting.stop');
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
-      el('editActiveFastBtn').hidden = false;
+      el('editActiveFastBtn').hidden = pendingStart;
+      el('extendNonFastingBtn').hidden = !!recoveryMode || !resolvePostStartExtensionWindow(data.activeCreatedAt, nowMs).eligible;
       el('fastTimingBtn').hidden = true;
       const visualPct = Math.min(100, Math.max(0, pct));
       fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
       fastProgressTrack.classList.toggle('reached', pct >= 100);
       fastProgressTrack.setAttribute('aria-valuenow', String(Math.round(visualPct)));
-      fastProgressTrack.setAttribute('aria-valuetext', pct >= 100 ? t('fasting.targetReached', {duration:friendlyDuration(Math.max(0, elapsed - targetMs))}) : t('fasting.progress', {pct:formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration:friendlyDuration(Math.max(0, targetMs - elapsed))}));
+      fastProgressTrack.setAttribute('aria-valuetext', pendingStart ? t('fasting.scheduledCountdown', {duration:friendlyDuration(remainingToStart)}) : pct >= 100 ? t('fasting.targetReached', {duration:friendlyDuration(Math.max(0, elapsed - targetMs))}) : t('fasting.progress', {pct:formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration:friendlyDuration(Math.max(0, targetMs - elapsed))}));
       const targetMoment = el('targetMoment');
       const targetAt = safeTargetDate(startMs, targetMs);
       targetMoment.hidden = !targetAt;
@@ -160,7 +166,9 @@
 
       const encouragement = el('fastingEncouragement');
       const shorterState = shorterGoalState();
-      if (shorterState?.start === data.activeStart && shorterState.checkpointAt > 0) {
+      if (pendingStart) {
+        encouragement.hidden = true;
+      } else if (shorterState?.start === data.activeStart && shorterState.checkpointAt > 0) {
         encouragement.hidden = false;
         encouragement.textContent = Date.now() < shorterState.checkpointAt
           ? t('fasting.shorterCheckpoint', {duration:friendlyDuration(shorterState.checkpointAt - Date.now())})
@@ -176,7 +184,10 @@
         encouragement.textContent = t(encouragementKey, {duration:friendlyDuration(remainingForEncouragement)});
       }
 
-      if (elapsed >= targetMs) {
+      if (pendingStart) {
+        progressDetail.textContent = t('fasting.scheduledCountdown', {duration:friendlyDuration(remainingToStart)});
+        progressDetail.classList.remove('good');
+      } else if (elapsed >= targetMs) {
         const beyond = elapsed - targetMs;
         progressDetail.textContent = t('fasting.targetReached', {duration: friendlyDuration(beyond)});
         progressDetail.classList.add('good');
@@ -195,6 +206,7 @@
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
+      el('extendNonFastingBtn').hidden = !!recoveryMode || !resolvePostStartExtensionWindow(data.scheduledStart.createdAt, Date.now()).eligible;
       el('fastTimingBtn').hidden = true;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
@@ -213,6 +225,7 @@
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
       el('editActiveFastBtn').hidden = true;
+      el('extendNonFastingBtn').hidden = true;
       el('fastTimingBtn').hidden = false;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
@@ -243,6 +256,28 @@
     data.activeModifiedAt = null;
     if (!save()) { renderAll(); return; }
     renderAll();
+  }
+
+  function cancelDelayedFastStart() {
+    if (!data.activeStart || Date.now() >= new Date(data.activeStart).getTime()) return false;
+    const previous = {
+      activeStart: data.activeStart,
+      activeGoalHours: data.activeGoalHours,
+      activeTimeZone: data.activeTimeZone,
+      activeCreatedAt: data.activeCreatedAt,
+      activeModifiedAt: data.activeModifiedAt,
+      scheduledStart: data.scheduledStart
+    };
+    data.activeStart = null;
+    data.activeGoalHours = null;
+    data.activeTimeZone = null;
+    data.activeCreatedAt = null;
+    data.activeModifiedAt = null;
+    data.scheduledStart = null;
+    if (!save()) { Object.assign(data, previous); renderAll(); return false; }
+    clearShorterGoalState();
+    renderAll();
+    return true;
   }
 
   function clearStopUndo({ hide = true } = {}) {
@@ -474,7 +509,8 @@
     fastActionLocked = true;
     toggleFast.disabled = true;
     try {
-      if (data.activeStart) stopFast();
+      if (data.activeStart && Date.now() < new Date(data.activeStart).getTime()) cancelDelayedFastStart();
+      else if (data.activeStart) stopFast();
       else if (data.scheduledStart) { data.scheduledStart = null; if (!save()) { renderAll(); return; } renderAll(); }
       else { clearStopUndo(); startFast(); }
     } finally {

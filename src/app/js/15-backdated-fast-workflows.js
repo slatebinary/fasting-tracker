@@ -210,6 +210,94 @@
     renderAll();
   }
 
+  function postStartExtensionContext() {
+    if (data.activeStart) return {
+      mode: 'active',
+      startAt: data.activeStart,
+      createdAt: data.activeCreatedAt,
+      goalHours: activeTargetHours(),
+      timeZone: data.activeTimeZone || currentTimeZone()
+    };
+    if (data.scheduledStart) return {
+      mode: 'scheduled',
+      startAt: data.scheduledStart.at,
+      createdAt: data.scheduledStart.createdAt,
+      goalHours: data.scheduledStart.goalHours,
+      timeZone: data.scheduledStart.timeZone || currentTimeZone()
+    };
+    return null;
+  }
+
+  function updateExtendNonFastingPreview() {
+    const context = postStartExtensionContext();
+    const minutes = Number(el('extendNonFastingAmount').value);
+    const nextStart = context && resolvePostStartExtendedTimestamp(context.startAt, minutes);
+    el('extendNonFastingPreview').textContent = nextStart == null
+      ? ''
+      : t('fasting.extendNonFastingPreview', {date:localDateTimeLabel(new Date(nextStart).toISOString(), context.timeZone)});
+  }
+
+  function openExtendNonFastingModal() {
+    const context = postStartExtensionContext();
+    if (!context || recoveryMode || !resolvePostStartExtensionWindow(context.createdAt, Date.now()).eligible) return;
+    el('extendNonFastingAmount').value = '10';
+    updateExtendNonFastingPreview();
+    showModal('extendNonFastingModal', 'extendNonFastingAmount');
+  }
+
+  function confirmExtendNonFastingPeriod() {
+    const context = postStartExtensionContext();
+    const nowMs = Date.now();
+    const minutes = Number(el('extendNonFastingAmount').value);
+    if (!context || recoveryMode || !resolvePostStartExtensionWindow(context.createdAt, nowMs).eligible) {
+      hideModal('extendNonFastingModal');
+      renderAll();
+      return;
+    }
+    const nextStartMs = resolvePostStartExtendedTimestamp(context.startAt, minutes);
+    if (nextStartMs == null) { el('extendNonFastingAmount').focus(); return; }
+
+    const previous = {
+      activeStart: data.activeStart,
+      activeGoalHours: data.activeGoalHours,
+      activeTimeZone: data.activeTimeZone,
+      activeCreatedAt: data.activeCreatedAt,
+      activeModifiedAt: data.activeModifiedAt,
+      scheduledStart: data.scheduledStart ? {...data.scheduledStart} : null
+    };
+    const nextStart = new Date(nextStartMs).toISOString();
+    const createdAt = context.createdAt || new Date(nowMs).toISOString();
+    if (nextStartMs > nowMs) {
+      data.activeStart = null;
+      data.activeGoalHours = null;
+      data.activeTimeZone = null;
+      data.activeCreatedAt = null;
+      data.activeModifiedAt = null;
+      data.scheduledStart = {
+        at: nextStart,
+        goalHours: context.goalHours,
+        timeZone: context.timeZone,
+        createdAt
+      };
+    } else {
+      data.scheduledStart = null;
+      data.activeStart = nextStart;
+      data.activeGoalHours = context.goalHours;
+      data.activeTimeZone = context.timeZone;
+      data.activeCreatedAt = createdAt;
+      data.activeModifiedAt = context.mode === 'active' ? new Date(nowMs).toISOString() : null;
+    }
+
+    if (!save()) {
+      Object.assign(data, previous);
+      renderAll();
+      return;
+    }
+    clearShorterGoalState();
+    hideModal('extendNonFastingModal');
+    renderAll();
+  }
+
   function adjustBackdateAfterConflicts() {
     if (!backdateConflictRecords.length) return;
     const latest = backdateConflictRecords[backdateConflictRecords.length - 1];

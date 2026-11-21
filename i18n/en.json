@@ -1177,5 +1177,13 @@
   "fasting.nonFastingSince": "Since {date}",
   "fasting.nonFastingHelp": "Elapsed time since the most recently completed fast. This is a tracking reference, not a recommended eating window.",
   "weight.periodHighest": "Period highest",
-  "weight.allTimeHighest": "All-time highest"
+  "weight.allTimeHighest": "All-time highest",
+  "fasting.extendNonFasting": "Extend non-fasting period",
+  "fasting.extendNonFastingTitle": "Extend non-fasting period",
+  "fasting.extendNonFastingHelp": "Add 5, 10, 15 or 30 minutes to the original fasting start. This option is available for 30 minutes after you start. Your fasting target duration stays the same.",
+  "fasting.extendNonFastingAmount": "Add time",
+  "fasting.extendNonFastingPreview": "New fasting start: {date}",
+  "fasting.extendNonFastingConfirm": "Apply extension",
+  "fasting.startDelayedFor": "Fasting will start at {date}",
+  "fasting.cancelDelayedStart": "Cancel delayed start"
 }

@@ -1177,5 +1177,13 @@
   "fasting.nonFastingSince": "Desde {date}",
   "fasting.nonFastingHelp": "Tiempo transcurrido desde el último ayuno completado. Es una referencia de seguimiento, no una ventana de alimentación recomendada.",
   "weight.periodHighest": "Máximo del período",
-  "weight.allTimeHighest": "Máximo histórico"
+  "weight.allTimeHighest": "Máximo histórico",
+  "fasting.extendNonFasting": "Ampliar el periodo sin ayuno",
+  "fasting.extendNonFastingTitle": "Ampliar el periodo sin ayuno",
+  "fasting.extendNonFastingHelp": "Añade 5, 10, 15 o 30 minutos a la hora de inicio original del ayuno. Esta opción está disponible durante los 30 minutos posteriores al inicio. La duración objetivo del ayuno no cambia.",
+  "fasting.extendNonFastingAmount": "Tiempo adicional",
+  "fasting.extendNonFastingPreview": "Nuevo inicio del ayuno: {date}",
+  "fasting.extendNonFastingConfirm": "Aplicar ampliación",
+  "fasting.startDelayedFor": "El ayuno comenzará a las {date}",
+  "fasting.cancelDelayedStart": "Cancelar inicio aplazado"
 }

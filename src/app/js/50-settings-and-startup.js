@@ -102,6 +102,11 @@
   document.querySelectorAll('[data-edit-start-minutes]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartMinutes, 'minutes')));
   document.querySelectorAll('[data-edit-start-hours]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartHours, 'hours')));
   el('editActiveFastModal').addEventListener('click',e=>{if(e.target===el('editActiveFastModal'))hideModal('editActiveFastModal');});
+  bindResponsiveAction(el('extendNonFastingBtn'), openExtendNonFastingModal);
+  el('extendNonFastingAmount').addEventListener('change', updateExtendNonFastingPreview);
+  el('extendNonFastingCancel').addEventListener('click', () => hideModal('extendNonFastingModal'));
+  bindReliableModalAction(el('extendNonFastingConfirm'), confirmExtendNonFastingPeriod);
+  el('extendNonFastingModal').addEventListener('click', e => { if (e.target === el('extendNonFastingModal')) hideModal('extendNonFastingModal'); });
   el('fastTimingCancel').addEventListener('click', () => hideModal('fastTimingModal'));
   el('fastTimingConfirm').addEventListener('click', confirmFastTiming);
   el('fastTimingMode').addEventListener('change', updateFastTimingHint);
