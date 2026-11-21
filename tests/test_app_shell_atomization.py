@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 79, f"Expected seventy-nine ordered app fragments, found {len(parts)}"
+assert len(parts) == 80, f"Expected eighty ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -148,6 +148,12 @@ weight_week_streak = (source / "js" / "43o-weight-week-streak-policy.js").read_t
 assert "function calculateWeightWeekStreak" in weight_week_streak
 assert "function calculateWeightWeekStreak" not in gamification
 assert "calculateWeightWeekStreak(weekKeys,currentWeekKey)" in gamification
+
+latest_weight_policy = (source / "js" / "43zd-latest-weight-record-policy.js").read_text(encoding="utf-8")
+assert "function selectLatestWeightRecordPolicy" in latest_weight_policy
+notification_runtime = (source / "js" / "19-notification-runtime-and-settings.js").read_text(encoding="utf-8")
+assert "function selectLatestWeightRecordPolicy" not in notification_runtime
+assert "return selectLatestWeightRecordPolicy(data.weights)" in notification_runtime
 
 notification_detail_policy = (source / "js" / "43p-notification-detail-normalization-policy.js").read_text(encoding="utf-8")
 notification_state = (source / "js" / "13-notification-state.js").read_text(encoding="utf-8")
