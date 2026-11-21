@@ -1180,7 +1180,7 @@
   "weight.allTimeHighest": "All-time highest",
   "fasting.extendNonFasting": "Extend non-fasting period",
   "fasting.extendNonFastingTitle": "Extend non-fasting period",
-  "fasting.extendNonFastingHelp": "If you pressed Start fasting before you finished eating, move the fasting start later. This option is available for 30 minutes after the original start. Your fasting target stays the same.",
+  "fasting.extendNonFastingHelp": "Add 5, 10, 15 or 30 minutes to the original fasting start. This option is available for 30 minutes after you start. Your fasting target duration stays the same.",
   "fasting.extendNonFastingAmount": "Add time",
   "fasting.extendNonFastingPreview": "New fasting start: {date}",
   "fasting.extendNonFastingConfirm": "Apply extension",
