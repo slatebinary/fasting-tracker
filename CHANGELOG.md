@@ -1,3 +1,9 @@
+## v1.21.3 — 2026-11-21
+
+- Extract notification-detail recording and matching snooze cleanup into a pure policy helper; timestamp creation, persistence and rendering remain in the existing adapter.
+- Preserve duplicate-ID replacement, allowed-screen fallback, newest-first ordering, the existing detail cap and removal of the matching snoozed entry.
+- Add deterministic tests for replacement, queue cleanup, caps, screen fallback and input immutability. No notification delivery, storage-schema or user-data format changes.
+
 ## v1.21.2 — 2026-11-21
 
 - Extract notification-detail snooze scheduling into a pure policy helper; the existing state adapter continues to handle persistence and rendering.
