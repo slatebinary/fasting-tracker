@@ -15,6 +15,13 @@ assert len(parts) == 72, f"Expected seventy-two ordered app fragments, found {le
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
+
+# The shared async application scope remains open through the lifecycle module.
+startup_protection = (source / "js" / "51-startup-storage-protection.js").read_text(encoding="utf-8")
+assert not startup_protection.rstrip().endswith("})();"), "the application scope must remain open through the lifecycle runtime"
+assert lifecycle_runtime.rstrip().endswith("})();"), "the lifecycle runtime must close the shared application scope"
+assert "const versionTransitionSnapshotOK = await initializePersistentStorage();" in (source / "js" / "00-bootstrap-and-preferences.js").read_text(encoding="utf-8")
+
 settings_startup = (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
 for marker in ("window.addEventListener('online'", "window.addEventListener('offline'", "window.addEventListener('storage'", "document.addEventListener('visibilitychange'", "window.addEventListener('pageshow'", "window.addEventListener('pagehide'"):
     assert marker in lifecycle_runtime, f"application lifecycle module is missing {marker}"
