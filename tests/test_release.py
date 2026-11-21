@@ -271,6 +271,12 @@ assert(zonedLocalToDate('2026-03-29T03:30','Europe/Sofia')===null,'spring DST ga
 assert(zonedLocalToDate('2026-10-25T03:30','Europe/Sofia')===null,'autumn DST ambiguity');
 assert(compareVersions('1.0.1','1.0.0')>0,'version compare upgrade');
 assert(compareVersions('1.0.0','1.0.0')===0,'version compare equal');
+assert(compareVersions('1.10.0','1.9.99')>0,'multi-digit version components compare numerically');
+assert(compareVersions('1.21.1','1.21.0')>0,'patch release comparison');
+assert(compareVersions('2.0.0','1.99.99')>0,'major release comparison');
+assert(compareVersions('1.21','1.21.0')===0,'omitted trailing component compares as zero');
+assert(compareVersions('1.21.0.1','1.21.0')>0,'additional numeric component comparison');
+
 const m=new Map();addIntervalToDayMap(m,'2026-09-01T00:00:00Z','2026-09-03T00:00:00Z','UTC');
 console.log([...m.entries()]); assert((m.get('2026-09-01')||0)===86400000 && (m.get('2026-09-02')||0)===86400000,'each complete UTC calendar day must equal exactly 24 hours (no 23h 59m undercount)');
 const exact=new Map(); addIntervalToDayMap(exact,'2026-10-19T00:00:00.000Z','2026-10-22T00:00:00.000Z','UTC');
