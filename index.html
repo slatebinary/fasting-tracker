@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.39" />
+  <meta name="ft-app-version" content="1.20.40" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1956,6 +1956,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const DOC_RETURN_KEY = 'fastingTracker.documentReturnUrl';
   const NOTIFICATION_STATE_KEY = 'fastingTracker.notificationState';
   const NOTIFICATION_DETAIL_LIMIT = 5;
+  const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080]);
   const NOTIFICATION_DETAIL_TTL_MS = 14 * 24 * 60 * 60 * 1000;
   const DATA_VERSION = 1;
   // Bump when the daily-total cache calculation or storage semantics change.
@@ -1971,7 +1972,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.39';
+  const APP_VERSION = '1.20.40';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -3420,18 +3421,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const meta = readAppMeta(); meta.lastAppVersion = APP_VERSION; meta.seenAt = new Date().toISOString(); writeAppMeta(meta);
   }
   function normalizeNotificationPreferences(raw) {
-    const value = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-    return {
-      enabled: value.enabled === true,
-      targetReached: value.targetReached !== false,
-      backupDue: value.backupDue !== false,
-      longFastSafety: value.longFastSafety !== false,
-      weighIn: value.weighIn === true,
-      weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
-      cycleComplete: value.cycleComplete === true,
-      weightSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.weightSnoozeMinutes)) ? Number(value.weightSnoozeMinutes) : 60,
-      fastingSnoozeMinutes: [15,30,60,240,480,720,1440,2880,4320,10080].includes(Number(value.fastingSnoozeMinutes)) ? Number(value.fastingSnoozeMinutes) : 60
-    };
+    return normalizeNotificationPreferencesPolicy(raw, NOTIFICATION_SNOOZE_MINUTES);
   }
 
   function loadNotificationRuntimeState() {
@@ -3470,7 +3460,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return clean;
   }
 
-  const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,1440,2880,4320,10080]);
+
   function notificationSnoozeCategory(kind) {
     if (kind === 'weigh-in') return 'weight';
     return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
@@ -9094,6 +9084,27 @@ function weightChartVisibleRangePolicy(bucketCount, viewportWidth, scrollLeft, p
     last:Math.min(count-1,Math.ceil((scroll+width-16)/spacing)+2)
   };
 }
+  // Normalize persisted notification preferences without depending on storage or UI state.
+  function normalizeNotificationPreferencesPolicy(raw, allowedSnoozeMinutes) {
+    const value = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    const allowed = Array.isArray(allowedSnoozeMinutes) ? allowedSnoozeMinutes : [];
+    const snoozeMinutes = candidate => {
+      let duration;
+      try { duration = Number(candidate); } catch { return 60; }
+      return Number.isFinite(duration) && allowed.includes(duration) ? duration : 60;
+    };
+    return {
+      enabled: value.enabled === true,
+      targetReached: value.targetReached !== false,
+      backupDue: value.backupDue !== false,
+      longFastSafety: value.longFastSafety !== false,
+      weighIn: value.weighIn === true,
+      weighInCadence: value.weighInCadence === 'daily' ? 'daily' : 'weekly',
+      cycleComplete: value.cycleComplete === true,
+      weightSnoozeMinutes: snoozeMinutes(value.weightSnoozeMinutes),
+      fastingSnoozeMinutes: snoozeMinutes(value.fastingSnoozeMinutes)
+    };
+  }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
     el('updateModalText').textContent = t('update.modalText', {version:latestVersion});
