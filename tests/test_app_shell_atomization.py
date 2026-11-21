@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 69, f"Expected sixty-nine ordered app fragments, found {len(parts)}"
+assert len(parts) == 70, f"Expected seventy ordered app fragments, found {len(parts)}"
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 storage_pressure = (source / "js" / "43r-storage-pressure-policy.js").read_text(encoding="utf-8")
 assert "function resolveStoragePressurePolicy" in storage_pressure
@@ -440,3 +440,12 @@ backup_manifest = (source / "js" / "43u-backup-manifest-policy.js").read_text(en
 assert "function backupManifestMatchesPolicy" in backup_manifest
 assert "return backupManifestMatchesPolicy(raw)" in backup_export
 assert "function backupManifestMatchesPolicy" not in backup_export
+
+
+# Import preview date-range calculation is isolated as a pure policy.
+backup_date_range = (source / "js" / "43v-backup-date-range-policy.js").read_text(encoding="utf-8")
+assert "function resolveBackupDateRangePolicy" in backup_date_range
+import_workflows = (source / "js" / "45-import-merge-workflows.js").read_text(encoding="utf-8")
+assert "return resolveBackupDateRangePolicy(candidate, validDate)" in import_workflows
+assert "function backupDateRange" in import_workflows
+assert "function resolveBackupDateRangePolicy" not in import_workflows

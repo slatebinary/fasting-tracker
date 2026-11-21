@@ -1,3 +1,9 @@
+## v1.20.37 — 2026-11-21
+
+- Extract import-preview date-range calculation into a pure policy helper; retain date parsing and preview orchestration in the existing import adapter.
+- Preserve inclusion of live and deleted fasting start/end timestamps plus live and deleted weight timestamps, ignoring invalid dates and returning the earliest/latest valid instants.
+- Add deterministic coverage for mixed record collections, invalid and empty inputs, chronological bounds and input immutability. No import merge rules, persisted data or backup format changes.
+
 ## v1.20.36 — 2026-11-21
 
 - Extract external-backup manifest record-count validation into a pure policy helper; envelope checksum verification and import handling remain in the existing adapter.

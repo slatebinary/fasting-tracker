@@ -40,6 +40,7 @@ on:
       - refactor/v1.20.34-import-merge-policy
       - refactor/v1.20.35-backup-category-signatures
       - refactor/v1.20.36-backup-manifest-policy
+      - refactor/v1.20.37-backup-date-range-policy
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
   pull_request:
@@ -93,6 +94,7 @@ jobs:
           node tests/test_import_merge_policy.cjs
           node tests/test_backup_category_signatures_policy.cjs
           node tests/test_backup_manifest_policy.cjs
+          node tests/test_backup_date_range_policy.cjs
       - name: Validate GitHub Pages artifact preparation without deployment
         run: |
           python3 tools/prepare_pages.py
