@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 74, f"Expected seventy-four ordered app fragments, found {len(parts)}"
+assert len(parts) == 75, f"Expected seventy-five ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -470,6 +470,10 @@ assert "const NOTIFICATION_SNOOZE_MINUTES = Object.freeze([15,30,60,240,480,720,
 assert "const NOTIFICATION_SNOOZE_MINUTES" not in notification_state
 assert "function normalizeNotificationPreferences(raw)" in notification_state
 assert "function normalizeNotificationPreferencesPolicy" not in notification_state
+
+post_start_extension = (source / "js" / "43z-post-start-extension-policy.js").read_text(encoding="utf-8")
+assert "function resolvePostStartExtensionWindow" in post_start_extension
+assert "function resolvePostStartExtendedTimestamp" in post_start_extension
 
 notification_snooze_category = (source / "js" / "43y-notification-snooze-category-policy.js").read_text(encoding="utf-8")
 assert "function notificationSnoozeCategoryPolicy" in notification_snooze_category
