@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.37" />
+  <meta name="ft-app-version" content="1.20.38" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1971,7 +1971,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.37';
+  const APP_VERSION = '1.20.38';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -5675,12 +5675,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     drawWeightChartYAxis(minV,maxV);
 
     const top=18,bottom=38,left=16,right=14,plotW=Math.max(1,viewportW-left-right),h=cssH-top-bottom;
-    const dailySpacing=buckets.length<=30
-      ? Math.max(1,plotW/Math.max(1,buckets.length-1))
-      : Math.max(10,Math.min(22,plotW/29));
-    // Every non-daily mode is a rolling series sampled on actual measurement
-    // dates. Keep the same dense, scrollable navigation model as Daily.
-    const pointSpacing=dailySpacing;
+    // Keep point spacing identical across rendering and chart navigation.
+    const pointSpacing=weightChartPointSpacingPolicy(buckets.length,viewportW);
     const virtualPlotW=Math.max(plotW,(buckets.length-1)*pointSpacing);
     const trackW=Math.ceil(left+virtualPlotW+right);
     track.style.width=`${Math.max(viewportW,trackW)}px`;
@@ -5700,8 +5696,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();});
     if(target!=null){const y=yFor(target);ctx.save();ctx.strokeStyle=good;ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();ctx.restore();}
 
-    const firstVisible=Math.max(0,Math.floor((scrollX-left)/Math.max(1,pointSpacing))-2);
-    const lastVisible=Math.min(buckets.length-1,Math.ceil((scrollX+viewportW-left)/Math.max(1,pointSpacing))+2);
+    const visibleRange=weightChartVisibleRangePolicy(buckets.length,viewportW,scrollX,pointSpacing);
+    const firstVisible=visibleRange.first,lastVisible=visibleRange.last;
     ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
     let pathOpen=false;
     ctx.beginPath();
@@ -5793,7 +5789,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
   function weightChartPointSpacing(){
     const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
-    return buckets.length<=30?Math.max(1,plotW/Math.max(1,buckets.length-1)):Math.max(10,Math.min(22,plotW/29));
+    return weightChartPointSpacingPolicy(buckets.length,viewportW);
   }
   function syncWeightChartNavigator(){
     const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
@@ -9076,6 +9072,27 @@ function resolveBackupDateRangePolicy(candidate, parseDate) {
   if (!dates.length) return null;
   dates.sort((a, b) => a - b);
   return [dates[0], dates[dates.length - 1]];
+}
+// Pure Weight chart layout policies shared by rendering and navigation.
+function weightChartPointSpacingPolicy(bucketCount, viewportWidth) {
+  const count=Math.max(0,Math.floor(Number(bucketCount)||0));
+  const width=Math.max(220,Number(viewportWidth)||614);
+  const plotWidth=Math.max(1,width-30);
+  return count<=30
+    ? Math.max(1,plotWidth/Math.max(1,count-1))
+    : Math.max(10,Math.min(22,plotWidth/29));
+}
+
+function weightChartVisibleRangePolicy(bucketCount, viewportWidth, scrollLeft, pointSpacing) {
+  const count=Math.max(0,Math.floor(Number(bucketCount)||0));
+  if(!count)return {first:0,last:-1};
+  const width=Math.max(220,Number(viewportWidth)||614);
+  const scroll=Math.max(0,Number(scrollLeft)||0);
+  const spacing=Math.max(1,Number(pointSpacing)||1);
+  return {
+    first:Math.max(0,Math.floor((scroll-16)/spacing)-2),
+    last:Math.min(count-1,Math.ceil((scroll+width-16)/spacing)+2)
+  };
 }
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
