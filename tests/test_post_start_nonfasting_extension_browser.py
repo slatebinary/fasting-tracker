@@ -69,7 +69,7 @@ with sync_playwright() as p:
     page.locator("#extendNonFastingConfirm").click()
     page.locator("#extendNonFastingModal").wait_for(state="hidden", timeout=10000)
     page.wait_for_function(
-        "document.querySelector('#statusText')?.textContent.startsWith('Scheduled for')",
+        "document.querySelector('#statusText')?.textContent.startsWith('Scheduled to start')",
         timeout=10000,
     )
     assert extend.is_visible(), "the original grace window must survive conversion to a scheduled start"
