@@ -235,9 +235,7 @@
   }
 
   function backupManifestMatches(raw) {
-    const m=raw?.manifest,d=raw?.data; if(!m||!d)return false;
-    const expected={activeFasts:d.activeStart?1:0,fastingRecords:(d.records||[]).length,deletedFasts:(d.deletedFasts||[]).length,weightRecords:(d.weights||[]).length,deletedWeights:(d.deletedWeights||[]).length};
-    return Object.entries(expected).every(([k,v])=>Number(m[k])===v);
+    return backupManifestMatchesPolicy(raw);
   }
 
   async function verifyBackupEnvelope(raw) {
