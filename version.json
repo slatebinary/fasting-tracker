@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.1",
+  "version": "1.21.2",
   "released": "2026-11-21",
-  "notes": "Extract dotted-version comparison into a pure policy helper without changing update behavior",
+  "notes": "Extract notification-detail snooze scheduling into a pure policy helper without changing notification behavior",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -88,7 +88,8 @@
     "./icons/colorblind/icon-512.png",
     "./src/app/js/43y-notification-snooze-category-policy.js",
     "./src/app/js/43z-post-start-extension-policy.js",
-    "./src/app/js/43zz-semantic-version-policy.js"
+    "./src/app/js/43zz-semantic-version-policy.js",
+    "./src/app/js/43za-notification-snooze-scheduling-policy.js"
   ],
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
