@@ -1,3 +1,9 @@
+## v1.20.41 — 2026-11-21
+
+- Extract notification snooze-category classification into a pure policy helper, preserving the existing mapping of weigh-in reminders to weight and target/safety/cycle reminders to fasting.
+- Add deterministic coverage for supported, unsupported, missing and malformed notification kinds.
+- No changes to snooze durations, notification delivery, persisted preferences, runtime state or user data.
+
 ## v1.20.40 — 2026-11-21
 
 - Extract notification preference normalization into a pure policy helper, preserving strict boolean defaults, daily/weekly cadence selection and the established snooze-duration allowlist.
