@@ -11,7 +11,18 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 71, f"Expected seventy-one ordered app fragments, found {len(parts)}"
+assert len(parts) == 72, f"Expected seventy-two ordered app fragments, found {len(parts)}"
+
+# Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
+lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
+settings_startup = (source / "js" / "50-settings-and-startup.js").read_text(encoding="utf-8")
+for marker in ("window.addEventListener('online'", "window.addEventListener('offline'", "window.addEventListener('storage'", "document.addEventListener('visibilitychange'", "window.addEventListener('pageshow'", "window.addEventListener('pagehide'"):
+    assert marker in lifecycle_runtime, f"application lifecycle module is missing {marker}"
+    assert marker not in settings_startup, f"{marker} must not remain in settings/startup wiring"
+for marker in ("setInterval(() =>", "setInterval(checkFastNotifications", "setInterval(checkMaintenanceNotifications", "queueStorageProtectionRefresh();", "setTimeout(maybeAutoOpenSetupGuide, 180)"):
+    assert marker in lifecycle_runtime, f"application lifecycle module is missing scheduled task {marker}"
+    assert marker not in settings_startup, f"scheduled task {marker} must not remain in settings/startup wiring"
+
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 storage_pressure = (source / "js" / "43r-storage-pressure-policy.js").read_text(encoding="utf-8")
 assert "function resolveStoragePressurePolicy" in storage_pressure
