@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.20.41" />
+  <meta name="ft-app-version" content="1.21.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -865,6 +865,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       <div class="targetMoment" id="targetMoment" hidden></div>
       <button id="toggleFast" class="primary" data-i18n="fasting.start">Start Fast</button>
       <button id="editActiveFastBtn" class="secondary heroSecondary" data-i18n="fasting.editFast" hidden>Edit fast</button>
+      <button id="extendNonFastingBtn" class="secondary heroSecondary" data-i18n="fasting.extendNonFasting" hidden>Extend non-fasting period</button>
       <button id="startEarlierBtn" class="secondary heroSecondary" data-i18n="fasting.startEarlier">Started earlier</button>
       <button id="fastTimingBtn" class="secondary heroSecondary" data-i18n="fasting.timingOptions">Timing options</button>
     </div>
@@ -1634,7 +1635,27 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   </div>
 </div>
 
-<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"><div class="small" data-i18n="fasting.editFastStartQuick">Quick start time (how long ago)</div><div class="small" data-i18n="fasting.editFastStartMinutesLabel">Minutes ago</div><div class="presetWrap" id="editFastStartMinutePresets" data-i18n-aria="fasting.editFastStartMinutesAria"><button type="button" class="chip" data-edit-start-minutes="1">1m</button><button type="button" class="chip" data-edit-start-minutes="2">2m</button><button type="button" class="chip" data-edit-start-minutes="5">5m</button><button type="button" class="chip" data-edit-start-minutes="10">10m</button><button type="button" class="chip" data-edit-start-minutes="15">15m</button><button type="button" class="chip" data-edit-start-minutes="20">20m</button><button type="button" class="chip" data-edit-start-minutes="30">30m</button><button type="button" class="chip" data-edit-start-minutes="45">45m</button></div><div class="small" data-i18n="fasting.editFastStartHoursLabel">Hours ago</div><div class="presetWrap" id="editFastStartHourPresets" data-i18n-aria="fasting.editFastStartHoursAria"><button type="button" class="chip" data-edit-start-hours="1">1h</button><button type="button" class="chip" data-edit-start-hours="2">2h</button><button type="button" class="chip" data-edit-start-hours="3">3h</button><button type="button" class="chip" data-edit-start-hours="4">4h</button><button type="button" class="chip" data-edit-start-hours="6">6h</button><button type="button" class="chip" data-edit-start-hours="8">8h</button><button type="button" class="chip" data-edit-start-hours="12">12h</button></div></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"><div class="small" data-i18n="fasting.editFastGoalQuick">Quick target (hours)</div><div class="presetWrap" id="editFastGoalPresets" data-i18n-aria="fasting.editFastGoalQuickAria"><button type="button" class="chip" data-edit-goal="12">12h</button><button type="button" class="chip" data-edit-goal="14">14h</button><button type="button" class="chip" data-edit-goal="16">16h</button><button type="button" class="chip" data-edit-goal="18">18h</button><button type="button" class="chip" data-edit-goal="20">20h</button><button type="button" class="chip" data-edit-goal="22">22h</button><button type="button" class="chip" data-edit-goal="23">23h</button><button type="button" class="chip" data-edit-goal="24">24h</button><button type="button" class="chip" data-edit-goal="36">36h</button><button type="button" class="chip" data-edit-goal="48">48h</button><button type="button" class="chip" data-edit-goal="72">72h</button><button type="button" class="chip" data-edit-goal="96">96h</button><button type="button" class="chip" data-edit-goal="120">120h</button></div></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="backdateModal" hidden>
+<div class="modalBackdrop" id="editActiveFastModal" hidden><div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editActiveFastTitle"><h2 id="editActiveFastTitle" data-i18n="fasting.editFastTitle">Edit active fast</h2><div class="small" data-i18n="fasting.editFastHelp">Correct the start if you continued eating after starting the timer. Elapsed time, progress and history will be recalculated.</div><div class="formGroup"><label for="editActiveFastStart" data-i18n="fasting.editFastStart">Fasting start date and time</label><input id="editActiveFastStart" type="datetime-local" step="60"><div class="small" data-i18n="fasting.editFastStartQuick">Quick start time (how long ago)</div><div class="small" data-i18n="fasting.editFastStartMinutesLabel">Minutes ago</div><div class="presetWrap" id="editFastStartMinutePresets" data-i18n-aria="fasting.editFastStartMinutesAria"><button type="button" class="chip" data-edit-start-minutes="1">1m</button><button type="button" class="chip" data-edit-start-minutes="2">2m</button><button type="button" class="chip" data-edit-start-minutes="5">5m</button><button type="button" class="chip" data-edit-start-minutes="10">10m</button><button type="button" class="chip" data-edit-start-minutes="15">15m</button><button type="button" class="chip" data-edit-start-minutes="20">20m</button><button type="button" class="chip" data-edit-start-minutes="30">30m</button><button type="button" class="chip" data-edit-start-minutes="45">45m</button></div><div class="small" data-i18n="fasting.editFastStartHoursLabel">Hours ago</div><div class="presetWrap" id="editFastStartHourPresets" data-i18n-aria="fasting.editFastStartHoursAria"><button type="button" class="chip" data-edit-start-hours="1">1h</button><button type="button" class="chip" data-edit-start-hours="2">2h</button><button type="button" class="chip" data-edit-start-hours="3">3h</button><button type="button" class="chip" data-edit-start-hours="4">4h</button><button type="button" class="chip" data-edit-start-hours="6">6h</button><button type="button" class="chip" data-edit-start-hours="8">8h</button><button type="button" class="chip" data-edit-start-hours="12">12h</button></div></div><div class="formGroup"><label for="editActiveFastGoal" data-i18n="fasting.editFastGoal">Target duration (hours)</label><input id="editActiveFastGoal" type="number" min="0.25" max="120" step="0.25" inputmode="decimal"><div class="small" data-i18n="fasting.editFastGoalQuick">Quick target (hours)</div><div class="presetWrap" id="editFastGoalPresets" data-i18n-aria="fasting.editFastGoalQuickAria"><button type="button" class="chip" data-edit-goal="12">12h</button><button type="button" class="chip" data-edit-goal="14">14h</button><button type="button" class="chip" data-edit-goal="16">16h</button><button type="button" class="chip" data-edit-goal="18">18h</button><button type="button" class="chip" data-edit-goal="20">20h</button><button type="button" class="chip" data-edit-goal="22">22h</button><button type="button" class="chip" data-edit-goal="23">23h</button><button type="button" class="chip" data-edit-goal="24">24h</button><button type="button" class="chip" data-edit-goal="36">36h</button><button type="button" class="chip" data-edit-goal="48">48h</button><button type="button" class="chip" data-edit-goal="72">72h</button><button type="button" class="chip" data-edit-goal="96">96h</button><button type="button" class="chip" data-edit-goal="120">120h</button></div></div><div class="small" id="editActiveFastZone"></div><div class="small" id="editActiveFastError" role="alert" hidden></div><div class="modalActions"><button id="editActiveFastCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button><button id="editActiveFastSave" class="primary" type="button" data-i18n="common.save">Save changes</button></div></div></div><div class="modalBackdrop" id="extendNonFastingModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="extendNonFastingTitle">
+    <h2 id="extendNonFastingTitle" data-i18n="fasting.extendNonFastingTitle">Extend non-fasting period</h2>
+    <div class="small" data-i18n="fasting.extendNonFastingHelp">If you pressed Start fasting before you finished eating, move the fasting start later. This option is available for 30 minutes after the original start. Your fasting target stays the same.</div>
+    <div class="formGroup">
+      <label for="extendNonFastingAmount" data-i18n="fasting.extendNonFastingAmount">Add time</label>
+      <select id="extendNonFastingAmount">
+        <option value="5">5 min</option>
+        <option value="10" selected>10 min</option>
+        <option value="15">15 min</option>
+        <option value="30">30 min</option>
+      </select>
+    </div>
+    <div class="small" id="extendNonFastingPreview" aria-live="polite"></div>
+    <div class="modalActions">
+      <button id="extendNonFastingCancel" class="secondary" type="button" data-i18n="common.cancel">Cancel</button>
+      <button id="extendNonFastingConfirm" class="primary" type="button" data-i18n="fasting.extendNonFastingConfirm">Apply extension</button>
+    </div>
+  </div>
+</div>
+<div class="modalBackdrop" id="backdateModal" hidden>
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="backdateModalTitle">
     <h2 id="backdateModalTitle" data-i18n="backdate.title">Start an ongoing fast</h2>
     <div class="small" data-i18n="backdate.help">Choose when this fast actually began. It will remain active and keep counting until you press Stop Fast.</div>
@@ -1965,14 +1986,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 45;
+  const I18N_SOURCE_REVISION = 46;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.20.41';
+  const APP_VERSION = '1.21.0';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4135,6 +4156,94 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     renderAll();
   }
 
+  function postStartExtensionContext() {
+    if (data.activeStart) return {
+      mode: 'active',
+      startAt: data.activeStart,
+      createdAt: data.activeCreatedAt,
+      goalHours: activeTargetHours(),
+      timeZone: data.activeTimeZone || currentTimeZone()
+    };
+    if (data.scheduledStart) return {
+      mode: 'scheduled',
+      startAt: data.scheduledStart.at,
+      createdAt: data.scheduledStart.createdAt,
+      goalHours: data.scheduledStart.goalHours,
+      timeZone: data.scheduledStart.timeZone || currentTimeZone()
+    };
+    return null;
+  }
+
+  function updateExtendNonFastingPreview() {
+    const context = postStartExtensionContext();
+    const minutes = Number(el('extendNonFastingAmount').value);
+    const nextStart = context && resolvePostStartExtendedTimestamp(context.startAt, minutes);
+    el('extendNonFastingPreview').textContent = nextStart == null
+      ? ''
+      : t('fasting.extendNonFastingPreview', {date:localDateTimeLabel(new Date(nextStart).toISOString(), context.timeZone)});
+  }
+
+  function openExtendNonFastingModal() {
+    const context = postStartExtensionContext();
+    if (!context || recoveryMode || !resolvePostStartExtensionWindow(context.createdAt, Date.now()).eligible) return;
+    el('extendNonFastingAmount').value = '10';
+    updateExtendNonFastingPreview();
+    showModal('extendNonFastingModal', 'extendNonFastingAmount');
+  }
+
+  function confirmExtendNonFastingPeriod() {
+    const context = postStartExtensionContext();
+    const nowMs = Date.now();
+    const minutes = Number(el('extendNonFastingAmount').value);
+    if (!context || recoveryMode || !resolvePostStartExtensionWindow(context.createdAt, nowMs).eligible) {
+      hideModal('extendNonFastingModal');
+      renderAll();
+      return;
+    }
+    const nextStartMs = resolvePostStartExtendedTimestamp(context.startAt, minutes);
+    if (nextStartMs == null) { el('extendNonFastingAmount').focus(); return; }
+
+    const previous = {
+      activeStart: data.activeStart,
+      activeGoalHours: data.activeGoalHours,
+      activeTimeZone: data.activeTimeZone,
+      activeCreatedAt: data.activeCreatedAt,
+      activeModifiedAt: data.activeModifiedAt,
+      scheduledStart: data.scheduledStart ? {...data.scheduledStart} : null
+    };
+    const nextStart = new Date(nextStartMs).toISOString();
+    const createdAt = context.createdAt || new Date(nowMs).toISOString();
+    if (nextStartMs > nowMs) {
+      data.activeStart = null;
+      data.activeGoalHours = null;
+      data.activeTimeZone = null;
+      data.activeCreatedAt = null;
+      data.activeModifiedAt = null;
+      data.scheduledStart = {
+        at: nextStart,
+        goalHours: context.goalHours,
+        timeZone: context.timeZone,
+        createdAt
+      };
+    } else {
+      data.scheduledStart = null;
+      data.activeStart = nextStart;
+      data.activeGoalHours = context.goalHours;
+      data.activeTimeZone = context.timeZone;
+      data.activeCreatedAt = createdAt;
+      data.activeModifiedAt = context.mode === 'active' ? new Date(nowMs).toISOString() : null;
+    }
+
+    if (!save()) {
+      Object.assign(data, previous);
+      renderAll();
+      return;
+    }
+    clearShorterGoalState();
+    hideModal('extendNonFastingModal');
+    renderAll();
+  }
+
   function adjustBackdateAfterConflicts() {
     if (!backdateConflictRecords.length) return;
     const latest = backdateConflictRecords[backdateConflictRecords.length - 1];
@@ -4709,7 +4818,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   function updateScienceCard() {
     const stages = [...document.querySelectorAll('.scienceStage')];
     stages.forEach(x => x.classList.remove('current'));
-    if (!data.activeStart) {
+    if (!data.activeStart || Date.now() < new Date(data.activeStart).getTime()) {
       el('scienceWindow').textContent = t('science.notFasting');
       el('scienceEvidence').textContent = t('science.limited');
       el('scienceText').textContent = t('science.idle');
@@ -4733,7 +4842,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       data.activeStart = scheduled.at;
       data.activeGoalHours = scheduled.goalHours;
       data.activeTimeZone = scheduled.timeZone;
-      data.activeCreatedAt = new Date().toISOString();
+      data.activeCreatedAt = scheduled.createdAt || new Date().toISOString();
       data.activeModifiedAt = null;
       clearShorterGoalState();
       save();
@@ -4747,22 +4856,28 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       updateNonFastingPeriodTimer();
       el('nextFastCard').hidden = true;
       const startMs = new Date(data.activeStart).getTime();
-      const elapsed = Math.max(0, Date.now() - startMs);
+      const nowMs = Date.now();
+      const pendingStart = startMs > nowMs;
+      const remainingToStart = Math.max(0, startMs - nowMs);
+      const elapsed = Math.max(0, nowMs - startMs);
       const targetMs = goalMs(targetHours);
       const pct = targetMs > 0 ? (elapsed / targetMs) * 100 : 0;
-      timer.textContent = exactDuration(elapsed);
-      friendlyTimer.textContent = friendlyDuration(elapsed);
-      statusText.textContent = t('fasting.started', {date: localDateTimeLabel(data.activeStart, data.activeTimeZone)});
-      toggleFast.textContent = t('fasting.stop');
+      timer.textContent = exactDuration(pendingStart ? remainingToStart : elapsed);
+      friendlyTimer.textContent = friendlyDuration(pendingStart ? remainingToStart : elapsed);
+      statusText.textContent = pendingStart
+        ? t('fasting.startDelayedFor', {date: localDateTimeLabel(data.activeStart, data.activeTimeZone)})
+        : t('fasting.started', {date: localDateTimeLabel(data.activeStart, data.activeTimeZone)});
+      toggleFast.textContent = pendingStart ? t('fasting.cancelDelayedStart') : t('fasting.stop');
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
-      el('editActiveFastBtn').hidden = false;
+      el('editActiveFastBtn').hidden = pendingStart;
+      el('extendNonFastingBtn').hidden = !!recoveryMode || !resolvePostStartExtensionWindow(data.activeCreatedAt, nowMs).eligible;
       el('fastTimingBtn').hidden = true;
       const visualPct = Math.min(100, Math.max(0, pct));
       fastProgressTrack.style.setProperty('--fast-progress-angle', `${visualPct * 3.6}deg`);
       fastProgressTrack.classList.toggle('reached', pct >= 100);
       fastProgressTrack.setAttribute('aria-valuenow', String(Math.round(visualPct)));
-      fastProgressTrack.setAttribute('aria-valuetext', pct >= 100 ? t('fasting.targetReached', {duration:friendlyDuration(Math.max(0, elapsed - targetMs))}) : t('fasting.progress', {pct:formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration:friendlyDuration(Math.max(0, targetMs - elapsed))}));
+      fastProgressTrack.setAttribute('aria-valuetext', pendingStart ? t('fasting.scheduledCountdown', {duration:friendlyDuration(remainingToStart)}) : pct >= 100 ? t('fasting.targetReached', {duration:friendlyDuration(Math.max(0, elapsed - targetMs))}) : t('fasting.progress', {pct:formatNumber(Math.min(99.9, pct), pct < 10 ? 1 : 0, pct < 10 ? 1 : 0), duration:friendlyDuration(Math.max(0, targetMs - elapsed))}));
       const targetMoment = el('targetMoment');
       const targetAt = safeTargetDate(startMs, targetMs);
       targetMoment.hidden = !targetAt;
@@ -4772,7 +4887,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
 
       const encouragement = el('fastingEncouragement');
       const shorterState = shorterGoalState();
-      if (shorterState?.start === data.activeStart && shorterState.checkpointAt > 0) {
+      if (pendingStart) {
+        encouragement.hidden = true;
+      } else if (shorterState?.start === data.activeStart && shorterState.checkpointAt > 0) {
         encouragement.hidden = false;
         encouragement.textContent = Date.now() < shorterState.checkpointAt
           ? t('fasting.shorterCheckpoint', {duration:friendlyDuration(shorterState.checkpointAt - Date.now())})
@@ -4788,7 +4905,10 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
         encouragement.textContent = t(encouragementKey, {duration:friendlyDuration(remainingForEncouragement)});
       }
 
-      if (elapsed >= targetMs) {
+      if (pendingStart) {
+        progressDetail.textContent = t('fasting.scheduledCountdown', {duration:friendlyDuration(remainingToStart)});
+        progressDetail.classList.remove('good');
+      } else if (elapsed >= targetMs) {
         const beyond = elapsed - targetMs;
         progressDetail.textContent = t('fasting.targetReached', {duration: friendlyDuration(beyond)});
         progressDetail.classList.add('good');
@@ -4807,6 +4927,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       toggleFast.classList.add('stop');
       startEarlierBtn.hidden = true;
       el('editActiveFastBtn').hidden = true;
+      el('extendNonFastingBtn').hidden = !!recoveryMode || !resolvePostStartExtensionWindow(data.scheduledStart.createdAt, Date.now()).eligible;
       el('fastTimingBtn').hidden = true;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
@@ -4825,6 +4946,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       toggleFast.classList.remove('stop');
       startEarlierBtn.hidden = false;
       el('editActiveFastBtn').hidden = true;
+      el('extendNonFastingBtn').hidden = true;
       el('fastTimingBtn').hidden = false;
       fastProgressTrack.style.setProperty('--fast-progress-angle', '0deg');
       fastProgressTrack.classList.remove('reached');
@@ -4855,6 +4977,28 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     data.activeModifiedAt = null;
     if (!save()) { renderAll(); return; }
     renderAll();
+  }
+
+  function cancelDelayedFastStart() {
+    if (!data.activeStart || Date.now() >= new Date(data.activeStart).getTime()) return false;
+    const previous = {
+      activeStart: data.activeStart,
+      activeGoalHours: data.activeGoalHours,
+      activeTimeZone: data.activeTimeZone,
+      activeCreatedAt: data.activeCreatedAt,
+      activeModifiedAt: data.activeModifiedAt,
+      scheduledStart: data.scheduledStart
+    };
+    data.activeStart = null;
+    data.activeGoalHours = null;
+    data.activeTimeZone = null;
+    data.activeCreatedAt = null;
+    data.activeModifiedAt = null;
+    data.scheduledStart = null;
+    if (!save()) { Object.assign(data, previous); renderAll(); return false; }
+    clearShorterGoalState();
+    renderAll();
+    return true;
   }
 
   function clearStopUndo({ hide = true } = {}) {
@@ -5086,7 +5230,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     fastActionLocked = true;
     toggleFast.disabled = true;
     try {
-      if (data.activeStart) stopFast();
+      if (data.activeStart && Date.now() < new Date(data.activeStart).getTime()) cancelDelayedFastStart();
+      else if (data.activeStart) stopFast();
       else if (data.scheduledStart) { data.scheduledStart = null; if (!save()) { renderAll(); return; } renderAll(); }
       else { clearStopUndo(); startFast(); }
     } finally {
@@ -9109,6 +9254,25 @@ function weightChartVisibleRangePolicy(bucketCount, viewportWidth, scrollLeft, p
     if (kind === 'weigh-in') return 'weight';
     return ['target','safety','cycle'].includes(kind) ? 'fasting' : null;
   }
+// Pure policy for the short post-start eating-period adjustment window.
+const POST_START_EXTENSION_GRACE_MS = 30 * 60 * 1000;
+const POST_START_EXTENSION_MINUTES = Object.freeze([5, 10, 15, 30]);
+
+function resolvePostStartExtensionWindow(createdAt, nowMs, graceMs = POST_START_EXTENSION_GRACE_MS) {
+  const createdAtMs = new Date(createdAt).getTime();
+  if (!Number.isFinite(createdAtMs) || !Number.isFinite(nowMs) || !Number.isFinite(graceMs) || graceMs <= 0 || createdAtMs > nowMs + 60000) {
+    return { eligible: false, remainingMs: 0 };
+  }
+  const remainingMs = createdAtMs + graceMs - nowMs;
+  return { eligible: remainingMs > 0, remainingMs: Math.max(0, remainingMs) };
+}
+
+function resolvePostStartExtendedTimestamp(startAt, minutes) {
+  const startMs = new Date(startAt).getTime();
+  const amount = Number(minutes);
+  if (!Number.isFinite(startMs) || !POST_START_EXTENSION_MINUTES.includes(amount)) return null;
+  return startMs + amount * 60000;
+}
   function openUpdateModal() {
     if (!updateAvailable) { checkForUpdates(); return; }
     el('updateModalText').textContent = t('update.modalText', {version:latestVersion});
@@ -10033,6 +10197,11 @@ function mergeImportedData(imported) {
   document.querySelectorAll('[data-edit-start-minutes]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartMinutes, 'minutes')));
   document.querySelectorAll('[data-edit-start-hours]').forEach(btn => bindResponsiveAction(btn, () => setEditFastStartAgo(btn.dataset.editStartHours, 'hours')));
   el('editActiveFastModal').addEventListener('click',e=>{if(e.target===el('editActiveFastModal'))hideModal('editActiveFastModal');});
+  bindResponsiveAction(el('extendNonFastingBtn'), openExtendNonFastingModal);
+  el('extendNonFastingAmount').addEventListener('change', updateExtendNonFastingPreview);
+  el('extendNonFastingCancel').addEventListener('click', () => hideModal('extendNonFastingModal'));
+  bindReliableModalAction(el('extendNonFastingConfirm'), confirmExtendNonFastingPeriod);
+  el('extendNonFastingModal').addEventListener('click', e => { if (e.target === el('extendNonFastingModal')) hideModal('extendNonFastingModal'); });
   el('fastTimingCancel').addEventListener('click', () => hideModal('fastTimingModal'));
   el('fastTimingConfirm').addEventListener('click', confirmFastTiming);
   el('fastTimingMode').addEventListener('change', updateFastTimingHint);

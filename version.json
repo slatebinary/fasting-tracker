@@ -92,12 +92,12 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "c0db5cea161b0b5b20c39cbbaaf58c843cfb583e243941eb7381120af8bc4ee7",
-    "./index.html": "c0db5cea161b0b5b20c39cbbaaf58c843cfb583e243941eb7381120af8bc4ee7",
-    "./changelog.html": "02d5d4b3ebb3baef6430f6f803570708455a7414ca039f23e0888cd4dc3f6d43",
-    "./i18n/en.js": "ed370f088a8e166fa59e5a2c9a6cf0b76e53985720b1fbbe29a71b0fc62d8976",
-    "./i18n/bg.js": "d1019802d50cf6b72ea5497a2cc504819b21cef0a75152b536e96cbf9ce00c2d",
-    "./i18n/es.js": "ac77a581078fc049eddfffe5cae8acc93214c6bc1734cc7f1a5ba7618a045776",
+    "./": "b4594f7a2e2103aab32d11b3d2983fc8d2b68d80191e9a0b7e12495547594dc0",
+    "./index.html": "b4594f7a2e2103aab32d11b3d2983fc8d2b68d80191e9a0b7e12495547594dc0",
+    "./changelog.html": "51d940b18e91a9478c85c0bcd99c4a2615f732786d013f5e4942984f7a3ca5f0",
+    "./i18n/en.js": "183f2511c381cf4b324d9b08c3b06741c74ffe74e114550ab4c7382f34904bc9",
+    "./i18n/bg.js": "e1bad6ff32863c7810e704728e3c4929d4b156eaf15c6b9a090532cd712173e7",
+    "./i18n/es.js": "918c28e5cbd52160a21dd33fcb941beac0b62d15e62169f0077f9a2239507366",
     "./js/platform-diagnostics.js": "add2af97116f5e8350740246101bb08b5d6fba9023a5969946eac7256fd7efda",
     "./js/fasting-integrity.js": "b6d661e0d93b2798419e07a5eb8e29a06622bd1ac4d6edad3a91da8dfff6594a",
     "./js/fasting-time.js": "6ff28c32acd17c45ea2d18b28f98dfa40fd6242fa0868934934ad8be4656b715",
@@ -106,10 +106,10 @@
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "03ebab2d847660b3d9d257415d2efcd5175e705f6d459d128c0aefa9f5fc92b3",
     "./js/release-health.js": "3c561d7a4326cf161b9c7a17b37913264b72437a0c84819f9cbdc0369b97ba6e",
-    "./privacy.html": "cc3b57b77444be5044904a0b58ae75e0b7f98fb56ad12d428da638a5e8ece646",
-    "./about.html": "34437b818bbd104c81e01b86eed1152d1275095f4063e2226960ce34b8b0766a",
-    "./branding.html": "980e2117330a28755846d9850241ddafec5535b4a1c1dcfd0f3eff7d2f26b71c",
-    "./license.html": "f889f98c2958ed9bee0d88edc3b7b78325ccf06765079e77827a30c454afa81b",
+    "./privacy.html": "5512472df323478eb8bbbd721c7f389d5b9b5a47db9583d2feb93b1c8a9987a1",
+    "./about.html": "19ff8c0feb57db50d7b7312d75e59450d1c813a0a16ce90d0837a867081f8a75",
+    "./branding.html": "2e1a3a395f4b231febda6a193d0d6470e3ffe089baa214d08869eaba40219a37",
+    "./license.html": "48ef21852d729877d5c64f4463d26d30dc205cf48b755f5064279dc090a09f2c",
     "./404.html": "afa92afe8dd7cd8f4e3878b22f27a9fd89f469e5d01da9b8cb7bfc94898a1f7d",
     "./en/": "43a8e58e8c09ebab103418781c6f32bfb2b837870c62049368258727ae4d29ed",
     "./bg/": "ea495c81b191e3ad009de3578666dbd59415e637320922685a45af22b5de21ec",
@@ -173,6 +173,7 @@
     "./icons/highcontrast/icon-512.png": "9523bd745b39a528baa854f13e9743b6c54d6ce310e540ffb4d50fe5913f8e80",
     "./icons/colorblind/icon-192.png": "73b5a3ecaa90a784441dbd15322957446aecf910d7f1312777682a8af2f9afd8",
     "./icons/colorblind/icon-512.png": "e21ab0a100c3569b7572dc9c22ca974448624077a5330de889f590be1140b855",
-    "./src/app/js/43y-notification-snooze-category-policy.js": "0ed7e2139d48dcd6d6cb06b696f1b9731c75dd8a9436afeda9a4c4e4d9ef5374"
+    "./src/app/js/43y-notification-snooze-category-policy.js": "0ed7e2139d48dcd6d6cb06b696f1b9731c75dd8a9436afeda9a4c4e4d9ef5374",
+    "./src/app/js/43z-post-start-extension-policy.js": "52944d6269d5faf937e99e1abd3865c0a901d5692e71e1380ceafac39f642787"
   }
 }
