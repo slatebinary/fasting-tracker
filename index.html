@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.4" />
+  <meta name="ft-app-version" content="1.21.5" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.4';
+  const APP_VERSION = '1.21.5';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4537,12 +4537,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function latestWeightRecord() {
-    let latest = null, latestMs = -Infinity;
-    for (const weight of data.weights) {
-      const ms = new Date(weight.when).getTime();
-      if (Number.isFinite(ms) && ms > latestMs) { latest = weight; latestMs = ms; }
-    }
-    return latest;
+    return selectLatestWeightRecordPolicy(data.weights);
   }
 
   // Prevent overlapping startup, foreground and timer checks from delivering the
@@ -9321,6 +9316,14 @@ function recordNotificationDetailPolicy(id, kind, screen, createdAt, params, act
 function dismissNotificationDetailPolicy(id, active) {
   const details = Array.isArray(active) ? active : [];
   return details.filter(item => item?.id !== id);
+}
+function selectLatestWeightRecordPolicy(weights) {
+  let latest = null, latestMs = -Infinity;
+  for (const weight of weights) {
+    const ms = new Date(weight.when).getTime();
+    if (Number.isFinite(ms) && ms > latestMs) { latest = weight; latestMs = ms; }
+  }
+  return latest;
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
