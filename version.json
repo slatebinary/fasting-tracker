@@ -94,9 +94,9 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "1fd2ff7b439574bdaa8b769df30f84a184beb9d68185d79e7e7e6c96629eaf6f",
-    "./index.html": "1fd2ff7b439574bdaa8b769df30f84a184beb9d68185d79e7e7e6c96629eaf6f",
-    "./changelog.html": "87e391eee23be8800632729256b006427d84d99d920d0e1ee5ecdb0e4e86ffb8",
+    "./": "272831dd7c5217dbdd473e8244ad103f2381a82a4e345542804ad182bfb6417b",
+    "./index.html": "272831dd7c5217dbdd473e8244ad103f2381a82a4e345542804ad182bfb6417b",
+    "./changelog.html": "285619112ab06cd32555407d12c09d49f94f3bb2f50c4e9d871d6852cb1e1c98",
     "./i18n/en.js": "183f2511c381cf4b324d9b08c3b06741c74ffe74e114550ab4c7382f34904bc9",
     "./i18n/bg.js": "e1bad6ff32863c7810e704728e3c4929d4b156eaf15c6b9a090532cd712173e7",
     "./i18n/es.js": "918c28e5cbd52160a21dd33fcb941beac0b62d15e62169f0077f9a2239507366",
@@ -108,10 +108,10 @@
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "03ebab2d847660b3d9d257415d2efcd5175e705f6d459d128c0aefa9f5fc92b3",
     "./js/release-health.js": "3c561d7a4326cf161b9c7a17b37913264b72437a0c84819f9cbdc0369b97ba6e",
-    "./privacy.html": "84e4433d9bdf8cd4c8eeb92b428e5e93755853e0ce41c44e81307edefda2b1b5",
-    "./about.html": "3ddc8df771b9e0ff042317f0c073a73a7af709bf0ca9d52366a668c4368d6937",
-    "./branding.html": "d9b1729405280889b6336ba3bfc27158a388e1b63a6095755828e459753a1242",
-    "./license.html": "84fad60afc57816ac3a6a131f0be6629d34f1354ee586bd17f60b6a264e5c910",
+    "./privacy.html": "0ca694d6f69cd51f6b7e0115a3515e063d030630c7f1e0509d139413f60d60ee",
+    "./about.html": "25026085a5d36a3418fa36fe0b9d1c003e920d2cab9ddf51f1f7ec9d323f221b",
+    "./branding.html": "cc113537d0faf70cb46d82ccc884824bb40b45343a8689b2fb2d763a63edacaa",
+    "./license.html": "c20cd35f33b78ccc8fb1c4896b2cf3fc325b729f09fe4825ec0b942d56f3f866",
     "./404.html": "afa92afe8dd7cd8f4e3878b22f27a9fd89f469e5d01da9b8cb7bfc94898a1f7d",
     "./en/": "43a8e58e8c09ebab103418781c6f32bfb2b837870c62049368258727ae4d29ed",
     "./bg/": "ea495c81b191e3ad009de3578666dbd59415e637320922685a45af22b5de21ec",
@@ -177,6 +177,7 @@
     "./icons/colorblind/icon-512.png": "e21ab0a100c3569b7572dc9c22ca974448624077a5330de889f590be1140b855",
     "./src/app/js/43y-notification-snooze-category-policy.js": "0ed7e2139d48dcd6d6cb06b696f1b9731c75dd8a9436afeda9a4c4e4d9ef5374",
     "./src/app/js/43z-post-start-extension-policy.js": "52944d6269d5faf937e99e1abd3865c0a901d5692e71e1380ceafac39f642787",
-    "./src/app/js/43zz-semantic-version-policy.js": "59ae699daf078d023703c9af35957636edc7fd5698ea1b0e6d8f5ed0af15b844"
+    "./src/app/js/43zz-semantic-version-policy.js": "59ae699daf078d023703c9af35957636edc7fd5698ea1b0e6d8f5ed0af15b844",
+    "./src/app/js/43za-notification-snooze-scheduling-policy.js": "8f1d00673c60bd57c090535e90c1a53b001848d7d11dca655b1f5c2bb6c7003e"
   }
 }

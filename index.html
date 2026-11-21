@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.1" />
+  <meta name="ft-app-version" content="1.21.2" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.1';
+  const APP_VERSION = '1.21.2';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -3496,14 +3496,13 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     return `${formatNumber(count)} ${t(pluralKey('unit.day', count))}`;
   }
   function snoozeNotificationDetail(id, durationMinutes) {
-    const duration = Number(durationMinutes);
-    if (!NOTIFICATION_SNOOZE_MINUTES.includes(duration)) return false;
-    const item = notificationDetailItems().find(entry => entry.id === id);
-    if (!item || !notificationSnoozeCategory(item.kind)) return false;
-    const until = Date.now() + duration * 60000;
-    notificationRuntimeState.details = notificationDetailItems().filter(entry => entry.id !== id);
-    const pending = Array.isArray(notificationRuntimeState.snoozedDetails) ? notificationRuntimeState.snoozedDetails : [];
-    notificationRuntimeState.snoozedDetails = [{...item, snoozedUntil:new Date(until).toISOString()}, ...pending.filter(entry => entry?.id !== id)].slice(0, NOTIFICATION_DETAIL_LIMIT);
+    const result = scheduleNotificationDetailSnoozePolicy(
+      id, durationMinutes, notificationDetailItems(), notificationRuntimeState.snoozedDetails,
+      Date.now(), NOTIFICATION_SNOOZE_MINUTES, notificationSnoozeCategory, NOTIFICATION_DETAIL_LIMIT
+    );
+    if (!result) return false;
+    notificationRuntimeState.details = result.details;
+    notificationRuntimeState.snoozedDetails = result.snoozedDetails;
     saveNotificationRuntimeState();
     renderNotificationDetails();
     return true;
@@ -9272,6 +9271,29 @@ function resolvePostStartExtendedTimestamp(startAt, minutes) {
   const amount = Number(minutes);
   if (!Number.isFinite(startMs) || !POST_START_EXTENSION_MINUTES.includes(amount)) return null;
   return startMs + amount * 60000;
+}
+// Pure policy for moving a notification detail from the active list into its snoozed queue.
+// Time, preference validation and persistence are supplied by the caller.
+function scheduleNotificationDetailSnoozePolicy(id, durationMinutes, active, pending, nowMs, allowedMinutes, categoryForKind, limit) {
+  let duration;
+  try { duration = Number(durationMinutes); } catch { return null; }
+  if (!Array.isArray(allowedMinutes) || !allowedMinutes.includes(duration)) return null;
+  if (!Number.isFinite(nowMs) || typeof categoryForKind !== 'function') return null;
+  const details = Array.isArray(active) ? active : [];
+  const item = details.find(entry => entry && entry.id === id);
+  if (!item || !categoryForKind(item.kind)) return null;
+  const untilMs = nowMs + duration * 60000;
+  const until = new Date(untilMs);
+  if (!Number.isFinite(until.getTime())) return null;
+  const queued = Array.isArray(pending) ? pending : [];
+  const cap = Number.isInteger(limit) && limit > 0 ? limit : 0;
+  return {
+    details: details.filter(entry => entry?.id !== id),
+    snoozedDetails: [
+      {...item, snoozedUntil:until.toISOString()},
+      ...queued.filter(entry => entry?.id !== id)
+    ].slice(0, cap)
+  };
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
