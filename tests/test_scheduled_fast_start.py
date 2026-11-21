@@ -33,7 +33,8 @@ assert "function saveEditedActiveFast()" in backdate
 assert "backdateConflicts(start,new Date())" in backdate
 assert "data.activeStart=start.toISOString()" in backdate
 assert "data.activeGoalHours=nextGoal" in backdate
-assert "el('editActiveFastBtn').hidden = false;" in timer
+assert "el('editActiveFastBtn').hidden = pendingStart;" in timer
+assert "el('extendNonFastingBtn').hidden = !!recoveryMode || !resolvePostStartExtensionWindow(data.activeCreatedAt, nowMs).eligible" in timer
 assert "el('editActiveFastBtn').hidden = true;" in timer
 assert "editActiveFastSave').addEventListener('click',saveEditedActiveFast)" in navigation
 assert "return resolveNextFastCycleInfo({" in timer
