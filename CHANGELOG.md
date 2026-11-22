@@ -1,3 +1,10 @@
+## v1.21.14 — 2026-11-22
+
+- Before reloading after a stale cross-tab write, preserve this tab's newer unsaved state as an internal recovery snapshot.
+- Identify the snapshot as unsaved changes from this tab and report whether preservation succeeded or failed, with instructions for reviewing a saved snapshot.
+- Apply the same preservation path to queued writes and lifecycle flushes; add a real two-tab browser regression that verifies the snapshot payload retains the rejected edit.
+- No storage schema or external backup-format changes.
+
 ## v1.21.13 — 2026-11-22
 
 - Compare each tab's last-loaded IndexedDB revision with the authoritative revision inside the same write transaction, preventing stale tabs from replacing newer settings, fasting records or weight records.
