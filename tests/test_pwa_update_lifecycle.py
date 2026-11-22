@@ -301,6 +301,94 @@ def attempt_rejected_update(page, active_version, active_start):
     assert_failed_update_preserved_release(page, active_version, active_start)
 
 
+def install_unconfirmed_release_and_verify_rollback(page, version, previous_version, active_start):
+    # Suppress only the new release's confirmation message. This simulates an
+    # app shell that loads but never completes its startup-integrity handshake.
+    page.add_init_script("""() => {
+      const original = ServiceWorker.prototype.postMessage;
+      ServiceWorker.prototype.postMessage = function(message, ...args) {
+        if (message?.type === 'CONFIRM_RELEASE' && sessionStorage.getItem('__ftSuppressConfirmOnce') === '1') {
+          sessionStorage.removeItem('__ftSuppressConfirmOnce');
+          return;
+        }
+        return original.call(this, message, ...args);
+      };
+    }""")
+    page.evaluate("sessionStorage.setItem('__ftSuppressConfirmOnce', '1')")
+    ensure_update_group_open(page)
+    page.evaluate("document.querySelector('#updateBtn').click()")
+    page.wait_for_function("() => !document.querySelector('#updateBanner').hidden", timeout=20000)
+    page.evaluate("document.querySelector('#updateBtn').click()")
+    page.wait_for_function("() => !document.querySelector('#updateModal').hidden", timeout=10000)
+    page.evaluate("document.querySelector('#updateWithoutBackupBtn').click()")
+    page.wait_for_function(
+        "version => document.querySelector('meta[name=ft-app-version]')?.content === version",
+        arg=version,
+        timeout=90000,
+    )
+    page.wait_for_function(
+        "version => document.querySelector('#appVersionLabel')?.textContent.trim() === ('v' + version)",
+        arg=version,
+        timeout=45000,
+    )
+
+    rollback_state = page.evaluate("""async () => {
+      const registration = await navigator.serviceWorker.ready;
+      const scope = registration.scope;
+      let hash = 0x811c9dc5;
+      for (let i = 0; i < scope.length; i++) {
+        hash ^= scope.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+      }
+      const cache = await caches.open('fasting-tracker-' + (hash >>> 0).toString(36) + '-meta-v1');
+      const key = new URL('./__previous_release__', scope).href;
+      const response = await cache.match(key);
+      if (!response) throw new Error('rollback checkpoint missing after unconfirmed release startup');
+      return {key, state: await response.json()};
+    }""")
+    assert rollback_state["state"].get("info", {}).get("version") == previous_version, rollback_state
+    assert rollback_state["state"].get("firstBootAt"), "Unconfirmed release did not record its first startup"
+
+    # Age the rollback checkpoint rather than waiting five real minutes.
+    page.evaluate("""async key => {
+      const scope = (await navigator.serviceWorker.ready).scope;
+      let hash = 0x811c9dc5;
+      for (let i = 0; i < scope.length; i++) {
+        hash ^= scope.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+      }
+      const cache = await caches.open('fasting-tracker-' + (hash >>> 0).toString(36) + '-meta-v1');
+      const response = await cache.match(key);
+      if (!response) throw new Error('rollback checkpoint disappeared before expiry test');
+      const state = await response.json();
+      state.firstBootAt = Date.now() - 300001;
+      await cache.put(key, new Response(JSON.stringify(state), {headers:{'content-type':'application/json'}}));
+    }""", rollback_state["key"])
+
+    page.reload(wait_until="domcontentloaded")
+    page.wait_for_function(
+        "version => document.querySelector('meta[name=ft-app-version]')?.content === version",
+        arg=previous_version,
+        timeout=45000,
+    )
+    page.wait_for_function(
+        "version => document.querySelector('#appVersionLabel')?.textContent.trim() === ('v' + version)",
+        arg=previous_version,
+        timeout=45000,
+    )
+    health = worker_health(page)
+    assert health and health.get("activeVersion") == previous_version and health.get("cacheComplete") is True, (
+        f"Unconfirmed release did not roll back to the last known-good cache: {health}"
+    )
+    state = wait_for_active_fast(page)
+    assert state["settings"].get("activeStart") == active_start, "Automatic rollback changed active-fast metadata"
+    remaining = page.evaluate("""async version => {
+      const keys = await caches.keys();
+      return keys.filter(name => name.includes('-release-' + version));
+    }""", version)
+    assert not remaining, f"Automatic rollback left the unconfirmed release cache behind: {remaining}"
+
+
 def main():
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     server.daemon_threads = True
@@ -315,10 +403,12 @@ def main():
     second_version = patch_version(BASE_VERSION, 2)
     third_version = patch_version(BASE_VERSION, 3)
     fourth_version = patch_version(BASE_VERSION, 4)
+    fifth_version = patch_version(BASE_VERSION, 5)
     first_metadata, first_html = build_release(first_version, scope_url)
     second_metadata, second_html = build_release(second_version, scope_url)
     third_metadata, third_html = build_release(third_version, scope_url)
     fourth_metadata, fourth_html = build_release(fourth_version, scope_url)
+    fifth_metadata, fifth_html = build_release(fifth_version, scope_url)
     server.release_state = {"metadata": BASE_METADATA, "html": BASE_HTML}
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -430,6 +520,12 @@ def main():
             server.release_state = {"metadata": fourth_metadata, "html": fourth_html}
             attempt_rejected_update(page, second_version, active_start)
 
+            # A release that loads but never confirms startup must roll back
+            # automatically after the grace window, preserving the last known-good
+            # cache and the active fast.
+            server.release_state = {"metadata": fifth_metadata, "html": fifth_html}
+            install_unconfirmed_release_and_verify_rollback(page, fifth_version, second_version, active_start)
+
             # The last known-good release must still boot from its complete
             # cache while the network is unavailable, retaining the active fast.
             context.set_offline(True)
@@ -460,7 +556,7 @@ def main():
         "PASS: real service-worker install, staged release integrity, "
         "no-backup update, Backup & Update download, startup confirmation, "
         "complete cache and active-fast preservation, rejected HTTP/corrupt updates, "
-        "staging cleanup and offline last-known-good recovery"
+        "staging cleanup, automatic rollback after unconfirmed startup, and offline last-known-good recovery"
     )
 
 
