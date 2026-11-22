@@ -41,7 +41,25 @@ assert "req.onblocked = () => noteDiagnosticError('idb_open_blocked')" in open_d
 assert "await persistRecordStores(data, {force:true});" in restore, "Restore must commit IndexedDB before mirroring preferences"
 assert restore.index("await persistRecordStores(data, {force:true});") < restore.index("persistSmallPreferences();"), "Preference mirror must update only after successful IndexedDB commit"
 
-print("PASS: atomic IndexedDB snapshot, connection lifecycle and post-commit preference guards")
+# Ordinary writes and explicit restore/reset writes must all compare the database
+# revision inside their own readwrite transaction before mutating any store.
+write = function_body("  async function persistRecordStores(", "  function canonicalRecordFingerprint(")
+assert "const expectedRevision = persistedDataRevision;" in write, "Write must use the tab's last committed revision as its baseline"
+assert "const revisionRequest = state.get('settings');" in write, "Write must read the authoritative revision in its write transaction"
+assert "actualRevision !== expectedRevision" in write and "FT_STALE_REVISION" in write, "Stale writes must abort atomically"
+assert write.index("actualRevision !== expectedRevision") < write.index("state.put({key:'settings'"), "No settings write may occur before the revision check"
+assert write.index("actualRevision !== expectedRevision") < write.index("if (force) store.clear()"), "Forced collection replacement must not bypass stale-write protection"
+assert "persistedDataRevision = Number(snapshotData.revision) || 0;" in write, "Committed writes must advance the tab's revision baseline"
+
+reset = function_body("  async function persistFullResetAtomic(empty) {", "  function dataSettingsOnly(")
+assert "actualRevision !== persistedDataRevision" in reset and "FT_STALE_REVISION" in reset, "Full reset must also reject a stale tab"
+assert reset.index("actualRevision !== persistedDataRevision") < reset.index("state.clear();"), "Reset must compare revision before clearing stores"
+assert "persistedDataRevision = Number(empty.revision) || 0;" in reset, "Successful reset must advance the revision baseline"
+assert "persistedDataRevision = Number(data.revision) || 0;" in source[source.index("async function reloadFromIndexedDB"):], "Cross-tab reload must refresh the revision baseline"
+assert "await reloadFromIndexedDB({notify:true});" in source[source.index("function queuePrimaryPersistence"):], "A rejected queued write must reload committed data"
+assert "catch (err) { if (err?.code === 'FT_STALE_REVISION') await reloadFromIndexedDB({notify:true}); }" in source, "A rejected lifecycle flush must not retry stale data"
+
+print("PASS: atomic IndexedDB snapshot, connection lifecycle, revision compare-and-swap and conflict recovery")
 
 if sync_playwright:
     version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
