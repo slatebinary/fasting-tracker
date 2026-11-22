@@ -79,16 +79,17 @@
   async function maybeNotifyTargetReached(nowMs = Date.now()) {
     if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
     const start = data.activeStart;
-    const startMs = new Date(start).getTime();
     const target = activeTargetHours();
     const targetMs = goalMs(target);
-    if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
+    const timing = resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:targetMs});
+    if (!timing) return false;
+    const dueAtMs = timing.dueAtMs;
     const token = `${start}|${target}`;
     return sendDeduplicatedNotification({
       tokenKey:'targetReachedToken',
       reservationKey:'targetReachedReservation',
       token,
-      isDue:() => notificationEnabledFor('targetReached') && data.activeStart === start && activeTargetHours() === target && nowMs >= startMs + targetMs,
+      isDue:() => notificationEnabledFor('targetReached') && data.activeStart === start && activeTargetHours() === target && resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:targetMs})?.dueAtMs === dueAtMs,
       deliver:() => sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}})
     });
   }
@@ -96,14 +97,15 @@
   async function maybeNotifyLongFastSafety(nowMs = Date.now()) {
     if (!notificationEnabledFor('longFastSafety') || !data.activeStart) return false;
     const start = data.activeStart;
-    const startMs = new Date(start).getTime();
-    if (!Number.isFinite(startMs) || nowMs < startMs + 24 * 3600000) return false;
+    const timing = resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:24 * 3600000});
+    if (!timing) return false;
+    const dueAtMs = timing.dueAtMs;
     const token = String(start);
     return sendDeduplicatedNotification({
       tokenKey:'longFastSafetyToken',
       reservationKey:'longFastSafetyReservation',
       token,
-      isDue:() => notificationEnabledFor('longFastSafety') && data.activeStart === start && nowMs >= startMs + 24 * 3600000,
+      isDue:() => notificationEnabledFor('longFastSafety') && data.activeStart === start && resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:24 * 3600000})?.dueAtMs === dueAtMs,
       deliver:() => sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBodyShort'), {screen:'fasting',tag:`fasting-safety-${token}`})
     });
   }
