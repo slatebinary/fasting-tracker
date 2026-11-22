@@ -185,7 +185,7 @@
     document.querySelectorAll('.tab').forEach(tab => {
       const active = tab.dataset.screen === target;
       tab.classList.toggle('active', active);
-      tab.setAttribute('aria-selected',String(active)); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current');
+      tab.setAttribute('aria-selected',String(active)); tab.tabIndex=active?0:-1; if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current');
     });
     document.querySelectorAll('.screen').forEach(node => node.classList.toggle('active', node.id === target));
     if (updateHash) {
