@@ -1,9 +1,10 @@
 ## v1.21.16 — 2026-11-23
 
-- Give the primary navigation landmark and tablist localized accessible names in English, Bulgarian and Spanish.
-- Connect each navigation tab to its matching labelled screen panel and maintain a single keyboard Tab stop while preserving arrow-key activation.
-- Add browser regression coverage for tab/panel relationships, keyboard navigation and all three interface languages.
-- No storage schema or backup-format changes.
+- Give the primary navigation landmark and tablist localized accessible names in English, Bulgarian and Spanish; connect each navigation tab to its matching labelled screen panel and maintain a single keyboard Tab stop while preserving arrow-key activation.
+- Refresh the Weight chart's on-demand text alternative when keyboard navigation changes the selected point or scroll position, keeping VoiceOver and other screen-reader users' visible data list synchronized with the chart.
+- Add browser regression coverage for navigation semantics in all three interface languages and for Weight chart keyboard navigation, selected-point announcements and the chart-data disclosure across a long history.
+- No storage schema or external backup-format changes.
+
 
 ## v1.21.15 — 2026-11-22
 
