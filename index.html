@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.11" />
+  <meta name="ft-app-version" content="1.21.12" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.11';
+  const APP_VERSION = '1.21.12';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -9076,13 +9076,20 @@ function resolveStoragePressurePolicy(estimate, ratioThreshold, freeBytesThresho
 }
 // Pure import dataset merge and conflict policy.
 // Callers inject stop-reason normalization and final schema validation.
-function stableRecordString(v) {
-  const c = { ...v };
-  delete c.deleted;
-  delete c.deletedAt;
-  delete c.deletedTimeZone;
-  delete c.deletionReason;
-  return JSON.stringify(c);
+function stableRecordString(v, omitId = false) {
+  // Compare the complete persisted record, including deletion and edit-audit
+  // metadata. Sort object keys so equivalent JSON objects remain order-neutral.
+  const canonical = value => {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (!value || typeof value !== 'object') return value;
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      if (omitId && key === 'id') continue;
+      out[key] = canonical(value[key]);
+    }
+    return out;
+  };
+  return JSON.stringify(canonical(v));
 }
 
 function mergeByIdAndFingerprint(current, incoming, fingerprint, label) {
@@ -9099,7 +9106,14 @@ function mergeByIdAndFingerprint(current, incoming, fingerprint, label) {
       continue;
     }
     const fp = fingerprint(item);
-    if (byFp.has(fp)) { duplicates++; continue; }
+    const fingerprintMatch = byFp.get(fp);
+    if (fingerprintMatch) {
+      if (stableRecordString(fingerprintMatch, true) !== stableRecordString(item, true)) {
+        throw new Error(`${label}: matching fingerprint differs (${item.id})`);
+      }
+      duplicates++;
+      continue;
+    }
     out.push(item);
     byId.set(item.id, item);
     byFp.set(fp, item);
