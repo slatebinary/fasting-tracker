@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.14",
+  "version": "1.21.15",
   "released": "2026-11-22",
-  "notes": "Preserve unsaved edits as a recovery snapshot after cross-tab write conflicts",
+  "notes": "Fix selected Weight chart callout contrast across appearance themes",
   "entry": "./index.html",
   "shell": [
     "./",
