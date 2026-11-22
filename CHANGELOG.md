@@ -1,3 +1,9 @@
+## v1.21.8 — 2026-11-22
+
+- Extract daily/weekly weigh-in reminder cadence, anchor handling and due-time eligibility into a pure policy helper; reminder delivery, cross-tab locking, reservation, persistence and notification presentation remain in the existing runtime adapter.
+- Preserve the exact 24-hour and seven-day due boundaries, latest-measurement anchoring, first-run anchor initialization and delivered-token suppression.
+- Add deterministic tests for both cadences, anchor initialization, duplicate suppression, invalid timestamps and input immutability. No notification preferences, stored records or backup formats change.
+
 ## v1.21.7 — 2026-11-22
 
 - Extract target-reached and prolonged-fast safety notification threshold timing into a shared pure policy helper; notification permissions, active-fast identity checks, deduplication, reservations and delivery remain in the existing runtime adapter.
