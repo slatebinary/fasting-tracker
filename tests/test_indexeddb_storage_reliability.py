@@ -56,6 +56,7 @@ assert "actualRevision !== persistedDataRevision" in reset and "FT_STALE_REVISIO
 assert reset.index("actualRevision !== persistedDataRevision") < reset.index("state.clear();"), "Reset must compare revision before clearing stores"
 assert "persistedDataRevision = Number(empty.revision) || 0;" in reset, "Successful reset must advance the revision baseline"
 assert "persistedDataRevision = Number(data.revision) || 0;" in source[source.index("async function reloadFromIndexedDB"):], "Cross-tab reload must refresh the revision baseline"
+assert "if (!primaryPersistScheduled) reloadFromIndexedDB({ notify: false });" in source, "External revision notifications must not discard an in-flight local edit before compare-and-swap"
 assert "await reloadFromIndexedDB({notify:true});" in source[source.index("function queuePrimaryPersistence"):], "A rejected queued write must reload committed data"
 assert "catch (err) { if (err?.code === 'FT_STALE_REVISION') await reloadFromIndexedDB({notify:true}); }" in source, "A rejected lifecycle flush must not retry stale data"
 
