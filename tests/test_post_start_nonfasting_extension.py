@@ -36,6 +36,6 @@ for lang in ("en", "bg", "es"):
                 "fasting.extendNonFastingConfirm", "fasting.startDelayedFor", "fasting.cancelDelayedStart"):
         assert key in locale and locale[key], f"{lang}: missing {key}"
 version = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))
-assert version["version"] == "1.21.7"
+assert version["version"] == "1.21.8"
 assert "./src/app/js/43z-post-start-extension-policy.js" in version["shell"]
 print("PASS: post-start non-fasting extension UI, 30-minute eligibility, delayed-start persistence, target preservation and localization")
