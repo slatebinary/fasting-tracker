@@ -1,3 +1,9 @@
+## v1.21.11 — 2026-11-22
+
+- Separate release validation from GitHub Pages deployment so the validation workflow cannot race or duplicate the repository's configured Pages deployment.
+- Keep the post-regression release gate, app-shell/hash verification and Pages artifact preparation; upload the validated site as a normal inspection artifact.
+- Remove unnecessary Pages deployment permissions from the validation workflow.
+
 ## v1.21.10 — 2026-11-22
 
 - Add deterministic regression coverage for internal recovery-snapshot retention across recent, daily, weekly and monthly preservation tiers.
