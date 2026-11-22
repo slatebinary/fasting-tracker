@@ -13,21 +13,34 @@
     return new Promise((resolve, reject) => {
       const tx = db.transaction(stores, 'readwrite');
       const state = tx.objectStore('state');
-      state.clear();
-      state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(empty)});
-      state.put({key:'dailyTotals', revision:empty.revision, entries:[]});
+      let conflictError = null;
       const savedAt = new Date().toISOString();
-      state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:empty.revision});
-      for (const name of stores.slice(1)) tx.objectStore(name).clear();
+      const revisionRequest = state.get('settings');
+      revisionRequest.onsuccess = () => {
+        const storedSettings = revisionRequest.result?.data;
+        const actualRevision = storedSettings ? (Number(storedSettings.revision) || 0) : null;
+        if (actualRevision !== persistedDataRevision) {
+          conflictError = new Error('IndexedDB data changed in another tab');
+          conflictError.code = 'FT_STALE_REVISION';
+          try { tx.abort(); } catch {}
+          return;
+        }
+        state.clear();
+        state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(empty)});
+        state.put({key:'dailyTotals', revision:empty.revision, entries:[]});
+        state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:empty.revision});
+        for (const name of stores.slice(1)) tx.objectStore(name).clear();
+      };
       tx.oncomplete = () => {
+        persistedDataRevision = Number(empty.revision) || 0;
         persistedRecordMap = new Map(); persistedDeletedFastMap = new Map();
         persistedWeightMap = new Map(); persistedDeletedWeightMap = new Map();
         lastSuccessfulIdbSaveAt = savedAt;
         try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:empty.revision, at:Date.now()})); } catch {}
         resolve(true);
       };
-      tx.onerror = () => reject(tx.error || new Error('IndexedDB reset transaction failed'));
-      tx.onabort = () => reject(tx.error || new Error('IndexedDB reset transaction aborted'));
+      tx.onerror = () => { if (!conflictError) reject(tx.error || new Error('IndexedDB reset transaction failed')); };
+      tx.onabort = () => reject(conflictError || tx.error || new Error('IndexedDB reset transaction aborted'));
     });
   }
 
@@ -141,26 +154,40 @@
         ['weights', targetWeightMap, persistedWeightMap],
         ['deletedWeights', targetDeletedWeightMap, persistedDeletedWeightMap]
       ];
-      state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(snapshotData)});
-      state.put({key:'dailyTotals', revision:snapshotData.revision, entries:[...storedDayTotalsMap.entries()]});
-      for (const [storeName, next, previous] of collections) {
-        const store = tx.objectStore(storeName);
-        if (force) store.clear();
-        else for (const id of previous.keys()) if (!next.has(id)) store.delete(id);
-        for (const [id, value] of next) if (force || !sameStoredValue(previous.get(id), value)) store.put(value);
-      }
-      const savedAt = new Date().toISOString();
-      state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:snapshotData.revision});
-      tx.oncomplete = () => {
-        persistedRecordMap = targetRecordMap;
+      const expectedRevision = persistedDataRevision;
+      let conflictError = null;
+      tx.onerror = () => { if (!conflictError) reject(tx.error || new Error('IndexedDB record persistence failed')); };
+      tx.onabort = () => reject(conflictError || tx.error || new Error('IndexedDB record persistence aborted'));
+      const revisionRequest = state.get('settings');
+      revisionRequest.onsuccess = () => {
+        const storedSettings = revisionRequest.result?.data;
+        const actualRevision = storedSettings ? (Number(storedSettings.revision) || 0) : null;
+        if (actualRevision !== expectedRevision) {
+          conflictError = new Error('IndexedDB data changed in another tab');
+          conflictError.code = 'FT_STALE_REVISION';
+          try { tx.abort(); } catch {}
+          return;
+        }
+        state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(snapshotData)});
+        state.put({key:'dailyTotals', revision:snapshotData.revision, entries:[...storedDayTotalsMap.entries()]});
+        for (const [storeName, next, previous] of collections) {
+          const store = tx.objectStore(storeName);
+          if (force) store.clear();
+          else for (const id of previous.keys()) if (!next.has(id)) store.delete(id);
+          for (const [id, value] of next) if (force || !sameStoredValue(previous.get(id), value)) store.put(value);
+        }
+        const savedAt = new Date().toISOString();
+        state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:snapshotData.revision});
+        tx.oncomplete = () => {
+          persistedDataRevision = Number(snapshotData.revision) || 0;
+          persistedRecordMap = targetRecordMap;
         persistedDeletedFastMap = targetDeletedFastMap;
         persistedWeightMap = targetWeightMap;
         persistedDeletedWeightMap = targetDeletedWeightMap;
         lastSuccessfulIdbSaveAt = savedAt;
         resolve(true);
       };
-      tx.onerror = () => reject(tx.error || new Error('IndexedDB record persistence failed'));
-      tx.onabort = () => reject(tx.error || new Error('IndexedDB record persistence aborted'));
+      };
     });
   }
 
@@ -222,9 +249,9 @@
   }
 
   async function persistPrimaryNow(snapshotData = data, options = {}) {
-    persistSmallPreferences();
     try {
       await persistRecordStores(snapshotData, options);
+      persistSmallPreferences();
       try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:snapshotData.revision, at:Date.now()})); } catch {}
       return true;
     } catch (err) {
@@ -244,7 +271,11 @@
         try { await persistPrimaryNow(data); }
         catch (err) {
           console.error('IndexedDB persistence failed', err);
-          setTimeout(() => alert(t('error.save')), 0);
+          if (err?.code === 'FT_STALE_REVISION') {
+            await reloadFromIndexedDB({notify:true});
+          } else {
+            setTimeout(() => alert(t('error.save')), 0);
+          }
         } finally {
           primaryPersistScheduled = false;
           resolve();
@@ -256,7 +287,8 @@
   }
 
   async function flushPrimaryPersistence() {
-    try { await persistPrimaryNow(data); } catch {}
+    try { await persistPrimaryNow(data); }
+    catch (err) { if (err?.code === 'FT_STALE_REVISION') await reloadFromIndexedDB({notify:true}); }
   }
 
   async function encodeSnapshotPayload(snapshotData) {
@@ -338,6 +370,8 @@
           canonicalizedStored = prepared.changed;
         }
       } else data = cloneDefault();
+
+      persistedDataRevision = storageSource.source === 'record-stores' ? (Number(data.revision) || 0) : null;
 
       // Internal recovery snapshots are intentionally not a long-term interchange
       // format. Only current IndexedDB snapshots are retained; obsolete localStorage
@@ -494,6 +528,8 @@
       if (!Array.isArray(next.deletedFasts)) next.deletedFasts = [];
       if (!Array.isArray(next.deletedWeights)) next.deletedWeights = [];
       data = next;
+      persistedDataRevision = Number(data.revision) || 0;
+      persistSmallPreferences();
       const daily = recordSnapshot?.dailyTotals;
       storedDayTotalsMap = daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)
         ? new Map(daily.entries) : buildStoredDayTotals(data.records);

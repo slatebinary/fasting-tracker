@@ -106,6 +106,8 @@
   let snapshotCache = [];
   let storedDayTotalsMap = new Map();
   let persistedRecordMap = new Map();
+  // Revision this tab last loaded or successfully committed to IndexedDB.
+  let persistedDataRevision = null;
   let dayTotalsRecordMap = new Map();
   let persistedDeletedFastMap = new Map();
   let persistedWeightMap = new Map();
