@@ -58,10 +58,6 @@ with sync_playwright() as p:
         "document.querySelector('#weightChartRange')?.value === '0'",
         timeout=10000,
     )
-    page.wait_for_function(
-        "() => document.querySelector('#weightChartData')?.innerText && document.querySelector('#weightChartData').innerText !== window.__weightChartDataBefore",
-        timeout=10000,
-    ) if False else None
     after = page.locator("#weightChartData").inner_text()
     if before == after:
         raise AssertionError("Keyboard navigation changed the selected point but left the expanded text alternative stale")
