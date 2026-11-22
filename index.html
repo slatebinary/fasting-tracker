@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.5" />
+  <meta name="ft-app-version" content="1.21.6" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.5';
+  const APP_VERSION = '1.21.6';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4499,13 +4499,11 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if (!notificationEnabledFor('cycleComplete') || data.activeStart) return false;
     const record = latestCompletedFast();
     if (!record) return false;
-    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || endMs - startMs >= 24 * 3600000) return false;
-    const cycleEnd = startMs + 24 * 3600000;
-    if (nowMs < cycleEnd) return false;
     const enabledAt = validDate(notificationRuntimeState.enabledAt);
-    if (!enabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
-    if (cycleEnd < enabledAt.getTime()) return false;
+    const policy = resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs:enabledAt?.getTime()});
+    if (!policy) return false;
+    if (policy.initializeEnabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
+    const cycleEnd = policy.cycleEnd;
     const token = String(record.id);
     return sendDeduplicatedNotification({
       tokenKey:'cycleCompleteToken',
@@ -4513,7 +4511,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
       token,
       isDue:() => {
         const current = latestCompletedFast();
-        return notificationEnabledFor('cycleComplete') && !data.activeStart && current?.id === record.id && cycleEnd >= (validDate(notificationRuntimeState.enabledAt)?.getTime() || Infinity) && nowMs >= cycleEnd;
+        const currentEnabledAt = validDate(notificationRuntimeState.enabledAt);
+        const currentPolicy = resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs:currentEnabledAt?.getTime()});
+        return notificationEnabledFor('cycleComplete') && !data.activeStart && current?.id === record.id && currentPolicy?.due === true;
       },
       deliver:() => sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBodyShort'), {screen:'fasting',tag:`fasting-cycle-${record.id}`})
     });
@@ -9324,6 +9324,19 @@ function selectLatestWeightRecordPolicy(weights) {
     if (Number.isFinite(ms) && ms > latestMs) { latest = weight; latestMs = ms; }
   }
   return latest;
+}
+// Pure eligibility and timing policy for the 24-hour cycle-complete notification.
+function resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs}) {
+  if (!record) return null;
+  const startMs = new Date(record.start).getTime();
+  const endMs = new Date(record.end).getTime();
+  const dayMs = 24 * 3600000;
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || endMs - startMs >= dayMs) return null;
+  const cycleEnd = startMs + dayMs;
+  if (nowMs < cycleEnd) return null;
+  if (!Number.isFinite(enabledAtMs)) return {record,cycleEnd,due:false,initializeEnabledAt:true};
+  if (cycleEnd < enabledAtMs) return null;
+  return {record,cycleEnd,due:true,initializeEnabledAt:false};
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
