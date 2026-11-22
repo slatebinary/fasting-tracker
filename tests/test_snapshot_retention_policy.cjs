@@ -26,7 +26,7 @@ for(const i of [99,69,39,9])expected.add('snapshot-'+i);
 assert.deepEqual(kept.map(x=>x.id),[...expected].sort((a,b)=>Number(b.slice(9))-Number(a.slice(9))));
 assert.deepEqual(kept.map(x=>x.createdAt),kept.map(x=>x.createdAt).slice().sort().reverse());
 assert.equal(JSON.stringify(rows),original,'retention must not mutate the caller collection');
-assert.ok(kept.length<=SNAPSHOT_RECENT_KEEP+SNAPSHOT_DAILY_KEEP+SNAPSHOT_WEEKLY_KEEP+SNAPSHOT_MONTHLY_KEEP);
+assert.ok(kept.length<=22,'retention must not exceed the sum of all preservation-tier limits');
 
 // Invalid metadata is excluded; valid legacy metadata receives derived calendar buckets.
 const mixed=prune([
