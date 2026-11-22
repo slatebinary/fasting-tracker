@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.10",
+  "version": "1.21.11",
   "released": "2026-11-22",
-  "notes": "Verify internal recovery snapshot retention across preservation tiers",
+  "notes": "Separate release validation from the GitHub Pages deployment workflow",
   "entry": "./index.html",
   "shell": [
     "./",
