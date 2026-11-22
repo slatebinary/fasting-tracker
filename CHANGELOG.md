@@ -1,3 +1,9 @@
+## v1.21.9 — 2026-11-22
+
+- Extend the real service-worker browser regression to simulate an app release that loads but never confirms startup.
+- Verify the five-minute rollback grace boundary, automatic restoration of the last known-good release cache, cleanup of the unconfirmed cache, and preservation of an active fast.
+- No production runtime, storage schema, notification, or backup behavior changes; this release strengthens update-recovery verification.
+
 ## v1.21.8 — 2026-11-22
 
 - Extract daily/weekly weigh-in reminder cadence, anchor handling and due-time eligibility into a pure policy helper; reminder delivery, cross-tab locking, reservation, persistence and notification presentation remain in the existing runtime adapter.
