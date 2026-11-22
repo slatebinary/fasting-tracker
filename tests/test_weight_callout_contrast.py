@@ -29,11 +29,9 @@ def contrast(foreground, background):
 
 # Check the actual foreground/card pairs for every explicitly defined appearance.
 themes = []
-for line in css.splitlines():
-    if 'html[data-theme="' not in line:
-        continue
-    theme = line.split('html[data-theme="', 1)[1].split('"', 1)[0]
-    declarations = line.split("{", 1)[1].split("}", 1)[0]
+for chunk in css.split('html[data-theme="')[1:]:
+    theme = chunk.split('"', 1)[0]
+    declarations = chunk.split("{", 1)[1].split("}", 1)[0]
     tokens = {}
     for declaration in declarations.split(";"):
         if ":" not in declaration:
