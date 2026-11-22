@@ -307,14 +307,14 @@ def install_unconfirmed_release_and_verify_rollback(page, version, previous_vers
     page.add_init_script("""() => {
       const original = ServiceWorker.prototype.postMessage;
       ServiceWorker.prototype.postMessage = function(message, ...args) {
-        if (message?.type === 'CONFIRM_RELEASE' && sessionStorage.getItem('__ftSuppressConfirmOnce') === '1') {
-          sessionStorage.removeItem('__ftSuppressConfirmOnce');
+        if (message?.type === 'CONFIRM_RELEASE' && message?.version === sessionStorage.getItem('__ftSuppressConfirmVersion')) {
+          sessionStorage.removeItem('__ftSuppressConfirmVersion');
           return;
         }
         return original.call(this, message, ...args);
       };
     }""")
-    page.evaluate("sessionStorage.setItem('__ftSuppressConfirmOnce', '1')")
+    page.evaluate("version => sessionStorage.setItem('__ftSuppressConfirmVersion', version)", version)
     ensure_update_group_open(page)
     page.evaluate("document.querySelector('#updateBtn').click()")
     page.wait_for_function("() => !document.querySelector('#updateBanner').hidden", timeout=20000)
