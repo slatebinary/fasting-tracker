@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.7",
+  "version": "1.21.8",
   "released": "2026-11-22",
-  "notes": "Extract target-reached and 24-hour safety notification timing into a pure fast-threshold policy helper",
+  "notes": "Extract daily/weekly weigh-in reminder cadence and due-time eligibility into a pure policy helper",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -94,7 +94,8 @@
     "./src/app/js/43zc-notification-detail-dismissal-policy.js",
     "./src/app/js/43zd-latest-weight-record-policy.js",
     "./src/app/js/43ze-cycle-complete-notification-policy.js",
-    "./src/app/js/43zf-fast-threshold-notification-policy.js"
+    "./src/app/js/43zf-fast-threshold-notification-policy.js",
+    "./src/app/js/43zg-weigh-in-reminder-policy.js"
   ],
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
