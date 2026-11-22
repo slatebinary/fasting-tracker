@@ -99,9 +99,9 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "cd583c5d4bc55dbdb49c678b02a7eeac70bd599501cc94597ce934ca8d0d4009",
-    "./index.html": "cd583c5d4bc55dbdb49c678b02a7eeac70bd599501cc94597ce934ca8d0d4009",
-    "./changelog.html": "86769fcca25d9178c75e7b09b256321cc2eee0527c64cfb239b8cbfb0ea7e4be",
+    "./": "1185dcff345592deff27582bf7c6539941cca661d44633905cb21035bbd8510b",
+    "./index.html": "1185dcff345592deff27582bf7c6539941cca661d44633905cb21035bbd8510b",
+    "./changelog.html": "2b6ea1cfe8b3b6ddc2fa9093a23a0ba9acb61e1725915557f80b1654d1d6c33d",
     "./i18n/en.js": "183f2511c381cf4b324d9b08c3b06741c74ffe74e114550ab4c7382f34904bc9",
     "./i18n/bg.js": "e1bad6ff32863c7810e704728e3c4929d4b156eaf15c6b9a090532cd712173e7",
     "./i18n/es.js": "918c28e5cbd52160a21dd33fcb941beac0b62d15e62169f0077f9a2239507366",
@@ -113,10 +113,10 @@
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "03ebab2d847660b3d9d257415d2efcd5175e705f6d459d128c0aefa9f5fc92b3",
     "./js/release-health.js": "3c561d7a4326cf161b9c7a17b37913264b72437a0c84819f9cbdc0369b97ba6e",
-    "./privacy.html": "98fbd12e424bee6d36df41aff12612dc1a268138ecd30d9cfbcb2e79558b7a65",
-    "./about.html": "74a4e3a556056810a8bd9482a846aec0c6d994f0b55d714918324b511de1557f",
-    "./branding.html": "6a8f37b63690f43921ac1abb35cd450dbf17404f4a1c88a4f4fa9a9f84106b5a",
-    "./license.html": "a01335babad1bef086ce63286c9f6d4817ba0b7c163e508a49f630d5193124e9",
+    "./privacy.html": "bbbd67164df2ae6be0c5968f440eed03aade2dc01488cb3b11ce95de746e9861",
+    "./about.html": "0daa6a610c3246bf4eae629d6e8135875d81b36615a26d85ddab89ea23a45ea2",
+    "./branding.html": "98df2df983ade2118c3bcc3f411107b11f3a9147cd8200fb3b91e4bbf077d11e",
+    "./license.html": "43a2bcf87ffe66714db3cf12c996753afe46637ccf878ad199965ec05f33c68c",
     "./404.html": "afa92afe8dd7cd8f4e3878b22f27a9fd89f469e5d01da9b8cb7bfc94898a1f7d",
     "./en/": "43a8e58e8c09ebab103418781c6f32bfb2b837870c62049368258727ae4d29ed",
     "./bg/": "ea495c81b191e3ad009de3578666dbd59415e637320922685a45af22b5de21ec",
@@ -187,6 +187,7 @@
     "./src/app/js/43zb-notification-detail-recording-policy.js": "ee1fb7b355170f5fd1b5a86095cfac9673f2541369f842dd1acea5ad408e2fea",
     "./src/app/js/43zc-notification-detail-dismissal-policy.js": "a047dcb235a5aaf4b0422198b099e06c468555d47251ab6229689adb775e03dd",
     "./src/app/js/43zd-latest-weight-record-policy.js": "144ba4a6bb532fb28d2f2f452611c3a33183b18cec632cf2e6f9da8191caf1fc",
-    "./src/app/js/43ze-cycle-complete-notification-policy.js": "4cce5cee03e855b6b865864eaa66a287c587a621ae45ec59ddb6f1b911b7f963"
+    "./src/app/js/43ze-cycle-complete-notification-policy.js": "4cce5cee03e855b6b865864eaa66a287c587a621ae45ec59ddb6f1b911b7f963",
+    "./src/app/js/43zf-fast-threshold-notification-policy.js": "ce23a63defd5e5c77dd5a8c9b5528b108f078273e9e1a74743580578882e105b"
   }
 }

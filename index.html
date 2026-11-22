@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.6" />
+  <meta name="ft-app-version" content="1.21.7" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.6';
+  const APP_VERSION = '1.21.7';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4466,16 +4466,17 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   async function maybeNotifyTargetReached(nowMs = Date.now()) {
     if (!notificationEnabledFor('targetReached') || !data.activeStart) return false;
     const start = data.activeStart;
-    const startMs = new Date(start).getTime();
     const target = activeTargetHours();
     const targetMs = goalMs(target);
-    if (!Number.isFinite(startMs) || nowMs < startMs + targetMs) return false;
+    const timing = resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:targetMs});
+    if (!timing) return false;
+    const dueAtMs = timing.dueAtMs;
     const token = `${start}|${target}`;
     return sendDeduplicatedNotification({
       tokenKey:'targetReachedToken',
       reservationKey:'targetReachedReservation',
       token,
-      isDue:() => notificationEnabledFor('targetReached') && data.activeStart === start && activeTargetHours() === target && nowMs >= startMs + targetMs,
+      isDue:() => notificationEnabledFor('targetReached') && data.activeStart === start && activeTargetHours() === target && resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:targetMs})?.dueAtMs === dueAtMs,
       deliver:() => sendDeviceNotification('target', t('notifications.targetTitle'), t('notifications.targetBodyShort', {target:formatGoal(target)}), {screen:'fasting',tag:`fasting-target-${token}`,detailParams:{targetHours:target}})
     });
   }
@@ -4483,14 +4484,15 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   async function maybeNotifyLongFastSafety(nowMs = Date.now()) {
     if (!notificationEnabledFor('longFastSafety') || !data.activeStart) return false;
     const start = data.activeStart;
-    const startMs = new Date(start).getTime();
-    if (!Number.isFinite(startMs) || nowMs < startMs + 24 * 3600000) return false;
+    const timing = resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:24 * 3600000});
+    if (!timing) return false;
+    const dueAtMs = timing.dueAtMs;
     const token = String(start);
     return sendDeduplicatedNotification({
       tokenKey:'longFastSafetyToken',
       reservationKey:'longFastSafetyReservation',
       token,
-      isDue:() => notificationEnabledFor('longFastSafety') && data.activeStart === start && nowMs >= startMs + 24 * 3600000,
+      isDue:() => notificationEnabledFor('longFastSafety') && data.activeStart === start && resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:24 * 3600000})?.dueAtMs === dueAtMs,
       deliver:() => sendDeviceNotification('safety', t('notifications.safetyTitle'), t('notifications.safetyBodyShort'), {screen:'fasting',tag:`fasting-safety-${token}`})
     });
   }
@@ -9337,6 +9339,15 @@ function resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs}) {
   if (!Number.isFinite(enabledAtMs)) return {record,cycleEnd,due:false,initializeEnabledAt:true};
   if (cycleEnd < enabledAtMs) return null;
   return {record,cycleEnd,due:true,initializeEnabledAt:false};
+}
+// Pure timing policy shared by fasting target and prolonged-fast safety notifications.
+function resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs}) {
+  if (start == null || start === '' || !Number.isFinite(nowMs) || !Number.isFinite(thresholdMs) || thresholdMs < 0) return null;
+  const startMs = new Date(start).getTime();
+  if (!Number.isFinite(startMs)) return null;
+  const dueAtMs = startMs + thresholdMs;
+  if (!Number.isFinite(dueAtMs) || nowMs < dueAtMs) return null;
+  return {startMs,dueAtMs,elapsedMs:nowMs-startMs};
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
