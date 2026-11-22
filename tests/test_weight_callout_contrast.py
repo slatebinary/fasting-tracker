@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Regression: selected Weight chart and period-detail subtitles remain high contrast."""
 from pathlib import Path
-import re
 
 root = Path(__file__).resolve().parents[1]
 js = (root/'src/app/js/32-weight-chart-interaction.js').read_text(encoding='utf-8')
@@ -29,13 +28,25 @@ def contrast(foreground, background):
     return (high + 0.05) / (low + 0.05)
 
 # Check the actual foreground/card pairs for every explicitly defined appearance.
-themes = re.findall(r'html\\[data-theme="([^"]+)"\\]\\s*\\{([^}]*)\\}', css)
-assert len(themes) >= 8, f"Expected all standard and accessibility palettes, found {len(themes)}"
-for theme, block in themes:
-    tokens = dict(re.findall(r'--(text|card):\\s*(#[0-9a-fA-F]{3,6})', block))
+themes = []
+for line in css.splitlines():
+    if 'html[data-theme="' not in line:
+        continue
+    theme = line.split('html[data-theme="', 1)[1].split('"', 1)[0]
+    declarations = line.split("{", 1)[1].split("}", 1)[0]
+    tokens = {}
+    for declaration in declarations.split(";"):
+        if ":" not in declaration:
+            continue
+        name, value = declaration.split(":", 1)
+        name = name.strip()
+        if name in ("--text", "--card"):
+            tokens[name[2:]] = value.strip()
     assert set(tokens) == {"text", "card"}, f"{theme}: missing text/card token: {tokens}"
     ratio = contrast(tokens["text"], tokens["card"])
     assert ratio >= 4.5, f"{theme}: canvas callout text/card contrast is {ratio:.2f}:1"
+    themes.append(theme)
+assert len(themes) >= 8, f"Expected all standard and accessibility palettes, found {len(themes)}"
 
 detail_expected = ".weightPointDetailGroup.primary .weightPointDetailMeta { display:inline-block; width:fit-content; max-width:100%; margin-top:3px; padding:4px 8px; border:1px solid rgba(255,255,255,.65); border-radius:7px; background:rgba(0,0,0,.32); color:#fff; font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:750; line-height:1.4; }"
 if detail_expected not in css:
