@@ -21,16 +21,16 @@ const base = {
 };
 const incoming = {
   records:[
-    fast('f1','2026-01-01T00:00:00Z','2026-01-01T16:00:00Z',{deleted:true,deletedAt:'2026-02-01T00:00:00Z'}),
+    fast('f1','2026-01-01T00:00:00Z','2026-01-01T16:00:00Z'),
     fast('fingerprint-duplicate','2026-01-01T00:00:00Z','2026-01-01T16:00:00Z'),
     fast('f2','2026-01-04T00:00:00Z','2026-01-04T16:00:00Z')
   ],
-  deletedFasts:[fast('df1','2026-01-02T00:00:00Z','2026-01-02T16:00:00Z',{deleted:true,deletedAt:'2026-02-01T00:00:00Z'}),fast('df2','2026-01-05T00:00:00Z','2026-01-05T16:00:00Z',{deletedAt:'2026-01-06T00:00:00Z'})],
+  deletedFasts:[fast('df1','2026-01-02T00:00:00Z','2026-01-02T16:00:00Z',{deleted:true,deletedAt:'2026-01-03T00:00:00Z'}),fast('df2','2026-01-05T00:00:00Z','2026-01-05T16:00:00Z',{deletedAt:'2026-01-06T00:00:00Z'})],
   weights:[
-    weight('w1','2026-01-01T08:00:00Z',80,{deleted:true}),
+    weight('w1','2026-01-01T08:00:00Z',80),
     weight('w2','2026-01-04T08:00:00Z',79)
   ],
-  deletedWeights:[weight('dw1','2026-01-02T08:00:00Z',81,{deleted:true,deletedAt:'2026-02-01T00:00:00Z'}),weight('dw2','2026-01-05T08:00:00Z',78,{deletedAt:'2026-01-06T00:00:00Z'})],
+  deletedWeights:[weight('dw1','2026-01-02T08:00:00Z',81,{deleted:true,deletedAt:'2026-01-03T00:00:00Z'}),weight('dw2','2026-01-05T08:00:00Z',78,{deletedAt:'2026-01-06T00:00:00Z'})],
   activeStart:null
 };
 const before = JSON.stringify({base,incoming});
@@ -48,6 +48,14 @@ const rejects = (current,remote,pattern) => assert.throws(
 const empty = () => ({records:[],deletedFasts:[],weights:[],deletedWeights:[],activeStart:null});
 rejects({...empty(),records:[fast('same','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z')]},
   {...empty(),records:[fast('same','2026-01-01T00:00:00Z','2026-01-01T13:00:00Z')]},/same id differs/);
+rejects({...empty(),deletedFasts:[fast('audit-fast','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z',{deleted:true,deletedAt:'2026-01-02T00:00:00Z',deletionReason:'user'})]},
+  {...empty(),deletedFasts:[fast('audit-fast','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z',{deleted:true,deletedAt:'2026-01-03T00:00:00Z',deletionReason:'user'})]},/same id differs/);
+rejects({...empty(),records:[fast('audit-history','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z',{editHistory:[{editedAt:'2026-01-02T00:00:00Z',goalHours:16}]})]},
+  {...empty(),records:[fast('audit-history','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z',{editHistory:[{editedAt:'2026-01-03T00:00:00Z',goalHours:16}]})]},/same id differs/);
+rejects({...empty(),deletedWeights:[weight('audit-weight','2026-01-01T08:00:00Z',80,{deleted:true,deletedAt:'2026-01-02T00:00:00Z'})]},
+  {...empty(),deletedWeights:[weight('audit-weight','2026-01-01T08:00:00Z',80,{deleted:true,deletedAt:'2026-01-03T00:00:00Z'})]},/same id differs/);
+rejects({...empty(),records:[fast('fp-audit','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z',{editHistory:[{editedAt:'2026-01-02T00:00:00Z'}]})]},
+  {...empty(),records:[fast('fp-audit-copy','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z',{editHistory:[{editedAt:'2026-01-03T00:00:00Z'}]})]},/matching fingerprint differs/);
 rejects({...empty(),records:[fast('live','2026-01-01T00:00:00Z','2026-01-01T12:00:00Z')]},
   {...empty(),deletedFasts:[fast('live','2026-01-02T00:00:00Z','2026-01-02T12:00:00Z')]},/both live and deleted/);
 rejects({...empty(),weights:[weight('live-w','2026-01-01T08:00:00Z',80)]},
