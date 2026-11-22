@@ -1,3 +1,10 @@
+## v1.21.16 — 2026-11-23
+
+- Give the primary navigation landmark and tablist localized accessible names in English, Bulgarian and Spanish.
+- Connect each navigation tab to its matching labelled screen panel and maintain a single keyboard Tab stop while preserving arrow-key activation.
+- Add browser regression coverage for tab/panel relationships, keyboard navigation and all three interface languages.
+- No storage schema or backup-format changes.
+
 ## v1.21.15 — 2026-11-22
 
 - Render the selected Weight chart period subtitle using the active theme's foreground text token instead of hard-coded white, keeping it readable on light, dark, grayscale and colour-vision card surfaces.
