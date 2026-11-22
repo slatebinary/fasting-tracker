@@ -21,7 +21,7 @@ const kept=prune(rows.slice().reverse());
 const expected=new Set();
 for(let i=99;i>=95;i--)expected.add('snapshot-'+i);
 for(let i=99;i>=93;i--)expected.add('snapshot-'+i);
-for(const i of [99,92,90,83])expected.add('snapshot-'+i);
+for(const i of [99,97,90,83])expected.add('snapshot-'+i);
 for(const i of [99,89,59,29])expected.add('snapshot-'+i);
 assert.deepEqual(kept.map(x=>x.id),[...expected].sort((a,b)=>Number(b.slice(9))-Number(a.slice(9))));
 assert.deepEqual(kept.map(x=>x.createdAt),kept.map(x=>x.createdAt).slice().sort().reverse());
