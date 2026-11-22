@@ -2,6 +2,9 @@
 
 - Refresh the Weight chart's on-demand text alternative when keyboard navigation changes the selected point or scroll position, keeping VoiceOver and other screen-reader users' visible data list synchronized with the chart.
 - Add browser regression coverage for keyboard navigation, selected-point announcements and the chart-data disclosure while traversing a long weight history.
+- Give the primary navigation landmark and tablist localized accessible names in English, Bulgarian and Spanish.
+- Connect each navigation tab to its matching labelled screen panel and maintain a single keyboard Tab stop while preserving arrow-key activation.
+- Add browser regression coverage for tab/panel relationships, keyboard navigation and all three interface languages.
 - No storage schema or external backup-format changes.
 
 ## v1.21.15 — 2026-11-22
