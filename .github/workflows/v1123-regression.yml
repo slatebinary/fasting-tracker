@@ -48,6 +48,7 @@ on:
       - refactor/v1.21.3-notification-detail-recording-policy
       - refactor/v1.21.4-notification-detail-dismissal-policy
       - refactor/v1.21.5-latest-weight-record-policy
+      - refactor/v1.21.6-cycle-complete-notification-policy
       - feat/v1.21.0-extend-nonfasting-period
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
@@ -105,6 +106,7 @@ jobs:
           node tests/test_notification_detail_recording_policy.cjs
           node tests/test_notification_detail_dismissal_policy.cjs
           node tests/test_latest_weight_record_policy.cjs
+          node tests/test_cycle_complete_notification_policy.cjs
           node tests/test_notification_snooze_restoration_policy.cjs
           node tests/test_storage_pressure_policy.cjs
           node tests/test_import_merge_policy.cjs

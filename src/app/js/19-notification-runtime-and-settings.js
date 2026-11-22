@@ -112,13 +112,11 @@
     if (!notificationEnabledFor('cycleComplete') || data.activeStart) return false;
     const record = latestCompletedFast();
     if (!record) return false;
-    const startMs = new Date(record.start).getTime(), endMs = new Date(record.end).getTime();
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || endMs - startMs >= 24 * 3600000) return false;
-    const cycleEnd = startMs + 24 * 3600000;
-    if (nowMs < cycleEnd) return false;
     const enabledAt = validDate(notificationRuntimeState.enabledAt);
-    if (!enabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
-    if (cycleEnd < enabledAt.getTime()) return false;
+    const policy = resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs:enabledAt?.getTime()});
+    if (!policy) return false;
+    if (policy.initializeEnabledAt) { notificationRuntimeState.enabledAt = new Date(nowMs).toISOString(); saveNotificationRuntimeState(); return false; }
+    const cycleEnd = policy.cycleEnd;
     const token = String(record.id);
     return sendDeduplicatedNotification({
       tokenKey:'cycleCompleteToken',
@@ -126,7 +124,9 @@
       token,
       isDue:() => {
         const current = latestCompletedFast();
-        return notificationEnabledFor('cycleComplete') && !data.activeStart && current?.id === record.id && cycleEnd >= (validDate(notificationRuntimeState.enabledAt)?.getTime() || Infinity) && nowMs >= cycleEnd;
+        const currentEnabledAt = validDate(notificationRuntimeState.enabledAt);
+        const currentPolicy = resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs:currentEnabledAt?.getTime()});
+        return notificationEnabledFor('cycleComplete') && !data.activeStart && current?.id === record.id && currentPolicy?.due === true;
       },
       deliver:() => sendDeviceNotification('cycle', t('notifications.cycleTitle'), t('notifications.cycleBodyShort'), {screen:'fasting',tag:`fasting-cycle-${record.id}`})
     });
