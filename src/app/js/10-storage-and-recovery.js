@@ -371,7 +371,7 @@
         }
       } else data = cloneDefault();
 
-      persistedDataRevision = recordBased ? (Number(data.revision) || 0) : null;
+      persistedDataRevision = storageSource.source === 'record-stores' ? (Number(data.revision) || 0) : null;
 
       // Internal recovery snapshots are intentionally not a long-term interchange
       // format. Only current IndexedDB snapshots are retained; obsolete localStorage
@@ -529,6 +529,7 @@
       if (!Array.isArray(next.deletedWeights)) next.deletedWeights = [];
       data = next;
       persistedDataRevision = Number(data.revision) || 0;
+      persistSmallPreferences();
       const daily = recordSnapshot?.dailyTotals;
       storedDayTotalsMap = daily && Number(daily.revision) === Number(data.revision) && Array.isArray(daily.entries)
         ? new Map(daily.entries) : buildStoredDayTotals(data.records);
