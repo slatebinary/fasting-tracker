@@ -1,3 +1,9 @@
+## v1.21.15 — 2026-11-22
+
+- Render the selected Weight chart period subtitle using the active theme's foreground text token instead of hard-coded white, keeping it readable on light, dark, grayscale and colour-vision card surfaces.
+- Extend contrast regression coverage to calculate the actual text/card contrast for every defined appearance palette.
+- No storage schema or backup-format changes.
+
 ## v1.21.14 — 2026-11-22
 
 - Before reloading after a stale cross-tab write, preserve this tab's newer unsaved state as an internal recovery snapshot.
