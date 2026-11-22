@@ -49,12 +49,14 @@ write = function_body("  async function persistRecordStores(", "  function canon
 assert "const expectedRevision = persistedDataRevision;" in write, "Write must use the tab's last committed revision as its baseline"
 assert "const revisionRequest = state.get('settings');" in write, "Write must read the authoritative revision in its write transaction"
 assert "actualRevision !== expectedRevision" in write and "FT_STALE_REVISION" in write, "Stale writes must abort atomically"
+assert "if (!conflictError) reject" in write, "Transaction error handling must preserve the stale-revision conflict code"
 assert write.index("actualRevision !== expectedRevision") < write.index("state.put({key:'settings'"), "No settings write may occur before the revision check"
 assert write.index("actualRevision !== expectedRevision") < write.index("if (force) store.clear()"), "Forced collection replacement must not bypass stale-write protection"
 assert "persistedDataRevision = Number(snapshotData.revision) || 0;" in write, "Committed writes must advance the tab's revision baseline"
 
 reset = function_body("  async function persistFullResetAtomic(empty) {", "  function dataSettingsOnly(")
 assert "actualRevision !== persistedDataRevision" in reset and "FT_STALE_REVISION" in reset, "Full reset must also reject a stale tab"
+assert "if (!conflictError) reject" in reset, "Reset transaction errors must preserve stale-revision conflicts"
 assert reset.index("actualRevision !== persistedDataRevision") < reset.index("state.clear();"), "Reset must compare revision before clearing stores"
 assert "persistedDataRevision = Number(empty.revision) || 0;" in reset, "Successful reset must advance the revision baseline"
 assert "persistedDataRevision = Number(data.revision) || 0;" in source[source.index("async function reloadFromIndexedDB"):], "Cross-tab reload must refresh the revision baseline"
