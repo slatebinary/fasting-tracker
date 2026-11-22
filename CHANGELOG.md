@@ -1,3 +1,10 @@
+## v1.21.13 — 2026-11-22
+
+- Compare each tab's last-loaded IndexedDB revision with the authoritative revision inside the same write transaction, preventing stale tabs from replacing newer settings, fasting records or weight records.
+- Apply the same atomic guard to validated restore replacements and full resets; reject concurrent stale operations before any stores are changed.
+- On conflict, reject the stale write and refresh from committed data. Avoid reloading on a cross-tab signal while a local save is queued, so the pending write reaches the revision guard.
+- Add a real two-tab browser regression using shared native IndexedDB. No storage schema or backup-format changes.
+
 ## v1.21.12 — 2026-11-22
 
 - Reject same-ID backup merge records when any persisted field differs, including deletion timestamps/reasons and edit-audit history.
