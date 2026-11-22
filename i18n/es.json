@@ -1185,5 +1185,8 @@
   "fasting.extendNonFastingPreview": "Nuevo inicio del ayuno: {date}",
   "fasting.extendNonFastingConfirm": "Aplicar ampliación",
   "fasting.startDelayedFor": "El ayuno comenzará a las {date}",
-  "fasting.cancelDelayedStart": "Cancelar inicio aplazado"
+  "fasting.cancelDelayedStart": "Cancelar inicio aplazado",
+  "sync.conflictSnapshotLabel": "Cambios sin guardar de esta pestaña",
+  "sync.conflictSnapshotSaved": "Se guardó una versión más reciente en otra pestaña. Los cambios sin guardar de esta pestaña se conservaron en un punto de recuperación. Abre Ajustes → Datos → Restaurar punto de recuperación para revisarlos antes de continuar.",
+  "sync.conflictSnapshotFailed": "Se guardó una versión más reciente en otra pestaña. No se pudieron conservar los cambios sin guardar de esta pestaña en un punto de recuperación. Se han cargado los datos guardados más recientes; repite la acción y comprueba tu copia de seguridad."
 }
