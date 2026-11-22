@@ -130,7 +130,7 @@ if sync_playwright:
         tab_a, tab_b = context.new_page(), context.new_page()
         try:
             tab_a.goto(origin)
-            tab_a.evaluate("""async data => {
+            tab_a.evaluate("""async ({data,version}) => {
               const request=indexedDB.open('FastingTrackerDB',2);
               request.onupgradeneeded=()=>{
                 const db=request.result;
@@ -150,8 +150,8 @@ if sync_playwright:
                   tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
                 };
               });
-              localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:'1.21.12'}));
-            }""", data)
+              localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:version}));
+            }""", {"data": data, "version": version})
             html = inlined_html()
             tab_a.set_content(html, wait_until="domcontentloaded")
             tab_a.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
