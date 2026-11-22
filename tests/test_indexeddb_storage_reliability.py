@@ -114,11 +114,14 @@ if sync_playwright:
         # Tab B queues a settings edit but holds its persistence frame; Tab A commits
         # first. Releasing B must hit the in-transaction revision guard, not overwrite A.
         class BlankHandler(BaseHTTPRequestHandler):
+            app_html = ""
             def do_GET(self):
+                body = self.app_html.encode("utf-8") if self.path == "/app" else b"<!doctype html><title>Fasting Tracker test origin</title>"
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
                 self.end_headers()
-                self.wfile.write(b"<!doctype html><title>Fasting Tracker test origin</title>")
+                self.wfile.write(body)
             def log_message(self, *_args):
                 pass
     
@@ -152,12 +155,12 @@ if sync_playwright:
               });
               localStorage.setItem('fastingTracker.appMeta',JSON.stringify({lastAppVersion:version}));
             }""", {"data": data, "version": version})
-            html = inlined_html()
-            tab_a.set_content(html, wait_until="domcontentloaded")
+            BlankHandler.app_html = inlined_html()
+            tab_a.goto(origin + "app")
             tab_a.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
-            tab_b.goto(origin)
-            tab_b.set_content(html, wait_until="domcontentloaded")
+            tab_b.goto(origin + "app")
             tab_b.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
+            assert tab_a.evaluate("location.origin") == tab_b.evaluate("location.origin") == origin.rstrip("/")
             for page in (tab_a, tab_b):
                 page.wait_for_function("document.querySelector('#appearanceSelect')?.value === 'system'", timeout=10000)
     
