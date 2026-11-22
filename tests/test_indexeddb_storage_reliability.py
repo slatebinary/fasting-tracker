@@ -61,8 +61,10 @@ assert reset.index("actualRevision !== persistedDataRevision") < reset.index("st
 assert "persistedDataRevision = Number(empty.revision) || 0;" in reset, "Successful reset must advance the revision baseline"
 assert "persistedDataRevision = Number(data.revision) || 0;" in source[source.index("async function reloadFromIndexedDB"):], "Cross-tab reload must refresh the revision baseline"
 assert "if (!primaryPersistScheduled) reloadFromIndexedDB({ notify: false });" in source, "External revision notifications must not discard an in-flight local edit before compare-and-swap"
-assert "await reloadFromIndexedDB({notify:true});" in source[source.index("function queuePrimaryPersistence"):], "A rejected queued write must reload committed data"
-assert "catch (err) { if (err?.code === 'FT_STALE_REVISION') await reloadFromIndexedDB({notify:true}); }" in source, "A rejected lifecycle flush must not retry stale data"
+assert "await handleStaleRevisionConflict();" in source[source.index("function queuePrimaryPersistence"):], "A rejected queued write must preserve local edits before reload"
+assert "createInternalSnapshotAsync(" in source[source.index("async function handleStaleRevisionConflict"):source.index("async function reloadFromIndexedDB")], "Stale local edits must be snapshotted before reload"
+assert "sync.conflictSnapshotSaved" in source and "sync.conflictSnapshotFailed" in source, "Conflict recovery outcomes must be announced"
+assert "catch (err) { if (err?.code === 'FT_STALE_REVISION') await handleStaleRevisionConflict(); }" in source, "A rejected lifecycle flush must preserve local edits before reload"
 
 print("PASS: atomic IndexedDB snapshot, connection lifecycle, revision compare-and-swap and conflict recovery")
 
@@ -195,7 +197,31 @@ if sync_playwright:
               };
             })""")
             assert final_state["appearance"] == "light", final_state
+
             assert final_state["revision"] == data["revision"] + 1, final_state
+            conflict_snapshot = tab_b.evaluate("""async () => {
+              const db=await new Promise((resolve,reject)=>{
+                const q=indexedDB.open('FastingTrackerDB',2);
+                q.onerror=()=>reject(q.error);q.onsuccess=()=>resolve(q.result);
+              });
+              const tx=db.transaction(['snapshotMeta','snapshotPayload'],'readonly');
+              const metas=await new Promise((resolve,reject)=>{const r=tx.objectStore('snapshotMeta').getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+              const meta=metas.find(row=>row.reason==='cross-tab-conflict');
+              if(!meta)return {meta:null,payload:null};
+              const row=await new Promise((resolve,reject)=>{const r=tx.objectStore('snapshotPayload').get(meta.id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+              let payload=row?.data||null;
+              if(!payload&&row?.encoding==='json')payload=JSON.parse(row.json);
+              if(!payload&&row?.encoding==='gzip-json'){
+                const raw=await new Response(row.blob.stream().pipeThrough(new DecompressionStream('gzip'))).text();
+                payload=JSON.parse(raw);
+              }
+              return {meta,payload};
+            }""")
+            assert conflict_snapshot["meta"], "Stale tab's unsaved changes were not preserved as a recovery snapshot"
+            assert conflict_snapshot["meta"]["label"] == "Unsaved changes from this tab", conflict_snapshot["meta"]
+            assert conflict_snapshot["meta"]["revision"] == data["revision"] + 1, conflict_snapshot["meta"]
+            assert conflict_snapshot["payload"]["appearance"] == "dark", conflict_snapshot["payload"]
+            assert conflict_snapshot["payload"]["revision"] == data["revision"] + 1, conflict_snapshot["payload"]
         finally:
             context.close()
             browser.close()
