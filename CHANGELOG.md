@@ -1,3 +1,9 @@
+## v1.21.6 — 2026-11-22
+
+- Extract completed-fast cycle notification eligibility into a pure policy helper; notification permission, enable-time initialization, delivery deduplication and persistence remain in the existing runtime adapter.
+- Preserve the strict under-24-hour completed-fast boundary, the exact 24-hour cycle due time, and the rule that cycles ending before notifications were enabled do not trigger a reminder.
+- Add deterministic regression coverage for invalid intervals, exact due/enable-time boundaries and missing enable-time initialization. No notification preferences, delivery format, stored records or backup formats change.
+
 ## v1.21.5 — 2026-11-21
 
 - Extract latest Weight-record selection into a pure policy helper; notification scheduling continues to call the same adapter function.
