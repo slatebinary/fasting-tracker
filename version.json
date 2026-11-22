@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.11",
+  "version": "1.21.12",
   "released": "2026-11-22",
-  "notes": "Separate release validation from the GitHub Pages deployment workflow",
+  "notes": "Reject backup merge duplicates when deletion or edit-audit metadata differs",
   "entry": "./index.html",
   "shell": [
     "./",
