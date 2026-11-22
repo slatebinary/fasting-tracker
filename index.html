@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.13" />
+  <meta name="ft-app-version" content="1.21.14" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.13';
+  const APP_VERSION = '1.21.14';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2842,7 +2842,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
         catch (err) {
           console.error('IndexedDB persistence failed', err);
           if (err?.code === 'FT_STALE_REVISION') {
-            await reloadFromIndexedDB({notify:true});
+            await handleStaleRevisionConflict();
           } else {
             setTimeout(() => alert(t('error.save')), 0);
           }
@@ -2858,7 +2858,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 
   async function flushPrimaryPersistence() {
     try { await persistPrimaryNow(data); }
-    catch (err) { if (err?.code === 'FT_STALE_REVISION') await reloadFromIndexedDB({notify:true}); }
+    catch (err) { if (err?.code === 'FT_STALE_REVISION') await handleStaleRevisionConflict(); }
   }
 
   async function encodeSnapshotPayload(snapshotData) {
@@ -3085,7 +3085,49 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     for (const view of targets) if (Object.prototype.hasOwnProperty.call(viewDirty, view)) viewDirty[view] = true;
   }
 
-  async function reloadFromIndexedDB({ notify = false } = {}) {
+  async function handleStaleRevisionConflict() {
+    // Start serializing the rejected tab's state before replacing the global
+    // data reference, but do not make the authoritative reload wait for it.
+    const hasUncommittedChanges = Number(data?.revision) > Number(persistedDataRevision);
+    let snapshotPromise = null;
+    let snapshotStartFailed = false;
+    if (hasUncommittedChanges) {
+      try {
+        snapshotPromise = createInternalSnapshotAsync(
+          'cross-tab-conflict', APP_VERSION, t('sync.conflictSnapshotLabel')
+        );
+      } catch (err) {
+        snapshotStartFailed = true;
+        noteDiagnosticError('cross_tab_conflict_snapshot_failed');
+      }
+    }
+
+    const reloaded = await reloadFromIndexedDB({notify:false, suppressConflictAlert:true});
+    if (!reloaded) {
+      alert(t('sync.conflict'));
+      return false;
+    }
+
+    let snapshotStatus = 'none';
+    if (hasUncommittedChanges) {
+      try {
+        const snapshot = snapshotStartFailed ? null : await snapshotPromise;
+        snapshotStatus = snapshot ? 'saved' : 'failed';
+      } catch (err) {
+        snapshotStatus = 'failed';
+        noteDiagnosticError('cross_tab_conflict_snapshot_failed');
+      }
+    }
+    const message = snapshotStatus === 'saved'
+      ? t('sync.conflictSnapshotSaved')
+      : snapshotStatus === 'failed'
+        ? t('sync.conflictSnapshotFailed')
+        : t('sync.conflict');
+    alert(message);
+    return true;
+  }
+
+  async function reloadFromIndexedDB({ notify = false, suppressConflictAlert = false } = {}) {
     if (recoveryMode) return false;
     try {
       const recordSnapshot = await loadRecordBasedSnapshot();
@@ -3119,7 +3161,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
         if (activeField instanceof HTMLElement) activeField.blur();
       }
       renderAll();
-      if (notify || interruptedEdit) alert(t('sync.conflict'));
+      if ((notify || interruptedEdit) && !suppressConflictAlert) alert(t('sync.conflict'));
       return true;
     } catch (err) {
       recoveryMode = { raw:'', error:String(err && err.message || err), enteredAt:new Date().toISOString() };
