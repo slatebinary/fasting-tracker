@@ -14,6 +14,7 @@
       const tx = db.transaction(stores, 'readwrite');
       const state = tx.objectStore('state');
       let conflictError = null;
+      const savedAt = new Date().toISOString();
       const revisionRequest = state.get('settings');
       revisionRequest.onsuccess = () => {
         const storedSettings = revisionRequest.result?.data;
@@ -27,7 +28,6 @@
         state.clear();
         state.put({key:'settings', storageGeneration:STORAGE_GENERATION, data:dataSettingsOnly(empty)});
         state.put({key:'dailyTotals', revision:empty.revision, entries:[]});
-        const savedAt = new Date().toISOString();
         state.put({key:'persistenceMeta', lastSuccessfulSaveAt:savedAt, revision:empty.revision});
         for (const name of stores.slice(1)) tx.objectStore(name).clear();
       };
@@ -156,6 +156,8 @@
       ];
       const expectedRevision = persistedDataRevision;
       let conflictError = null;
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB record persistence failed'));
+      tx.onabort = () => reject(conflictError || tx.error || new Error('IndexedDB record persistence aborted'));
       const revisionRequest = state.get('settings');
       revisionRequest.onsuccess = () => {
         const storedSettings = revisionRequest.result?.data;
@@ -185,8 +187,7 @@
         lastSuccessfulIdbSaveAt = savedAt;
         resolve(true);
       };
-      tx.onerror = () => reject(tx.error || new Error('IndexedDB record persistence failed'));
-      tx.onabort = () => reject(conflictError || tx.error || new Error('IndexedDB record persistence aborted'));
+      };
     });
   }
 
