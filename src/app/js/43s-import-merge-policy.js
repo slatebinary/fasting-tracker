@@ -1,12 +1,19 @@
 // Pure import dataset merge and conflict policy.
 // Callers inject stop-reason normalization and final schema validation.
-function stableRecordString(v) {
-  const c = { ...v };
-  delete c.deleted;
-  delete c.deletedAt;
-  delete c.deletedTimeZone;
-  delete c.deletionReason;
-  return JSON.stringify(c);
+function stableRecordString(v, omitId = false) {
+  // Compare the complete persisted record, including deletion and edit-audit
+  // metadata. Sort object keys so equivalent JSON objects remain order-neutral.
+  const canonical = value => {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (!value || typeof value !== 'object') return value;
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      if (omitId && key === 'id') continue;
+      out[key] = canonical(value[key]);
+    }
+    return out;
+  };
+  return JSON.stringify(canonical(v));
 }
 
 function mergeByIdAndFingerprint(current, incoming, fingerprint, label) {
