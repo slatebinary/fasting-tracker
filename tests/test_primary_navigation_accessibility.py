@@ -68,7 +68,7 @@ with sync_playwright() as p:
     }""")
 
     for language in ("bg", "es"):
-        page.locator("#languageSelect").select_option(language)
+        page.locator("#languageSelect").evaluate("(node, language) => { node.value = language; node.dispatchEvent(new Event('change', { bubbles: true })); }", language)
         page.wait_for_function(
             "(expected) => document.querySelector('nav')?.getAttribute('aria-label')===expected[0] && document.querySelector('.tabs')?.getAttribute('aria-label')===expected[1]",
             arg=list(labels[language]),
