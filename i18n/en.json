@@ -1185,5 +1185,8 @@
   "fasting.extendNonFastingPreview": "New fasting start: {date}",
   "fasting.extendNonFastingConfirm": "Apply extension",
   "fasting.startDelayedFor": "Fasting will start at {date}",
-  "fasting.cancelDelayedStart": "Cancel delayed start"
+  "fasting.cancelDelayedStart": "Cancel delayed start",
+  "sync.conflictSnapshotLabel": "Unsaved changes from this tab",
+  "sync.conflictSnapshotSaved": "A newer version was saved in another tab. Your unsaved changes from this tab were preserved as a recovery snapshot. Open Settings → Data → Restore recovery snapshot to review them before continuing.",
+  "sync.conflictSnapshotFailed": "A newer version was saved in another tab. This tab's unsaved changes could not be preserved as a recovery snapshot. The latest saved data has been loaded; repeat your action and check your backup."
 }
