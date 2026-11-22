@@ -168,18 +168,22 @@
     notificationRuntimeState = loadNotificationRuntimeState();
     const prefs = notificationPrefs();
     if (!notificationEnabledFor('weighIn')) return false;
-    const cadenceMs = prefs.weighInCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
     const latest = latestWeightRecord();
-    let anchorMs, tokenBase;
-    if (latest) { anchorMs = new Date(latest.when).getTime(); tokenBase = latest.id; }
-    else {
-      let anchor = validDate(notificationRuntimeState.weighInAnchorAt);
-      if (!anchor) { anchor = new Date(nowMs); notificationRuntimeState.weighInAnchorAt = anchor.toISOString(); saveNotificationRuntimeState(); }
-      anchorMs = anchor.getTime(); tokenBase = notificationRuntimeState.weighInAnchorAt;
+    const policy = resolveWeighInNotificationPolicy({
+      cadence:prefs.weighInCadence,
+      latest,
+      anchorAt:notificationRuntimeState.weighInAnchorAt,
+      nowMs,
+      deliveredToken:notificationRuntimeState.weighInToken
+    });
+    if (!policy) return false;
+    if (policy.initializeAnchorAt) {
+      notificationRuntimeState.weighInAnchorAt = policy.initializeAnchorAt;
+      saveNotificationRuntimeState();
+      return false;
     }
-    if (!Number.isFinite(anchorMs) || nowMs < anchorMs + cadenceMs) return false;
-    const token = `${prefs.weighInCadence}:${tokenBase}`;
-    if (notificationRuntimeState.weighInToken === token) return false;
+    if (!policy.due) return false;
+    const token = policy.token;
     const reservation = notificationRuntimeState.weighInReservation;
     const reservedAt = Number(reservation?.reservedAt);
     if (reservation?.token === token && Number.isFinite(reservedAt) && Date.now() - reservedAt < 120000) return false;
@@ -188,7 +192,7 @@
     // the reservation even where the Web Locks API is unavailable.
     notificationRuntimeState.weighInReservation = {token, reservedAt:Date.now()};
     saveNotificationRuntimeState();
-    const cadence = t(prefs.weighInCadence === 'daily' ? 'notifications.daily' : 'notifications.weekly').toLowerCase();
+    const cadence = t(policy.cadence === 'daily' ? 'notifications.daily' : 'notifications.weekly').toLowerCase();
     let sent = false;
     try {
       sent = await sendDeviceNotification('weigh-in', t('notifications.weighTitle'), t('notifications.weighBodyShort', {cadence}), {screen:'weight',tag:`fasting-weigh-${token}`,detailParams:{cadence:prefs.weighInCadence}});
