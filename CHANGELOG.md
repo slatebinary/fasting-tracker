@@ -1,3 +1,9 @@
+## v1.21.12 — 2026-11-22
+
+- Reject same-ID backup merge records when any persisted field differs, including deletion timestamps/reasons and edit-audit history.
+- Treat matching record fingerprints as duplicates only when the complete record content (apart from its ID) is equivalent; otherwise abort the merge with a conflict.
+- Add regression coverage for fasting and weight tombstone metadata, edit-history divergence and conflicting fingerprint matches. No storage schema or backup format changes.
+
 ## v1.21.11 — 2026-11-22
 
 - Separate release validation from GitHub Pages deployment so the validation workflow cannot race or duplicate the repository's configured Pages deployment.
