@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.9",
+  "version": "1.21.10",
   "released": "2026-11-22",
-  "notes": "Verify automatic rollback after an unconfirmed service-worker release startup",
+  "notes": "Verify internal recovery snapshot retention across preservation tiers",
   "entry": "./index.html",
   "shell": [
     "./",
