@@ -50,6 +50,7 @@ on:
       - refactor/v1.21.5-latest-weight-record-policy
       - refactor/v1.21.6-cycle-complete-notification-policy
       - refactor/v1.21.7-fast-notification-timing-policy
+      - refactor/v1.21.8-weigh-in-reminder-policy
       - feat/v1.21.0-extend-nonfasting-period
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
@@ -109,6 +110,7 @@ jobs:
           node tests/test_latest_weight_record_policy.cjs
           node tests/test_cycle_complete_notification_policy.cjs
           node tests/test_fast_threshold_notification_policy.cjs
+          node tests/test_weigh_in_reminder_policy.cjs
           node tests/test_notification_snooze_restoration_policy.cjs
           node tests/test_storage_pressure_policy.cjs
           node tests/test_import_merge_policy.cjs
