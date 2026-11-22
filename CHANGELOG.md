@@ -1,3 +1,9 @@
+## v1.21.7 — 2026-11-22
+
+- Extract target-reached and prolonged-fast safety notification threshold timing into a shared pure policy helper; notification permissions, active-fast identity checks, deduplication, reservations and delivery remain in the existing runtime adapter.
+- Preserve each target's exact start-plus-threshold due time, including the 24-hour safety boundary, and reject invalid timestamps or thresholds.
+- Add deterministic tests for just-before/exact/after boundaries, zero and negative thresholds, invalid inputs and input immutability. No notification preferences, stored records or backup formats change.
+
 ## v1.21.6 — 2026-11-22
 
 - Extract completed-fast cycle notification eligibility into a pure policy helper; notification permission, enable-time initialization, delivery deduplication and persistence remain in the existing runtime adapter.

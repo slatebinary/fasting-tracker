@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.6",
+  "version": "1.21.7",
   "released": "2026-11-22",
-  "notes": "Extract cycle-complete notification eligibility and 24-hour due-time gating into a pure policy helper",
+  "notes": "Extract target-reached and 24-hour safety notification timing into a pure fast-threshold policy helper",
   "entry": "./index.html",
   "shell": [
     "./",
@@ -93,7 +93,8 @@
     "./src/app/js/43zb-notification-detail-recording-policy.js",
     "./src/app/js/43zc-notification-detail-dismissal-policy.js",
     "./src/app/js/43zd-latest-weight-record-policy.js",
-    "./src/app/js/43ze-cycle-complete-notification-policy.js"
+    "./src/app/js/43ze-cycle-complete-notification-policy.js",
+    "./src/app/js/43zf-fast-threshold-notification-policy.js"
   ],
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
