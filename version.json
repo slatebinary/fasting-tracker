@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.8",
+  "version": "1.21.9",
   "released": "2026-11-22",
-  "notes": "Extract daily/weekly weigh-in reminder cadence and due-time eligibility into a pure policy helper",
+  "notes": "Verify automatic rollback after an unconfirmed service-worker release startup",
   "entry": "./index.html",
   "shell": [
     "./",
