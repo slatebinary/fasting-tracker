@@ -1,3 +1,9 @@
+## v1.21.16 — 2026-11-23
+
+- Refresh the Weight chart's on-demand text alternative when keyboard navigation changes the selected point or scroll position, keeping VoiceOver and other screen-reader users' visible data list synchronized with the chart.
+- Add browser regression coverage for keyboard navigation, selected-point announcements and the chart-data disclosure while traversing a long weight history.
+- No storage schema or external backup-format changes.
+
 ## v1.21.15 — 2026-11-22
 
 - Render the selected Weight chart period subtitle using the active theme's foreground text token instead of hard-coded white, keeping it readable on light, dark, grayscale and colour-vision card surfaces.
