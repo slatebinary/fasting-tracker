@@ -37,6 +37,8 @@ require("Align earlier browser-test version assertions" not in workflow,
 require("git diff --exit-code -- tests" in workflow, "CI must assert regression test sources remain unchanged")
 require(not re.search(r"git add[^\n]*tests/", workflow), "generated asset sync must not stage test files")
 require("git push origin main" in workflow, "generated asset sync must publish only from its isolated job")
-require("contents: read" in pages and "pages: write" in pages and "id-token: write" in pages,
-        "Pages deployment must retain its own scoped permissions")
+require("contents: read" in pages and "pages: write" not in pages and "id-token: write" not in pages,
+        "Release validation must not hold GitHub Pages deployment permissions")
+require("actions/deploy-pages" not in pages and "actions/upload-pages-artifact" not in pages,
+        "Release validation must not duplicate the repository-configured Pages deployment")
 print("PASS: staged release integrity, rollback retention, startup confirmation and CI permission isolation")
