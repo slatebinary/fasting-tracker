@@ -322,16 +322,31 @@ def install_unconfirmed_release_and_verify_rollback(page, version, previous_vers
       navigator.serviceWorker?.addEventListener('controllerchange', install);
     }""")
     page.evaluate("version => sessionStorage.setItem('__ftSuppressConfirmVersion', version)", version)
-    ensure_update_group_open(page)
-    page.evaluate("document.querySelector('#updateBtn').click()")
-    page.wait_for_function("() => !document.querySelector('#updateBanner').hidden", timeout=20000)
-    page.evaluate("document.querySelector('#updateBtn').click()")
-    page.wait_for_function("() => !document.querySelector('#updateModal').hidden", timeout=10000)
-    page.evaluate("document.querySelector('#updateWithoutBackupBtn').click()")
+    # Exercise the service-worker release activation directly so this test
+    # isolates rollback state-machine behavior from the separate update dialog.
+    refresh_result = page.evaluate("""async version => {
+      const registration = await navigator.serviceWorker.ready;
+      const worker = navigator.serviceWorker.controller || registration.active;
+      if (!worker) throw new Error('no active service worker for rollback test');
+      return await new Promise((resolve, reject) => {
+        const channel = new MessageChannel();
+        const timer = setTimeout(() => reject(new Error('service-worker release activation timed out')), 45000);
+        channel.port1.onmessage = event => {
+          clearTimeout(timer);
+          channel.port1.close();
+          resolve(event.data);
+        };
+        worker.postMessage({type:'REFRESH_RELEASE', version, protocolVersion:1}, [channel.port2]);
+      });
+    }""", version)
+    assert refresh_result and refresh_result.get("ok") is True, (
+        f"Could not activate simulated unconfirmed release: {refresh_result}"
+    )
+    page.reload(wait_until="domcontentloaded")
     page.wait_for_function(
         "version => document.querySelector('meta[name=ft-app-version]')?.content === version",
         arg=version,
-        timeout=90000,
+        timeout=45000,
     )
     page.wait_for_function(
         "version => document.querySelector('#appVersionLabel')?.textContent.trim() === ('v' + version)",
