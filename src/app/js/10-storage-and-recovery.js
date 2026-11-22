@@ -39,7 +39,7 @@
         try { localStorage.setItem(DATA_REVISION_SIGNAL_KEY, JSON.stringify({revision:empty.revision, at:Date.now()})); } catch {}
         resolve(true);
       };
-      tx.onerror = () => reject(tx.error || new Error('IndexedDB reset transaction failed'));
+      tx.onerror = () => { if (!conflictError) reject(tx.error || new Error('IndexedDB reset transaction failed')); };
       tx.onabort = () => reject(conflictError || tx.error || new Error('IndexedDB reset transaction aborted'));
     });
   }
@@ -156,7 +156,7 @@
       ];
       const expectedRevision = persistedDataRevision;
       let conflictError = null;
-      tx.onerror = () => reject(tx.error || new Error('IndexedDB record persistence failed'));
+      tx.onerror = () => { if (!conflictError) reject(tx.error || new Error('IndexedDB record persistence failed')); };
       tx.onabort = () => reject(conflictError || tx.error || new Error('IndexedDB record persistence aborted'));
       const revisionRequest = state.get('settings');
       revisionRequest.onsuccess = () => {
