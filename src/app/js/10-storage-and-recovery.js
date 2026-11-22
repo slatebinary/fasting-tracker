@@ -516,25 +516,48 @@
   }
 
   async function handleStaleRevisionConflict() {
-    // Preserve the rejected tab's newer in-memory state before reloading the
-    // authoritative revision committed by another tab.
+    // Start serializing the rejected tab's state before replacing the global
+    // data reference, but do not make the authoritative reload wait for it.
     const hasUncommittedChanges = Number(data?.revision) > Number(persistedDataRevision);
+    let snapshotPromise = null;
+    let snapshotStartFailed = false;
+    if (hasUncommittedChanges) {
+      try {
+        snapshotPromise = createInternalSnapshotAsync(
+          'cross-tab-conflict', APP_VERSION, t('sync.conflictSnapshotLabel')
+        );
+      } catch (err) {
+        snapshotStartFailed = true;
+        noteDiagnosticError('cross_tab_conflict_snapshot_failed');
+      }
+    }
+
+    const reloaded = await reloadFromIndexedDB({notify:false, suppressConflictAlert:true});
+    if (!reloaded) {
+      alert(t('sync.conflict'));
+      return false;
+    }
+
     let snapshotStatus = 'none';
     if (hasUncommittedChanges) {
       try {
-        const snapshot = await createInternalSnapshotAsync(
-          'cross-tab-conflict', APP_VERSION, t('sync.conflictSnapshotLabel')
-        );
+        const snapshot = snapshotStartFailed ? null : await snapshotPromise;
         snapshotStatus = snapshot ? 'saved' : 'failed';
       } catch (err) {
         snapshotStatus = 'failed';
         noteDiagnosticError('cross_tab_conflict_snapshot_failed');
       }
     }
-    await reloadFromIndexedDB({notify:true, conflictSnapshotStatus:snapshotStatus});
+    const message = snapshotStatus === 'saved'
+      ? t('sync.conflictSnapshotSaved')
+      : snapshotStatus === 'failed'
+        ? t('sync.conflictSnapshotFailed')
+        : t('sync.conflict');
+    alert(message);
+    return true;
   }
 
-  async function reloadFromIndexedDB({ notify = false, conflictSnapshotStatus = 'none' } = {}) {
+  async function reloadFromIndexedDB({ notify = false, suppressConflictAlert = false } = {}) {
     if (recoveryMode) return false;
     try {
       const recordSnapshot = await loadRecordBasedSnapshot();
@@ -568,14 +591,7 @@
         if (activeField instanceof HTMLElement) activeField.blur();
       }
       renderAll();
-      if (notify || interruptedEdit) {
-        const message = conflictSnapshotStatus === 'saved'
-          ? t('sync.conflictSnapshotSaved')
-          : conflictSnapshotStatus === 'failed'
-            ? t('sync.conflictSnapshotFailed')
-            : t('sync.conflict');
-        alert(message);
-      }
+      if ((notify || interruptedEdit) && !suppressConflictAlert) alert(t('sync.conflict'));
       return true;
     } catch (err) {
       recoveryMode = { raw:'', error:String(err && err.message || err), enteredAt:new Date().toISOString() };

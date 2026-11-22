@@ -63,6 +63,8 @@ assert "persistedDataRevision = Number(data.revision) || 0;" in source[source.in
 assert "if (!primaryPersistScheduled) reloadFromIndexedDB({ notify: false });" in source, "External revision notifications must not discard an in-flight local edit before compare-and-swap"
 assert "await handleStaleRevisionConflict();" in source[source.index("function queuePrimaryPersistence"):], "A rejected queued write must preserve local edits before reload"
 assert "createInternalSnapshotAsync(" in source[source.index("async function handleStaleRevisionConflict"):source.index("async function reloadFromIndexedDB")], "Stale local edits must be snapshotted before reload"
+conflict_handler = source[source.index("async function handleStaleRevisionConflict"):source.index("async function reloadFromIndexedDB")]
+assert conflict_handler.index("await reloadFromIndexedDB(") < conflict_handler.index("await snapshotPromise"), "Authoritative reload must not wait for snapshot compression/storage"
 assert "sync.conflictSnapshotSaved" in source and "sync.conflictSnapshotFailed" in source, "Conflict recovery outcomes must be announced"
 assert "catch (err) { if (err?.code === 'FT_STALE_REVISION') await handleStaleRevisionConflict(); }" in source, "A rejected lifecycle flush must preserve local edits before reload"
 
@@ -190,6 +192,13 @@ if sync_playwright:
             })""", timeout=10000)
             tab_b.evaluate("() => { const callback=window.__heldPrimaryRafs.shift(); if(callback) callback(performance.now()); }")
             tab_b.wait_for_function("document.querySelector('#appearanceSelect')?.value === 'light'", timeout=15000)
+            tab_b.wait_for_function("""async () => {
+              const q=indexedDB.open('FastingTrackerDB',2);
+              const db=await new Promise((resolve,reject)=>{q.onerror=()=>reject(q.error);q.onsuccess=()=>resolve(q.result);});
+              const tx=db.transaction('snapshotMeta','readonly');
+              const rows=await new Promise((resolve,reject)=>{const r=tx.objectStore('snapshotMeta').getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+              return rows.some(row=>row.reason==='cross-tab-conflict');
+            }""", timeout=30000)
             final_state = tab_a.evaluate("""() => new Promise((resolve,reject)=>{
               const q=indexedDB.open('FastingTrackerDB',2);q.onerror=()=>reject(q.error);q.onsuccess=()=>{
                 const tx=q.result.transaction('state','readonly'),r=tx.objectStore('state').get('settings');
