@@ -1,3 +1,9 @@
+## v1.21.10 — 2026-11-22
+
+- Add deterministic regression coverage for internal recovery-snapshot retention across recent, daily, weekly and monthly preservation tiers.
+- Verify newest-first ordering, invalid-record exclusion, legacy metadata normalization and input immutability.
+- No production runtime, retention settings, storage schema or user-data behavior changes.
+
 ## v1.21.9 — 2026-11-22
 
 - Extend the real service-worker browser regression to simulate an app release that loads but never confirms startup.
