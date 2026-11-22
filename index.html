@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.7" />
+  <meta name="ft-app-version" content="1.21.8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.7';
+  const APP_VERSION = '1.21.8';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4555,18 +4555,22 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     notificationRuntimeState = loadNotificationRuntimeState();
     const prefs = notificationPrefs();
     if (!notificationEnabledFor('weighIn')) return false;
-    const cadenceMs = prefs.weighInCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
     const latest = latestWeightRecord();
-    let anchorMs, tokenBase;
-    if (latest) { anchorMs = new Date(latest.when).getTime(); tokenBase = latest.id; }
-    else {
-      let anchor = validDate(notificationRuntimeState.weighInAnchorAt);
-      if (!anchor) { anchor = new Date(nowMs); notificationRuntimeState.weighInAnchorAt = anchor.toISOString(); saveNotificationRuntimeState(); }
-      anchorMs = anchor.getTime(); tokenBase = notificationRuntimeState.weighInAnchorAt;
+    const policy = resolveWeighInNotificationPolicy({
+      cadence:prefs.weighInCadence,
+      latest,
+      anchorAt:notificationRuntimeState.weighInAnchorAt,
+      nowMs,
+      deliveredToken:notificationRuntimeState.weighInToken
+    });
+    if (!policy) return false;
+    if (policy.initializeAnchorAt) {
+      notificationRuntimeState.weighInAnchorAt = policy.initializeAnchorAt;
+      saveNotificationRuntimeState();
+      return false;
     }
-    if (!Number.isFinite(anchorMs) || nowMs < anchorMs + cadenceMs) return false;
-    const token = `${prefs.weighInCadence}:${tokenBase}`;
-    if (notificationRuntimeState.weighInToken === token) return false;
+    if (!policy.due) return false;
+    const token = policy.token;
     const reservation = notificationRuntimeState.weighInReservation;
     const reservedAt = Number(reservation?.reservedAt);
     if (reservation?.token === token && Number.isFinite(reservedAt) && Date.now() - reservedAt < 120000) return false;
@@ -4575,7 +4579,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     // the reservation even where the Web Locks API is unavailable.
     notificationRuntimeState.weighInReservation = {token, reservedAt:Date.now()};
     saveNotificationRuntimeState();
-    const cadence = t(prefs.weighInCadence === 'daily' ? 'notifications.daily' : 'notifications.weekly').toLowerCase();
+    const cadence = t(policy.cadence === 'daily' ? 'notifications.daily' : 'notifications.weekly').toLowerCase();
     let sent = false;
     try {
       sent = await sendDeviceNotification('weigh-in', t('notifications.weighTitle'), t('notifications.weighBodyShort', {cadence}), {screen:'weight',tag:`fasting-weigh-${token}`,detailParams:{cadence:prefs.weighInCadence}});
@@ -9348,6 +9352,27 @@ function resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs}) {
   const dueAtMs = startMs + thresholdMs;
   if (!Number.isFinite(dueAtMs) || nowMs < dueAtMs) return null;
   return {startMs,dueAtMs,elapsedMs:nowMs-startMs};
+}
+// Pure weigh-in reminder cadence and due-time policy; persistence and delivery stay in the runtime adapter.
+function resolveWeighInNotificationPolicy({cadence,latest,anchorAt,nowMs,deliveredToken}) {
+  const normalizedCadence = cadence === 'daily' ? 'daily' : 'weekly';
+  const cadenceMs = normalizedCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
+  if (!Number.isFinite(nowMs)) return null;
+  let anchorMs, tokenBase;
+  if (latest) {
+    anchorMs = new Date(latest.when).getTime();
+    tokenBase = latest.id;
+    if (!Number.isFinite(anchorMs)) return null;
+  } else {
+    const anchor = anchorAt ? new Date(anchorAt) : null;
+    if (!anchor || !Number.isFinite(anchor.getTime())) {
+      return {cadence:normalizedCadence,cadenceMs,anchorMs:null,token:null,due:false,initializeAnchorAt:new Date(nowMs).toISOString()};
+    }
+    anchorMs = anchor.getTime();
+    tokenBase = anchorAt;
+  }
+  const token = `${normalizedCadence}:${tokenBase}`;
+  return {cadence:normalizedCadence,cadenceMs,anchorMs,token,due:nowMs >= anchorMs + cadenceMs && deliveredToken !== token,initializeAnchorAt:null};
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
