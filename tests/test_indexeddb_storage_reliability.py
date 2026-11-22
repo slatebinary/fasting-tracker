@@ -205,10 +205,15 @@ if sync_playwright:
                 q.onerror=()=>reject(q.error);q.onsuccess=()=>resolve(q.result);
               });
               const tx=db.transaction(['snapshotMeta','snapshotPayload'],'readonly');
-              const metas=await new Promise((resolve,reject)=>{const r=tx.objectStore('snapshotMeta').getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+              const metaRequest=tx.objectStore('snapshotMeta').getAll();
+              const payloadRequest=tx.objectStore('snapshotPayload').getAll();
+              const [metas,payloads]=await Promise.all([
+                new Promise((resolve,reject)=>{metaRequest.onsuccess=()=>resolve(metaRequest.result);metaRequest.onerror=()=>reject(metaRequest.error);}),
+                new Promise((resolve,reject)=>{payloadRequest.onsuccess=()=>resolve(payloadRequest.result);payloadRequest.onerror=()=>reject(payloadRequest.error);})
+              ]);
               const meta=metas.find(row=>row.reason==='cross-tab-conflict');
               if(!meta)return {meta:null,payload:null};
-              const row=await new Promise((resolve,reject)=>{const r=tx.objectStore('snapshotPayload').get(meta.id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+              const row=payloads.find(item=>item.id===meta.id)||null;
               let payload=row?.data||null;
               if(!payload&&row?.encoding==='json')payload=JSON.parse(row.json);
               if(!payload&&row?.encoding==='gzip-json'){
