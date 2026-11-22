@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 82, f"Expected eighty-two ordered app fragments, found {len(parts)}"
+assert len(parts) == 83, f"Expected eighty-three ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -163,6 +163,10 @@ assert "resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs:enabled
 fast_threshold_policy = (source / "js" / "43zf-fast-threshold-notification-policy.js").read_text(encoding="utf-8")
 assert "function resolveFastThresholdNotificationPolicy" in fast_threshold_policy
 assert "function resolveFastThresholdNotificationPolicy" not in notification_runtime
+weigh_in_policy = (source / "js" / "43zg-weigh-in-reminder-policy.js").read_text(encoding="utf-8")
+assert "function resolveWeighInNotificationPolicy" in weigh_in_policy
+assert "resolveWeighInNotificationPolicy(" in notification_runtime
+assert "function resolveWeighInNotificationPolicy" not in notification_runtime
 assert "resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:targetMs})" in notification_runtime
 assert "resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:24 * 3600000})" in notification_runtime
 
