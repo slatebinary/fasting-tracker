@@ -10,7 +10,10 @@
   window.addEventListener('storage', event => {
     if (event.storageArea !== localStorage) return;
     if (event.key === DATA_REVISION_SIGNAL_KEY) {
-      reloadFromIndexedDB({ notify: false });
+      // A local save already queued against the old revision will perform the
+      // atomic compare-and-swap. Reloading here would discard its in-memory edit
+      // before the transaction can detect and report the conflict.
+      if (!primaryPersistScheduled) reloadFromIndexedDB({ notify: false });
       return;
     }
     if (event.key === BACKUP_META_KEY) {
