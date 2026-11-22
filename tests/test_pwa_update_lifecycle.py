@@ -305,14 +305,21 @@ def install_unconfirmed_release_and_verify_rollback(page, version, previous_vers
     # Suppress only the new release's confirmation message. This simulates an
     # app shell that loads but never completes its startup-integrity handshake.
     page.add_init_script("""() => {
-      const original = ServiceWorker.prototype.postMessage;
-      ServiceWorker.prototype.postMessage = function(message, ...args) {
-        if (message?.type === 'CONFIRM_RELEASE' && message?.version === sessionStorage.getItem('__ftSuppressConfirmVersion')) {
-          sessionStorage.removeItem('__ftSuppressConfirmVersion');
-          return;
-        }
-        return original.call(this, message, ...args);
+      const install = () => {
+        const worker = navigator.serviceWorker?.controller;
+        if (!worker || worker.__ftConfirmationFilterInstalled) return;
+        const original = worker.postMessage.bind(worker);
+        worker.postMessage = function(message, ...args) {
+          if (message?.type === 'CONFIRM_RELEASE' && message?.version === sessionStorage.getItem('__ftSuppressConfirmVersion')) {
+            sessionStorage.removeItem('__ftSuppressConfirmVersion');
+            return;
+          }
+          return original(message, ...args);
+        };
+        worker.__ftConfirmationFilterInstalled = true;
       };
+      install();
+      navigator.serviceWorker?.addEventListener('controllerchange', install);
     }""")
     page.evaluate("version => sessionStorage.setItem('__ftSuppressConfirmVersion', version)", version)
     ensure_update_group_open(page)
