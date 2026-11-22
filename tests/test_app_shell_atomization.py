@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 81, f"Expected eighty-one ordered app fragments, found {len(parts)}"
+assert len(parts) == 82, f"Expected eighty-two ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -159,6 +159,12 @@ cycle_complete_policy = (source / "js" / "43ze-cycle-complete-notification-polic
 assert "function resolveCycleCompleteNotificationPolicy" in cycle_complete_policy
 assert "function resolveCycleCompleteNotificationPolicy" not in notification_runtime
 assert "resolveCycleCompleteNotificationPolicy({record,nowMs,enabledAtMs:enabledAt?.getTime()})" in notification_runtime
+
+fast_threshold_policy = (source / "js" / "43zf-fast-threshold-notification-policy.js").read_text(encoding="utf-8")
+assert "function resolveFastThresholdNotificationPolicy" in fast_threshold_policy
+assert "function resolveFastThresholdNotificationPolicy" not in notification_runtime
+assert "resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:targetMs})" in notification_runtime
+assert "resolveFastThresholdNotificationPolicy({start,nowMs,thresholdMs:24 * 3600000})" in notification_runtime
 
 notification_detail_policy = (source / "js" / "43p-notification-detail-normalization-policy.js").read_text(encoding="utf-8")
 notification_state = (source / "js" / "13-notification-state.js").read_text(encoding="utf-8")
