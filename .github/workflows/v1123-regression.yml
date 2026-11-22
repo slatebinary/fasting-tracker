@@ -52,6 +52,7 @@ on:
       - refactor/v1.21.7-fast-notification-timing-policy
       - refactor/v1.21.8-weigh-in-reminder-policy
       - test/v1.21.9-pwa-startup-rollback-regression
+      - test/v1.21.10-snapshot-retention-regression
       - feat/v1.21.0-extend-nonfasting-period
       - feat/v1.19.0-edit-fast-presets
       - feat/v1.19.1-edit-fast-minute-presets
@@ -99,6 +100,7 @@ jobs:
           node tests/test_stats_month_comparison_policy.cjs
           node tests/test_stats_weekly_summary_builder.cjs
           node tests/test_backup_freshness_policy.cjs
+          node tests/test_snapshot_retention_policy.cjs
           node tests/test_next_fast_cycle_policy.cjs
           node tests/test_post_start_nonfasting_extension_policy.cjs
           node tests/test_weight_week_streak_policy.cjs
