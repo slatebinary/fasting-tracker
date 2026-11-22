@@ -545,6 +545,8 @@ def main():
             # A release that loads but never confirms startup must roll back
             # automatically after the grace window, preserving the last known-good
             # cache and the active fast.
+            server.failed_paths = set()
+            server.corrupt_paths = set()
             server.release_state = {"metadata": fifth_metadata, "html": fifth_html}
             install_unconfirmed_release_and_verify_rollback(page, fifth_version, second_version, active_start)
 
