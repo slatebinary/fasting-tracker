@@ -30,7 +30,14 @@ function mergeByIdAndFingerprint(current, incoming, fingerprint, label) {
       continue;
     }
     const fp = fingerprint(item);
-    if (byFp.has(fp)) { duplicates++; continue; }
+    const fingerprintMatch = byFp.get(fp);
+    if (fingerprintMatch) {
+      if (stableRecordString(fingerprintMatch, true) !== stableRecordString(item, true)) {
+        throw new Error(`${label}: matching fingerprint differs (${item.id})`);
+      }
+      duplicates++;
+      continue;
+    }
     out.push(item);
     byId.set(item.id, item);
     byFp.set(fp, item);
