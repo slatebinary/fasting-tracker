@@ -42,7 +42,7 @@ with sync_playwright() as p:
     if not (' ago' in start_label or start_label == 'Today'):
         print('FAIL: first measurement label must state its actual age, not an ambiguous Start label', start_label); sys.exit(1)
     week_count=period('week')
-    page.wait_for_function("document.querySelector('#weightChartDetail .weightPointDetailGroup.primary .weightPointDetailHeading strong')",timeout=5000)
+    page.wait_for_function("document.querySelector('#weightChartDetail .weightPointDetailGroup.featured .weightPointDetailHeading strong')",timeout=5000)
 
     # The detail card also has the generic .primary class. Its global button
     # rule uses white text, so explicitly verify theme text contrast in every
@@ -58,7 +58,7 @@ with sync_playwright() as p:
       const contrast=(a,b)=>{const x=luminance(a),y=luminance(b);return x===null||y===null?0:(Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);};
       return themes.map(theme=>{
         document.documentElement.setAttribute('data-theme',theme);
-        const group=document.querySelector('#weightChartDetail .weightPointDetailGroup.primary');
+        const group=document.querySelector('#weightChartDetail .weightPointDetailGroup.featured');
         const heading=group?.querySelector('.weightPointDetailHeading strong');
         const value=group?.querySelector('.weightPointDetailValue');
         if(!group||!heading||!value)return {theme,missing:true};
