@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.16" />
+  <meta name="ft-app-version" content="1.21.17" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -584,6 +584,8 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightPointDetailMeta { color:var(--muted); font-size:calc(0.7059rem * var(--ft-text-scale)); font-weight:400; line-height:1.4; }
     /* Keep the selected-period summary high-contrast while visually secondary to the upper heading. */
     .weightPointDetailGroup.primary .weightPointDetailMeta { display:inline-block; width:fit-content; max-width:100%; margin-top:3px; padding:4px 8px; border:1px solid rgba(255,255,255,.65); border-radius:7px; background:rgba(0,0,0,.32); color:#fff; font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:750; line-height:1.4; }
+    .weightPointDetailGroup.context { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--text); }
+    .weightPointDetailGroup.context .weightPointDetailValue { color:var(--text); }
     .weightPointDetailContext { padding-top:6px; border-top:1px solid var(--line); }
     .weightChartStyleSwitcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; max-width:360px; margin:2px 0 8px; }
     .weightChartStyleSwitcher button { min-width:0; width:100%; padding:9px 12px; border-radius:12px; background:var(--line); color:var(--text); font-size:calc(0.8235rem * var(--ft-text-scale)); }
@@ -1993,7 +1995,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.16';
+  const APP_VERSION = '1.21.17';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -6503,6 +6505,13 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if (!entries.length) { ids.forEach(id => { const node=el(id); if(node) node.textContent='—'; }); return entries; }
     const unit = data.weightUnit;
     const periodStats = summarizeWeightPeriodEntries(entries);
+    const firstMeasurementDay = weightEntryCalendarDay(periodStats.first);
+    const todayMeasurementDay = dayKeyFast(new Date(), currentTimeZone());
+    const daysSinceFirstMeasurement = Math.max(0, Math.round((Date.parse(`${todayMeasurementDay}T00:00:00Z`) - Date.parse(`${firstMeasurementDay}T00:00:00Z`)) / 86400000));
+    const startMetricLabel = el('wPeriodStart')?.parentElement?.querySelector('.label');
+    if (startMetricLabel) startMetricLabel.textContent = daysSinceFirstMeasurement === 0
+      ? t('weight.periodStartToday')
+      : t(pluralKey('weight.periodStartDaysAgo', daysSinceFirstMeasurement), {days:formatNumber(daysSinceFirstMeasurement)});
     el('wPeriodStart').textContent = formatWeight(periodStats.first.kg, unit);
     el('wPeriodEnd').textContent = formatWeight(periodStats.latest.kg, unit);
     el('wPeriodChange').textContent = formatWeight(periodStats.changeKg, unit, true);
