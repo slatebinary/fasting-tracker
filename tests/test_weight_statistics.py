@@ -38,6 +38,9 @@ with sync_playwright() as p:
     # Daily is the default and summarizes the most recent 30 calendar days.
     # The longer rolling windows remain available and grow monotonically.
     daily_count=int(page.locator('#weightPeriodRange').get_attribute('data-count'))
+    start_label=page.locator('#wPeriodStart').locator('xpath=..').locator('.label').inner_text().strip()
+    if not (' ago' in start_label or start_label == 'Today'):
+        print('FAIL: first measurement label must state its actual age, not an ambiguous Start label', start_label); sys.exit(1)
     week_count=period('week')
     month_count=period('month')
     quarter_count=period('quarter')
