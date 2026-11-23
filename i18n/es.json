@@ -465,7 +465,7 @@
   "weight.periodYear": "Año",
   "weight.periodStart": "Inicial",
   "weight.periodStartToday": "Hoy",
-  "weight.periodStartDaysAgo.one": "hace {days} día",
+  "weight.periodStartDaysAgo.one": "Hace un día",
   "weight.periodStartDaysAgo.other": "hace {days} días",
   "weight.periodEnd": "Último",
   "weight.periodChange": "Cambio",
