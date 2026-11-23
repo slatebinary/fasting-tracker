@@ -1,3 +1,9 @@
+## v1.21.17 — 2026-11-23
+
+- Make the calendar-period average value in rolling Weight views explicitly use the active theme foreground on a theme-aware card surface, restoring visibility in Light and other light-appearance themes.
+- Add regression coverage for the calendar average context group and its foreground/surface styling.
+- No storage schema or external backup-format changes.
+
 ## v1.21.16 — 2026-11-23
 
 - Refresh the Weight chart's on-demand text alternative when keyboard navigation changes the selected point or scroll position, keeping VoiceOver and other screen-reader users' visible data list synchronized with the chart.
