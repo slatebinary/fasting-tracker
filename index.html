@@ -577,16 +577,16 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .weightChartNavigator input[type="range"]:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
     .weightPointDetail { display:grid; gap:7px; margin-top:8px; min-height:20px; color:var(--text); }
     .weightPointDetailGroup { display:grid; gap:2px; min-width:0; }
-    .weightPointDetailGroup.primary { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--text); font-size:inherit; }
+    .weightPointDetailGroup.featured { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--text); font-size:inherit; }
     /* The generic .primary button class sets white text; explicitly restore theme text on chart detail cards. */
-    .weightPointDetailGroup.primary .weightPointDetailHeading strong,
-    .weightPointDetailGroup.primary .weightPointDetailValue { color:var(--text) !important; }
+    .weightPointDetailGroup.featured .weightPointDetailHeading strong,
+    .weightPointDetailGroup.featured .weightPointDetailValue { color:var(--text) !important; }
     .weightPointDetailHeading { display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-width:0; }
     .weightPointDetailHeading strong { font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:650; }
     .weightPointDetailValue { flex:0 0 auto; font-weight:750; white-space:nowrap; }
     .weightPointDetailMeta { color:var(--muted); font-size:calc(0.7059rem * var(--ft-text-scale)); font-weight:400; line-height:1.4; }
     /* Keep the selected-period summary high-contrast while visually secondary to the upper heading. */
-    .weightPointDetailGroup.primary .weightPointDetailMeta { display:inline-block; width:fit-content; max-width:100%; margin-top:3px; padding:4px 8px; border:1px solid rgba(255,255,255,.65); border-radius:7px; background:rgba(0,0,0,.32); color:#fff; font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:750; line-height:1.4; }
+    .weightPointDetailGroup.featured .weightPointDetailMeta { display:inline-block; width:fit-content; max-width:100%; margin-top:3px; padding:4px 8px; border:1px solid rgba(255,255,255,.65); border-radius:7px; background:rgba(0,0,0,.32); color:#fff; font-size:calc(0.7647rem * var(--ft-text-scale)); font-weight:750; line-height:1.4; }
     .weightPointDetailGroup.context { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--text); }
     .weightPointDetailGroup.context .weightPointDetailValue { color:var(--text); }
     .weightPointDetailContext { padding-top:6px; border-top:1px solid var(--line); }
@@ -5979,9 +5979,9 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
           const periodName=(weightPeriodMode==='week'?t('weight.periodWeek'):weightPeriodMode==='month'?t('weight.periodMonth'):weightPeriodMode==='quarter'?t('weight.periodQuarter'):weightPeriodMode==='halfyear'?t('weight.periodHalfYear'):t('weight.periodYear')).toLocaleLowerCase(currentLocale());
           const calendar=bucket.calendarBucket;
           if(weightChartStyle==='fixed'){
-            addDetailGroup('primary',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(bucket.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(bucket,weightPeriodMode),count:formatNumber(count),measurementWord}));
+            addDetailGroup('featured',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(bucket.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(bucket,weightPeriodMode),count:formatNumber(count),measurementWord}));
           }else{
-            addDetailGroup('primary',t('weight.rollingAverageTitle',{days:bucket.rollingWindowDays}),formatWeight(bucket.averageKg,unit),t('weight.rollingAverageMeta',{date:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord,days:bucket.rollingWindowDays}));
+            addDetailGroup('featured',t('weight.rollingAverageTitle',{days:bucket.rollingWindowDays}),formatWeight(bucket.averageKg,unit),t('weight.rollingAverageMeta',{date:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord,days:bucket.rollingWindowDays}));
             if(calendar&&calendar.count){
               addDetailGroup('context',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(calendar.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(calendar,weightPeriodMode),count:formatNumber(calendar.count),measurementWord:t(pluralKey('weight.measurement',calendar.count))}));
             }
