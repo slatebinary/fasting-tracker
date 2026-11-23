@@ -2,6 +2,8 @@
 
 - Make the calendar-period average value in rolling Weight views explicitly use the active theme foreground on a theme-aware card surface, restoring visibility in Light and other light-appearance themes.
 - Add regression coverage for the calendar average context group and its foreground/surface styling.
+- Replace the ambiguous Weight statistics “Start” label with the actual age of the first measurement in the selected period, localized in English, Bulgarian and Spanish.
+- Add browser regression coverage to ensure the metric identifies how many days ago its measurement was recorded.
 - No storage schema or external backup-format changes.
 
 ## v1.21.16 — 2026-11-23
