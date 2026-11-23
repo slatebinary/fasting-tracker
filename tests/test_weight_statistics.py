@@ -42,6 +42,37 @@ with sync_playwright() as p:
     if not (' ago' in start_label or start_label == 'Today'):
         print('FAIL: first measurement label must state its actual age, not an ambiguous Start label', start_label); sys.exit(1)
     week_count=period('week')
+    page.wait_for_function("document.querySelector('#weightChartDetail .weightPointDetailGroup.primary .weightPointDetailHeading strong')",timeout=5000)
+
+    # The detail card also has the generic .primary class. Its global button
+    # rule uses white text, so explicitly verify theme text contrast in every
+    # supported appearance palette.
+    theme_results=page.evaluate("""() => {
+      const themes=['colorblind','light','grayscale','high-contrast-light','high-contrast-dark','protanopia','deuteranopia','tritanopia'];
+      const rgb=value=>{const m=value.match(/\\d+(?:\\.\\d+)?/g);return m?m.slice(0,3).map(Number):null;};
+      const luminance=value=>{
+        const c=rgb(value);if(!c)return null;
+        const linear=c.map(v=>{v/=255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;});
+        return 0.2126*linear[0]+0.7152*linear[1]+0.0722*linear[2];
+      };
+      const contrast=(a,b)=>{const x=luminance(a),y=luminance(b);return x===null||y===null?0:(Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);};
+      return themes.map(theme=>{
+        document.documentElement.setAttribute('data-theme',theme);
+        const group=document.querySelector('#weightChartDetail .weightPointDetailGroup.primary');
+        const heading=group?.querySelector('.weightPointDetailHeading strong');
+        const value=group?.querySelector('.weightPointDetailValue');
+        if(!group||!heading||!value)return {theme,missing:true};
+        const bg=getComputedStyle(group).backgroundColor;
+        const headingColor=getComputedStyle(heading).color;
+        const valueColor=getComputedStyle(value).color;
+        return {theme,heading:contrast(headingColor,bg),value:contrast(valueColor,bg),headingColor,valueColor,bg};
+      });
+    }""")
+    for result in theme_results:
+        if result.get('missing') or result['heading'] < 4.5 or result['value'] < 4.5:
+            print('FAIL: rolling average detail contrast below WCAG AA',result);sys.exit(1)
+    page.evaluate("document.documentElement.removeAttribute('data-theme')")
+
     month_count=period('month')
     quarter_count=period('quarter')
     half_count=period('halfyear')
