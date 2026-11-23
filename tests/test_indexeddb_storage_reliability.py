@@ -196,7 +196,30 @@ if sync_playwright:
               q.onsuccess=()=>{const tx=q.result.transaction('state','readonly');const r=tx.objectStore('state').get('settings');r.onsuccess=()=>resolve(r.result?.data?.appearance==='light');r.onerror=()=>resolve(false);};
             })""", timeout=10000)
             tab_b.evaluate("() => { const callback=window.__heldPrimaryRafs.shift(); if(callback) callback(performance.now()); }")
-            tab_b.wait_for_function("document.querySelector('#appearanceSelect')?.value === 'light'", timeout=15000)
+            try:
+                tab_b.wait_for_function("document.querySelector('#appearanceSelect')?.value === 'light'", timeout=15000)
+            except Exception:
+                diagnostic = tab_b.evaluate("""async () => {
+                  const select = document.querySelector('#appearanceSelect');
+                  const q = indexedDB.open('FastingTrackerDB', 2);
+                  const db = await new Promise((resolve, reject) => { q.onerror = () => reject(q.error); q.onsuccess = () => resolve(q.result); });
+                  const tx = db.transaction('state', 'readonly');
+                  const request = tx.objectStore('state').get('settings');
+                  const stored = await new Promise((resolve, reject) => { request.onsuccess = () => resolve(request.result?.data); request.onerror = () => reject(request.error); });
+                  return {
+                    selectValue: select?.value,
+                    storedAppearance: stored?.appearance,
+                    storedRevision: stored?.revision,
+                    activeScreen: document.querySelector('.screen.active')?.id,
+                    settingsClass: document.querySelector('#settings')?.className,
+                    visibilityState: document.visibilityState,
+                    version: document.querySelector('#appVersionLabel')?.textContent,
+                    heldRafs: window.__heldPrimaryRafs?.length,
+                    openModal: [...document.querySelectorAll('.modalBackdrop')].find(node => !node.hidden)?.id || null
+                  };
+                }""")
+                print("DEBUG: stale-tab refresh state:", diagnostic)
+                raise
             tab_b.wait_for_function("""async () => {
               const q=indexedDB.open('FastingTrackerDB',2);
               const db=await new Promise((resolve,reject)=>{q.onerror=()=>reject(q.error);q.onsuccess=()=>resolve(q.result);});
