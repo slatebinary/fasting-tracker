@@ -295,3 +295,12 @@ source = json.loads((root / "i18n-source.json").read_text(encoding="utf-8"))
 for palette in ("colorblind", "protanopia", "deuteranopia", "tritanopia"):
     assert source["strings"].get(f"settings.paletteHint.{palette}")
 print("All four palette purpose hints are present in English, Bulgarian and Spanish.")
+
+# Calendar average is emitted as a context group in rolling views. Keep its
+# surface and value explicitly tied to theme tokens (not inherited defaults).
+css = (root/'src/app/styles.css').read_text(encoding='utf-8')
+weight_js = (root/'src/app/js/32-weight-chart-interaction.js').read_text(encoding='utf-8')
+assert "group.className='weightPointDetailGroup '+kind" in weight_js
+assert "addDetailGroup('context',t('weight.calendarAverageTitle'" in weight_js
+assert ".weightPointDetailGroup.context { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--text); }" in css
+assert ".weightPointDetailGroup.context .weightPointDetailValue { color:var(--text); }" in css

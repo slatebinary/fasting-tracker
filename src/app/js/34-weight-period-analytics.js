@@ -88,6 +88,13 @@
     if (!entries.length) { ids.forEach(id => { const node=el(id); if(node) node.textContent='—'; }); return entries; }
     const unit = data.weightUnit;
     const periodStats = summarizeWeightPeriodEntries(entries);
+    const firstMeasurementDay = weightEntryCalendarDay(periodStats.first);
+    const todayMeasurementDay = dayKeyFast(new Date(), currentTimeZone());
+    const daysSinceFirstMeasurement = Math.max(0, Math.round((Date.parse(`${todayMeasurementDay}T00:00:00Z`) - Date.parse(`${firstMeasurementDay}T00:00:00Z`)) / 86400000));
+    const startMetricLabel = el('wPeriodStart')?.parentElement?.querySelector('.label');
+    if (startMetricLabel) startMetricLabel.textContent = daysSinceFirstMeasurement === 0
+      ? t('weight.periodStartToday')
+      : t(pluralKey('weight.periodStartDaysAgo', daysSinceFirstMeasurement), {days:formatNumber(daysSinceFirstMeasurement)});
     el('wPeriodStart').textContent = formatWeight(periodStats.first.kg, unit);
     el('wPeriodEnd').textContent = formatWeight(periodStats.latest.kg, unit);
     el('wPeriodChange').textContent = formatWeight(periodStats.changeKg, unit, true);

@@ -173,6 +173,12 @@ if sync_playwright:
                 page.evaluate("""() => document.querySelector('.tab[data-screen="settings"]')?.click()""")
                 page.wait_for_function("document.querySelector('#settings')?.classList.contains('active')", timeout=10000)
     
+            # Let the Settings-screen activation render finish before intercepting
+            # the next animation frame. Otherwise this hook can capture the
+            # navigation render instead of the persistence frame under test.
+            for page in (tab_a, tab_b):
+                page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+
             tab_b.on("dialog", lambda dialog: dialog.accept())
             tab_b.evaluate("""() => {
               const nativeRaf=window.requestAnimationFrame.bind(window);
