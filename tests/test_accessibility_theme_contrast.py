@@ -298,6 +298,7 @@ print("All four palette purpose hints are present in English, Bulgarian and Span
 
 # Calendar average is emitted as a context group in rolling views. Keep its
 # surface and value explicitly tied to theme tokens (not inherited defaults).
+css = (root/'src/app/styles.css').read_text(encoding='utf-8')
 weight_js = (root/'src/app/js/32-weight-chart-interaction.js').read_text(encoding='utf-8')
 assert "group.className='weightPointDetailGroup '+kind" in weight_js
 assert "addDetailGroup('context',t('weight.calendarAverageTitle'" in weight_js
