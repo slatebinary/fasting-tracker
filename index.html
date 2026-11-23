@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.15" />
+  <meta name="ft-app-version" content="1.21.16" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -833,7 +833,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
   </div>
   <div id="notificationDetailStack" class="notificationDetailStack" aria-label="Notification details" data-i18n-aria="notifications.detailsHeading" hidden></div>
-  <section id="fasting" class="screen active">
+  <section id="fasting" class="screen active" role="tabpanel" aria-labelledby="navTabFasting">
     <div class="sectionHeader fastingSectionHeader"><h1 data-i18n="nav.fasting">Fasting</h1><button id="shareProgressBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
     <div id="fastingBackupRow" class="fastingBackupRow" hidden>
       <button id="fastingBackupStatusBtn" class="backupStatusButton" data-state="empty" type="button"><span class="backupStatusDot" aria-hidden="true"></span><span id="fastingBackupStatusText" aria-live="polite">Backup status</span></button>
@@ -946,7 +946,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
   </section>
 
-  <section id="history" class="screen">
+  <section id="history" class="screen" role="tabpanel" aria-labelledby="navTabHistory">
     <div class="sectionHeader"><h1 data-i18n="nav.history">History</h1><button id="addEntryBtn" class="secondary" data-i18n="history.add">Add entry</button></div>
     <details class="card historyTools" id="historyTools">
       <summary data-i18n="history.tools">Filter &amp; bulk tools</summary>
@@ -974,7 +974,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
   </section>
 
-  <section id="weight" class="screen">
+  <section id="weight" class="screen" role="tabpanel" aria-labelledby="navTabWeight">
     <div class="sectionHeader"><h1 data-i18n="nav.weight">Weight</h1><button id="addWeightBtn" class="secondary" data-i18n="weight.add">Add weight</button></div>
     <details class="card historyTools" id="weightTools">
       <summary data-i18n="weight.tools">History tools</summary>
@@ -1052,7 +1052,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
   </section>
 
-  <section id="stats" class="screen">
+  <section id="stats" class="screen" role="tabpanel" aria-labelledby="navTabStats">
     <div class="sectionHeader"><h1 data-i18n="nav.stats">Statistics</h1><button id="shareStatsBtn" class="secondary" type="button" data-i18n="share.button">Share progress</button></div>
     <div class="grid">
       <div class="metric"><div class="value" id="mTotal">0</div><div class="label" data-i18n="stats.completed">Completed fasts</div></div>
@@ -1172,7 +1172,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     </div>
   </section>
 
-  <section id="settings" class="screen">
+  <section id="settings" class="screen" role="tabpanel" aria-labelledby="navTabSettings">
     <h1 data-i18n="nav.settings">Settings</h1>
     <div class="settingsSearchWrap">
       <input id="settingsSearchInput" type="search" autocomplete="off" spellcheck="false" placeholder="Search settings" data-i18n-placeholder="settings.searchPlaceholder" aria-label="Search settings" data-i18n-aria="settings.searchAria">
@@ -1933,13 +1933,13 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
 
 <div class="undoToast" id="undoToast" role="status" aria-live="polite" hidden><span id="undoToastText"></span><button id="undoToastBtn" type="button" data-i18n="common.undo">Undo</button></div>
 
-<nav>
-  <div class="tabs" role="tablist">
-    <button class="tab active" role="tab" data-screen="fasting" aria-current="page" aria-selected="true"><span class="ico">⏱</span><span data-i18n="nav.fasting">Fasting</span></button>
-    <button class="tab" role="tab" data-screen="history" aria-selected="false"><span class="ico">🗓</span><span data-i18n="nav.history">History</span></button>
-    <button class="tab" role="tab" data-screen="weight" aria-selected="false"><span class="ico">⚖︎</span><span data-i18n="nav.weight">Weight</span></button>
-    <button class="tab" role="tab" data-screen="stats" aria-selected="false"><span class="ico">▥</span><span data-i18n="nav.stats">Stats</span></button>
-    <button class="tab" role="tab" data-screen="settings" aria-selected="false"><span class="ico">⚙︎</span><span data-i18n="nav.settings">Settings</span></button>
+<nav aria-label="Main navigation" data-i18n-aria="a11y.mainNavigation">
+  <div class="tabs" role="tablist" aria-label="App sections" data-i18n-aria="a11y.appSections">
+    <button id="navTabFasting" class="tab active" role="tab" data-screen="fasting" aria-controls="fasting" aria-current="page" aria-selected="true" tabindex="0"><span class="ico">⏱</span><span data-i18n="nav.fasting">Fasting</span></button>
+    <button id="navTabHistory" class="tab" role="tab" data-screen="history" aria-controls="history" aria-selected="false" tabindex="-1"><span class="ico">🗓</span><span data-i18n="nav.history">History</span></button>
+    <button id="navTabWeight" class="tab" role="tab" data-screen="weight" aria-controls="weight" aria-selected="false" tabindex="-1"><span class="ico">⚖︎</span><span data-i18n="nav.weight">Weight</span></button>
+    <button id="navTabStats" class="tab" role="tab" data-screen="stats" aria-controls="stats" aria-selected="false" tabindex="-1"><span class="ico">▥</span><span data-i18n="nav.stats">Stats</span></button>
+    <button id="navTabSettings" class="tab" role="tab" data-screen="settings" aria-controls="settings" aria-selected="false" tabindex="-1"><span class="ico">⚙︎</span><span data-i18n="nav.settings">Settings</span></button>
   </div>
 </nav>
 
@@ -1993,7 +1993,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.15';
+  const APP_VERSION = '1.21.16';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -9841,7 +9841,7 @@ function mergeImportedData(imported) {
     document.querySelectorAll('.tab').forEach(tab => {
       const active = tab.dataset.screen === target;
       tab.classList.toggle('active', active);
-      tab.setAttribute('aria-selected',String(active)); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current');
+      tab.setAttribute('aria-selected',String(active)); tab.tabIndex=active?0:-1; if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current');
     });
     document.querySelectorAll('.screen').forEach(node => node.classList.toggle('active', node.id === target));
     if (updateHash) {

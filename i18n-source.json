@@ -1,6 +1,6 @@
 {
   "sourceRevision": 46,
-  "appVersion": "1.21.15",
+  "appVersion": "1.21.16",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1192,6 +1192,8 @@
     "fasting.cancelDelayedStart": "Cancel delayed start",
     "sync.conflictSnapshotLabel": "Unsaved changes from this tab",
     "sync.conflictSnapshotSaved": "A newer version was saved in another tab. Your unsaved changes from this tab were preserved as a recovery snapshot. Open Settings → Data → Restore recovery snapshot to review them before continuing.",
-    "sync.conflictSnapshotFailed": "A newer version was saved in another tab. This tab's unsaved changes could not be preserved as a recovery snapshot. The latest saved data has been loaded; repeat your action and check your backup."
+    "sync.conflictSnapshotFailed": "A newer version was saved in another tab. This tab's unsaved changes could not be preserved as a recovery snapshot. The latest saved data has been loaded; repeat your action and check your backup.",
+    "a11y.mainNavigation": "Main navigation",
+    "a11y.appSections": "App sections"
   }
 }
