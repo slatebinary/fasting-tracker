@@ -167,6 +167,11 @@ if sync_playwright:
             assert tab_a.evaluate("location.origin") == tab_b.evaluate("location.origin") == origin.rstrip("/")
             for page in (tab_a, tab_b):
                 page.wait_for_function("document.querySelector('#appearanceSelect')?.value === 'system'", timeout=10000)
+                # Use the real Settings screen before exercising its appearance
+                # control. Inactive tab panels are intentionally unavailable to
+                # assistive technology and can be inert to browser automation.
+                page.evaluate("""() => document.querySelector('.tab[data-screen="settings"]')?.click()""")
+                page.wait_for_function("document.querySelector('#settings')?.classList.contains('active')", timeout=10000)
     
             tab_b.on("dialog", lambda dialog: dialog.accept())
             tab_b.evaluate("""() => {
