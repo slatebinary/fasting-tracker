@@ -100,11 +100,14 @@
 
   el('appearanceSelect').addEventListener('change', () => {
     data.appearance = normalizeAppearance(el('appearanceSelect').value);
-    if (!save({ invalidateDerived:false, dirtyViews:['settings'] })) { renderAll(); return; }
+    // Canvas charts retain their previously painted pixels when CSS theme
+    // variables change. Invalidate both visualization screens even when the
+    // user changes appearance from Settings and visits them later.
+    if (!save({ invalidateDerived:false, dirtyViews:['settings','stats','weight'] })) { renderAll(); return; }
     applyAppearance();
     updateAppearancePaletteHint();
-    if (el('stats').classList.contains('active')) renderStatsVisualizations();
-    if (el('weight').classList.contains('active')) drawWeightChart();
+    if (el('stats').classList.contains('active')) renderScreen('stats', { force:true });
+    if (el('weight').classList.contains('active')) renderScreen('weight', { force:true });
   });
   el('timeZoneSearch').addEventListener('input', renderTimeZoneOptions);
   el('timeZoneSelect').addEventListener('change', () => {
