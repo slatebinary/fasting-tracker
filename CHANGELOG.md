@@ -1,3 +1,10 @@
+## v1.21.19 — 2026-11-24
+
+- Correct the 7-day rolling-average detail label and value to use the active theme foreground across all eight appearance themes.
+- Use a dedicated semantic class instead of the generic primary-button class, and explicitly set WebKit text-fill colour for reliable iPhone/iPad rendering.
+- Add browser regression coverage for both CSS colour properties and class semantics across all eight themes.
+- No storage schema or external backup-format changes.
+
 ## v1.21.18 — 2026-11-24
 
 - Correct the 7-day rolling-average detail label and value to use the active theme's foreground colour, restoring clear visibility across all eight appearance themes.
