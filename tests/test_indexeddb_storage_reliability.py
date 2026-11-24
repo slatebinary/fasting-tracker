@@ -134,44 +134,7 @@ if sync_playwright:
         origin = f"http://127.0.0.1:{server.server_address[1]}/"
         browser = p.chromium.launch(executable_path="/usr/bin/chromium", headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
         context = browser.new_context(viewport={"width": 390, "height": 844})
-        context.add_init_script("""(() => {
-          window.__syncTrace = [];
-          const trace = (entry) => window.__syncTrace.push({...entry, at:performance.now()});
-          window.addEventListener('storage', event => {
-            if (event.key === 'fastingTracker.dataRevision') trace({type:'revision-signal', value:event.newValue});
-          });
-          document.addEventListener('visibilitychange', () => trace({type:'visibility', state:document.visibilityState}));
-          window.addEventListener('pagehide', () => trace({type:'pagehide'}));
-          const nativeTransaction = IDBDatabase.prototype.transaction;
-          IDBDatabase.prototype.transaction = function(names, mode, options) {
-            const tx = nativeTransaction.call(this, names, mode, options);
-            const stores = Array.isArray(names) ? names : [names];
-            if (mode === 'readwrite' && stores.includes('state')) {
-              const nativeObjectStore = tx.objectStore.bind(tx);
-              tx.objectStore = function(name) {
-                const store = nativeObjectStore(name);
-                if (name !== 'state') return store;
-                const nativeGet = store.get.bind(store);
-                store.get = function(key) {
-                  const request = nativeGet(key);
-                  if (key === 'settings') request.addEventListener('success', () => {
-                    trace({type:'revision-read', revision:request.result?.data?.revision, appearance:request.result?.data?.appearance});
-                  });
-                  return request;
-                };
-                const nativePut = store.put.bind(store);
-                store.put = function(value, ...args) {
-                  if (value?.key === 'settings') trace({type:'settings-put', revision:value.data?.revision, appearance:value.data?.appearance});
-                  return nativePut(value, ...args);
-                };
-                return store;
-              };
-              tx.addEventListener('complete', () => trace({type:'write-complete'}));
-              tx.addEventListener('abort', () => trace({type:'write-abort', error:String(tx.error || '')}));
-            }
-            return tx;
-          };
-        })()""")
+
         tab_a, tab_b = context.new_page(), context.new_page()
         try:
             tab_a.goto(origin)
@@ -202,6 +165,45 @@ if sync_playwright:
             tab_a.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
             tab_b.goto(origin + "app")
             tab_b.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{version}'", timeout=30000)
+            # Install tracing after app startup, directly in each live page. This avoids
+            # relying on init-script timing across the blank-page-to-app navigation.
+            for page in (tab_a, tab_b):
+                page.evaluate("""() => {
+                  window.__syncTrace = [];
+                  const trace = entry => window.__syncTrace.push({...entry, at:performance.now()});
+                  window.addEventListener('storage', event => {
+                    if (event.key === 'fastingTracker.dataRevision') trace({type:'revision-signal', value:event.newValue});
+                  });
+                  document.addEventListener('visibilitychange', () => trace({type:'visibility', state:document.visibilityState}));
+                  window.addEventListener('pagehide', () => trace({type:'pagehide'}));
+                  const nativeTransaction = IDBDatabase.prototype.transaction;
+                  IDBDatabase.prototype.transaction = function(names, mode, options) {
+                    const tx = nativeTransaction.call(this, names, mode, options);
+                    const stores = Array.isArray(names) ? names : [names];
+                    if (mode === 'readwrite' && stores.includes('state')) {
+                      const nativeObjectStore = tx.objectStore.bind(tx);
+                      tx.objectStore = function(name) {
+                        const store = nativeObjectStore(name);
+                        if (name !== 'state') return store;
+                        const nativeGet = store.get.bind(store);
+                        store.get = function(key) {
+                          const request = nativeGet(key);
+                          if (key === 'settings') request.addEventListener('success', () => trace({type:'revision-read', revision:request.result?.data?.revision, appearance:request.result?.data?.appearance}));
+                          return request;
+                        };
+                        const nativePut = store.put.bind(store);
+                        store.put = function(value, ...args) {
+                          if (value?.key === 'settings') trace({type:'settings-put', revision:value.data?.revision, appearance:value.data?.appearance});
+                          return nativePut(value, ...args);
+                        };
+                        return store;
+                      };
+                      tx.addEventListener('complete', () => trace({type:'write-complete'}));
+                      tx.addEventListener('abort', () => trace({type:'write-abort', error:String(tx.error || '')}));
+                    }
+                    return tx;
+                  };
+                }""")
             assert tab_a.evaluate("location.origin") == tab_b.evaluate("location.origin") == origin.rstrip("/")
             for page in (tab_a, tab_b):
                 page.wait_for_function("document.querySelector('#appearanceSelect')?.value === 'system'", timeout=10000)
