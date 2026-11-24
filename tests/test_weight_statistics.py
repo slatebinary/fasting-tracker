@@ -63,12 +63,13 @@ with sync_playwright() as p:
         if(!group||!heading||!value)return {theme,missing:true};
         const bg=getComputedStyle(group).backgroundColor;
         const headingColor=getComputedStyle(heading).color;
-        const valueStyle=getComputedStyle(value);\n        const valueColor=valueStyle.color;\n        const headingFill=getComputedStyle(heading).webkitTextFillColor;\n        const valueFill=valueStyle.webkitTextFillColor;
+        const valueStyle=getComputedStyle(value);
+        const valueColor=valueStyle.color;\n        const headingFill=getComputedStyle(heading).webkitTextFillColor;\n        const valueFill=valueStyle.webkitTextFillColor;
         return {theme,heading:contrast(headingColor,bg),value:contrast(valueColor,bg),headingFill:contrast(headingFill,bg),valueFill:contrast(valueFill,bg),headingColor,valueColor,headingFillColor:headingFill,valueFillColor:valueFill,bg};
       });
     }""")
     for result in theme_results:
-        if result.get('missing') or result['heading'] < 4.5 or result['value'] < 4.5 || result['headingFill'] < 4.5 || result['valueFill'] < 4.5:
+        if result.get('missing') or result['heading'] < 4.5 or result['value'] < 4.5 or result['headingFill'] < 4.5 or result['valueFill'] < 4.5:
             print('FAIL: rolling average detail contrast below WCAG AA',result);sys.exit(1)
     page.evaluate("document.documentElement.removeAttribute('data-theme')")
 
