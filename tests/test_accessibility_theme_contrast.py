@@ -304,3 +304,18 @@ assert "group.className='weightPointDetailGroup '+kind" in weight_js
 assert "addDetailGroup('context',t('weight.calendarAverageTitle'" in weight_js
 assert ".weightPointDetailGroup.context { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--text); }" in css
 assert ".weightPointDetailGroup.context .weightPointDetailValue { color:var(--text); }" in css
+
+# Theme changes must invalidate canvas-backed chart views even when Settings is
+# active. CSS variable changes do not repaint an existing canvas; the next visit
+# to Weight/Statistics must therefore trigger a complete screen render.
+navigation_js = (root / "src/app/js/46-screen-navigation-and-rendering.js").read_text(encoding="utf-8")
+appearance_handler = navigation_js.split("el('appearanceSelect').addEventListener('change'", 1)[1].split("el('timeZoneSearch')", 1)[0]
+assert "dirtyViews:['settings','stats','weight']" in appearance_handler, (
+    "appearance changes must invalidate both chart screens while Settings is active"
+)
+assert "if (el('weight').classList.contains('active')) renderScreen('weight', { force:true });" in appearance_handler, (
+    "an active Weight screen must be fully rerendered after a theme change"
+)
+assert "if (el('stats').classList.contains('active')) renderScreen('stats', { force:true });" in appearance_handler, (
+    "an active Statistics screen must be fully rerendered after a theme change"
+)
