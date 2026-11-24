@@ -1,3 +1,10 @@
+## v1.21.20 — 2026-11-25
+
+- Invalidate the Weight and Statistics views whenever the appearance theme changes, including when those screens are not currently active.
+- Fully rerender the active chart screen after applying the new theme so canvas-rendered graph lines, labels and selected-point pop-ups do not retain colours from the previous theme.
+- Add regression coverage for theme-driven chart invalidation and active-screen rerendering across navigation.
+- No storage schema or external backup-format changes.
+
 ## v1.21.19 — 2026-11-24
 
 - Correct the 7-day rolling-average detail label and value to use the active theme foreground across all eight appearance themes.
