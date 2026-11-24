@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.18",
+  "version": "1.21.19",
   "released": "2026-11-24",
-  "notes": "Fix 7-day rolling-average detail contrast across all eight appearance themes",
+  "notes": "Correct rolling-average label and value rendering across all eight appearance themes, including iOS WebKit.",
   "entry": "./index.html",
   "shell": [
     "./",
