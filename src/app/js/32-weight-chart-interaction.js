@@ -140,9 +140,9 @@
           const periodName=(weightPeriodMode==='week'?t('weight.periodWeek'):weightPeriodMode==='month'?t('weight.periodMonth'):weightPeriodMode==='quarter'?t('weight.periodQuarter'):weightPeriodMode==='halfyear'?t('weight.periodHalfYear'):t('weight.periodYear')).toLocaleLowerCase(currentLocale());
           const calendar=bucket.calendarBucket;
           if(weightChartStyle==='fixed'){
-            addDetailGroup('primary',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(bucket.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(bucket,weightPeriodMode),count:formatNumber(count),measurementWord}));
+            addDetailGroup('average',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(bucket.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(bucket,weightPeriodMode),count:formatNumber(count),measurementWord}));
           }else{
-            addDetailGroup('primary',t('weight.rollingAverageTitle',{days:bucket.rollingWindowDays}),formatWeight(bucket.averageKg,unit),t('weight.rollingAverageMeta',{date:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord,days:bucket.rollingWindowDays}));
+            addDetailGroup('average',t('weight.rollingAverageTitle',{days:bucket.rollingWindowDays}),formatWeight(bucket.averageKg,unit),t('weight.rollingAverageMeta',{date:weightBucketLongLabel(bucket),count:formatNumber(count),measurementWord,days:bucket.rollingWindowDays}));
             if(calendar&&calendar.count){
               addDetailGroup('context',t('weight.calendarAverageTitle',{period:periodName}),formatWeight(calendar.averageKg,unit),t('weight.calendarAverageMeta',{periodLabel:weightBucketLongLabel(calendar,weightPeriodMode),count:formatNumber(calendar.count),measurementWord:t(pluralKey('weight.measurement',calendar.count))}));
             }
