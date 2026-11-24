@@ -271,6 +271,10 @@ if sync_playwright:
                 }""")
                 print("DEBUG: stale-tab refresh state:", diagnostic)
                 raise
+            print("DEBUG: sync trace after B recovery:", {
+                "tab_a": tab_a.evaluate("() => ({appearance:document.querySelector('#appearanceSelect')?.value, trace:window.__syncTrace})"),
+                "tab_b": tab_b.evaluate("() => ({appearance:document.querySelector('#appearanceSelect')?.value, trace:window.__syncTrace})")
+            })
             tab_b.wait_for_function("""async () => {
               const q=indexedDB.open('FastingTrackerDB',2);
               const db=await new Promise((resolve,reject)=>{q.onerror=()=>reject(q.error);q.onsuccess=()=>resolve(q.result);});
