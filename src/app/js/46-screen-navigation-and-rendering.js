@@ -100,11 +100,14 @@
 
   el('appearanceSelect').addEventListener('change', () => {
     data.appearance = normalizeAppearance(el('appearanceSelect').value);
-    if (!save({ invalidateDerived:false, dirtyViews:['settings'] })) { renderAll(); return; }
+    // Canvas charts read theme colours only when they are drawn. Mark both
+    // chart screens dirty so a theme selected in Settings is applied when
+    // the user next opens Statistics or Weight, not after a scroll event.
+    if (!save({ invalidateDerived:false, dirtyViews:['settings','stats','weight'] })) { renderAll(); return; }
     applyAppearance();
     updateAppearancePaletteHint();
-    if (el('stats').classList.contains('active')) renderStatsVisualizations();
-    if (el('weight').classList.contains('active')) drawWeightChart();
+    if (el('stats').classList.contains('active')) renderScreen('stats', { force:true });
+    if (el('weight').classList.contains('active')) renderScreen('weight', { force:true });
   });
   el('timeZoneSearch').addEventListener('input', renderTimeZoneOptions);
   el('timeZoneSelect').addEventListener('change', () => {
