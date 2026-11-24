@@ -242,11 +242,30 @@ if sync_playwright:
               const select=document.querySelector('#appearanceSelect');
               select.value='light';select.dispatchEvent(new Event('change',{bubbles:true}));
             }""")
-            tab_a.wait_for_function("""() => new Promise(resolve=>{
-              const q=indexedDB.open('FastingTrackerDB',2);
-              q.onerror=()=>resolve(false);
-              q.onsuccess=()=>{const tx=q.result.transaction('state','readonly');const r=tx.objectStore('state').get('settings');r.onsuccess=()=>resolve(r.result?.data?.appearance==='light');r.onerror=()=>resolve(false);};
-            })""", timeout=10000)
+            committed_light = tab_a.evaluate("""async () => {
+              const readAppearance = () => new Promise(resolve => {
+                const q = indexedDB.open('FastingTrackerDB', 2);
+                q.onerror = () => resolve(null);
+                q.onsuccess = () => {
+                  const db = q.result;
+                  let tx;
+                  try { tx = db.transaction('state', 'readonly'); }
+                  catch { db.close(); resolve(null); return; }
+                  const request = tx.objectStore('state').get('settings');
+                  request.onsuccess = () => resolve(request.result?.data?.appearance ?? null);
+                  request.onerror = () => resolve(null);
+                  tx.oncomplete = () => db.close();
+                  tx.onabort = () => db.close();
+                };
+              });
+              const deadline = performance.now() + 10000;
+              while (performance.now() < deadline) {
+                if (await readAppearance() === 'light') return true;
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+              return false;
+            }""")
+            assert committed_light is True, "Tab A did not commit the light appearance before Tab B was released"
             print("DEBUG: sync trace before releasing B:", {
                 "tab_a": tab_a.evaluate("() => ({appearance:document.querySelector('#appearanceSelect')?.value, trace:window.__syncTrace})"),
                 "tab_b": tab_b.evaluate("() => ({appearance:document.querySelector('#appearanceSelect')?.value, trace:window.__syncTrace})")
