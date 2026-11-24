@@ -57,10 +57,11 @@ with sync_playwright() as p:
       const contrast=(a,b)=>{const x=luminance(a),y=luminance(b);return x===null||y===null?0:(Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);};
       return themes.map(theme=>{
         document.documentElement.setAttribute('data-theme',theme);
-        const group=document.querySelector('#weightChartDetail .weightPointDetailGroup.average');
+        const group=document.querySelector('#weightChartDetail .weightPointDetailGroup');
         const heading=group?.querySelector('.weightPointDetailHeading strong');
         const value=group?.querySelector('.weightPointDetailValue');
         if(!group||!heading||!value)return {theme,missing:true};
+        if(!group.classList.contains('average')||group.classList.contains('primary'))return {theme,badClass:true};
         const bg=getComputedStyle(group).backgroundColor;
         const headingColor=getComputedStyle(heading).color;
         const valueStyle=getComputedStyle(value);
@@ -71,7 +72,7 @@ with sync_playwright() as p:
       });
     }""")
     for result in theme_results:
-        if result.get('missing') or result['heading'] < 4.5 or result['value'] < 4.5 or result['headingFill'] < 4.5 or result['valueFill'] < 4.5:
+        if result.get('missing') or result.get('badClass') or result['heading'] < 4.5 or result['value'] < 4.5 or result['headingFill'] < 4.5 or result['valueFill'] < 4.5:
             print('FAIL: rolling average detail contrast below WCAG AA',result);sys.exit(1)
     page.evaluate("document.documentElement.removeAttribute('data-theme')")
 
