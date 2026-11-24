@@ -226,10 +226,10 @@ if sync_playwright:
                 // Hold only the frame scheduled by queuePrimaryPersistence.
                 // Theme rendering and unrelated animation frames must continue;
                 // holding the next arbitrary frame can let the write escape.
-                const stack=String(new Error().stack||'');
-                if(stack.includes('queuePrimaryPersistence')){
+                const source=String(callback);
+                if(source.includes('persistPrimaryNow(data)')){
                   window.__heldPrimaryRafs.push(callback);
-                  window.__heldPrimaryRafStacks.push(stack);
+                  window.__heldPrimaryRafStacks.push(source);
                   return 9001;
                 }
                 return nativeRaf(callback);
