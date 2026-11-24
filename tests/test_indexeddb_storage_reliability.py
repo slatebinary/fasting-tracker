@@ -221,9 +221,17 @@ if sync_playwright:
             tab_b.evaluate("""() => {
               const nativeRaf=window.requestAnimationFrame.bind(window);
               window.__heldPrimaryRafs=[];
-              window.__holdNextPrimaryRaf=true;
+              window.__heldPrimaryRafStacks=[];
               window.requestAnimationFrame=callback=>{
-                if(window.__holdNextPrimaryRaf){window.__holdNextPrimaryRaf=false;window.__heldPrimaryRafs.push(callback);return 9001;}
+                // Hold only the frame scheduled by queuePrimaryPersistence.
+                // Theme rendering and unrelated animation frames must continue;
+                // holding the next arbitrary frame can let the write escape.
+                const stack=String(new Error().stack||'');
+                if(stack.includes('queuePrimaryPersistence')){
+                  window.__heldPrimaryRafs.push(callback);
+                  window.__heldPrimaryRafStacks.push(stack);
+                  return 9001;
+                }
                 return nativeRaf(callback);
               };
               const select=document.querySelector('#appearanceSelect');
