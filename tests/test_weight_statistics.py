@@ -64,7 +64,9 @@ with sync_playwright() as p:
         const bg=getComputedStyle(group).backgroundColor;
         const headingColor=getComputedStyle(heading).color;
         const valueStyle=getComputedStyle(value);
-        const valueColor=valueStyle.color;\n        const headingFill=getComputedStyle(heading).webkitTextFillColor;\n        const valueFill=valueStyle.webkitTextFillColor;
+        const valueColor=valueStyle.color;
+        const headingFill=getComputedStyle(heading).webkitTextFillColor;
+        const valueFill=valueStyle.webkitTextFillColor;
         return {theme,heading:contrast(headingColor,bg),value:contrast(valueColor,bg),headingFill:contrast(headingFill,bg),valueFill:contrast(valueFill,bg),headingColor,valueColor,headingFillColor:headingFill,valueFillColor:valueFill,bg};
       });
     }""")
