@@ -73,6 +73,21 @@ with sync_playwright() as p:
             print('FAIL: rolling average detail contrast below WCAG AA',result);sys.exit(1)
     page.evaluate("document.documentElement.removeAttribute('data-theme')")
 
+    # Changing the theme from Settings must invalidate hidden canvas charts.
+    # Returning to Weight should redraw the canvas immediately, without a scroll.
+    canvas_before_settings_theme_change=page.locator('#weightChart').evaluate('(canvas)=>canvas.toDataURL()')
+    page.locator('.tab[data-screen="settings"]').click()
+    page.wait_for_function("document.querySelector('#settings')?.classList.contains('active')",timeout=5000)
+    page.locator('#appearanceSelect').select_option('high-contrast-dark')
+    page.wait_for_function("document.documentElement.getAttribute('data-theme') === 'high-contrast-dark'",timeout=5000)
+    page.locator('.tab[data-screen="weight"]').click()
+    page.wait_for_function("document.querySelector('#weight')?.classList.contains('active')",timeout=5000)
+    page.wait_for_function("document.querySelector('#weightChart')?.width > 0",timeout=5000)
+    canvas_after_settings_theme_change=page.locator('#weightChart').evaluate('(canvas)=>canvas.toDataURL()')
+    if canvas_after_settings_theme_change == canvas_before_settings_theme_change:
+        print('FAIL: weight chart canvas was not redrawn after changing theme in Settings')
+        sys.exit(1)
+
     month_count=period('month')
     quarter_count=period('quarter')
     half_count=period('halfyear')
