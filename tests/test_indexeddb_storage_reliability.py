@@ -134,6 +134,44 @@ if sync_playwright:
         origin = f"http://127.0.0.1:{server.server_address[1]}/"
         browser = p.chromium.launch(executable_path="/usr/bin/chromium", headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
         context = browser.new_context(viewport={"width": 390, "height": 844})
+        context.add_init_script("""() => {
+          window.__syncTrace = [];
+          const trace = (entry) => window.__syncTrace.push({...entry, at:performance.now()});
+          window.addEventListener('storage', event => {
+            if (event.key === 'fastingTracker.dataRevision') trace({type:'revision-signal', value:event.newValue});
+          });
+          document.addEventListener('visibilitychange', () => trace({type:'visibility', state:document.visibilityState}));
+          window.addEventListener('pagehide', () => trace({type:'pagehide'}));
+          const nativeTransaction = IDBDatabase.prototype.transaction;
+          IDBDatabase.prototype.transaction = function(names, mode, options) {
+            const tx = nativeTransaction.call(this, names, mode, options);
+            const stores = Array.isArray(names) ? names : [names];
+            if (mode === 'readwrite' && stores.includes('state')) {
+              const nativeObjectStore = tx.objectStore.bind(tx);
+              tx.objectStore = function(name) {
+                const store = nativeObjectStore(name);
+                if (name !== 'state') return store;
+                const nativeGet = store.get.bind(store);
+                store.get = function(key) {
+                  const request = nativeGet(key);
+                  if (key === 'settings') request.addEventListener('success', () => {
+                    trace({type:'revision-read', revision:request.result?.data?.revision, appearance:request.result?.data?.appearance});
+                  });
+                  return request;
+                };
+                const nativePut = store.put.bind(store);
+                store.put = function(value, ...args) {
+                  if (value?.key === 'settings') trace({type:'settings-put', revision:value.data?.revision, appearance:value.data?.appearance});
+                  return nativePut(value, ...args);
+                };
+                return store;
+              };
+              tx.addEventListener('complete', () => trace({type:'write-complete'}));
+              tx.addEventListener('abort', () => trace({type:'write-abort', error:String(tx.error || '')}));
+            }
+            return tx;
+          };
+        }""")
         tab_a, tab_b = context.new_page(), context.new_page()
         try:
             tab_a.goto(origin)
@@ -201,6 +239,10 @@ if sync_playwright:
               q.onerror=()=>resolve(false);
               q.onsuccess=()=>{const tx=q.result.transaction('state','readonly');const r=tx.objectStore('state').get('settings');r.onsuccess=()=>resolve(r.result?.data?.appearance==='light');r.onerror=()=>resolve(false);};
             })""", timeout=10000)
+            print("DEBUG: sync trace before releasing B:", {
+                "tab_a": tab_a.evaluate("() => ({appearance:document.querySelector('#appearanceSelect')?.value, trace:window.__syncTrace})"),
+                "tab_b": tab_b.evaluate("() => ({appearance:document.querySelector('#appearanceSelect')?.value, trace:window.__syncTrace})")
+            })
             tab_b.evaluate("() => { const callback=window.__heldPrimaryRafs.shift(); if(callback) callback(performance.now()); }")
             try:
                 tab_b.wait_for_function("document.querySelector('#appearanceSelect')?.value === 'light'", timeout=15000)
@@ -221,7 +263,8 @@ if sync_playwright:
                     visibilityState: document.visibilityState,
                     version: document.querySelector('#appVersionLabel')?.textContent,
                     heldRafs: window.__heldPrimaryRafs?.length,
-                    openModal: [...document.querySelectorAll('.modalBackdrop')].find(node => !node.hidden)?.id || null
+                    openModal: [...document.querySelectorAll('.modalBackdrop')].find(node => !node.hidden)?.id || null,
+                    trace: window.__syncTrace
                   };
                 }""")
                 print("DEBUG: stale-tab refresh state:", diagnostic)
