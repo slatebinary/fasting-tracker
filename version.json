@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.19",
-  "released": "2026-11-24",
-  "notes": "Correct rolling-average label and value rendering across all eight appearance themes, including iOS WebKit.",
+  "version": "1.21.20",
+  "released": "2026-11-25",
+  "notes": "Refresh Weight and Statistics chart canvases after appearance changes so graph and selected-point colours update immediately.",
   "entry": "./index.html",
   "shell": [
     "./",
