@@ -100,11 +100,13 @@
 
   el('appearanceSelect').addEventListener('change', () => {
     data.appearance = normalizeAppearance(el('appearanceSelect').value);
-    if (!save({ invalidateDerived:false, dirtyViews:['settings'] })) { renderAll(); return; }
+    // Canvas charts retain the colours used by their last draw. Mark both chart
+    // screens dirty so a theme change in Settings is applied when either is opened.
+    if (!save({ invalidateDerived:false, dirtyViews:['settings','stats','weight'] })) { renderAll(); return; }
     applyAppearance();
     updateAppearancePaletteHint();
-    if (el('stats').classList.contains('active')) renderStatsVisualizations();
-    if (el('weight').classList.contains('active')) drawWeightChart();
+    if (el('stats').classList.contains('active')) renderScreen('stats');
+    if (el('weight').classList.contains('active')) renderScreen('weight');
   });
   el('timeZoneSearch').addEventListener('input', renderTimeZoneOptions);
   el('timeZoneSelect').addEventListener('change', () => {
