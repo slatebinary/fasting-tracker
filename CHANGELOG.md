@@ -1,3 +1,9 @@
+## v1.21.18 — 2026-11-24
+
+- Correct the 7-day rolling-average detail label and value to use the active theme's foreground colour, restoring clear visibility across all eight appearance themes.
+- Add browser regression coverage that checks WCAG AA text contrast for both the label and value in all eight themes.
+- No storage schema or external backup-format changes.
+
 ## v1.21.17 — 2026-11-23
 
 - Make the calendar-period average value in rolling Weight views explicitly use the active theme foreground on a theme-aware card surface, restoring visibility in Light and other light-appearance themes.
