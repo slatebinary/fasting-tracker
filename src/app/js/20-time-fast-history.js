@@ -378,7 +378,7 @@
     if (!stopActivityPuzzle) return;
     const question = stopRiddleText(stopActivityPuzzle, 'question');
     const invitation = t('fasting.stopActivityCopyInvitation');
-    const text = invitation + '\\n\\n' + question;
+    const text = invitation + '\n\n' + question;
     const status = el('stopActivityCopyStatus');
     try {
       if (navigator.clipboard?.writeText && window.isSecureContext) {
