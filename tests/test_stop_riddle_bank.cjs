@@ -9,7 +9,8 @@ vm.runInNewContext(source + '\nglobalThis.__bank = STOP_ACTIVITY_PUZZLES;', sand
 const bank = sandbox.__bank;
 assert.equal(bank.length, 1000, 'the riddle bank must contain exactly 1,000 entries');
 assert.equal(new Set(bank.map(item => item.id)).size, 1000, 'riddle IDs must be unique');
-assert.deepEqual([...bank.map(item => item.id)].sort((a,b) => a-b), Array.from({length:1000}, (_,i) => i+1));
+const ids = Array.from(bank, item => item.id).sort((a,b) => a-b);
+assert.deepEqual(ids, Array.from({length:1000}, (_,i) => i+1));
 for (const language of ['en','bg','es']) {
   const questions = bank.map(item => item[language]?.[0]);
   assert.ok(questions.every(question => typeof question === 'string' && question.trim()), language + ' questions must all be present');
