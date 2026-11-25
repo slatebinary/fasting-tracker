@@ -110,7 +110,7 @@ with sync_playwright() as p:
     if not any('\u0400' <= ch <= '\u04ff' for ch in page2.locator('#stopActivityText').inner_text()):
         print('FAIL: Bulgarian interface did not show a Bulgarian riddle'); sys.exit(1)
     page2.locator('#stopActivityMovementBtn').click()
-    if 'walk' not in page2.locator('#stopActivityText').inner_text().lower():
+    if 'разходете' not in page2.locator('#stopActivityText').inner_text().lower():
         print('FAIL: gentle movement option does not provide usable activity instructions'); sys.exit(1)
     page2.locator('#stopAndSaveBtn').click()
     page2.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
