@@ -30,7 +30,7 @@
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 46;
+  const I18N_SOURCE_REVISION = 47;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
@@ -195,8 +195,6 @@
   let fastActionLocked = false;
   let suppressFastToggleUntil = 0;
   let pendingStopUndo = null;
-  let stopModalStage = 'confirm';
-  let shorterGoalOfferMs = 0;
   let stopUndoTimer = 0;
   let stopUndoCountdownTimer = 0;
   let stopUndoMessageTimer = 0;
