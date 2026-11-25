@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.20" />
+  <meta name="ft-app-version" content="1.21.21" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -637,8 +637,16 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .backdateConflictActions button { min-width: 0; white-space: normal; overflow-wrap: normal; word-break: normal; }
     .modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; position:sticky; bottom:-1px; z-index:2; background:var(--card); padding:10px 0 max(2px, env(safe-area-inset-bottom)); }
     .modalActions .primary { width: auto; font-size: inherit; }
-    .modalActions.shorterOfferActions { display:grid; grid-template-columns:minmax(0,1fr); gap:8px; }
-    .modalActions.shorterOfferActions button { width:100%; white-space:normal; min-height:46px; }
+    .stopActivity { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+    .stopActivity > p { margin:0 0 9px; color:var(--muted); line-height:1.4; }
+    .stopActivityChoices, .stopActivityActions { display:flex; flex-wrap:wrap; gap:8px; }
+    .stopActivityChoices button, .stopActivityActions button { flex:1 1 110px; min-width:0; min-height:42px; white-space:normal; }
+    .stopActivityContent { margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--text); }
+    .stopActivityContent p { margin:0; line-height:1.45; }
+    .stopActivityContent .stopActivityAnswer { margin-top:8px; font-weight:700; }
+    .stopActivityActions { margin-top:10px; }
+    .stopActivityActions button { flex:0 1 auto; }
+    @media (max-width:360px) { .stopActivityChoices button { flex-basis:100%; } }
     .shareOptions { display:grid; gap:8px; margin:14px 0; }
     .shareOption { display:flex; align-items:flex-start; gap:10px; padding:10px 11px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
     .shareOption input { width:21px; height:21px; margin-top:1px; flex:0 0 auto; accent-color:var(--accent); }
@@ -1920,8 +1928,23 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
       </select>
       <div class="small stopReasonHelp" data-i18n="fasting.stopReasonHelp">Unavoidable interruptions stay factual in your statistics but are neutral for the consistency streak and receive no target-completion XP.</div>
     </div>
+    <section class="stopActivity" id="stopActivity" aria-label="Optional activity" data-i18n-aria="fasting.stopActivityAria">
+      <p class="small" data-i18n="fasting.stopActivityIntro">If you would like to wait a little before deciding, try one short activity. It is optional; Stop &amp; Save remains available.</p>
+      <div class="stopActivityChoices">
+        <button id="stopActivityPuzzleBtn" class="secondary" type="button" data-i18n="fasting.stopActivityPuzzle">Quick puzzle</button>
+        <button id="stopActivityMovementBtn" class="secondary" type="button" data-i18n="fasting.stopActivityMovement">Gentle movement</button>
+        <button id="stopActivityRelaxBtn" class="secondary" type="button" data-i18n="fasting.stopActivityRelax">Quiet reset</button>
+      </div>
+      <div class="stopActivityContent" id="stopActivityContent" role="status" aria-live="polite" hidden>
+        <p id="stopActivityText"></p>
+        <p id="stopActivityAnswer" class="stopActivityAnswer" hidden></p>
+        <div class="stopActivityActions">
+          <button id="stopActivityAnswerBtn" class="secondary" type="button" hidden data-i18n="fasting.stopActivityShowAnswer">Show answer</button>
+          <button id="stopActivityNextBtn" class="secondary" type="button" hidden data-i18n="fasting.stopActivityAnother">Another puzzle</button>
+        </div>
+      </div>
+    </section>
     <div class="modalActions" id="stopFastModalActions">
-      <button id="continueOriginalTargetBtn" class="primary" type="button" data-i18n="fasting.shorterOfferOriginal" data-i18n-aria="fasting.shorterOfferOriginalAria" aria-label="Continue fasting to the original target" hidden>Continue to original target</button>
       <button id="keepFastingBtn" class="secondary" type="button" data-i18n="fasting.keepFasting">Keep fasting</button>
       <button id="stopAndSaveBtn" class="primary stop" type="button" data-i18n="fasting.stopAndSave">Stop &amp; save</button>
     </div>
@@ -1989,14 +2012,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 46;
+  const I18N_SOURCE_REVISION = 47;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.20';
+  const APP_VERSION = '1.21.21';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -2154,8 +2177,6 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   let fastActionLocked = false;
   let suppressFastToggleUntil = 0;
   let pendingStopUndo = null;
-  let stopModalStage = 'confirm';
-  let shorterGoalOfferMs = 0;
   let stopUndoTimer = 0;
   let stopUndoCountdownTimer = 0;
   let stopUndoMessageTimer = 0;
@@ -4972,14 +4993,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
         : t('fasting.expectedTargetTime', {date: localDateTimeLabel(targetAt, data.activeTimeZone)});
 
       const encouragement = el('fastingEncouragement');
-      const shorterState = shorterGoalState();
       if (pendingStart) {
         encouragement.hidden = true;
-      } else if (shorterState?.start === data.activeStart && shorterState.checkpointAt > 0) {
-        encouragement.hidden = false;
-        encouragement.textContent = Date.now() < shorterState.checkpointAt
-          ? t('fasting.shorterCheckpoint', {duration:friendlyDuration(shorterState.checkpointAt - Date.now())})
-          : t('fasting.shorterCheckpointReached');
       } else if (elapsed >= targetMs) {
         encouragement.hidden = false;
         encouragement.textContent = t('fasting.encourageComplete');
@@ -5114,52 +5129,95 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     stopUndoTimer = setTimeout(() => clearStopUndo(), 10000);
   }
 
+  const STOP_ACTIVITY_PUZZLES = [
+    ['fasting.stopActivityPuzzle1Question','fasting.stopActivityPuzzle1Answer'],
+    ['fasting.stopActivityPuzzle2Question','fasting.stopActivityPuzzle2Answer'],
+    ['fasting.stopActivityPuzzle3Question','fasting.stopActivityPuzzle3Answer']
+  ];
+  let stopActivityPuzzleIndex = 0;
+
+  function clearShorterGoalState() {
+    try { localStorage.removeItem('fastingTracker.shorterGoal'); } catch {}
+  }
+
+  function updateStopActivityAvailability() {
+    const safetyStop = normalizeStopReason(el('stopReasonSelect')?.value) === 'health-safety';
+    const activity = el('stopActivity');
+    if (activity) activity.hidden = safetyStop;
+    if (safetyStop) {
+      const content = el('stopActivityContent');
+      if (content) content.hidden = true;
+    }
+  }
+
+  function resetStopActivity() {
+    stopActivityPuzzleIndex = 0;
+    const content = el('stopActivityContent');
+    if (content) content.hidden = true;
+    const answer = el('stopActivityAnswer');
+    if (answer) { answer.hidden = true; answer.textContent = ''; }
+    const answerButton = el('stopActivityAnswerBtn');
+    if (answerButton) answerButton.hidden = true;
+    const nextButton = el('stopActivityNextBtn');
+    if (nextButton) nextButton.hidden = true;
+    const prompt = el('stopActivityText');
+    if (prompt) prompt.textContent = '';
+    updateStopActivityAvailability();
+  }
+
+  function showStopActivity(kind) {
+    if (normalizeStopReason(el('stopReasonSelect')?.value) === 'health-safety') return;
+    const content = el('stopActivityContent');
+    const prompt = el('stopActivityText');
+    const answer = el('stopActivityAnswer');
+    const answerButton = el('stopActivityAnswerBtn');
+    const nextButton = el('stopActivityNextBtn');
+    if (!content || !prompt || !answer || !answerButton || !nextButton) return;
+    content.hidden = false;
+    answer.hidden = true;
+    answerButton.hidden = true;
+    nextButton.hidden = true;
+    if (kind === 'puzzle') {
+      const [questionKey, answerKey] = STOP_ACTIVITY_PUZZLES[stopActivityPuzzleIndex];
+      prompt.textContent = t(questionKey);
+      answer.textContent = t(answerKey);
+      answerButton.hidden = false;
+      answerButton.textContent = t('fasting.stopActivityShowAnswer');
+      nextButton.hidden = false;
+      nextButton.textContent = t('fasting.stopActivityAnother');
+      return;
+    }
+    prompt.textContent = kind === 'movement'
+      ? t('fasting.stopActivityMovementText')
+      : t('fasting.stopActivityRelaxText');
+  }
+
+  function showNextStopActivityPuzzle() {
+    stopActivityPuzzleIndex = (stopActivityPuzzleIndex + 1) % STOP_ACTIVITY_PUZZLES.length;
+    showStopActivity('puzzle');
+  }
+
+  function toggleStopActivityAnswer() {
+    const answer = el('stopActivityAnswer');
+    const button = el('stopActivityAnswerBtn');
+    if (!answer || !button) return;
+    answer.hidden = !answer.hidden;
+    button.textContent = t(answer.hidden ? 'fasting.stopActivityShowAnswer' : 'fasting.stopActivityHideAnswer');
+  }
+
   function closeStopFastModal() {
     // Do not expose the underlying Start/Stop control to the tail end of the
     // same touch sequence that dismissed this modal. Mobile Safari can
     // otherwise retarget a synthetic click after the overlay disappears.
     suppressFastToggleUntil = performance.now() + 350;
     hideModal('stopFastModal');
-    stopModalStage = 'confirm';
-    shorterGoalOfferMs = 0;
-    el('continueOriginalTargetBtn').hidden = true;
-    el('stopFastModalActions').classList.remove('shorterOfferActions');
+    resetStopActivity();
     el('stopFastModalTitle').textContent = t('fasting.stopModalTitle');
     el('keepFastingBtn').textContent = t('fasting.keepFasting');
     el('stopAndSaveBtn').textContent = t('fasting.stopAndSave');
   }
 
-  function shorterGoalState() {
-    try {
-      const value = JSON.parse(localStorage.getItem('fastingTracker.shorterGoal') || 'null');
-      if (!value || typeof value.start !== 'string' || !Number.isFinite(Number(value.checkpointAt))) return null;
-      return {start:value.start, checkpointAt:Number(value.checkpointAt), offered:value.offered === true};
-    } catch { return null; }
-  }
-
-  function saveShorterGoalState(value) {
-    try { localStorage.setItem('fastingTracker.shorterGoal', JSON.stringify(value)); } catch {}
-  }
-
-  function clearShorterGoalState() {
-    try { localStorage.removeItem('fastingTracker.shorterGoal'); } catch {}
-  }
-
   function keepFastingAndReturnHome() {
-    if (stopModalStage === 'shorter') {
-      const start = data.activeStart;
-      if (start && shorterGoalOfferMs > 0) {
-        saveShorterGoalState({start, checkpointAt:Date.now() + shorterGoalOfferMs, offered:true});
-      }
-    }
-    closeStopFastModal();
-    activateScreen('fasting');
-    requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
-  }
-
-  function keepOriginalTargetAndReturnHome() {
-    const start = data.activeStart;
-    if (start) saveShorterGoalState({start, checkpointAt:0, offered:true, choice:'original-target'});
     closeStopFastModal();
     activateScreen('fasting');
     requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
@@ -5179,8 +5237,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     }
     const duration = Date.now() - start.getTime();
     if (duration <= 0) { alert(t('fasting.clockError')); return; }
-    stopModalStage = 'confirm';
-    shorterGoalOfferMs = 0;
+    clearShorterGoalState();
+    resetStopActivity();
     el('stopFastModalTitle').textContent = t('fasting.stopModalTitle');
     el('keepFastingBtn').textContent = t('fasting.keepFasting');
     el('stopAndSaveBtn').textContent = t('fasting.stopAndSave');
@@ -5192,39 +5250,12 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     const early = duration < goalMs(activeTargetHours());
     const reasonGroup = el('stopReasonGroup');
     if (reasonGroup) reasonGroup.hidden = !early;
-    if (early && el('stopReasonSelect')) el('stopReasonSelect').value = 'personal';
+    if (el('stopReasonSelect')) el('stopReasonSelect').value = 'personal';
+    updateStopActivityAvailability();
     showModal('stopFastModal', 'keepFastingBtn');
   }
 
   function confirmStopFast() {
-    if (stopModalStage === 'confirm') {
-      const startNow = validDate(data.activeStart);
-      if (startNow) {
-        const nowMs = Date.now();
-        const remainingMs = startNow.getTime() + goalMs(activeTargetHours()) - nowMs;
-        const reason = normalizeStopReason(el('stopReasonSelect')?.value);
-        // Re-offer on every personal early-stop attempt. The shorter-goal
-        // state remains useful for the active checkpoint display, but must
-        // never suppress a later stop decision for this same fast.
-        if (remainingMs >= 120000 && (!reason || reason === 'personal')) {
-          shorterGoalOfferMs = Math.floor((remainingMs / 2) / 60000) * 60000;
-          if (shorterGoalOfferMs >= 60000) {
-            stopModalStage = 'shorter';
-            el('stopFastModalTitle').textContent = t('fasting.shorterOfferTitle');
-            el('stopFastModalText').classList.remove('warn');
-            el('stopFastModalText').textContent = t('fasting.shorterOfferText', {duration:friendlyDuration(shorterGoalOfferMs)});
-            el('stopReasonGroup').hidden = true;
-            el('stopFastModalActions').classList.add('shorterOfferActions');
-            el('continueOriginalTargetBtn').hidden = false;
-            el('continueOriginalTargetBtn').textContent = t('fasting.shorterOfferOriginal');
-            el('keepFastingBtn').textContent = t('fasting.shorterOfferContinue', {duration:friendlyDuration(shorterGoalOfferMs)});
-            el('stopAndSaveBtn').textContent = t('fasting.shorterOfferStop');
-            el('continueOriginalTargetBtn').focus();
-            return;
-          }
-        }
-      }
-    }
     const start = validDate(data.activeStart);
     if (!start) { closeStopFastModal(); return; }
     const end = new Date();
@@ -10390,9 +10421,14 @@ function mergeImportedData(imported) {
   // Modal actions use the browser's completed click activation rather than
   // the pointer-up shortcut used for ordinary controls. This avoids lost taps
   // from small finger drift and prevents touch-through when the modal closes.
-  bindReliableModalAction(el('continueOriginalTargetBtn'), keepOriginalTargetAndReturnHome);
   bindReliableModalAction(el('keepFastingBtn'), keepFastingAndReturnHome);
   bindReliableModalAction(el('stopAndSaveBtn'), confirmStopFast);
+  bindReliableModalAction(el('stopActivityPuzzleBtn'), () => showStopActivity('puzzle'));
+  bindReliableModalAction(el('stopActivityMovementBtn'), () => showStopActivity('movement'));
+  bindReliableModalAction(el('stopActivityRelaxBtn'), () => showStopActivity('relax'));
+  bindReliableModalAction(el('stopActivityAnswerBtn'), toggleStopActivityAnswer);
+  bindReliableModalAction(el('stopActivityNextBtn'), showNextStopActivityPuzzle);
+  el('stopReasonSelect').addEventListener('change', updateStopActivityAvailability);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
   el('editActiveFastCancel').addEventListener('click', () => hideModal('editActiveFastModal'));
   bindResponsiveAction(el('editActiveFastSave'), saveEditedActiveFast);
