@@ -49,16 +49,36 @@ with sync_playwright() as p:
     question1=page.locator('#stopActivityText').inner_text()
     if not question1 or not page.locator('#stopActivityAnswerBtn').is_visible():
         print('FAIL: quick puzzle does not present a question and answer control'); sys.exit(1)
-    if page.locator('#stopActivityAnswer').is_visible():
+    if not page.locator('#stopActivityAnswer').is_visible():
+        pass
+    else:
         print('FAIL: puzzle answer is exposed before the user asks to see it'); sys.exit(1)
+    if not page.locator('#stopActivityCopyBtn').is_visible():
+        print('FAIL: Copy to a friend is not available for a riddle'); sys.exit(1)
+    page.evaluate("""() => { Object.defineProperty(navigator, 'clipboard', { configurable:true, value:{ writeText: async value => { window.__copiedRiddle=value; } } }); }""")
+    page.locator('#stopActivityCopyBtn').click()
+    page.wait_for_function("typeof window.__copiedRiddle === 'string'")
+    copied=page.evaluate("window.__copiedRiddle")
+    if question1 not in copied or page.locator('#stopActivityAnswer').inner_text() in copied:
+        print('FAIL: copied message must contain the question but not reveal its answer'); sys.exit(1)
     page.locator('#stopActivityAnswerBtn').click()
     if not page.locator('#stopActivityAnswer').is_visible() or not page.locator('#stopActivityAnswer').inner_text():
         print('FAIL: puzzle answer is not revealed on request'); sys.exit(1)
     page.locator('#stopActivityNextBtn').click()
-    if page.locator('#stopActivityText').inner_text()==question1:
+    question2=page.locator('#stopActivityText').inner_text()
+    if question2==question1:
         print('FAIL: Another puzzle did not provide a different challenge'); sys.exit(1)
     if not page.locator('#stopAndSaveBtn').is_visible():
         print('FAIL: Stop & Save disappeared while an activity was displayed'); sys.exit(1)
+
+    page.locator('#keepFastingBtn').click()
+    page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    page.wait_for_timeout(400)
+    page.locator('#toggleFast').click()
+    page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page.locator('#stopActivityPuzzleBtn').click()
+    if page.locator('#stopActivityText').inner_text() in (question1, question2):
+        print('FAIL: a riddle was repeated after closing and reopening the stop dialog'); sys.exit(1)
 
     page.locator('#keepFastingBtn').click()
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
