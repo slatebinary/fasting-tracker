@@ -24,7 +24,7 @@ def seed_active(page, elapsed_hours=2, language='en'):
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.21.20',seenAt:new Date().toISOString()})); localStorage.setItem('fastingTracker.shorterGoal', JSON.stringify({start:data.activeStart,checkpointAt:Date.now()+60000,offered:true})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
-    page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
+    page.wait_for_function("document.querySelector('#fasting')?.classList.contains('active')",timeout=10000)
     return data
 
 with sync_playwright() as p:
