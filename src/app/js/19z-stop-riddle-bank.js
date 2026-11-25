@@ -56,11 +56,18 @@
     ];
     const bank = [];
     families.forEach((family, familyIndex) => {
-      for (let n = 1; n <= 100; n++) {
+      const limit = familyIndex === families.length - 1 ? 97 : 100;
+      for (let n = 1; n <= limit; n++) {
         const id = familyIndex * 100 + n;
         bank.push({ id, en: family.en(n), bg: family.bg(n), es: family.es(n) });
       }
     });
+    // Retain the three original word riddles in the expanded collection.
+    bank.push(
+      { id: 998, en: ['What gets wetter as it dries?', 'A towel.'], bg: ['Кое става по-мокро, докато суши?', 'Кърпата.'], es: ['¿Qué se moja más cuanto más seca?', 'Una toalla.'] },
+      { id: 999, en: ['What has keys but no locks, space but no room, and you can enter but not go inside?', 'A keyboard.'], bg: ['Кое има клавиши, но няма ключалки, интервал, но няма стая, и можете да въвеждате в него, без да влизате вътре?', 'Клавиатурата.'], es: ['¿Qué tiene teclas pero no cerraduras, espacio pero no habitaciones, y permite entrar sin que puedas entrar dentro?', 'Un teclado.'] },
+      { id: 1000, en: ['What can travel around the world while staying in one corner?', 'A postage stamp.'], bg: ['Кое може да обиколи света, оставайки в един ъгъл?', 'Пощенска марка.'], es: ['¿Qué puede viajar por todo el mundo sin salir de una esquina?', 'Un sello postal.'] }
+    );
     return Object.freeze(bank);
   })();
 
