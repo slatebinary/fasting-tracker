@@ -88,9 +88,14 @@
   // Modal actions use the browser's completed click activation rather than
   // the pointer-up shortcut used for ordinary controls. This avoids lost taps
   // from small finger drift and prevents touch-through when the modal closes.
-  bindReliableModalAction(el('continueOriginalTargetBtn'), keepOriginalTargetAndReturnHome);
   bindReliableModalAction(el('keepFastingBtn'), keepFastingAndReturnHome);
   bindReliableModalAction(el('stopAndSaveBtn'), confirmStopFast);
+  bindReliableModalAction(el('stopActivityPuzzleBtn'), () => showStopActivity('puzzle'));
+  bindReliableModalAction(el('stopActivityMovementBtn'), () => showStopActivity('movement'));
+  bindReliableModalAction(el('stopActivityRelaxBtn'), () => showStopActivity('relax'));
+  bindReliableModalAction(el('stopActivityAnswerBtn'), toggleStopActivityAnswer);
+  bindReliableModalAction(el('stopActivityNextBtn'), showNextStopActivityPuzzle);
+  el('stopReasonSelect').addEventListener('change', updateStopActivityAvailability);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
   el('editActiveFastCancel').addEventListener('click', () => hideModal('editActiveFastModal'));
   bindResponsiveAction(el('editActiveFastSave'), saveEditedActiveFast);
