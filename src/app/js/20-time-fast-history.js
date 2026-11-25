@@ -301,12 +301,8 @@
     stopUndoTimer = setTimeout(() => clearStopUndo(), 10000);
   }
 
-  const STOP_ACTIVITY_PUZZLES = [
-    ['fasting.stopActivityPuzzle1Question','fasting.stopActivityPuzzle1Answer'],
-    ['fasting.stopActivityPuzzle2Question','fasting.stopActivityPuzzle2Answer'],
-    ['fasting.stopActivityPuzzle3Question','fasting.stopActivityPuzzle3Answer']
-  ];
-  let stopActivityPuzzleIndex = 0;
+  let stopActivityPuzzle = null;
+  let stopActivityCopyStatusTimer = null;
 
   function clearShorterGoalState() {
     try { localStorage.removeItem('fastingTracker.shorterGoal'); } catch {}
@@ -323,7 +319,7 @@
   }
 
   function resetStopActivity() {
-    stopActivityPuzzleIndex = 0;
+    stopActivityPuzzle = null;
     const content = el('stopActivityContent');
     if (content) content.hidden = true;
     const answer = el('stopActivityAnswer');
@@ -332,6 +328,10 @@
     if (answerButton) answerButton.hidden = true;
     const nextButton = el('stopActivityNextBtn');
     if (nextButton) nextButton.hidden = true;
+    const copyButton = el('stopActivityCopyBtn');
+    if (copyButton) copyButton.hidden = true;
+    const copyStatus = el('stopActivityCopyStatus');
+    if (copyStatus) copyStatus.textContent = '';
     const prompt = el('stopActivityText');
     if (prompt) prompt.textContent = '';
     updateStopActivityAvailability();
@@ -344,19 +344,24 @@
     const answer = el('stopActivityAnswer');
     const answerButton = el('stopActivityAnswerBtn');
     const nextButton = el('stopActivityNextBtn');
+    const copyButton = el('stopActivityCopyBtn');
+    const copyStatus = el('stopActivityCopyStatus');
     if (!content || !prompt || !answer || !answerButton || !nextButton) return;
     content.hidden = false;
     answer.hidden = true;
     answerButton.hidden = true;
     nextButton.hidden = true;
+    if (copyButton) copyButton.hidden = true;
+    if (copyStatus) copyStatus.textContent = '';
     if (kind === 'puzzle') {
-      const [questionKey, answerKey] = STOP_ACTIVITY_PUZZLES[stopActivityPuzzleIndex];
-      prompt.textContent = t(questionKey);
-      answer.textContent = t(answerKey);
+      if (!stopActivityPuzzle) stopActivityPuzzle = nextStopActivityPuzzle();
+      prompt.textContent = stopRiddleText(stopActivityPuzzle, 'question');
+      answer.textContent = stopRiddleText(stopActivityPuzzle, 'answer');
       answerButton.hidden = false;
       answerButton.textContent = t('fasting.stopActivityShowAnswer');
       nextButton.hidden = false;
       nextButton.textContent = t('fasting.stopActivityAnother');
+      if (copyButton) copyButton.hidden = false;
       return;
     }
     prompt.textContent = kind === 'movement'
@@ -365,8 +370,35 @@
   }
 
   function showNextStopActivityPuzzle() {
-    stopActivityPuzzleIndex = (stopActivityPuzzleIndex + 1) % STOP_ACTIVITY_PUZZLES.length;
+    stopActivityPuzzle = nextStopActivityPuzzle();
     showStopActivity('puzzle');
+  }
+
+  async function copyStopActivityPuzzle() {
+    if (!stopActivityPuzzle) return;
+    const question = stopRiddleText(stopActivityPuzzle, 'question');
+    const invitation = t('fasting.stopActivityCopyInvitation');
+    const text = invitation + '\\n\\n' + question;
+    const status = el('stopActivityCopyStatus');
+    try {
+      if (navigator.clipboard?.writeText && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const field = document.createElement('textarea');
+        field.value = text;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.select();
+        const copied = document.execCommand('copy');
+        field.remove();
+        if (!copied) throw new Error('Clipboard copy was not available');
+      }
+      if (status) status.textContent = t('fasting.stopActivityCopied');
+    } catch {
+      if (status) status.textContent = t('fasting.stopActivityCopyFailed');
+    }
   }
 
   function toggleStopActivityAnswer() {
