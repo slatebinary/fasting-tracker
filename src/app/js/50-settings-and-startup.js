@@ -95,6 +95,7 @@
   bindReliableModalAction(el('stopActivityRelaxBtn'), () => showStopActivity('relax'));
   bindReliableModalAction(el('stopActivityAnswerBtn'), toggleStopActivityAnswer);
   bindReliableModalAction(el('stopActivityNextBtn'), showNextStopActivityPuzzle);
+  bindReliableModalAction(el('stopActivityCopyBtn'), copyStopActivityPuzzle);
   el('stopReasonSelect').addEventListener('change', updateStopActivityAvailability);
   bindResponsiveAction(el('stopUndoBtn'), undoStoppedFast);
   el('editActiveFastCancel').addEventListener('click', () => hideModal('editActiveFastModal'));
