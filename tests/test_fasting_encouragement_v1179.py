@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: time-left encouragement, half-remaining checkpoint and safety bypass."""
+"""Regression: optional stop activities, immediate stop, safety bypass and Undo."""
 import sys, json
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -11,16 +11,16 @@ except Exception as exc:
 
 APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 
-def seed_active(page, reason='personal'):
+def seed_active(page, elapsed_hours=2):
     data=build_data(3)
     now=datetime.now(timezone.utc)
-    data['activeStart']=(now-timedelta(hours=2)).isoformat().replace('+00:00','Z')
+    data['activeStart']=(now-timedelta(hours=elapsed_hours)).isoformat().replace('+00:00','Z')
     data['activeGoalHours']=16
     data['activeTimeZone']='UTC'
     data['activeCreatedAt']=data['activeStart']
     data['activeModifiedAt']=None
     page.evaluate(STORAGE_SHIM)
-    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.17.9',seenAt:new Date().toISOString()})); }", data)
+    page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.21.20',seenAt:new Date().toISOString()})); localStorage.setItem('fastingTracker.shorterGoal', JSON.stringify({start:data.activeStart,checkpointAt:Date.now()+60000,offered:true})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
     page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
@@ -28,112 +28,79 @@ def seed_active(page, reason='personal'):
 
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
-    page=browser.new_page(viewport={'width':390,'height':844})
     errors=[]
+    page=browser.new_page(viewport={'width':390,'height':844})
     page.on('pageerror',lambda exc:errors.append(str(exc)))
     seed_active(page)
     encouragement=page.locator('#fastingEncouragement')
-    if not encouragement.is_visible() or 'feel well' not in encouragement.inner_text().lower() or 'target' not in encouragement.inner_text().lower():
-        print('FAIL: active fast does not show supportive time-remaining encouragement'); sys.exit(1)
+    if not encouragement.is_visible() or 'feel well' not in encouragement.inner_text().lower():
+        print('FAIL: active fast does not retain safety-aware encouragement'); sys.exit(1)
 
-    # Declining the original target offers exactly half the time remaining,
-    # measured at the moment Stop & save is selected.
     page.locator('#toggleFast').click()
     page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
-    page.locator('#stopAndSaveBtn').click()
-    if 'continue to your original target' not in page.locator('#stopFastModalText').inner_text().lower():
-        print('FAIL: shorter-step prompt does not encourage continuing to the original target'); sys.exit(1)
-    if 'half the time remaining' not in page.locator('#stopFastModalText').inner_text().lower():
-        print('FAIL: shorter-step offer does not explain the half-remaining calculation'); sys.exit(1)
-    continue_label=page.locator('#keepFastingBtn').inner_text().lower()
-    if 'continue for' not in continue_label:
-        print('FAIL: shorter-step acceptance button does not show the proposed duration'); sys.exit(1)
-    if not page.locator('#continueOriginalTargetBtn').is_visible():
-        print('FAIL: shorter-step offer omits the original-target choice'); sys.exit(1)
-    if 'original target' not in page.locator('#continueOriginalTargetBtn').inner_text().lower():
-        print('FAIL: original-target choice is not clearly labelled'); sys.exit(1)
-    if page.evaluate("document.activeElement?.id") != 'continueOriginalTargetBtn':
-        print('FAIL: focus does not default to continuing to the original target'); sys.exit(1)
+    if not page.locator('#stopActivity').is_visible():
+        print('FAIL: optional activity suggestions are not shown for a normal stop'); sys.exit(1)
+    if not page.locator('#stopAndSaveBtn').is_visible() or not page.locator('#keepFastingBtn').is_visible():
+        print('FAIL: immediate Stop & Save and Keep fasting actions are not both available'); sys.exit(1)
+    if page.evaluate("localStorage.getItem('fastingTracker.shorterGoal')") is not None:
+        print('FAIL: obsolete shorter-goal checkpoint state was not cleared'); sys.exit(1)
+
+    page.locator('#stopActivityPuzzleBtn').click()
+    question1=page.locator('#stopActivityText').inner_text()
+    if not question1 or not page.locator('#stopActivityAnswerBtn').is_visible():
+        print('FAIL: quick puzzle does not present a question and answer control'); sys.exit(1)
+    if page.locator('#stopActivityAnswer').is_visible():
+        print('FAIL: puzzle answer is exposed before the user asks to see it'); sys.exit(1)
+    page.locator('#stopActivityAnswerBtn').click()
+    if not page.locator('#stopActivityAnswer').is_visible() or not page.locator('#stopActivityAnswer').inner_text():
+        print('FAIL: puzzle answer is not revealed on request'); sys.exit(1)
+    page.locator('#stopActivityNextBtn').click()
+    if page.locator('#stopActivityText').inner_text()==question1:
+        print('FAIL: Another puzzle did not provide a different challenge'); sys.exit(1)
+    if not page.locator('#stopAndSaveBtn').is_visible():
+        print('FAIL: Stop & Save disappeared while an activity was displayed'); sys.exit(1)
+
     page.locator('#keepFastingBtn').click()
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     if 'Stop' not in page.locator('#toggleFast').inner_text():
-        print('FAIL: accepting shorter step ended the active fast'); sys.exit(1)
-    state=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.shorterGoal') || 'null')")
-    if not state or state.get('start') is None or state.get('offered') is not True:
-        print('FAIL: accepted shorter step was not recorded as an active checkpoint'); sys.exit(1)
-    if not (6*3600000 <= state['checkpointAt']-page.evaluate('Date.now()') <= 7*3600000):
-        print('FAIL: checkpoint is not approximately half of the 14 hours remaining'); sys.exit(1)
-    page.evaluate("() => { const x=JSON.parse(localStorage.getItem('fastingTracker.shorterGoal')); x.checkpointAt=Date.now()-1000; localStorage.setItem('fastingTracker.shorterGoal',JSON.stringify(x)); }")
-    page.wait_for_function("document.querySelector('#fastingEncouragement')?.textContent.toLowerCase().includes('completed the shorter step')",timeout=5000)
+        print('FAIL: Keep fasting ended the active fast'); sys.exit(1)
 
-    # Every later personal stop attempt must offer the choice again, even
-    # after the shorter checkpoint was accepted and then the original target
-    # was selected. The final selection can still end the fast immediately.
     page.wait_for_timeout(400)
-    for attempt in range(2):
-        page.locator('#toggleFast').click()
-        page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
-        page.locator('#stopAndSaveBtn').click()
-        page.locator('#continueOriginalTargetBtn').wait_for(state='visible',timeout=3000)
-        if attempt == 0:
-            page.locator('#continueOriginalTargetBtn').click()
-            page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
-            page.wait_for_timeout(400)
-        else:
-            # Respect the modal action's 250 ms duplicate-click guard.
-            page.wait_for_timeout(300)
-            page.locator('#stopAndSaveBtn').click()
-            page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    page.locator('#toggleFast').click()
+    page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page.locator('#stopAndSaveBtn').click()
+    page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
+    page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Start')",timeout=5000)
 
-    # A health/safety stop bypasses any extension suggestion.
     page2=browser.new_page(viewport={'width':390,'height':844})
     page2.on('pageerror',lambda exc:errors.append(str(exc)))
-    seed_active(page2)
+    seed_active(page2, elapsed_hours=17.95)
     page2.locator('#toggleFast').click()
     page2.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
-    page2.locator('#stopReasonSelect').select_option('health-safety')
+    if not page2.locator('#stopActivity').is_visible():
+        print('FAIL: activity suggestions are missing after the target has been reached'); sys.exit(1)
+    page2.locator('#stopActivityMovementBtn').click()
+    if 'walk' not in page2.locator('#stopActivityText').inner_text().lower():
+        print('FAIL: gentle movement option does not provide usable activity instructions'); sys.exit(1)
     page2.locator('#stopAndSaveBtn').click()
-    page2.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
-    page2.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Start')",timeout=5000)
-    # Choosing the original target must be an explicit third option. It keeps
-    # the active fast running, leaves its target unchanged and does not create
-    # a half-time checkpoint or repeat the offer for this same fast.
+    page2.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
+
     page3=browser.new_page(viewport={'width':390,'height':844})
     page3.on('pageerror',lambda exc:errors.append(str(exc)))
     seed_active(page3)
     page3.locator('#toggleFast').click()
     page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page3.locator('#stopReasonSelect').select_option('health-safety')
+    if page3.locator('#stopActivity').is_visible():
+        print('FAIL: health/safety stop still displays activity suggestions'); sys.exit(1)
     page3.locator('#stopAndSaveBtn').click()
-    page3.locator('#continueOriginalTargetBtn').wait_for(state='visible',timeout=3000)
-    page3.locator('#continueOriginalTargetBtn').click()
     page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
-    if 'Stop' not in page3.locator('#toggleFast').inner_text():
-        print('FAIL: original-target choice ended the active fast'); sys.exit(1)
-    original_state=page3.evaluate("JSON.parse(localStorage.getItem('fastingTracker.shorterGoal') || 'null')")
-    if not original_state or original_state.get('offered') is not True or original_state.get('checkpointAt') != 0:
-        print('FAIL: original-target choice was not recorded without a shorter checkpoint'); sys.exit(1)
-    if '16' not in page3.locator('#goalText').inner_text():
-        print('FAIL: original fasting target display changed after choosing to continue'); sys.exit(1)
-    page3.wait_for_timeout(400)  # respect the modal touch-through suppression window
-    for attempt in range(2):
-        page3.locator('#toggleFast').click()
-        page3.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
-        page3.locator('#stopAndSaveBtn').click()
-        page3.locator('#continueOriginalTargetBtn').wait_for(state='visible',timeout=3000)
-        if attempt == 0:
-            # Choosing the original target must not suppress the next offer.
-            page3.locator('#continueOriginalTargetBtn').click()
-            page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
-            page3.wait_for_timeout(400)
-        else:
-            # Respect the modal action's 250 ms duplicate-click guard.
-            page3.wait_for_timeout(300)
-            page3.locator('#stopAndSaveBtn').click()
-            page3.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     page3.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
+    page3.locator('#stopUndoBtn').click()
+    page3.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=5000)
 
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
     browser.close()
-print('PASS: encouragement, repeatable half-remaining offer, original-target continuation and health/safety bypass')
+print('PASS: optional stop activities, direct stop, safety bypass, repeat attempts and Undo')
