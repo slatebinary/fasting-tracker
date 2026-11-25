@@ -556,8 +556,16 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     .backdateConflictActions button { min-width: 0; white-space: normal; overflow-wrap: normal; word-break: normal; }
     .modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; position:sticky; bottom:-1px; z-index:2; background:var(--card); padding:10px 0 max(2px, env(safe-area-inset-bottom)); }
     .modalActions .primary { width: auto; font-size: inherit; }
-    .modalActions.shorterOfferActions { display:grid; grid-template-columns:minmax(0,1fr); gap:8px; }
-    .modalActions.shorterOfferActions button { width:100%; white-space:normal; min-height:46px; }
+    .stopActivity { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+    .stopActivity > p { margin:0 0 9px; color:var(--muted); line-height:1.4; }
+    .stopActivityChoices, .stopActivityActions { display:flex; flex-wrap:wrap; gap:8px; }
+    .stopActivityChoices button, .stopActivityActions button { flex:1 1 110px; min-width:0; min-height:42px; white-space:normal; }
+    .stopActivityContent { margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--text); }
+    .stopActivityContent p { margin:0; line-height:1.45; }
+    .stopActivityContent .stopActivityAnswer { margin-top:8px; font-weight:700; }
+    .stopActivityActions { margin-top:10px; }
+    .stopActivityActions button { flex:0 1 auto; }
+    @media (max-width:360px) { .stopActivityChoices button { flex-basis:100%; } }
     .shareOptions { display:grid; gap:8px; margin:14px 0; }
     .shareOption { display:flex; align-items:flex-start; gap:10px; padding:10px 11px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
     .shareOption input { width:21px; height:21px; margin-top:1px; flex:0 0 auto; accent-color:var(--accent); }
