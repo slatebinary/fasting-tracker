@@ -60,7 +60,7 @@ with sync_playwright() as p:
     page.locator('#stopActivityCopyBtn').click()
     page.wait_for_function("typeof window.__copiedRiddle === 'string'")
     copied=page.evaluate("window.__copiedRiddle")
-    if question1 not in copied or page.locator('#stopActivityAnswer').text_content() in copied:
+    if question1 not in copied or page.locator('#stopActivityAnswer').text_content() in copied or '\\n\\n' not in copied:
         print('FAIL: copied message must contain the question but not reveal its answer'); sys.exit(1)
     page.locator('#stopActivityAnswerBtn').click()
     if not page.locator('#stopActivityAnswer').is_visible() or not page.locator('#stopActivityAnswer').inner_text():
@@ -85,6 +85,18 @@ with sync_playwright() as p:
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     if 'Stop' not in page.locator('#toggleFast').inner_text():
         print('FAIL: Keep fasting ended the active fast'); sys.exit(1)
+
+    # The no-repeat history must survive a full app reload, not only modal closure.
+    page.reload(wait_until='domcontentloaded')
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
+    page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
+    page.locator('#toggleFast').click()
+    page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page.locator('#stopActivityPuzzleBtn').click()
+    if page.locator('#stopActivityText').inner_text() in (question1, question2):
+        print('FAIL: riddle history was not preserved across an app reload'); sys.exit(1)
+    page.locator('#keepFastingBtn').click()
+    page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
 
     page.wait_for_timeout(400)
     page.locator('#toggleFast').click()
