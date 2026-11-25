@@ -55,7 +55,7 @@ with sync_playwright() as p:
         print('FAIL: puzzle answer is exposed before the user asks to see it'); sys.exit(1)
     if not page.locator('#stopActivityCopyBtn').is_visible():
         print('FAIL: Copy to a friend is not available for a riddle'); sys.exit(1)
-    page.evaluate("""() => { Object.defineProperty(navigator, 'clipboard', { configurable:true, value:{ writeText: async value => { window.__copiedRiddle=value; } } }); }""")
+    page.evaluate("""() => { Object.defineProperty(navigator, 'clipboard', { configurable:true, value:{ writeText: async value => { window.__copiedRiddle=value; } } }); Object.defineProperty(window, 'isSecureContext', { configurable:true, value:true }); }""")
     page.locator('#stopActivityCopyBtn').click()
     page.wait_for_function("typeof window.__copiedRiddle === 'string'")
     copied=page.evaluate("window.__copiedRiddle")
