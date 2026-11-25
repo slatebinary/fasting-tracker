@@ -102,7 +102,7 @@ with sync_playwright() as p:
     if not page2.locator('#stopActivity').is_visible():
         print('FAIL: activity suggestions are missing after the target has been reached'); sys.exit(1)
     page2.locator('#stopActivityPuzzleBtn').click()
-    if not any('\\u0400' <= ch <= '\\u04ff' for ch in page2.locator('#stopActivityText').inner_text()):
+    if not any('\u0400' <= ch <= '\u04ff' for ch in page2.locator('#stopActivityText').inner_text()):
         print('FAIL: Bulgarian interface did not show a Bulgarian riddle'); sys.exit(1)
     page2.locator('#stopActivityMovementBtn').click()
     if 'walk' not in page2.locator('#stopActivityText').inner_text().lower():
