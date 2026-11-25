@@ -60,7 +60,7 @@ with sync_playwright() as p:
     page.locator('#stopActivityCopyBtn').click()
     page.wait_for_function("typeof window.__copiedRiddle === 'string'")
     copied=page.evaluate("window.__copiedRiddle")
-    if question1 not in copied or page.locator('#stopActivityAnswer').text_content() in copied or '\\n\\n' not in copied:
+    if question1 not in copied or page.locator('#stopActivityAnswer').text_content() in copied or '\n\n' not in copied:
         print('FAIL: copied message must contain the question but not reveal its answer'); sys.exit(1)
     page.locator('#stopActivityAnswerBtn').click()
     if not page.locator('#stopActivityAnswer').is_visible() or not page.locator('#stopActivityAnswer').inner_text():
