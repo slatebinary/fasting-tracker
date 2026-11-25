@@ -1,6 +1,6 @@
 {
-  "sourceRevision": 47,
-  "appVersion": "1.21.21",
+  "sourceRevision": 48,
+  "appVersion": "1.21.22",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -1205,6 +1205,10 @@
     "sync.conflictSnapshotFailed": "A newer version was saved in another tab. This tab's unsaved changes could not be preserved as a recovery snapshot. The latest saved data has been loaded; repeat your action and check your backup.",
     "a11y.mainNavigation": "Main navigation",
     "a11y.appSections": "App sections",
-    "fasting.stopActivityAria": "Optional fasting-stop activity suggestions"
+    "fasting.stopActivityAria": "Optional fasting-stop activity suggestions",
+    "fasting.stopActivityCopyFriend": "Copy to a friend",
+    "fasting.stopActivityCopyInvitation": "Can you solve this riddle?",
+    "fasting.stopActivityCopied": "Riddle copied. Send it to a friend.",
+    "fasting.stopActivityCopyFailed": "Could not copy automatically. Please select and copy the riddle."
   }
 }
