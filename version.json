@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.20",
+  "version": "1.21.21",
   "released": "2026-11-25",
-  "notes": "Refresh Weight and Statistics chart canvases after appearance changes so graph and selected-point colours update immediately.",
+  "notes": "Replace the half-remaining-time stop offer with an immediate stop choice and optional, safety-aware distraction activities in English, Bulgarian and Spanish.",
   "entry": "./index.html",
   "shell": [
     "./",
