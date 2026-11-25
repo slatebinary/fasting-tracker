@@ -1201,5 +1201,9 @@
   "sync.conflictSnapshotFailed": "Se guardó una versión más reciente en otra pestaña. No se pudieron conservar los cambios sin guardar de esta pestaña en un punto de recuperación. Se han cargado los datos guardados más recientes; repite la acción y comprueba tu copia de seguridad.",
   "a11y.mainNavigation": "Navegación principal",
   "a11y.appSections": "Secciones de la aplicación",
-  "fasting.stopActivityAria": "Sugerencias de actividades al detener el ayuno"
+  "fasting.stopActivityAria": "Sugerencias de actividades al detener el ayuno",
+  "fasting.stopActivityCopyFriend": "Copiar para un amigo",
+  "fasting.stopActivityCopyInvitation": "¿Puedes resolver este acertijo?",
+  "fasting.stopActivityCopied": "Acertijo copiado. Envíalo a un amigo.",
+  "fasting.stopActivityCopyFailed": "No se pudo copiar automáticamente. Selecciona y copia el acertijo."
 }
