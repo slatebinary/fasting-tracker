@@ -165,14 +165,8 @@
         : t('fasting.expectedTargetTime', {date: localDateTimeLabel(targetAt, data.activeTimeZone)});
 
       const encouragement = el('fastingEncouragement');
-      const shorterState = shorterGoalState();
       if (pendingStart) {
         encouragement.hidden = true;
-      } else if (shorterState?.start === data.activeStart && shorterState.checkpointAt > 0) {
-        encouragement.hidden = false;
-        encouragement.textContent = Date.now() < shorterState.checkpointAt
-          ? t('fasting.shorterCheckpoint', {duration:friendlyDuration(shorterState.checkpointAt - Date.now())})
-          : t('fasting.shorterCheckpointReached');
       } else if (elapsed >= targetMs) {
         encouragement.hidden = false;
         encouragement.textContent = t('fasting.encourageComplete');
@@ -307,52 +301,95 @@
     stopUndoTimer = setTimeout(() => clearStopUndo(), 10000);
   }
 
+  const STOP_ACTIVITY_PUZZLES = [
+    ['fasting.stopActivityPuzzle1Question','fasting.stopActivityPuzzle1Answer'],
+    ['fasting.stopActivityPuzzle2Question','fasting.stopActivityPuzzle2Answer'],
+    ['fasting.stopActivityPuzzle3Question','fasting.stopActivityPuzzle3Answer']
+  ];
+  let stopActivityPuzzleIndex = 0;
+
+  function clearShorterGoalState() {
+    try { localStorage.removeItem('fastingTracker.shorterGoal'); } catch {}
+  }
+
+  function updateStopActivityAvailability() {
+    const safetyStop = normalizeStopReason(el('stopReasonSelect')?.value) === 'health-safety';
+    const activity = el('stopActivity');
+    if (activity) activity.hidden = safetyStop;
+    if (safetyStop) {
+      const content = el('stopActivityContent');
+      if (content) content.hidden = true;
+    }
+  }
+
+  function resetStopActivity() {
+    stopActivityPuzzleIndex = 0;
+    const content = el('stopActivityContent');
+    if (content) content.hidden = true;
+    const answer = el('stopActivityAnswer');
+    if (answer) { answer.hidden = true; answer.textContent = ''; }
+    const answerButton = el('stopActivityAnswerBtn');
+    if (answerButton) answerButton.hidden = true;
+    const nextButton = el('stopActivityNextBtn');
+    if (nextButton) nextButton.hidden = true;
+    const prompt = el('stopActivityText');
+    if (prompt) prompt.textContent = '';
+    updateStopActivityAvailability();
+  }
+
+  function showStopActivity(kind) {
+    if (normalizeStopReason(el('stopReasonSelect')?.value) === 'health-safety') return;
+    const content = el('stopActivityContent');
+    const prompt = el('stopActivityText');
+    const answer = el('stopActivityAnswer');
+    const answerButton = el('stopActivityAnswerBtn');
+    const nextButton = el('stopActivityNextBtn');
+    if (!content || !prompt || !answer || !answerButton || !nextButton) return;
+    content.hidden = false;
+    answer.hidden = true;
+    answerButton.hidden = true;
+    nextButton.hidden = true;
+    if (kind === 'puzzle') {
+      const [questionKey, answerKey] = STOP_ACTIVITY_PUZZLES[stopActivityPuzzleIndex];
+      prompt.textContent = t(questionKey);
+      answer.textContent = t(answerKey);
+      answerButton.hidden = false;
+      answerButton.textContent = t('fasting.stopActivityShowAnswer');
+      nextButton.hidden = false;
+      nextButton.textContent = t('fasting.stopActivityAnother');
+      return;
+    }
+    prompt.textContent = kind === 'movement'
+      ? t('fasting.stopActivityMovementText')
+      : t('fasting.stopActivityRelaxText');
+  }
+
+  function showNextStopActivityPuzzle() {
+    stopActivityPuzzleIndex = (stopActivityPuzzleIndex + 1) % STOP_ACTIVITY_PUZZLES.length;
+    showStopActivity('puzzle');
+  }
+
+  function toggleStopActivityAnswer() {
+    const answer = el('stopActivityAnswer');
+    const button = el('stopActivityAnswerBtn');
+    if (!answer || !button) return;
+    answer.hidden = !answer.hidden;
+    button.textContent = t(answer.hidden ? 'fasting.stopActivityShowAnswer' : 'fasting.stopActivityHideAnswer');
+  }
+
   function closeStopFastModal() {
     // Do not expose the underlying Start/Stop control to the tail end of the
     // same touch sequence that dismissed this modal. Mobile Safari can
     // otherwise retarget a synthetic click after the overlay disappears.
     suppressFastToggleUntil = performance.now() + 350;
     hideModal('stopFastModal');
-    stopModalStage = 'confirm';
-    shorterGoalOfferMs = 0;
-    el('continueOriginalTargetBtn').hidden = true;
-    el('stopFastModalActions').classList.remove('shorterOfferActions');
+    resetStopActivity();
     el('stopFastModalTitle').textContent = t('fasting.stopModalTitle');
     el('keepFastingBtn').textContent = t('fasting.keepFasting');
     el('stopAndSaveBtn').textContent = t('fasting.stopAndSave');
   }
 
-  function shorterGoalState() {
-    try {
-      const value = JSON.parse(localStorage.getItem('fastingTracker.shorterGoal') || 'null');
-      if (!value || typeof value.start !== 'string' || !Number.isFinite(Number(value.checkpointAt))) return null;
-      return {start:value.start, checkpointAt:Number(value.checkpointAt), offered:value.offered === true};
-    } catch { return null; }
-  }
-
-  function saveShorterGoalState(value) {
-    try { localStorage.setItem('fastingTracker.shorterGoal', JSON.stringify(value)); } catch {}
-  }
-
-  function clearShorterGoalState() {
-    try { localStorage.removeItem('fastingTracker.shorterGoal'); } catch {}
-  }
-
   function keepFastingAndReturnHome() {
-    if (stopModalStage === 'shorter') {
-      const start = data.activeStart;
-      if (start && shorterGoalOfferMs > 0) {
-        saveShorterGoalState({start, checkpointAt:Date.now() + shorterGoalOfferMs, offered:true});
-      }
-    }
-    closeStopFastModal();
-    activateScreen('fasting');
-    requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
-  }
-
-  function keepOriginalTargetAndReturnHome() {
-    const start = data.activeStart;
-    if (start) saveShorterGoalState({start, checkpointAt:0, offered:true, choice:'original-target'});
     closeStopFastModal();
     activateScreen('fasting');
     requestAnimationFrame(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch { window.scrollTo(0, 0); } });
@@ -372,8 +409,8 @@
     }
     const duration = Date.now() - start.getTime();
     if (duration <= 0) { alert(t('fasting.clockError')); return; }
-    stopModalStage = 'confirm';
-    shorterGoalOfferMs = 0;
+    clearShorterGoalState();
+    resetStopActivity();
     el('stopFastModalTitle').textContent = t('fasting.stopModalTitle');
     el('keepFastingBtn').textContent = t('fasting.keepFasting');
     el('stopAndSaveBtn').textContent = t('fasting.stopAndSave');
@@ -385,39 +422,12 @@
     const early = duration < goalMs(activeTargetHours());
     const reasonGroup = el('stopReasonGroup');
     if (reasonGroup) reasonGroup.hidden = !early;
-    if (early && el('stopReasonSelect')) el('stopReasonSelect').value = 'personal';
+    if (el('stopReasonSelect')) el('stopReasonSelect').value = 'personal';
+    updateStopActivityAvailability();
     showModal('stopFastModal', 'keepFastingBtn');
   }
 
   function confirmStopFast() {
-    if (stopModalStage === 'confirm') {
-      const startNow = validDate(data.activeStart);
-      if (startNow) {
-        const nowMs = Date.now();
-        const remainingMs = startNow.getTime() + goalMs(activeTargetHours()) - nowMs;
-        const reason = normalizeStopReason(el('stopReasonSelect')?.value);
-        // Re-offer on every personal early-stop attempt. The shorter-goal
-        // state remains useful for the active checkpoint display, but must
-        // never suppress a later stop decision for this same fast.
-        if (remainingMs >= 120000 && (!reason || reason === 'personal')) {
-          shorterGoalOfferMs = Math.floor((remainingMs / 2) / 60000) * 60000;
-          if (shorterGoalOfferMs >= 60000) {
-            stopModalStage = 'shorter';
-            el('stopFastModalTitle').textContent = t('fasting.shorterOfferTitle');
-            el('stopFastModalText').classList.remove('warn');
-            el('stopFastModalText').textContent = t('fasting.shorterOfferText', {duration:friendlyDuration(shorterGoalOfferMs)});
-            el('stopReasonGroup').hidden = true;
-            el('stopFastModalActions').classList.add('shorterOfferActions');
-            el('continueOriginalTargetBtn').hidden = false;
-            el('continueOriginalTargetBtn').textContent = t('fasting.shorterOfferOriginal');
-            el('keepFastingBtn').textContent = t('fasting.shorterOfferContinue', {duration:friendlyDuration(shorterGoalOfferMs)});
-            el('stopAndSaveBtn').textContent = t('fasting.shorterOfferStop');
-            el('continueOriginalTargetBtn').focus();
-            return;
-          }
-        }
-      }
-    }
     const start = validDate(data.activeStart);
     if (!start) { closeStopFastModal(); return; }
     const end = new Date();

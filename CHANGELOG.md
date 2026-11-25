@@ -1,3 +1,10 @@
+## v1.21.21 — 2026-11-25
+
+- Replace the half-remaining-time stop checkpoint with one direct **Stop & Save** action and a **Keep fasting** action; every stop attempt now has the same immediate choices.
+- Add optional quick puzzles, gentle movement and calming-listening activities to the stop dialog. Activities never block stopping, and selecting a health/safety reason hides the activity suggestions.
+- Localize the activity prompts and three short puzzles in English, Bulgarian and Spanish; add browser regression coverage for activity interaction, repeated stop attempts, immediate saving and Undo.
+- No storage schema or external backup-format changes.
+
 ## v1.21.20 — 2026-11-25
 
 - Invalidate the Weight and Statistics views whenever the appearance theme changes, including when those screens are not currently active.
