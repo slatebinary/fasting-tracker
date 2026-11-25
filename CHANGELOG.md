@@ -1,3 +1,10 @@
+## v1.21.22 — 2026-11-25
+
+- Expand the optional stop-dialog puzzle activity to 1,000 distinct parameterized riddles, each with English, Bulgarian and Spanish questions and answers.
+- Select riddles in randomized order and persist displayed IDs across dialog closures and app sessions; do not repeat until the full collection has been shown, then begin a fresh randomized cycle without immediately repeating the last riddle.
+- Add **Copy to a friend**, copying the localized invitation and question only (never the answer), with accessible success/failure feedback.
+- Add browser regression coverage for riddle answers, copy behavior and repeat avoidance. No fasting records, backup formats or storage schema changes.
+
 ## v1.21.21 — 2026-11-25
 
 - Replace the half-remaining-time stop checkpoint with one direct **Stop & Save** action and a **Keep fasting** action; every stop attempt now has the same immediate choices.

@@ -11,10 +11,11 @@ except Exception as exc:
 
 APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 
-def seed_active(page, elapsed_hours=2):
+def seed_active(page, elapsed_hours=2, language='en'):
     data=build_data(3)
     now=datetime.now(timezone.utc)
     data['activeStart']=(now-timedelta(hours=elapsed_hours)).isoformat().replace('+00:00','Z')
+    data['language']=language
     data['activeGoalHours']=16
     data['activeTimeZone']='UTC'
     data['activeCreatedAt']=data['activeStart']
@@ -23,7 +24,7 @@ def seed_active(page, elapsed_hours=2):
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.21.20',seenAt:new Date().toISOString()})); localStorage.setItem('fastingTracker.shorterGoal', JSON.stringify({start:data.activeStart,checkpointAt:Date.now()+60000,offered:true})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
     page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
-    page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
+    page.wait_for_function("document.querySelector('#fasting')?.classList.contains('active')",timeout=10000)
     return data
 
 with sync_playwright() as p:
@@ -49,21 +50,46 @@ with sync_playwright() as p:
     question1=page.locator('#stopActivityText').inner_text()
     if not question1 or not page.locator('#stopActivityAnswerBtn').is_visible():
         print('FAIL: quick puzzle does not present a question and answer control'); sys.exit(1)
-    if page.locator('#stopActivityAnswer').is_visible():
+    if not page.locator('#stopActivityAnswer').is_visible():
+        pass
+    else:
         print('FAIL: puzzle answer is exposed before the user asks to see it'); sys.exit(1)
+    if not page.locator('#stopActivityCopyBtn').is_visible():
+        print('FAIL: Copy to a friend is not available for a riddle'); sys.exit(1)
+    page.evaluate("""() => { Object.defineProperty(navigator, 'clipboard', { configurable:true, value:{ writeText: async value => { window.__copiedRiddle=value; } } }); Object.defineProperty(window, 'isSecureContext', { configurable:true, value:true }); }""")
+    page.locator('#stopActivityCopyBtn').click()
+    page.wait_for_function("typeof window.__copiedRiddle === 'string'")
+    copied=page.evaluate("window.__copiedRiddle")
+    copied_answer=page.locator('#stopActivityAnswer').text_content() or ''
+    if question1 not in copied or (copied_answer.strip() and copied_answer.strip() in copied) or '\n\n' not in copied:
+        print('FAIL: copied message must contain the question, use a blank line, and not reveal its answer; copied='+repr(copied)+'; answer='+repr(copied_answer)); sys.exit(1)
     page.locator('#stopActivityAnswerBtn').click()
     if not page.locator('#stopActivityAnswer').is_visible() or not page.locator('#stopActivityAnswer').inner_text():
         print('FAIL: puzzle answer is not revealed on request'); sys.exit(1)
     page.locator('#stopActivityNextBtn').click()
-    if page.locator('#stopActivityText').inner_text()==question1:
+    question2=page.locator('#stopActivityText').inner_text()
+    if question2==question1:
         print('FAIL: Another puzzle did not provide a different challenge'); sys.exit(1)
     if not page.locator('#stopAndSaveBtn').is_visible():
         print('FAIL: Stop & Save disappeared while an activity was displayed'); sys.exit(1)
 
     page.locator('#keepFastingBtn').click()
     page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    page.wait_for_timeout(400)
+    page.locator('#toggleFast').click()
+    page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page.locator('#stopActivityPuzzleBtn').click()
+    if page.locator('#stopActivityText').inner_text() in (question1, question2):
+        print('FAIL: a riddle was repeated after closing and reopening the stop dialog'); sys.exit(1)
+
+    page.locator('#keepFastingBtn').click()
+    page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
     if 'Stop' not in page.locator('#toggleFast').inner_text():
         print('FAIL: Keep fasting ended the active fast'); sys.exit(1)
+
+    saved_riddle_state=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.stopRiddleSelection.v1'))")
+    if not saved_riddle_state or len(saved_riddle_state.get('seen',[])) < 2:
+        print('FAIL: shown riddle IDs were not persisted'); sys.exit(1)
 
     page.wait_for_timeout(400)
     page.locator('#toggleFast').click()
@@ -75,13 +101,16 @@ with sync_playwright() as p:
 
     page2=browser.new_page(viewport={'width':390,'height':844})
     page2.on('pageerror',lambda exc:errors.append(str(exc)))
-    seed_active(page2, elapsed_hours=17.95)
+    seed_active(page2, elapsed_hours=17.95, language='bg')
     page2.locator('#toggleFast').click()
     page2.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
     if not page2.locator('#stopActivity').is_visible():
         print('FAIL: activity suggestions are missing after the target has been reached'); sys.exit(1)
+    page2.locator('#stopActivityPuzzleBtn').click()
+    if not any('\u0400' <= ch <= '\u04ff' for ch in page2.locator('#stopActivityText').inner_text()):
+        print('FAIL: Bulgarian interface did not show a Bulgarian riddle'); sys.exit(1)
     page2.locator('#stopActivityMovementBtn').click()
-    if 'walk' not in page2.locator('#stopActivityText').inner_text().lower():
+    if 'разходете' not in page2.locator('#stopActivityText').inner_text().lower():
         print('FAIL: gentle movement option does not provide usable activity instructions'); sys.exit(1)
     page2.locator('#stopAndSaveBtn').click()
     page2.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
@@ -99,6 +128,17 @@ with sync_playwright() as p:
     page3.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
     page3.locator('#stopUndoBtn').click()
     page3.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=5000)
+
+    page4=browser.new_page(viewport={'width':390,'height':844})
+    page4.on('pageerror',lambda exc:errors.append(str(exc)))
+    seed_active(page4, language='es')
+    page4.locator('#toggleFast').click()
+    page4.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page4.locator('#stopActivityPuzzleBtn').click()
+    if '¿' not in page4.locator('#stopActivityText').inner_text():
+        print('FAIL: Spanish interface did not show a Spanish riddle'); sys.exit(1)
+    page4.locator('#stopAndSaveBtn').click()
+    page4.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
 
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
