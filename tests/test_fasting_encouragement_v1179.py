@@ -11,10 +11,11 @@ except Exception as exc:
 
 APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text())['version']
 
-def seed_active(page, elapsed_hours=2):
+def seed_active(page, elapsed_hours=2, language='en'):
     data=build_data(3)
     now=datetime.now(timezone.utc)
     data['activeStart']=(now-timedelta(hours=elapsed_hours)).isoformat().replace('+00:00','Z')
+    data['language']=language
     data['activeGoalHours']=16
     data['activeTimeZone']='UTC'
     data['activeCreatedAt']=data['activeStart']
@@ -95,11 +96,14 @@ with sync_playwright() as p:
 
     page2=browser.new_page(viewport={'width':390,'height':844})
     page2.on('pageerror',lambda exc:errors.append(str(exc)))
-    seed_active(page2, elapsed_hours=17.95)
+    seed_active(page2, elapsed_hours=17.95, language='bg')
     page2.locator('#toggleFast').click()
     page2.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
     if not page2.locator('#stopActivity').is_visible():
         print('FAIL: activity suggestions are missing after the target has been reached'); sys.exit(1)
+    page2.locator('#stopActivityPuzzleBtn').click()
+    if not any('\\u0400' <= ch <= '\\u04ff' for ch in page2.locator('#stopActivityText').inner_text()):
+        print('FAIL: Bulgarian interface did not show a Bulgarian riddle'); sys.exit(1)
     page2.locator('#stopActivityMovementBtn').click()
     if 'walk' not in page2.locator('#stopActivityText').inner_text().lower():
         print('FAIL: gentle movement option does not provide usable activity instructions'); sys.exit(1)
@@ -119,6 +123,17 @@ with sync_playwright() as p:
     page3.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
     page3.locator('#stopUndoBtn').click()
     page3.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=5000)
+
+    page4=browser.new_page(viewport={'width':390,'height':844})
+    page4.on('pageerror',lambda exc:errors.append(str(exc)))
+    seed_active(page4, language='es')
+    page4.locator('#toggleFast').click()
+    page4.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
+    page4.locator('#stopActivityPuzzleBtn').click()
+    if not page4.locator('#stopActivityText').inner_text().startswith('¿'):
+        print('FAIL: Spanish interface did not show a Spanish riddle'); sys.exit(1)
+    page4.locator('#stopAndSaveBtn').click()
+    page4.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
 
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
