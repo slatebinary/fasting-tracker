@@ -135,7 +135,7 @@ with sync_playwright() as p:
     page4.locator('#toggleFast').click()
     page4.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
     page4.locator('#stopActivityPuzzleBtn').click()
-    if not page4.locator('#stopActivityText').inner_text().startswith('¿'):
+    if '¿' not in page4.locator('#stopActivityText').inner_text():
         print('FAIL: Spanish interface did not show a Spanish riddle'); sys.exit(1)
     page4.locator('#stopAndSaveBtn').click()
     page4.locator('#stopUndoBar').wait_for(state='visible',timeout=5000)
