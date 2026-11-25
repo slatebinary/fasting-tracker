@@ -1179,8 +1179,23 @@ layout: null
       </select>
       <div class="small stopReasonHelp" data-i18n="fasting.stopReasonHelp">Unavoidable interruptions stay factual in your statistics but are neutral for the consistency streak and receive no target-completion XP.</div>
     </div>
+    <section class="stopActivity" id="stopActivity" aria-label="Optional activity">
+      <p class="small" data-i18n="fasting.stopActivityIntro">If you would like to wait a little before deciding, try one short activity. It is optional; Stop &amp; Save remains available.</p>
+      <div class="stopActivityChoices">
+        <button id="stopActivityPuzzleBtn" class="secondary" type="button" data-i18n="fasting.stopActivityPuzzle">Quick puzzle</button>
+        <button id="stopActivityMovementBtn" class="secondary" type="button" data-i18n="fasting.stopActivityMovement">Gentle movement</button>
+        <button id="stopActivityRelaxBtn" class="secondary" type="button" data-i18n="fasting.stopActivityRelax">Quiet reset</button>
+      </div>
+      <div class="stopActivityContent" id="stopActivityContent" role="status" aria-live="polite" hidden>
+        <p id="stopActivityText"></p>
+        <p id="stopActivityAnswer" class="stopActivityAnswer" hidden></p>
+        <div class="stopActivityActions">
+          <button id="stopActivityAnswerBtn" class="secondary" type="button" hidden data-i18n="fasting.stopActivityShowAnswer">Show answer</button>
+          <button id="stopActivityNextBtn" class="secondary" type="button" hidden data-i18n="fasting.stopActivityAnother">Another puzzle</button>
+        </div>
+      </div>
+    </section>
     <div class="modalActions" id="stopFastModalActions">
-      <button id="continueOriginalTargetBtn" class="primary" type="button" data-i18n="fasting.shorterOfferOriginal" data-i18n-aria="fasting.shorterOfferOriginalAria" aria-label="Continue fasting to the original target" hidden>Continue to original target</button>
       <button id="keepFastingBtn" class="secondary" type="button" data-i18n="fasting.keepFasting">Keep fasting</button>
       <button id="stopAndSaveBtn" class="primary stop" type="button" data-i18n="fasting.stopAndSave">Stop &amp; save</button>
     </div>
