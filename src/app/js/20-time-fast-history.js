@@ -422,7 +422,7 @@
     const early = duration < goalMs(activeTargetHours());
     const reasonGroup = el('stopReasonGroup');
     if (reasonGroup) reasonGroup.hidden = !early;
-    if (early && el('stopReasonSelect')) el('stopReasonSelect').value = 'personal';
+    if (el('stopReasonSelect')) el('stopReasonSelect').value = 'personal';
     updateStopActivityAvailability();
     showModal('stopFastModal', 'keepFastingBtn');
   }
