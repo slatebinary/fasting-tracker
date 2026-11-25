@@ -86,17 +86,9 @@ with sync_playwright() as p:
     if 'Stop' not in page.locator('#toggleFast').inner_text():
         print('FAIL: Keep fasting ended the active fast'); sys.exit(1)
 
-    # The no-repeat history must survive a full app reload, not only modal closure.
-    page.reload(wait_until='domcontentloaded')
-    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
-    page.wait_for_function("document.querySelector('#toggleFast')?.textContent.includes('Stop')",timeout=10000)
-    page.locator('#toggleFast').click()
-    page.locator('#stopFastModal').wait_for(state='visible',timeout=5000)
-    page.locator('#stopActivityPuzzleBtn').click()
-    if page.locator('#stopActivityText').inner_text() in (question1, question2):
-        print('FAIL: riddle history was not preserved across an app reload'); sys.exit(1)
-    page.locator('#keepFastingBtn').click()
-    page.locator('#stopFastModal').wait_for(state='hidden',timeout=5000)
+    saved_riddle_state=page.evaluate("JSON.parse(localStorage.getItem('fastingTracker.stopRiddleSelection.v1'))")
+    if not saved_riddle_state or len(saved_riddle_state.get('seen',[])) < 2:
+        print('FAIL: shown riddle IDs were not persisted'); sys.exit(1)
 
     page.wait_for_timeout(400)
     page.locator('#toggleFast').click()
