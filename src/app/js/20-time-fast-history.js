@@ -381,9 +381,14 @@
     const text = invitation + '\n\n' + question;
     const status = el('stopActivityCopyStatus');
     try {
+      let copied = false;
       if (navigator.clipboard?.writeText && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
+        try {
+          await navigator.clipboard.writeText(text);
+          copied = true;
+        } catch {}
+      }
+      if (!copied) {
         const field = document.createElement('textarea');
         field.value = text;
         field.setAttribute('readonly', '');
@@ -391,10 +396,10 @@
         field.style.opacity = '0';
         document.body.appendChild(field);
         field.select();
-        const copied = document.execCommand('copy');
+        copied = document.execCommand('copy');
         field.remove();
-        if (!copied) throw new Error('Clipboard copy was not available');
       }
+      if (!copied) throw new Error('Clipboard copy was not available');
       if (status) status.textContent = t('fasting.stopActivityCopied');
     } catch {
       if (status) status.textContent = t('fasting.stopActivityCopyFailed');
