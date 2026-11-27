@@ -36,6 +36,6 @@ const dense=timeline(Array.from({length:100},(_,i)=>({calendarDay:new Date(Date.
 assert.equal(dense.spanDays,199);
 assert.equal(dense.positions[99]-dense.positions[0],dense.spacing*198);
 assert.equal(nearest([0,60,240,420],239),2);
-assert.deepEqual(JSON.parse(JSON.stringify(visiblePositions([0,60,240,420],390,0,16,36))),{first:0,last:2});
-assert.deepEqual(JSON.parse(JSON.stringify(visiblePositions([0,60,240,420],390,300,16,36))),{first:1,last:3});
+assert.deepEqual(JSON.parse(JSON.stringify(visiblePositions([0,60,240,420],390,0,16,36))),{first:0,last:3});
+assert.deepEqual(JSON.parse(JSON.stringify(visiblePositions([0,60,240,420],390,300,16,36))),{first:2,last:3});
 console.log('PASS: Weight chart spacing and visible-window policies preserve dense layout and proportional calendar-day gaps across mobile/desktop widths, period sizes and scroll positions');

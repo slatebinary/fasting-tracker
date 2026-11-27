@@ -36,7 +36,8 @@ function weightChartTimelineLayoutPolicy(buckets, mode, viewportWidth) {
       return Number.isFinite(value) ? Math.floor(value / 86400000) : null;
     });
     if (ordinals.every(Number.isFinite)) {
-      const firstDay = Math.min(...ordinals), lastDay = Math.max(...ordinals);
+      let firstDay=Infinity,lastDay=-Infinity;
+      for(const day of ordinals){if(day<firstDay)firstDay=day;if(day>lastDay)lastDay=day;}
       const spanDays = Math.max(1, lastDay - firstDay + 1);
       const spacing = weightChartPointSpacingPolicy(spanDays, width);
       const positions = ordinals.map(day => spanDays === 1 ? plotWidth / 2 : (day - firstDay) * spacing);
