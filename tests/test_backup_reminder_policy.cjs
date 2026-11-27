@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('src/app/js/43zh-backup-reminder-policy.js','utf8');
-const context={};vm.createContext(context);vm.runInContext(source+'\\nthis.resolve=resolveBackupReminderPolicy;',context);
+const context={};vm.createContext(context);vm.runInContext(source+'\nthis.resolve=resolveBackupReminderPolicy;',context);
 const resolve=context.resolve;
 const first='2026-11-01T10:00:00.000Z', last='2026-11-10T10:00:00.000Z';
 const base={hasData:true,firstDataAt:first,lastBackupAt:last,nowMs:Date.parse('2026-11-20T10:00:00.000Z'),reminderMs:7*24*60*60*1000};
