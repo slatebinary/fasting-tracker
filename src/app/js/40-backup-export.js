@@ -91,6 +91,7 @@
   }
 
   function backupIsDue() {
+    if (!hasBackupWorthyData()) return false;
     return backupReminderPolicy().due;
   }
 
