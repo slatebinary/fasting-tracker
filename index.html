@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.24" />
+  <meta name="ft-app-version" content="1.21.25" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -2031,7 +2031,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.24';
+  const APP_VERSION = '1.21.25';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4640,11 +4640,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
   }
 
   function backupDueToken() {
-    if (!backupIsDue()) return null;
-    const first = validDate(backupMeta.firstDataAt);
-    const last = validDate(backupMeta.lastExternalBackupAt);
-    const base = last && first ? new Date(Math.max(last.getTime(), first.getTime())) : (last || first);
-    return base ? base.toISOString() : 'due';
+    return backupReminderPolicy().token;
   }
 
   async function maybeNotifyBackupDue() {
@@ -8265,12 +8261,18 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     row.hidden = !visible;
     header.classList.toggle('hasBackupAttention', visible);
   }
+  function backupReminderPolicy(nowMs = Date.now()) {
+    const hasData = hasBackupWorthyData();
+    const firstData = hasData ? ensureBackupTrackingStarted() : null;
+    return resolveBackupReminderPolicy({
+      hasData,firstDataAt:firstData,lastBackupAt:validDate(backupMeta.lastExternalBackupAt),
+      nowMs,reminderMs:BACKUP_REMINDER_MS
+    });
+  }
+
   function backupIsDue() {
     if (!hasBackupWorthyData()) return false;
-    const firstData = ensureBackupTrackingStarted();
-    const last = validDate(backupMeta.lastExternalBackupAt);
-    const base = last && firstData ? new Date(Math.max(last.getTime(), firstData.getTime())) : (last || firstData);
-    return !!base && Date.now() - base.getTime() >= BACKUP_REMINDER_MS;
+    return backupReminderPolicy().due;
   }
 
   function renderBackupStatus() {
@@ -9721,6 +9723,22 @@ function resolveWeighInNotificationPolicy({cadence,latest,anchorAt,nowMs,deliver
   }
   const token = `${normalizedCadence}:${tokenBase}`;
   return {cadence:normalizedCadence,cadenceMs,anchorMs,token,due:nowMs >= anchorMs + cadenceMs && deliveredToken !== token,initializeAnchorAt:null};
+}
+// Pure backup-reminder due-time and notification-token policy.
+function resolveBackupReminderPolicy({hasData,firstDataAt,lastBackupAt,nowMs,reminderMs}) {
+  if (!hasData || !Number.isFinite(nowMs) || !Number.isFinite(reminderMs) || reminderMs < 0)
+    return {due:false,baseMs:null,token:null};
+  const timestamp = value => {
+    if (value == null || value === '') return null;
+    const parsed = new Date(value).getTime();
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const firstMs = timestamp(firstDataAt);
+  const lastMs = timestamp(lastBackupAt);
+  const baseMs = firstMs == null ? lastMs : lastMs == null ? firstMs : Math.max(firstMs,lastMs);
+  if (baseMs == null) return {due:false,baseMs:null,token:null};
+  const due = nowMs - baseMs >= reminderMs;
+  return {due,baseMs,token:due ? new Date(baseMs).toISOString() : null};
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
