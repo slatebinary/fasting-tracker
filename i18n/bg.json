@@ -1205,5 +1205,13 @@
   "fasting.stopActivityCopyFriend": "Копирай за приятел",
   "fasting.stopActivityCopyInvitation": "Можеш ли да решиш тази загадка?",
   "fasting.stopActivityCopied": "Загадката е копирана. Изпрати я на приятел.",
-  "fasting.stopActivityCopyFailed": "Загадката не можа да бъде копирана автоматично. Моля, маркирай я и я копирай."
+  "fasting.stopActivityCopyFailed": "Загадката не можа да бъде копирана автоматично. Моля, маркирай я и я копирай.",
+  "backdate.minutesAgo": "Преди колко минути",
+  "backdate.1m": "преди 1 мин.",
+  "backdate.2m": "преди 2 мин.",
+  "backdate.5m": "преди 5 мин.",
+  "backdate.10m": "преди 10 мин.",
+  "backdate.15m": "преди 15 мин.",
+  "backdate.30m": "преди 30 мин.",
+  "backdate.45m": "преди 45 мин."
 }

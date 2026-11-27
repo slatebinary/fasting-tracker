@@ -1,3 +1,9 @@
+## v1.21.23 — 2026-11-27
+
+- Add quick minute presets (1, 2, 5, 10, 15, 30 and 45 minutes ago) to the **Started Fasting Earlier** dialog, alongside the existing hour presets.
+- Apply each selected minute offset precisely to the start-time field; retain direct date/time editing and existing hour choices.
+- Add regression coverage for all seven minute presets and their unit conversion. No fasting records, backup formats or storage schema changes.
+
 ## v1.21.22 — 2026-11-25
 
 - Expand the optional stop-dialog puzzle activity to 1,000 distinct parameterized riddles, each with English, Bulgarian and Spanish questions and answers.

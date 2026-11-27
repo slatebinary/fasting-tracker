@@ -124,7 +124,10 @@
   el('backdateEditConflictBtn').addEventListener('click', editBackdateConflict);
   el('backdateDeleteConflictBtn').addEventListener('click', deleteBackdateConflictAndStart);
   el('backdateModal').addEventListener('click', e => { if (e.target === el('backdateModal')) closeBackdateModal(); });
-  document.querySelectorAll('.backdatePreset').forEach(btn => btn.addEventListener('click', () => setBackdatePreset(btn.dataset.hours)));
+  document.querySelectorAll('.backdatePreset').forEach(btn => btn.addEventListener('click', () => {
+    const minutes = btn.dataset.minutes;
+    setBackdatePreset(minutes !== undefined ? minutes : btn.dataset.hours, minutes !== undefined ? 'minutes' : 'hours');
+  }));
 
   el('addEntryBtn').addEventListener('click', () => openEntryModal());
   for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax','historyFilterTarget','historyFilterEdited','historyIncludeDeleted'])el(id)?.addEventListener('change',()=>{historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;historyRange='recent7';historyRangeMenuOpen=false;selectedFastIds.clear();selectedDeletedFastIds.clear();renderHistory();});

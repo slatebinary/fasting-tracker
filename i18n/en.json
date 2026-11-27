@@ -1205,5 +1205,13 @@
   "fasting.stopActivityCopyFriend": "Copy to a friend",
   "fasting.stopActivityCopyInvitation": "Can you solve this riddle?",
   "fasting.stopActivityCopied": "Riddle copied. Send it to a friend.",
-  "fasting.stopActivityCopyFailed": "Could not copy automatically. Please select and copy the riddle."
+  "fasting.stopActivityCopyFailed": "Could not copy automatically. Please select and copy the riddle.",
+  "backdate.minutesAgo": "Minutes ago",
+  "backdate.1m": "1m ago",
+  "backdate.2m": "2m ago",
+  "backdate.5m": "5m ago",
+  "backdate.10m": "10m ago",
+  "backdate.15m": "15m ago",
+  "backdate.30m": "30m ago",
+  "backdate.45m": "45m ago"
 }

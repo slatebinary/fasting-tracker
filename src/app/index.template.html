@@ -924,6 +924,16 @@ layout: null
     <div class="formGroup">
       <label for="backdateStart" data-i18n="backdate.start">Started at</label>
       <input id="backdateStart" type="datetime-local" step="60" />
+      <div class="small" data-i18n="backdate.minutesAgo">Minutes ago</div>
+      <div class="presetWrap" aria-label="Minutes ago" data-i18n-aria="backdate.minutesAgo">
+        <button class="chip backdatePreset" type="button" data-minutes="1" data-i18n="backdate.1m">1m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="2" data-i18n="backdate.2m">2m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="5" data-i18n="backdate.5m">5m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="10" data-i18n="backdate.10m">10m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="15" data-i18n="backdate.15m">15m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="30" data-i18n="backdate.30m">30m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="45" data-i18n="backdate.45m">45m ago</button>
+      </div>
       <div class="presetWrap" aria-label="Quick start times" data-i18n-aria="backdate.quickAria">
         <button class="chip backdatePreset" type="button" data-hours="1" data-i18n="backdate.1h">1h ago</button>
         <button class="chip backdatePreset" type="button" data-hours="2" data-i18n="backdate.2h">2h ago</button>
