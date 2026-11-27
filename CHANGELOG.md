@@ -1,3 +1,9 @@
+## v1.21.25 — 2026-11-28
+
+- Extract backup-reminder due-time and notification-token calculation into a pure policy shared by the backup status and notification workflows.
+- Keep the reminder anchored to the later of first tracked data and the last external backup; preserve the inclusive due-time boundary and existing notification token format.
+- Add deterministic tests for exact boundaries, missing/invalid timestamps, empty datasets and anchor selection. No backup contents, formats, stored records or storage schema changes.
+
 ## v1.21.24 — 2026-11-27
 
 - Correct the daily Weight graph's horizontal axis to represent elapsed calendar days, so missing measurement dates create proportionally wider gaps instead of being compressed out.
