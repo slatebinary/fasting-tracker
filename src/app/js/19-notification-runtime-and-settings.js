@@ -135,11 +135,7 @@
   }
 
   function backupDueToken() {
-    if (!backupIsDue()) return null;
-    const first = validDate(backupMeta.firstDataAt);
-    const last = validDate(backupMeta.lastExternalBackupAt);
-    const base = last && first ? new Date(Math.max(last.getTime(), first.getTime())) : (last || first);
-    return base ? base.toISOString() : 'due';
+    return backupReminderPolicy().token;
   }
 
   async function maybeNotifyBackupDue() {

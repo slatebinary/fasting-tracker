@@ -81,12 +81,18 @@
     row.hidden = !visible;
     header.classList.toggle('hasBackupAttention', visible);
   }
+  function backupReminderPolicy(nowMs = Date.now()) {
+    const hasData = hasBackupWorthyData();
+    const firstData = hasData ? ensureBackupTrackingStarted() : null;
+    return resolveBackupReminderPolicy({
+      hasData,firstDataAt:firstData,lastBackupAt:validDate(backupMeta.lastExternalBackupAt),
+      nowMs,reminderMs:BACKUP_REMINDER_MS
+    });
+  }
+
   function backupIsDue() {
     if (!hasBackupWorthyData()) return false;
-    const firstData = ensureBackupTrackingStarted();
-    const last = validDate(backupMeta.lastExternalBackupAt);
-    const base = last && firstData ? new Date(Math.max(last.getTime(), firstData.getTime())) : (last || firstData);
-    return !!base && Date.now() - base.getTime() >= BACKUP_REMINDER_MS;
+    return backupReminderPolicy().due;
   }
 
   function renderBackupStatus() {
