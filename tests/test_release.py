@@ -320,7 +320,7 @@ except Exception as e:
 
 # Backdated active-fast feature regression checks
 ok('id="startEarlierBtn"' in index and 'id="backdateModal"' in index,'backdated active-fast UI missing')
-ok('function saveBackdatedActiveFast()' in index and 'function setBackdatePreset(hours)' in index,'backdated active-fast logic missing')
+ok('function saveBackdatedActiveFast()' in index and 'function setBackdatePreset(value, unit = 'hours')' in index,'backdated active-fast logic missing')
 ok('backdate.errOverlap' in en_source and 'fasting.startEarlier' in en_source,'backdated active-fast localization missing')
 ok('data.activeStart = start.toISOString();' in index and 'data.activeGoalHours = data.goalHours;' in index,'backdated active fast must persist start and locked target')
 
