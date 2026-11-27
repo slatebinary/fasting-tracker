@@ -100,7 +100,7 @@ assert "function allFastingIntervals" in stats_models
 weight_daily = (source / "js" / "33m-weight-daily-buckets.js").read_text(encoding="utf-8")
 assert "function buildWeightDailyBuckets" in weight_daily
 assert "function buildWeightDailyBuckets" not in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
-assert "buildWeightDailyBuckets(entries)" in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
+assert "buildWeightDailyBuckets(entries, weightEntryCalendarDay)" in (source / "js" / "34-weight-period-analytics.js").read_text(encoding="utf-8")
 assert (source / "js" / "34-weight-period-analytics.js").is_file()
 assert (source / "js" / "33a-weight-calendar-primitives.js").is_file()
 assert (source / "js" / "33b-weight-period-filter.js").is_file()
