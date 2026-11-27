@@ -191,6 +191,7 @@ jobs:
           python3 tests/test_stats_chart_keyboard_accessibility.py
           python3 tests/test_primary_navigation_accessibility.py
           python3 tests/test_weight_chart_keyboard_accessibility.py
+          python3 tests/test_weight_chart_calendar_spacing.py
           python3 tests/test_v11772_timing_bar_interaction.py
           python3 tests/test_modal_focus_management.py
           python3 tests/test_storage_health_diagnostics.py
