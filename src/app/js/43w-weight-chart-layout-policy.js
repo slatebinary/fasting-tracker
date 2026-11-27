@@ -30,7 +30,7 @@ function weightChartTimelineLayoutPolicy(buckets, mode, viewportWidth) {
   if (!count) return {positions:[],spacing:1,spanSlots:0,spanDays:0,calendarBased:mode === 'daily'};
   if (mode === 'daily') {
     const ordinals = buckets.map(bucket => {
-      const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(bucket?.calendarDay || ''));
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(bucket?.calendarDay || ''));
       if (!match) return null;
       const value = Date.UTC(Number(match[1]), Number(match[2])-1, Number(match[3]));
       return Number.isFinite(value) ? Math.floor(value / 86400000) : null;
