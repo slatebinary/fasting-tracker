@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.24",
-  "released": "2026-11-27",
-  "notes": "Correct daily Weight chart spacing to reflect elapsed calendar days when measurements are skipped.",
+  "version": "1.21.25",
+  "released": "2026-11-28",
+  "notes": "Extract backup-reminder timing and notification-token generation into a deterministic shared policy.",
   "entry": "./index.html",
   "shell": [
     "./",
