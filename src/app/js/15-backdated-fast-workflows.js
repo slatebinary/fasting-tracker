@@ -51,8 +51,10 @@
     panel.hidden = false;
   }
 
-  function setBackdatePreset(hours) {
-    const d = new Date(Date.now() - Number(hours) * 3600000);
+  function setBackdatePreset(value, unit = 'hours') {
+    const amount = Number(value);
+    const delta = amount * (unit === 'minutes' ? 60000 : 3600000);
+    const d = new Date(Date.now() - delta);
     el('backdateStart').value = toLocalInputValue(d, currentTimeZone());
     showBackdateError('');
     clearBackdateConflict();

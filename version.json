@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.22",
-  "released": "2026-11-25",
-  "notes": "Add 1,000 randomized multilingual riddles with persistent no-repeat selection and a copy-to-friend action.",
+  "version": "1.21.23",
+  "released": "2026-11-27",
+  "notes": "Add localized minute presets when recording an already-started fast.",
   "entry": "./index.html",
   "shell": [
     "./",

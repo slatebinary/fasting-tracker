@@ -1205,5 +1205,13 @@
   "fasting.stopActivityCopyFriend": "Copiar para un amigo",
   "fasting.stopActivityCopyInvitation": "¿Puedes resolver este acertijo?",
   "fasting.stopActivityCopied": "Acertijo copiado. Envíalo a un amigo.",
-  "fasting.stopActivityCopyFailed": "No se pudo copiar automáticamente. Selecciona y copia el acertijo."
+  "fasting.stopActivityCopyFailed": "No se pudo copiar automáticamente. Selecciona y copia el acertijo.",
+  "backdate.minutesAgo": "Hace cuántos minutos",
+  "backdate.1m": "hace 1 min",
+  "backdate.2m": "hace 2 min",
+  "backdate.5m": "hace 5 min",
+  "backdate.10m": "hace 10 min",
+  "backdate.15m": "hace 15 min",
+  "backdate.30m": "hace 30 min",
+  "backdate.45m": "hace 45 min"
 }
