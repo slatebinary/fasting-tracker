@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.23",
+  "version": "1.21.24",
   "released": "2026-11-27",
-  "notes": "Add localized minute presets when recording an already-started fast.",
+  "notes": "Correct daily Weight chart spacing to reflect elapsed calendar days when measurements are skipped.",
   "entry": "./index.html",
   "shell": [
     "./",

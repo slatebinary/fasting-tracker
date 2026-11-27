@@ -59,27 +59,30 @@
 
     const top=18,bottom=38,left=16,right=14,plotW=Math.max(1,viewportW-left-right),h=cssH-top-bottom;
     // Keep point spacing identical across rendering and chart navigation.
-    const pointSpacing=weightChartPointSpacingPolicy(buckets.length,viewportW);
-    const virtualPlotW=Math.max(plotW,(buckets.length-1)*pointSpacing);
+    const timeline=weightChartTimelineLayoutPolicy(buckets,weightPeriodMode,viewportW);
+    const pointSpacing=timeline.spacing;
+    const virtualPlotW=Math.max(plotW,(timeline.spanSlots-1)*pointSpacing);
     const trackW=Math.ceil(left+virtualPlotW+right);
     track.style.width=`${Math.max(viewportW,trackW)}px`;
     scroller.dataset.period = weightPeriodMode;
     scroller.dataset.bucketCount = String(buckets.length);
     scroller.dataset.dataPointCount = String(dataBuckets.length);
+    scroller.dataset.calendarTimeline = String(timeline.calendarBased);
+    if(timeline.calendarBased) scroller.dataset.calendarDaySpan = String(timeline.spanDays); else delete scroller.dataset.calendarDaySpan;
     scroller.dataset.rollingWindowDays = String(weightRollingWindowDays(weightPeriodMode));
     delete scroller.dataset.selectedWindowCount;
     delete scroller.dataset.selectedCalendarCount;
     if(weightChartScrollToLatestPending){scroller.scrollLeft=Math.max(0,scroller.scrollWidth-scroller.clientWidth);weightChartProgrammaticScrollLeft=scroller.scrollLeft;for(let i=buckets.length-1;i>=0;i--){if(buckets[i].count>0){weightChartSelectedId=buckets[i].key;break;}}weightChartScrollToLatestPending=false;}
     const scrollX=scroller.scrollLeft;
     const yFor=v=>top+h-((v-minV)/span)*h;
-    const absoluteX=i=>left+(buckets.length===1?plotW/2:i*pointSpacing);
+    const absoluteX=i=>left+(timeline.positions[i]??0);
     const xFor=i=>absoluteX(i)-scrollX;
 
     ctx.strokeStyle=line;ctx.lineWidth=1;
     [0,.5,1].forEach(frac=>{const y=top+h-h*frac;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();});
     if(target!=null){const y=yFor(target);ctx.save();ctx.strokeStyle=good;ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewportW,y);ctx.stroke();ctx.restore();}
 
-    const visibleRange=weightChartVisibleRangePolicy(buckets.length,viewportW,scrollX,pointSpacing);
+    const visibleRange=weightChartVisibleRangeFromPositionsPolicy(timeline.positions,viewportW,scrollX,left,Math.max(36,pointSpacing*2));
     const firstVisible=visibleRange.first,lastVisible=visibleRange.last;
     ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
     let pathOpen=false;
@@ -153,7 +156,7 @@
     } else if(detail){detail.hidden=true;detail.textContent='';}
 
     ctx.fillStyle=muted;ctx.font='10px -apple-system';ctx.textAlign='center';ctx.textBaseline='alphabetic';
-    const visibleAxisItems=[],visibleAxisPositions=[];for(let i=firstVisible;i<=lastVisible;i++){const x=xFor(i);if(x<8||x>viewportW-8)continue;const label=weightBucketShortLabel(buckets[i]);visibleAxisItems.push({label,shortLabel:label,index:i});visibleAxisPositions.push(x);}
+    const visibleAxisItems=[],visibleAxisPositions=[],seenAxisDays=new Set();for(let i=firstVisible;i<=lastVisible;i++){const x=xFor(i);if(x<8||x>viewportW-8)continue;const axisDay=weightPeriodMode==='daily'?buckets[i].calendarDay:null;if(axisDay&&seenAxisDays.has(axisDay))continue;if(axisDay)seenAxisDays.add(axisDay);const label=weightBucketShortLabel(buckets[i]);visibleAxisItems.push({label,shortLabel:label,index:i});visibleAxisPositions.push(x);}
     const axisPlan=FTVisuals.axisLabelPlan(visibleAxisItems,{positions:visibleAxisPositions,measureText:text=>ctx.measureText(String(text)).width,maxLabels:Math.max(2,Math.floor(viewportW/62)),minGap:7});
     for(const tick of axisPlan){const text=String(tick.text),tw=ctx.measureText(text).width,x=Math.max(4+tw/2,Math.min(viewportW-4-tw/2,tick.x));ctx.fillText(text,x,cssH-10);}
     ctx.textAlign='start';
@@ -170,10 +173,12 @@
     const maxDistance=Math.max(32,(c.clientWidth||220)/Math.max(1,weightChartHitPoints.length)*1.5);
     return nearestWeightChartPointAtX(weightChartHitPoints,x,maxDistance);
   }
-  function weightChartPointSpacing(){
-    const scroller=el('weightChartScroller'),buckets=weightChartBuckets,viewportW=Math.max(220,scroller?.clientWidth||614),plotW=Math.max(1,viewportW-30);
-    return weightChartPointSpacingPolicy(buckets.length,viewportW);
+  function weightChartTimelineLayout(){
+    const scroller=el('weightChartScroller'),viewportW=Math.max(220,scroller?.clientWidth||614);
+    return weightChartTimelineLayoutPolicy(weightChartBuckets,weightPeriodMode,viewportW);
   }
+  function weightChartPointSpacing(){return weightChartTimelineLayout().spacing;}
+  function weightChartBucketAbsoluteX(index){const layout=weightChartTimelineLayout();return 16+(layout.positions[index]??0);}
   function syncWeightChartNavigator(){
     const slider=el('weightChartRange'),older=el('weightChartOlderBtn'),newer=el('weightChartNewerBtn'),scroller=el('weightChartScroller');
     if(!slider||!older||!newer||!scroller)return;
@@ -204,7 +209,7 @@
     const targetIndex=nearestWeightBucketIndex(index);
     if(targetIndex<0)return;
     weightChartSelectedId=buckets[targetIndex].key;
-    const spacing=weightChartPointSpacing(),pointX=16+targetIndex*spacing;
+    const pointX=weightChartBucketAbsoluteX(targetIndex);
     weightChartProgrammaticScrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,pointX-scroller.clientWidth/2));
     scroller.scrollLeft=weightChartProgrammaticScrollLeft;
     drawWeightChart();
@@ -219,10 +224,10 @@
     if(valid.length<2)return;
     let current=valid.findIndex(b=>b.key===weightChartSelectedId);
     if(current<0){
-      const spacing=weightChartPointSpacing(),center=scroller.scrollLeft+scroller.clientWidth/2;
+      const layout=weightChartTimelineLayout(),center=scroller.scrollLeft+scroller.clientWidth/2;
       let bestDistance=Infinity;
       valid.forEach((bucket,i)=>{
-        const bucketIndex=buckets.findIndex(b=>b.key===bucket.key),pointX=16+bucketIndex*spacing;
+        const bucketIndex=buckets.findIndex(b=>b.key===bucket.key),pointX=16+(layout.positions[bucketIndex]??0);
         const distance=Math.abs(pointX-center);
         if(distance<bestDistance){bestDistance=distance;current=i;}
       });
@@ -252,10 +257,10 @@
       const programmaticScroll=scroller&&weightChartProgrammaticScrollLeft!==null&&Math.abs(scroller.scrollLeft-weightChartProgrammaticScrollLeft)<=2;
       if(scroller&&weightChartProgrammaticScrollLeft!==null&&!programmaticScroll)weightChartProgrammaticScrollLeft=null;
       if(scroller&&buckets.length&&!weightChartPointerStart?.scrubbing&&!programmaticScroll){
-        const spacing=weightChartPointSpacing(),centerX=scroller.scrollLeft+scroller.clientWidth/2;
-        const index=Math.max(0,Math.min(buckets.length-1,Math.round((centerX-16)/Math.max(1,spacing))));
+        const layout=weightChartTimelineLayout(),centerX=scroller.scrollLeft+scroller.clientWidth/2;
+        const index=weightChartNearestPositionIndexPolicy(layout.positions,centerX-16);
         let nearest=buckets[index];
-        if(!nearest?.count){let distance=Infinity;for(let i=0;i<buckets.length;i++){if(!buckets[i].count)continue;const d=Math.abs(i-index);if(d<distance){distance=d;nearest=buckets[i];}}}
+        if(!nearest?.count){let distance=Infinity;for(let i=0;i<buckets.length;i++){if(!buckets[i].count)continue;const d=Math.abs((layout.positions[i]??0)-(layout.positions[index]??0));if(d<distance){distance=d;nearest=buckets[i];}}}
         if(nearest?.count)weightChartSelectedId=nearest.key;
       }
       drawWeightChart();renderWeightChartData();renderWeightPeriodAnalytics();syncWeightChartNavigator();

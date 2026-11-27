@@ -10,7 +10,7 @@ const entries = [
   {id:'weight-a',when:'2026-11-18T08:00:00.000Z',kg:81.25},
   {id:'weight-b',when:'2026-11-19T08:00:00.000Z',kg:80.75}
 ];
-const buckets = build(entries);
+const buckets = build(entries, entry => entry.when.slice(0,10));
 assert.equal(buckets.length, 2);
 assert.deepEqual(buckets.map(bucket => bucket.key), ['entry:weight-a','entry:weight-b']);
 for (let i=0;i<entries.length;i++) {
@@ -23,6 +23,7 @@ for (let i=0;i<entries.length;i++) {
   assert.equal(bucket.first,entry);
   assert.equal(bucket.latest,entry);
   assert.equal(bucket.entry,entry);
+  assert.equal(bucket.calendarDay,entry.when.slice(0,10));
 }
 assert.deepEqual(entries.map(entry=>entry.id),['weight-a','weight-b'],'daily bucket construction must not mutate input');
 assert.deepEqual(Array.from(build([])),[]);
