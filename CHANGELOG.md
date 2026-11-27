@@ -1,3 +1,9 @@
+## v1.21.24 — 2026-11-27
+
+- Correct the daily Weight graph's horizontal axis to represent elapsed calendar days, so missing measurement dates create proportionally wider gaps instead of being compressed out.
+- Preserve individual measurements and date-based selection/navigation; avoid duplicate date labels when multiple measurements are recorded on the same day.
+- Add regression coverage for irregular measurement intervals, same-day entries, long histories and visible-range/navigation calculations. No weight records, backup formats or storage schema changes.
+
 ## v1.21.23 — 2026-11-27
 
 - Add quick minute presets (1, 2, 5, 10, 15, 30 and 45 minutes ago) to the **Started Fasting Earlier** dialog, alongside the existing hour presets.

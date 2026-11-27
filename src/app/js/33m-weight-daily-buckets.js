@@ -1,5 +1,5 @@
 // Pure construction of one-record-per-entry daily Weight chart buckets.
-  function buildWeightDailyBuckets(entries) {
+  function buildWeightDailyBuckets(entries, calendarDayForEntry) {
     if (!Array.isArray(entries)) return [];
     return entries.map(entry => ({
       key: `entry:${entry.id}`,
@@ -10,6 +10,7 @@
       highKg: entry.kg,
       first: entry,
       latest: entry,
-      entry
+      entry,
+      calendarDay: typeof calendarDayForEntry === 'function' ? calendarDayForEntry(entry) : null
     }));
   }
