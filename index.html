@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.22" />
+  <meta name="ft-app-version" content="1.21.23" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -1673,6 +1673,16 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     <div class="formGroup">
       <label for="backdateStart" data-i18n="backdate.start">Started at</label>
       <input id="backdateStart" type="datetime-local" step="60" />
+      <div class="small" data-i18n="backdate.minutesAgo">Minutes ago</div>
+      <div class="presetWrap" aria-label="Minutes ago" data-i18n-aria="backdate.minutesAgo">
+        <button class="chip backdatePreset" type="button" data-minutes="1" data-i18n="backdate.1m">1m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="2" data-i18n="backdate.2m">2m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="5" data-i18n="backdate.5m">5m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="10" data-i18n="backdate.10m">10m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="15" data-i18n="backdate.15m">15m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="30" data-i18n="backdate.30m">30m ago</button>
+        <button class="chip backdatePreset" type="button" data-minutes="45" data-i18n="backdate.45m">45m ago</button>
+      </div>
       <div class="presetWrap" aria-label="Quick start times" data-i18n-aria="backdate.quickAria">
         <button class="chip backdatePreset" type="button" data-hours="1" data-i18n="backdate.1h">1h ago</button>
         <button class="chip backdatePreset" type="button" data-hours="2" data-i18n="backdate.2h">2h ago</button>
@@ -2014,14 +2024,14 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
   const BACKUP_VERSION = 2;
   const BACKUP_MIN_VERSION = 1; // Keep one older external-backup generation importable.
   // Increment only when canonical English source wording intentionally changes.
-  const I18N_SOURCE_REVISION = 48;
+  const I18N_SOURCE_REVISION = 49;
   const LANGUAGE_META = Object.freeze({
     en: Object.freeze({ locale: 'en', dir: 'ltr', label: 'English', manifestSuffix: '', appTitle: 'Fasting' }),
     bg: Object.freeze({ locale: 'bg', dir: 'ltr', label: 'Български', manifestSuffix: '-bg', appTitle: 'Гладуване' }),
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.22';
+  const APP_VERSION = '1.21.23';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4105,8 +4115,10 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     panel.hidden = false;
   }
 
-  function setBackdatePreset(hours) {
-    const d = new Date(Date.now() - Number(hours) * 3600000);
+  function setBackdatePreset(value, unit = 'hours') {
+    const amount = Number(value);
+    const delta = amount * (unit === 'minutes' ? 60000 : 3600000);
+    const d = new Date(Date.now() - delta);
     el('backdateStart').value = toLocalInputValue(d, currentTimeZone());
     showBackdateError('');
     clearBackdateConflict();
@@ -10599,7 +10611,10 @@ function mergeImportedData(imported) {
   el('backdateEditConflictBtn').addEventListener('click', editBackdateConflict);
   el('backdateDeleteConflictBtn').addEventListener('click', deleteBackdateConflictAndStart);
   el('backdateModal').addEventListener('click', e => { if (e.target === el('backdateModal')) closeBackdateModal(); });
-  document.querySelectorAll('.backdatePreset').forEach(btn => btn.addEventListener('click', () => setBackdatePreset(btn.dataset.hours)));
+  document.querySelectorAll('.backdatePreset').forEach(btn => btn.addEventListener('click', () => {
+    const minutes = btn.dataset.minutes;
+    setBackdatePreset(minutes !== undefined ? minutes : btn.dataset.hours, minutes !== undefined ? 'minutes' : 'hours');
+  }));
 
   el('addEntryBtn').addEventListener('click', () => openEntryModal());
   for(const id of ['historyFilterFrom','historyFilterTo','historyFilterMin','historyFilterMax','historyFilterTarget','historyFilterEdited','historyIncludeDeleted'])el(id)?.addEventListener('change',()=>{historyVisibleCount=HISTORY_PAGE_SIZE;deletedHistoryVisibleCount=HISTORY_PAGE_SIZE;historyRange='recent7';historyRangeMenuOpen=false;selectedFastIds.clear();selectedDeletedFastIds.clear();renderHistory();});
