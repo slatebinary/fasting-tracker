@@ -67,8 +67,8 @@
     scroller.dataset.period = weightPeriodMode;
     scroller.dataset.bucketCount = String(buckets.length);
     scroller.dataset.dataPointCount = String(dataBuckets.length);
-    scroller.dataset.calendarDaySpan = String(timeline.spanDays);
     scroller.dataset.calendarTimeline = String(timeline.calendarBased);
+    if(timeline.calendarBased) scroller.dataset.calendarDaySpan = String(timeline.spanDays); else delete scroller.dataset.calendarDaySpan;
     scroller.dataset.rollingWindowDays = String(weightRollingWindowDays(weightPeriodMode));
     delete scroller.dataset.selectedWindowCount;
     delete scroller.dataset.selectedCalendarCount;
