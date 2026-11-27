@@ -43,9 +43,11 @@ assert (source / "js" / "32-weight-chart-interaction.js").is_file()
 weight_layout = (source / "js" / "43w-weight-chart-layout-policy.js").read_text(encoding="utf-8")
 assert "function weightChartPointSpacingPolicy" in weight_layout
 assert "function weightChartVisibleRangePolicy" in weight_layout
+assert "function weightChartTimelineLayoutPolicy" in weight_layout
+assert "function weightChartVisibleRangeFromPositionsPolicy" in weight_layout
 weight_chart_interaction = (source / "js" / "32-weight-chart-interaction.js").read_text(encoding="utf-8")
-assert "weightChartPointSpacingPolicy(buckets.length,viewportW)" in weight_chart_interaction
-assert "weightChartVisibleRangePolicy(buckets.length,viewportW,scrollX,pointSpacing)" in weight_chart_interaction
+assert "weightChartTimelineLayoutPolicy(buckets,weightPeriodMode,viewportW)" in weight_chart_interaction
+assert "weightChartVisibleRangeFromPositionsPolicy(timeline.positions,viewportW,scrollX,left" in weight_chart_interaction
 assert "function weightChartPointSpacingPolicy" not in weight_chart_interaction
 weight_chart = (source / "js" / "32-weight-chart-interaction.js").read_text(encoding="utf-8")
 assert "function drawWeightChart" in weight_chart and "function handleWeightChartScroll" in weight_chart
