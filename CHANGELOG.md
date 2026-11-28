@@ -1,3 +1,9 @@
+## v1.21.31 — 2026-11-28
+
+- Display fasting durations in decimal hours alongside hours/minutes, or days/hours/minutes when longer than 24 hours, across timers, summaries, history and statistics details.
+- Add the average duration to every fasting-duration distribution category, alongside completed-fast count and combined fasting time.
+- Keep English, Bulgarian and Spanish labels aligned; add regression coverage for decimal precision, the 24-hour boundary and category averages. No fasting records, storage schema or backup formats change.
+
 ## v1.21.30 — 2026-11-28
 
 - Harden the weigh-in reminder policy against malformed latest records, missing stable IDs, throwing timestamp conversions and out-of-range current timestamps.
