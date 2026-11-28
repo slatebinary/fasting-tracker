@@ -27,4 +27,18 @@ for(const values of [{nowMs:NaN},{reminderMs:NaN},{reminderMs:-1},{reminderMs:In
   result=resolve({...base,...values});assert.equal(result.due,false);assert.equal(result.nextAtMs,null);assert.equal(result.token,null);
 }
 assert.deepEqual(base,{hasData:true,firstDataAt:first,lastBackupAt:last,nowMs:Date.parse('2026-11-20T10:00:00.000Z'),reminderMs:7*24*60*60*1000},'the policy must not mutate inputs');
+
+const malformedTimestampValues=[Symbol('bad timestamp'),{toString(){throw new Error('bad timestamp')}}];
+for(const value of malformedTimestampValues) {
+  result=resolve({...base,firstDataAt:value});
+  assert.equal(result.baseMs,Date.parse(last),'a malformed first-data timestamp must safely fall back to a valid backup timestamp');
+  result=resolve({...base,lastBackupAt:value});
+  assert.equal(result.baseMs,Date.parse(first),'a malformed backup timestamp must safely fall back to a valid first-data timestamp');
+  result=resolve({...base,firstDataAt:value,lastBackupAt:value});
+  assert.deepEqual(JSON.parse(JSON.stringify(result)),{due:false,baseMs:null,nextAtMs:null,token:null},'two malformed anchors must produce a safe empty result');
+}
+result=resolve({...base,nowMs:1e300});
+assert.deepEqual(JSON.parse(JSON.stringify(result)),{due:false,baseMs:null,nextAtMs:null,token:null},'finite but out-of-range current timestamps must be rejected');
+result=resolve({...base,reminderMs:8640000000000000});
+assert.deepEqual(JSON.parse(JSON.stringify(result)),{due:false,baseMs:null,nextAtMs:null,token:null},'a finite reminder interval that produces an out-of-range next date must be rejected');
 console.log('PASS: backup reminder due-time and notification-token policy covers inclusive boundaries, anchor selection and invalid/missing data');
