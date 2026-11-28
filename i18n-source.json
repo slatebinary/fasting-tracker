@@ -1,6 +1,6 @@
 {
   "sourceRevision": 49,
-  "appVersion": "1.21.30",
+  "appVersion": "1.21.31",
   "language": "en",
   "strings": {
     "backup.tierMonthly": "monthly",
@@ -849,7 +849,7 @@
     "stats.successHelp": "Target success shows the percentage of completed fasts that reached their saved target in each of the last 12 months. Excused stops remain factually “not reached” here, even though they are neutral for the consistency streak.",
     "stats.startPatternHelp": "Start times groups completed fasts by the local clock time at which they began.",
     "stats.detailMonth": "Total fasting: {duration}. Completed fasts: {count}.",
-    "stats.detailDistribution": "Completed fasts: {count}. Combined fasting time: {hours} h.",
+    "stats.detailDistribution": "Completed fasts: {count}. Combined fasting time: {total}. Average fasting time: {average}.",
     "stats.detailSuccess": "Target reached: {rate}% ({reached} of {count} completed fasts).",
     "stats.detailStartPattern": "Completed fasts started in this time range: {count}.",
     "a11y.fastMonthsChart": "Monthly fasting hours for the last 12 months",
@@ -896,8 +896,8 @@
     "stats.range.all": "all history",
     "stats.rangeSummary": "{range} • {n} completed fasts",
     "stats.trendLegend": "Daily • 7-day average • 30-day average",
-    "stats.detailTrend": "{duration} fasting • 7-day avg {avg7}h • 30-day avg {avg30}h",
-    "stats.detailCumulative": "{hours}h cumulative • {today}h on this day",
+    "stats.detailTrend": "{duration} fasting • 7-day average: {avg7} • 30-day average: {avg30}",
+    "stats.detailCumulative": "{hours} cumulative • {today} on this day",
     "stats.monthComparison": "{month}: vs previous month {mom} • vs same month last year {yoy}",
     "stats.comparisonNoBaseline": "no comparable baseline",
     "stats.viewRecords": "View records",
