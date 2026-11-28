@@ -1,3 +1,9 @@
+## v1.21.26 — 2026-11-28
+
+- Extract the backup dataset signature projection and stable-ID ordering into a pure policy.
+- Keep the existing signature prefix, hash algorithm, tracked fields and cache behaviour unchanged.
+- Add deterministic tests for order-independent signatures, all four record collections, zero-valued fields, empty collections and non-mutation. No backup format, stored record or storage schema changes.
+
 ## v1.21.25 — 2026-11-28
 
 - Extract backup-reminder due-time and notification-token calculation into a pure policy shared by the backup status and notification workflows.
