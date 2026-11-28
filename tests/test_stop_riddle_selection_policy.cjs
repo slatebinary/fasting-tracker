@@ -1,0 +1,40 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const source=fs.readFileSync('src/app/js/43zj-stop-riddle-selection-policy.js','utf8');
+const context={};
+vm.createContext(context);
+vm.runInContext(source+'\nthis.resolve=resolveStopRiddleSelectionPolicy;',context);
+const resolve=context.resolve;
+const ids=Array.from({length:1000},(_,i)=>i+1);
+let seen=[],lastId=null,seed=0x5eed1234;
+const selected=[];
+for(let i=0;i<ids.length;i++){
+  seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+  const result=resolve(ids,seen,lastId,seed/0x100000000);
+  assert.ok(ids.includes(result.id),'selected ID must belong to the bank');
+  assert.ok(!seen.includes(result.id),'a riddle must not repeat before the complete cycle');
+  seen=result.seen;lastId=result.lastId;selected.push(result.id);
+}
+assert.equal(new Set(selected).size,1000,'all 1,000 riddles must appear exactly once per cycle');
+assert.equal(seen.length,1000);
+seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+const next=resolve(ids,seen,lastId,seed/0x100000000);
+assert.notEqual(next.id,lastId,'the first riddle of a new cycle must not immediately repeat the previous cycle final');
+assert.deepEqual(JSON.parse(JSON.stringify(next.seen)),[next.id],'the seen list resets at the new cycle boundary');
+assert.equal(next.lastId,next.id);
+
+const originalSeen=[1,1,2,9999,'3'];
+const snapshot=JSON.stringify(originalSeen);
+const resumed=resolve([1,2,3,4],originalSeen,2,0.999999);
+assert.equal(resumed.id,4,'saved progress is respected and unknown/invalid IDs are ignored');
+assert.deepEqual(JSON.parse(JSON.stringify(resumed.seen)),[1,2,4]);
+assert.equal(JSON.stringify(originalSeen),snapshot,'selection must not mutate persisted input arrays');
+assert.equal(resolve([10,20,30],[],null,0).id,10,'zero selects the first available entry');
+assert.equal(resolve([10,20,30],[],null,1).id,30,'a boundary random value of one is clamped to the last entry');
+assert.equal(resolve([10,20,30],[],null,NaN).id,10,'invalid randomness falls back deterministically');
+assert.deepEqual(JSON.parse(JSON.stringify(resolve([],[],null,0))),{id:null,seen:[],lastId:null});
+const single=resolve([7],[7],7,0.5);
+assert.deepEqual(JSON.parse(JSON.stringify(single)),{id:7,seen:[7],lastId:7},'a one-item bank remains selectable after exhaustion');
+console.log('PASS: stop-riddle selection resumes saved progress, completes a no-repeat 1,000-item cycle, and avoids an immediate repeat at reset');
