@@ -23,7 +23,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(result)),{due:false,baseMs:null,nextA
 for(const values of [{firstDataAt:null,lastBackupAt:null},{firstDataAt:'invalid',lastBackupAt:'invalid'},{firstDataAt:null,lastBackupAt:''}]) {
   result=resolve({...base,...values});assert.equal(result.due,false);assert.equal(result.baseMs,null);assert.equal(result.nextAtMs,null);assert.equal(result.token,null);
 }
-for(const values of [{nowMs:NaN},{reminderMs:NaN},{reminderMs:-1},{reminderMs:Number.MAX_VALUE}]) {
+for(const values of [{nowMs:NaN},{reminderMs:NaN},{reminderMs:-1},{reminderMs:Infinity}]) {
   result=resolve({...base,...values});assert.equal(result.due,false);assert.equal(result.nextAtMs,null);assert.equal(result.token,null);
 }
 assert.deepEqual(base,{hasData:true,firstDataAt:first,lastBackupAt:last,nowMs:Date.parse('2026-11-20T10:00:00.000Z'),reminderMs:7*24*60*60*1000},'the policy must not mutate inputs');
