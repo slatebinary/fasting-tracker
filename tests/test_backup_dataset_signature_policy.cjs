@@ -4,7 +4,7 @@ const source=fs.readFileSync('src/app/js/43zi-backup-dataset-signature-policy.js
 const context={};vm.createContext(context);vm.runInContext(source+'\nthis.build=buildBackupDatasetSignature;',context);
 const build=context.build;
 const sourceData={
-  revision:17,activeStart:'2026-11-01T10:00:00.000Z',activeTimeZone:'Europe/Sofia',
+  revision:17,untrackedField:'ignored',activeStart:'2026-11-01T10:00:00.000Z',activeTimeZone:'Europe/Sofia',
   activeGoalHours:18,activeCreatedAt:'created',activeModifiedAt:'modified',
   records:[{id:'b',hours:12},{id:'a',hours:16}],
   deletedFasts:[{id:'d2',reason:'second'},{id:'d1',reason:'first'}],
@@ -21,9 +21,11 @@ assert.deepEqual(JSON.parse(JSON.stringify(captured.weights)).map(x=>x.id),['w1'
 assert.deepEqual(JSON.parse(JSON.stringify(captured.deletedWeights)).map(x=>x.id),['x1','x2'],'deleted weight records are canonicalized');
 assert.equal(captured.activeStart,sourceData.activeStart);
 assert.equal(captured.activeTimeZone,sourceData.activeTimeZone);
-assert.equal(captured.activeGoalHours,18,'zero-like numeric values must not be discarded by truthy fallback');
+assert.equal(captured.activeGoalHours,18,'configured fasting goal must be retained');
 assert.equal(captured.activeCreatedAt,'created');
 assert.equal(captured.activeModifiedAt,'modified');
+assert.equal(Object.hasOwn(captured,'revision'),false,'revision remains outside the tracked dataset projection');
+assert.equal(Object.hasOwn(captured,'untrackedField'),false,'untracked properties must not affect backup identity');
 assert.equal(serialized,JSON.stringify(captured),'the serializer receives only the canonical tracked projection');
 assert.equal(JSON.stringify(sourceData),before,'signature construction must not mutate source data');
 const empty=build({activeGoalHours:0},value=>{captured=value;return JSON.stringify(value);},()=> 'empty');
