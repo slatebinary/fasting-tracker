@@ -1,3 +1,10 @@
+## v1.21.30 — 2026-11-28
+
+- Harden the weigh-in reminder policy against malformed latest records, missing stable IDs, throwing timestamp conversions and out-of-range current timestamps.
+- Contain invalid anchor conversion and safely initialize the first-run anchor instead of allowing malformed persisted values to interrupt notification processing.
+- Preserve daily/weekly cadence boundaries, valid reminder tokens, delivered-token suppression and normal anchor behavior. No notification preferences, stored records, storage schema or backup formats change.
+- Add deterministic regression coverage for malformed records, Symbol/throwing timestamp values, invalid anchors and out-of-range timestamps.
+
 ## v1.21.29 — 2026-11-28
 
 - Harden latest-weight record selection used by weigh-in reminders: ignore missing/non-array history, null or primitive entries, missing timestamps and timestamps that cannot be parsed.
