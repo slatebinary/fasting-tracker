@@ -3,17 +3,27 @@ function resolveWeighInNotificationPolicy({cadence,latest,anchorAt,nowMs,deliver
   const normalizedCadence = cadence === 'daily' ? 'daily' : 'weekly';
   const cadenceMs = normalizedCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
   if (!Number.isFinite(nowMs)) return null;
-  let anchorMs, tokenBase;
-  if (latest) {
-    anchorMs = new Date(latest.when).getTime();
-    tokenBase = latest.id;
-    if (!Number.isFinite(anchorMs)) return null;
-  } else {
-    const anchor = anchorAt ? new Date(anchorAt) : null;
-    if (!anchor || !Number.isFinite(anchor.getTime())) {
-      return {cadence:normalizedCadence,cadenceMs,anchorMs:null,token:null,due:false,initializeAnchorAt:new Date(nowMs).toISOString()};
+  const nowDate = new Date(nowMs);
+  if (!Number.isFinite(nowDate.getTime())) return null;
+  const timestamp = value => {
+    try {
+      const ms = new Date(value).getTime();
+      return Number.isFinite(ms) ? ms : null;
+    } catch {
+      return null;
     }
-    anchorMs = anchor.getTime();
+  };
+  let anchorMs, tokenBase;
+  if (latest !== null && latest !== undefined) {
+    if (typeof latest !== 'object' || latest.id === null || latest.id === undefined) return null;
+    anchorMs = timestamp(latest.when);
+    tokenBase = latest.id;
+    if (anchorMs === null) return null;
+  } else {
+    anchorMs = anchorAt ? timestamp(anchorAt) : null;
+    if (anchorMs === null) {
+      return {cadence:normalizedCadence,cadenceMs,anchorMs:null,token:null,due:false,initializeAnchorAt:nowDate.toISOString()};
+    }
     tokenBase = anchorAt;
   }
   const token = `${normalizedCadence}:${tokenBase}`;
