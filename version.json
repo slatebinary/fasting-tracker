@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.29",
+  "version": "1.21.30",
   "released": "2026-11-28",
-  "notes": "Ignore malformed weight-history entries when selecting the latest record for reminders.",
+  "notes": "Safely reject malformed weigh-in reminder inputs and contain invalid timestamp conversions.",
   "entry": "./index.html",
   "shell": [
     "./",
