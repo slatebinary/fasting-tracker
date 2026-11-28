@@ -1,3 +1,9 @@
+## v1.21.28 — 2026-11-28
+
+- Isolate optional stop-dialog riddle selection into a pure policy, keeping the existing randomized no-repeat cycle and saved progress behaviour.
+- Add deterministic coverage for all 1,000 selections, resumed progress, cycle reset, immediate-repeat avoidance and invalid selection inputs.
+- Preserve the 1,000 multilingual riddle entries, localized copy-to-a-friend action, persisted state key and all fasting/weight data. No storage schema or backup-format changes.
+
 ## v1.21.27 — 2026-11-28
 
 - Correct the displayed next external-backup reminder date so it uses the same later-of-first-data-or-last-backup anchor as the actual due calculation.
