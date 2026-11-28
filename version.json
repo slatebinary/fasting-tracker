@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.25",
+  "version": "1.21.26",
   "released": "2026-11-28",
-  "notes": "Extract backup-reminder timing and notification-token generation into a deterministic shared policy.",
+  "notes": "Extract backup dataset signature canonicalization into a deterministic pure policy.",
   "entry": "./index.html",
   "shell": [
     "./",
