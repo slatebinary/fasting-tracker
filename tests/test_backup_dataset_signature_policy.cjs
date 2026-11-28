@@ -41,6 +41,6 @@ const unsortedB={records:[{id:'a',v:2},{id:'z',v:1}],weights:[{id:'1'},{id:'2'}]
 const serialize=value=>JSON.stringify(value);
 const hash=value=>value.length.toString(16);
 assert.equal(build(unsortedA,serialize,hash),build(unsortedB,serialize,hash),'record array order must not affect dataset identity');
-assert.throws(()=>build(sourceData,null,()=>''),TypeError,'a serializer must be supplied');
-assert.throws(()=>build(sourceData,serialize,null),TypeError,'a hash function must be supplied');
+assert.throws(()=>build(sourceData,null,()=>''),error=>error?.name==='TypeError','a serializer must be supplied');
+assert.throws(()=>build(sourceData,serialize,null),error=>error?.name==='TypeError','a hash function must be supplied');
 console.log('PASS: backup dataset signature canonicalizes every record collection without mutating data');
