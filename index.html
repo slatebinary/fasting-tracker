@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.29" />
+  <meta name="ft-app-version" content="1.21.30" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -2031,7 +2031,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.29';
+  const APP_VERSION = '1.21.30';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -9686,17 +9686,27 @@ function resolveWeighInNotificationPolicy({cadence,latest,anchorAt,nowMs,deliver
   const normalizedCadence = cadence === 'daily' ? 'daily' : 'weekly';
   const cadenceMs = normalizedCadence === 'daily' ? 24 * 3600000 : 7 * 24 * 3600000;
   if (!Number.isFinite(nowMs)) return null;
-  let anchorMs, tokenBase;
-  if (latest) {
-    anchorMs = new Date(latest.when).getTime();
-    tokenBase = latest.id;
-    if (!Number.isFinite(anchorMs)) return null;
-  } else {
-    const anchor = anchorAt ? new Date(anchorAt) : null;
-    if (!anchor || !Number.isFinite(anchor.getTime())) {
-      return {cadence:normalizedCadence,cadenceMs,anchorMs:null,token:null,due:false,initializeAnchorAt:new Date(nowMs).toISOString()};
+  const nowDate = new Date(nowMs);
+  if (!Number.isFinite(nowDate.getTime())) return null;
+  const timestamp = value => {
+    try {
+      const ms = new Date(value).getTime();
+      return Number.isFinite(ms) ? ms : null;
+    } catch {
+      return null;
     }
-    anchorMs = anchor.getTime();
+  };
+  let anchorMs, tokenBase;
+  if (latest !== null && latest !== undefined) {
+    if (typeof latest !== 'object' || latest.id === null || latest.id === undefined) return null;
+    anchorMs = timestamp(latest.when);
+    tokenBase = latest.id;
+    if (anchorMs === null) return null;
+  } else {
+    anchorMs = anchorAt ? timestamp(anchorAt) : null;
+    if (anchorMs === null) {
+      return {cadence:normalizedCadence,cadenceMs,anchorMs:null,token:null,due:false,initializeAnchorAt:nowDate.toISOString()};
+    }
     tokenBase = anchorAt;
   }
   const token = `${normalizedCadence}:${tokenBase}`;

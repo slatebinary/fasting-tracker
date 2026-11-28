@@ -100,9 +100,9 @@
   "integrityAlgorithm": "SHA-256",
   "htmlNormalization": "github-pages-v1",
   "hashes": {
-    "./": "ddda25110ea0bc17279448204892da93e66e2fba27d0b812cde3e47042d228c8",
-    "./index.html": "ddda25110ea0bc17279448204892da93e66e2fba27d0b812cde3e47042d228c8",
-    "./changelog.html": "c82ed3b19e5f2963f58573cd3a83e0c6ccc659f3dab6129a14515ccb785340f0",
+    "./": "96e071b22ef2589d9f901a8fe787904b8ce9090465be40556f56c158234d98e8",
+    "./index.html": "96e071b22ef2589d9f901a8fe787904b8ce9090465be40556f56c158234d98e8",
+    "./changelog.html": "f2e5dd72937031563d268e9113cb036c192d383ea96392dc52d67ad7392dc79a",
     "./i18n/en.js": "6044aaf9ca284e33abca4f613f5574ef98af56996b6680b6cedc66277ce6c879",
     "./i18n/bg.js": "9659c1b7682e8c896b8d4bf10061cbd3cb6d297cf87b3043e93a304987bc05ad",
     "./i18n/es.js": "ac8ced9f8ac174427376c1f37ebbea26f09277a9cab599f18bdc2a6d9be4ba20",
@@ -114,10 +114,10 @@
     "./js/fasting-visuals.js": "0851aa39b620a00faea224e01d57035494c9c20d0dd852d440a87071412c571c",
     "./js/fasting-analytics.js": "03ebab2d847660b3d9d257415d2efcd5175e705f6d459d128c0aefa9f5fc92b3",
     "./js/release-health.js": "3c561d7a4326cf161b9c7a17b37913264b72437a0c84819f9cbdc0369b97ba6e",
-    "./privacy.html": "45485d4a2d76c4b2cf9445a7975f9e3e73c40d1dd0991240dd20dead0edb95a9",
-    "./about.html": "7cd375bcf27581e747ba3aac5b8163c1653a9c5d0bb5e7eeafe543beff3e81d1",
-    "./branding.html": "a2c51f0d73f78e36bfc06442dc0b2d6fd41e86875e394fcce0f5cef506ac6540",
-    "./license.html": "7f563c53c014e8d3a5024c0ac8f62464276d2bd2606f11af6309540516e85645",
+    "./privacy.html": "41668b3a2d6e5b54cec8ac5a93fc427db7fef836b3ec31cff06033f001e43795",
+    "./about.html": "e52571d028ebba909a1039d5d28adb5b950f29258ac86b334e5f42e08e9ea2ea",
+    "./branding.html": "788bd73b2606629182f5b46b7cb4f6ef0ac42cf724e6e644303eab370772c888",
+    "./license.html": "191b1d16900bc9b56aa4faaff4953c774a03f3c14e23fd6479af2820472550dc",
     "./404.html": "afa92afe8dd7cd8f4e3878b22f27a9fd89f469e5d01da9b8cb7bfc94898a1f7d",
     "./en/": "43a8e58e8c09ebab103418781c6f32bfb2b837870c62049368258727ae4d29ed",
     "./bg/": "ea495c81b191e3ad009de3578666dbd59415e637320922685a45af22b5de21ec",
@@ -190,6 +190,6 @@
     "./src/app/js/43zd-latest-weight-record-policy.js": "21325aaebb7d855ae02f0ed1719672e906c0debd951e144dcf6633ddc1b515a0",
     "./src/app/js/43ze-cycle-complete-notification-policy.js": "4cce5cee03e855b6b865864eaa66a287c587a621ae45ec59ddb6f1b911b7f963",
     "./src/app/js/43zf-fast-threshold-notification-policy.js": "ce23a63defd5e5c77dd5a8c9b5528b108f078273e9e1a74743580578882e105b",
-    "./src/app/js/43zg-weigh-in-reminder-policy.js": "f6de6b472e43394d9ba42c170fc7eaac31e5f9bc7e3accebdafda6d6d222e3dc"
+    "./src/app/js/43zg-weigh-in-reminder-policy.js": "749ead0a7b2ad9cbcb117cdcb8feed5d07dddbea0d8b2843acf591ab76668ced"
   }
 }
