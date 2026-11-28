@@ -51,6 +51,7 @@ on:
       - refactor/v1.21.6-cycle-complete-notification-policy
       - refactor/v1.21.7-fast-notification-timing-policy
       - refactor/v1.21.8-weigh-in-reminder-policy
+      - refactor/v1.21.26-backup-dataset-signature-policy
       - test/v1.21.9-pwa-startup-rollback-regression
       - test/v1.21.10-snapshot-retention-regression
       - feat/v1.21.0-extend-nonfasting-period
@@ -103,6 +104,7 @@ jobs:
           node tests/test_stats_weekly_summary_builder.cjs
           node tests/test_backup_freshness_policy.cjs
           node tests/test_backup_reminder_policy.cjs
+          node tests/test_backup_dataset_signature_policy.cjs
           node tests/test_snapshot_retention_policy.cjs
           node tests/test_next_fast_cycle_policy.cjs
           node tests/test_post_start_nonfasting_extension_policy.cjs

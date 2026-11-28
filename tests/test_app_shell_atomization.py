@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 85, f"Expected eighty-five ordered app fragments, found {len(parts)}"
+assert len(parts) == 86, f"Expected eighty-six ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -539,3 +539,7 @@ import_workflows = (source / "js" / "45-import-merge-workflows.js").read_text(en
 assert "return resolveBackupDateRangePolicy(candidate, validDate)" in import_workflows
 assert "function backupDateRange" in import_workflows
 assert "function resolveBackupDateRangePolicy" not in import_workflows
+
+backup_signature = (source / "js" / "43zi-backup-dataset-signature-policy.js").read_text(encoding="utf-8")
+assert "function buildBackupDatasetSignature" in backup_signature
+assert "function buildBackupDatasetSignature" not in (source / "js" / "40-backup-export.js").read_text(encoding="utf-8")
