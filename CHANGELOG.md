@@ -1,3 +1,10 @@
+## v1.21.32 — 2026-11-28
+
+- Harden backup-reminder timestamp parsing so malformed values, Symbols and throwing date conversions cannot interrupt reminder evaluation.
+- Reject out-of-range current timestamps and reminder intervals that would produce an invalid next date.
+- Preserve valid anchor selection, inclusive due-time boundaries, reminder cadence and notification-token format. No backup contents, stored records, storage schema or backup formats change.
+- Add deterministic regression coverage for malformed anchors, safe fallback to the other valid anchor and invalid Date-range values.
+
 ## v1.21.31 — 2026-11-28
 
 - Display fasting durations in decimal hours alongside hours/minutes, or days/hours/minutes when longer than 24 hours, across timers, summaries, history and statistics details.

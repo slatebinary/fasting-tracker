@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.31",
+  "version": "1.21.32",
   "released": "2026-11-28",
-  "notes": "Show fasting durations in decimal hours and readable time units throughout the app, and add average duration to distribution categories.",
+  "notes": "Harden backup-reminder timestamp handling against malformed values and out-of-range dates.",
   "entry": "./index.html",
   "shell": [
     "./",
