@@ -7,34 +7,36 @@
     return `${pad(h)}:${pad(m)}:${pad(s)}`;
   }
 
-  function friendlyDuration(ms, includeMinutes = true) {
-    ms = Math.max(0, ms);
+  function durationDisplay(ms, compact = true, includeMinutes = true) {
+    ms = Math.max(0, Number(ms) || 0);
     const totalMin = Math.floor(ms / 60000);
-    const days = Math.floor(totalMin / 1440);
-    const hours = Math.floor((totalMin % 1440) / 60);
+    const useDays = ms > 86400000;
+    const days = useDays ? Math.floor(totalMin / 1440) : 0;
+    const hours = useDays ? Math.floor((totalMin % 1440) / 60) : Math.floor(totalMin / 60);
     const minutes = totalMin % 60;
-    if (days > 0) return `${formatNumber(days)} ${t(pluralKey('unit.day', days))} ${formatNumber(hours)}${t('unit.h')}${includeMinutes ? ` ${formatNumber(minutes)}${t('unit.m')}` : ''}`;
-    if (hours > 0) return `${formatNumber(hours)}${t('unit.h')}${includeMinutes ? ` ${formatNumber(minutes)}${t('unit.m')}` : ''}`;
-    return `${formatNumber(minutes)}${t('unit.m')}`;
+    const decimal = `${formatNumber(ms / 3600000, 0, 2)} ${t('unit.h')}`;
+    let readable;
+    if (days > 0) {
+      const day = compact ? `${formatNumber(days)}${t('unit.d')}` : `${formatNumber(days)} ${t(pluralKey('unit.day', days))}`;
+      readable = `${day} ${formatNumber(hours)}${t('unit.h')}${includeMinutes ? ` ${formatNumber(minutes)}${t('unit.m')}` : ''}`;
+    } else if (hours > 0) {
+      readable = `${formatNumber(hours)}${t('unit.h')}${includeMinutes ? ` ${formatNumber(minutes)}${t('unit.m')}` : ''}`;
+    } else {
+      readable = `${formatNumber(minutes)}${t('unit.m')}`;
+    }
+    return `${decimal} (${readable})`;
+  }
+
+  function friendlyDuration(ms, includeMinutes = true) {
+    return durationDisplay(ms, false, includeMinutes);
   }
 
   function compactDuration(ms) {
-    ms = Math.max(0, ms);
-    const totalMin = Math.floor(ms / 60000);
-    const days = Math.floor(totalMin / 1440);
-    const hours = Math.floor((totalMin % 1440) / 60);
-    const minutes = totalMin % 60;
-    if (days > 0) return `${formatNumber(days)}${t('unit.d')} ${formatNumber(hours)}${t('unit.h')} ${formatNumber(minutes)}${t('unit.m')}`;
-    if (hours > 0) return `${formatNumber(hours)}${t('unit.h')} ${formatNumber(minutes)}${t('unit.m')}`;
-    return `${formatNumber(minutes)}${t('unit.m')}`;
+    return durationDisplay(ms, true, true);
   }
 
   function totalHoursDuration(ms) {
-    ms = Math.max(0, ms);
-    const totalMin = Math.floor(ms / 60000);
-    const hours = Math.floor(totalMin / 60);
-    const minutes = totalMin % 60;
-    return `${formatNumber(hours)}${t('unit.h')} ${formatNumber(minutes)}${t('unit.m')}`;
+    return compactDuration(ms);
   }
 
   function dayKey(dateLike, timeZone = currentTimeZone()) {

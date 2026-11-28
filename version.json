@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.30",
+  "version": "1.21.31",
   "released": "2026-11-28",
-  "notes": "Safely reject malformed weigh-in reminder inputs and contain invalid timestamp conversions.",
+  "notes": "Show fasting durations in decimal hours and readable time units throughout the app, and add average duration to distribution categories.",
   "entry": "./index.html",
   "shell": [
     "./",

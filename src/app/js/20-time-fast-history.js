@@ -55,7 +55,7 @@
     const info = nonFastingPeriodInfo(nowMs);
     card.hidden = !info;
     if (!info) return;
-    el('nonFastingTimer').textContent = exactDuration(info.elapsedMs);
+    el('nonFastingTimer').textContent = `${exactDuration(info.elapsedMs)} • ${friendlyDuration(info.elapsedMs)}`;
     el('nonFastingSince').textContent = t('fasting.nonFastingSince', {
       date: localDateTimeLabel(info.record.end, info.record.timeZone)
     });
@@ -76,7 +76,7 @@
     const info = nextFastCycleInfo();
     card.hidden = !info;
     if (!info) return;
-    el('nextFastCountdown').textContent = exactDuration(info.remainingMs);
+    el('nextFastCountdown').textContent = `${exactDuration(info.remainingMs)} • ${friendlyDuration(info.remainingMs)}`;
     el('nextFastAt').textContent = t('fasting.nextAt', {date: localDateTimeLabel(info.suggestedStartMs, info.record.timeZone)});
     // Derive both displayed parts from the same completed whole-minute value so
     // the visible arithmetic always adds up to exactly 24h. The countdown itself

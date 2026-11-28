@@ -44,7 +44,7 @@
       if(scroller&&g){const x=g.left+index*g.slot+g.slot/2;scroller.scrollLeft=Math.max(0,Math.min(scroller.scrollWidth-scroller.clientWidth,x-scroller.clientWidth/2));}
       statsDetailOverride=chartSelectionDetail(timelineChartDays);
     }else if(mode==='trend'){
-      trendSelectedDayKey=item.key;statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailTrend',{duration:compactDuration(item.totalFastMs||0),avg7:formatNumber(item.avg7||0,0,1),avg30:formatNumber(item.avg30||0,0,1)}),records:recordsOverlappingDay(item)};drawFastTrendChart();
+      trendSelectedDayKey=item.key;statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailTrend',{duration:compactDuration(item.totalFastMs||0),avg7:compactDuration((item.avg7||0)*3600000),avg30:compactDuration((item.avg30||0)*3600000)}),records:recordsOverlappingDay(item)};drawFastTrendChart();
     }else if(mode==='weeks'){
       weekSelectedKey=item.key;const tz=currentTimeZone(),start=zonedLocalToDate(`${item.key}T00:00`,tz);let endMs=start?.getTime()||NaN;if(Number.isFinite(endMs))for(let i=0;i<7;i++)endMs=nextZonedDayBoundary(endMs,tz);statsDetailOverride={dayKey:item.key,title:t('stats.weekOf',{date:item.label}),text:t('stats.detailWeek',{duration:compactDuration(item.totalFastMs||0),days:formatNumber(item.daysWithFast||0)}),records:start&&Number.isFinite(endMs)?recordsOverlappingRange(start.getTime(),endMs):[]};drawFastWeeksChart();
     }else if(mode==='months'){
@@ -52,7 +52,7 @@
     }else if(mode==='success'){
       genericChartSelectedKey=item.key;const source=chartRangeRecords('success');statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailSuccess',{rate:formatNumber(item.successRate||0,0,0),reached:formatNumber(item.reached||0),count:formatNumber(item.count||0)}),records:recordsEndingInMonth(item.key,source)};drawFastSuccessChart();
     }else if(mode==='cumulative'){
-      cumulativeSelectedDayKey=item.key;const first=items[0];statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailCumulative',{hours:formatNumber(item.cumulativeHours||0,0,1),today:formatNumber((item.totalFastMs||0)/3600000,0,1)}),records:first?recordsOverlappingRange(first.startMs,item.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();
+      cumulativeSelectedDayKey=item.key;const first=items[0];statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailCumulative',{hours:compactDuration((item.cumulativeHours||0)*3600000),today:compactDuration(item.totalFastMs||0)}),records:first?recordsOverlappingRange(first.startMs,item.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();
     }
     renderChartDetailForMode();if(el('statsChartData')&&!el('statsChartData').hidden)renderStatsChartData();syncStatsHistoryNavigator();
   }

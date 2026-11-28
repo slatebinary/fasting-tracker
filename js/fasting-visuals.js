@@ -20,7 +20,7 @@
       {key:'48plus',min:48,max:Infinity,label:'48h+'}
     ].map(x=>({...x,count:0,totalHours:0}));
     for(const r of safeRecords(records)){const hours=Math.max(0,(Number(recordMs(r))||0)/HOUR);const b=defs.find(x=>hours>=x.min&&hours<x.max);if(b){b.count++;b.totalHours+=hours;}}
-    return defs;
+    return defs.map(x=>({...x,averageHours:x.count?x.totalHours/x.count:0}));
   }
   function startTimeBuckets(records,{partsForRecord}={}){
     const buckets=Array.from({length:8},(_,i)=>({key:String(i),startHour:i*3,endHour:i*3+3,label:`${String(i*3).padStart(2,'0')}:00–${String((i*3+3)%24).padStart(2,'0')}:00`,shortLabel:`${String(i*3).padStart(2,'0')}:00`,count:0}));
