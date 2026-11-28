@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.26" />
+  <meta name="ft-app-version" content="1.21.27" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -2031,7 +2031,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.26';
+  const APP_VERSION = '1.21.27';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -8270,7 +8270,8 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     label.textContent = last ? localDateTimeLabel(last, deviceTimeZone()) : t('backup.noneYet');
     const freshness=backupFreshnessState();
     if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=(freshness.state==='stale'||freshness.state==='never')?pendingBackupDetail():freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
-    const due = backupIsDue();
+    const reminder = backupReminderPolicy();
+    const due = reminder.due;
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
     // The compact fasting backup action already covers aged and missing exports.
@@ -8286,9 +8287,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if (nextLabel) {
       if (!hasBackupWorthyData()) nextLabel.textContent = t('backup.nextStarts');
       else {
-        const firstData = ensureBackupTrackingStarted();
-        const base = last || firstData;
-        const next = base ? new Date(base.getTime() + BACKUP_REMINDER_MS) : null;
+        const next = reminder.nextAtMs == null ? null : new Date(reminder.nextAtMs);
         nextLabel.textContent = !next ? t('backup.nextStarts') : (Date.now() >= next.getTime() ? t('backup.nextDueNow') : t('backup.nextOn', {date:localDateLabel(next)}));
       }
     }
@@ -9706,10 +9705,10 @@ function resolveWeighInNotificationPolicy({cadence,latest,anchorAt,nowMs,deliver
   const token = `${normalizedCadence}:${tokenBase}`;
   return {cadence:normalizedCadence,cadenceMs,anchorMs,token,due:nowMs >= anchorMs + cadenceMs && deliveredToken !== token,initializeAnchorAt:null};
 }
-// Pure backup-reminder due-time and notification-token policy.
+// Pure backup-reminder due-time, next-date and notification-token policy.
 function resolveBackupReminderPolicy({hasData,firstDataAt,lastBackupAt,nowMs,reminderMs}) {
   if (!hasData || !Number.isFinite(nowMs) || !Number.isFinite(reminderMs) || reminderMs < 0)
-    return {due:false,baseMs:null,token:null};
+    return {due:false,baseMs:null,nextAtMs:null,token:null};
   const timestamp = value => {
     if (value == null || value === '') return null;
     const parsed = new Date(value).getTime();
@@ -9718,9 +9717,11 @@ function resolveBackupReminderPolicy({hasData,firstDataAt,lastBackupAt,nowMs,rem
   const firstMs = timestamp(firstDataAt);
   const lastMs = timestamp(lastBackupAt);
   const baseMs = firstMs == null ? lastMs : lastMs == null ? firstMs : Math.max(firstMs,lastMs);
-  if (baseMs == null) return {due:false,baseMs:null,token:null};
-  const due = nowMs - baseMs >= reminderMs;
-  return {due,baseMs,token:due ? new Date(baseMs).toISOString() : null};
+  if (baseMs == null) return {due:false,baseMs:null,nextAtMs:null,token:null};
+  const nextAtMs = baseMs + reminderMs;
+  if (!Number.isFinite(nextAtMs)) return {due:false,baseMs:null,nextAtMs:null,token:null};
+  const due = nowMs >= nextAtMs;
+  return {due,baseMs,nextAtMs,token:due ? new Date(baseMs).toISOString() : null};
 }
 // Pure canonical backup-dataset signature policy.
 function buildBackupDatasetSignature(sourceData, serialize, hash) {
