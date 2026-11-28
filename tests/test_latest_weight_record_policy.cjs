@@ -14,6 +14,24 @@ const input = [older,middle,newest];
 const before = JSON.stringify(input);
 assert.equal(selectLatestWeightRecordPolicy(input), newest, 'latest valid timestamp must win');
 assert.equal(selectLatestWeightRecordPolicy([newest,{id:'invalid',when:'not-a-date'}]), newest, 'invalid timestamps must be ignored');
+assert.equal(selectLatestWeightRecordPolicy(null), null, 'non-array history must return null');
+assert.equal(selectLatestWeightRecordPolicy(undefined), null, 'missing history must return null');
+assert.equal(selectLatestWeightRecordPolicy({0:newest,length:1}), null, 'array-like objects must not be treated as record arrays');
+assert.equal(
+  selectLatestWeightRecordPolicy([null,undefined,false,0,'not-a-record',newest]),
+  newest,
+  'null, missing and primitive entries must be ignored'
+);
+assert.equal(
+  selectLatestWeightRecordPolicy([{id:'symbol-date',when:Symbol('invalid')},newest]),
+  newest,
+  'timestamps that throw during date parsing must be ignored'
+);
+assert.equal(
+  selectLatestWeightRecordPolicy([{id:'missing-date'},newest]),
+  newest,
+  'records without timestamps must be ignored'
+);
 assert.equal(selectLatestWeightRecordPolicy([]), null, 'empty history must return null');
 assert.equal(selectLatestWeightRecordPolicy([{id:'invalid',when:'not-a-date'}]), null, 'history without valid timestamps must return null');
 const tied = {id:'tie',when:newest.when,kg:78};
