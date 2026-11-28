@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.25" />
+  <meta name="ft-app-version" content="1.21.26" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -2031,7 +2031,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.25';
+  const APP_VERSION = '1.21.26';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -8183,25 +8183,7 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     if (sourceData === data && backupDatasetSignatureCache &&
         backupDatasetSignatureCache.source === data && backupDatasetSignatureCache.revision === revision)
       return backupDatasetSignatureCache.signature;
-    // IndexedDB getAll() returns rows in primary-key order, which may differ
-    // from the in-memory array order used when an external backup was created.
-    // Dataset identity is order-independent: canonicalize each record collection
-    // by stable ID before hashing so a storage reload cannot falsely mark a
-    // backup stale merely because its arrays were reordered.
-    const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => {
-      const left=String(a?.id ?? ''), right=String(b?.id ?? '');
-      return left < right ? -1 : left > right ? 1 : 0;
-    });
-    const tracked = {
-      activeStart:sourceData.activeStart || null,
-      activeTimeZone:sourceData.activeTimeZone || null,
-      activeGoalHours:sourceData.activeGoalHours ?? null,
-      activeCreatedAt:sourceData.activeCreatedAt || null,
-      activeModifiedAt:sourceData.activeModifiedAt || null,
-      records:byId(sourceData.records), deletedFasts:byId(sourceData.deletedFasts),
-      weights:byId(sourceData.weights), deletedWeights:byId(sourceData.deletedWeights)
-    };
-    const signature = 'v1:' + fnv1a64Hex(stableStringify(tracked));
+    const signature = buildBackupDatasetSignature(sourceData, stableStringify, fnv1a64Hex);
     if (sourceData === data) backupDatasetSignatureCache = {source:data,revision,signature};
     return signature;
   }
@@ -9739,6 +9721,24 @@ function resolveBackupReminderPolicy({hasData,firstDataAt,lastBackupAt,nowMs,rem
   if (baseMs == null) return {due:false,baseMs:null,token:null};
   const due = nowMs - baseMs >= reminderMs;
   return {due,baseMs,token:due ? new Date(baseMs).toISOString() : null};
+}
+// Pure canonical backup-dataset signature policy.
+function buildBackupDatasetSignature(sourceData, serialize, hash) {
+  const byId = list => (Array.isArray(list) ? list : []).slice().sort((a,b) => {
+    const left=String(a?.id ?? ''), right=String(b?.id ?? '');
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
+  const tracked = {
+    activeStart:sourceData.activeStart || null,
+    activeTimeZone:sourceData.activeTimeZone || null,
+    activeGoalHours:sourceData.activeGoalHours ?? null,
+    activeCreatedAt:sourceData.activeCreatedAt || null,
+    activeModifiedAt:sourceData.activeModifiedAt || null,
+    records:byId(sourceData.records), deletedFasts:byId(sourceData.deletedFasts),
+    weights:byId(sourceData.weights), deletedWeights:byId(sourceData.deletedWeights)
+  };
+  if (typeof serialize !== 'function' || typeof hash !== 'function') throw new TypeError('Backup signature serializer and hash functions are required');
+  return 'v1:' + hash(serialize(tracked));
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
