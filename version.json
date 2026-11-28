@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.28",
+  "version": "1.21.29",
   "released": "2026-11-28",
-  "notes": "Isolate and regression-test randomized no-repeat stop-riddle selection.",
+  "notes": "Ignore malformed weight-history entries when selecting the latest record for reminders.",
   "entry": "./index.html",
   "shell": [
     "./",
