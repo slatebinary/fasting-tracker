@@ -31,7 +31,7 @@ def main():
         assert page.locator('#integrityModal').is_visible()
         summary=page.locator('#integritySummary').inner_text().lower();issues=page.locator('#integrityIssueList').inner_text();assert 'no problems' in summary or 'passed' in summary, f'{summary}; issues: {issues}'
         page.locator('#integrityCloseBtn').click();page.locator('.tab[data-screen="history"]').click();page.wait_for_timeout(100)
-        text=page.locator('#historyList').inner_text();assert '72h' in text and page.locator('#historyList .historyRow').count()>=6
+        text=page.locator('#historyList').inner_text();assert '72 h (3 days 0h 0m)' in text and page.locator('#historyList .historyRow').count()>=6
         assert not errors,errors[:5]
         browser.close()
     print('PASS: leap day, midnight crossing, spring/autumn DST, travel timezone and 72-hour fast survive import and integrity checks')
