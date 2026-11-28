@@ -5,7 +5,7 @@ layout: null
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="ft-app-version" content="1.21.27" />
+  <meta name="ft-app-version" content="1.21.28" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
   <meta name="theme-color" content="#ffffff" />
@@ -2031,7 +2031,7 @@ html[data-theme="high-contrast-light"] :is(button,input,select,textarea,a,summar
     es: Object.freeze({ locale: 'es', dir: 'ltr', label: 'Español', manifestSuffix: '-es', appTitle: 'Ayuno' })
   });
   const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGE_META));
-  const APP_VERSION = '1.21.27';
+  const APP_VERSION = '1.21.28';
   const UPDATE_PROTOCOL_VERSION = 1;
   const FUTURE_TOLERANCE_MS = 60 * 1000;
   const SNAPSHOT_RECENT_KEEP = 5;
@@ -4917,22 +4917,15 @@ function scheduleRollingSnapshot(reason = 'automatic change') {
     } catch { return { seen: [], lastId: null }; }
   }
 
+  const STOP_ACTIVITY_RIDDLE_IDS = Object.freeze(STOP_ACTIVITY_PUZZLES.map(riddle => riddle.id));
+
   function nextStopActivityPuzzle() {
     const state = loadStopRiddleState();
-    let available = STOP_ACTIVITY_PUZZLES.filter(riddle => !state.seen.includes(riddle.id));
-    if (!available.length) {
-      available = STOP_ACTIVITY_PUZZLES.filter(riddle => riddle.id !== state.lastId);
-      state.seen = [];
-    }
-    for (let i = available.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [available[i], available[j]] = [available[j], available[i]];
-    }
-    const selected = available[0];
-    state.seen.push(selected.id);
-    state.lastId = selected.id;
+    const selection = resolveStopRiddleSelectionPolicy(STOP_ACTIVITY_RIDDLE_IDS, state.seen, state.lastId, Math.random());
+    state.seen = selection.seen;
+    state.lastId = selection.lastId;
     try { localStorage.setItem(STOP_RIDDLE_STATE_KEY, JSON.stringify(state)); } catch {}
-    return selected;
+    return STOP_ACTIVITY_PUZZLES.find(riddle => riddle.id === selection.id) || null;
   }
 
   function stopRiddleText(riddle, field) {
@@ -9740,6 +9733,34 @@ function buildBackupDatasetSignature(sourceData, serialize, hash) {
   };
   if (typeof serialize !== 'function' || typeof hash !== 'function') throw new TypeError('Backup signature serializer and hash functions are required');
   return 'v1:' + hash(serialize(tracked));
+}
+// Pure randomized selection policy for the optional stop-dialog riddle bank.
+function resolveStopRiddleSelectionPolicy(riddleIds, seenIds, lastId, randomValue) {
+  const ids = Array.isArray(riddleIds)
+    ? [...new Set(riddleIds.filter(id => Number.isInteger(id)))]
+    : [];
+  if (!ids.length) return {id:null,seen:[],lastId:null};
+
+  const validIds = new Set(ids);
+  const seen = Array.isArray(seenIds)
+    ? [...new Set(seenIds.filter(id => Number.isInteger(id) && validIds.has(id)))]
+    : [];
+  let available = ids.filter(id => !seen.includes(id));
+  let nextSeen = seen;
+
+  if (!available.length) {
+    available = ids.filter(id => id !== lastId);
+    if (!available.length) available = ids;
+    nextSeen = [];
+  }
+
+  const random = Number.isFinite(randomValue)
+    ? Math.min(1 - Number.EPSILON, Math.max(0, randomValue))
+    : 0;
+  const selectedIndex = Math.floor(random * available.length);
+  const id = available[selectedIndex];
+  nextSeen = [...nextSeen, id];
+  return {id,seen:nextSeen,lastId:id};
 }
   function compareVersions(a, b) {
     const pa = String(a).split('.').map(x => Number.parseInt(x, 10) || 0);
