@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Regression: selected fasting Timeline segment shows actual duration versus that fast's saved target."""
-import sys, datetime
+import sys, datetime, json
+from pathlib import Path
 from browser_perf_common import inlined_html, STORAGE_SHIM
+APP_VERSION=json.loads((Path(__file__).resolve().parents[1]/'version.json').read_text(encoding='utf-8'))['version']
 try:
     from playwright.sync_api import sync_playwright
 except Exception as exc:
@@ -27,7 +29,7 @@ with sync_playwright() as p:
     page.evaluate(STORAGE_SHIM)
     page.evaluate("data => { __seedFastingDb(data, []); localStorage.setItem('fastingTracker.appMeta', JSON.stringify({lastAppVersion:'1.12.2',seenAt:new Date().toISOString()})); }", data)
     page.set_content(inlined_html(),wait_until='domcontentloaded')
-    page.wait_for_function("document.querySelector('#appVersionLabel')?.textContent === 'v1.12.2'",timeout=20000)
+    page.wait_for_function(f"document.querySelector('#appVersionLabel')?.textContent === 'v{APP_VERSION}'",timeout=20000)
     page.locator('.tab[data-screen="stats"]').click()
     page.wait_for_function("document.querySelector('#stats')?.classList.contains('active')",timeout=5000)
     page.wait_for_timeout(150)
