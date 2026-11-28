@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.27",
+  "version": "1.21.28",
   "released": "2026-11-28",
-  "notes": "Align the displayed next external-backup reminder date with the actual reminder due-time anchor.",
+  "notes": "Isolate and regression-test randomized no-repeat stop-riddle selection.",
   "entry": "./index.html",
   "shell": [
     "./",
