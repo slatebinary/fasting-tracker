@@ -30,6 +30,13 @@ result=resolve({cadence:'daily',latest:null,anchorAt:new Date(now-day).toISOStri
 assert.equal(result.due,true,'anchor reminder is due at exact cadence boundary');
 assert.equal(result.token,`daily:${new Date(now-day).toISOString()}`);
 assert.equal(resolve({cadence:'daily',latest:{...latest,when:'invalid'},anchorAt:null,nowMs:now,deliveredToken:null}),null,'invalid latest measurement is rejected');
+assert.equal(resolve({cadence:'daily',latest:{...latest,when:Symbol('bad-date')},anchorAt:null,nowMs:now,deliveredToken:null}),null,'throwing latest timestamps are rejected without throwing');
+assert.equal(resolve({cadence:'daily',latest:{...latest,when:{toString(){throw new Error('bad date')}}},anchorAt:null,nowMs:now,deliveredToken:null}),null,'timestamp conversion exceptions are contained');
+assert.equal(resolve({cadence:'daily',latest:{when:new Date(now-day).toISOString()},anchorAt:null,nowMs:now,deliveredToken:null}),null,'latest records without stable IDs are rejected');
+assert.equal(resolve({cadence:'daily',latest:Symbol('bad-record'),anchorAt:null,nowMs:now,deliveredToken:null}),null,'non-object latest records are rejected');
+assert.equal(resolve({cadence:'daily',latest:null,anchorAt:Symbol('bad-anchor'),nowMs:now,deliveredToken:null}).initializeAnchorAt,new Date(now).toISOString(),'throwing anchor timestamps request safe initialization');
+assert.equal(resolve({cadence:'daily',latest:null,anchorAt:{toString(){throw new Error('bad anchor')}},nowMs:now,deliveredToken:null}).initializeAnchorAt,new Date(now).toISOString(),'anchor conversion exceptions are contained');
+assert.equal(resolve({cadence:'daily',latest:null,anchorAt:null,nowMs:1e300,deliveredToken:null}),null,'out-of-range finite current times are rejected');
 assert.equal(resolve({cadence:'daily',latest,anchorAt:null,nowMs:NaN,deliveredToken:null}),null,'invalid current time is rejected');
 assert.equal(resolve({cadence:'daily',latest:null,anchorAt:null,nowMs:NaN,deliveredToken:null}),null);
 assert.equal(JSON.stringify(latest),before,'policy must not mutate source measurement');
