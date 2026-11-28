@@ -79,22 +79,15 @@
     } catch { return { seen: [], lastId: null }; }
   }
 
+  const STOP_ACTIVITY_RIDDLE_IDS = Object.freeze(STOP_ACTIVITY_PUZZLES.map(riddle => riddle.id));
+
   function nextStopActivityPuzzle() {
     const state = loadStopRiddleState();
-    let available = STOP_ACTIVITY_PUZZLES.filter(riddle => !state.seen.includes(riddle.id));
-    if (!available.length) {
-      available = STOP_ACTIVITY_PUZZLES.filter(riddle => riddle.id !== state.lastId);
-      state.seen = [];
-    }
-    for (let i = available.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [available[i], available[j]] = [available[j], available[i]];
-    }
-    const selected = available[0];
-    state.seen.push(selected.id);
-    state.lastId = selected.id;
+    const selection = resolveStopRiddleSelectionPolicy(STOP_ACTIVITY_RIDDLE_IDS, state.seen, state.lastId, Math.random());
+    state.seen = selection.seen;
+    state.lastId = selection.lastId;
     try { localStorage.setItem(STOP_RIDDLE_STATE_KEY, JSON.stringify(state)); } catch {}
-    return selected;
+    return STOP_ACTIVITY_PUZZLES.find(riddle => riddle.id === selection.id) || null;
   }
 
   function stopRiddleText(riddle, field) {
