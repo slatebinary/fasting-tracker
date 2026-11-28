@@ -1,8 +1,8 @@
 {
   "protocolVersion": 1,
-  "version": "1.21.26",
+  "version": "1.21.27",
   "released": "2026-11-28",
-  "notes": "Extract backup dataset signature canonicalization into a deterministic pure policy.",
+  "notes": "Align the displayed next external-backup reminder date with the actual reminder due-time anchor.",
   "entry": "./index.html",
   "shell": [
     "./",

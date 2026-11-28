@@ -1,3 +1,9 @@
+## v1.21.27 — 2026-11-28
+
+- Correct the displayed next external-backup reminder date so it uses the same later-of-first-data-or-last-backup anchor as the actual due calculation.
+- Derive the due state, next reminder date and notification token from one shared policy result, preventing the status display and notification schedule from disagreeing.
+- Add deterministic coverage for the next-date boundary, missing backups and a first-data timestamp later than the last backup. No backup contents, formats, stored records or storage schema changes.
+
 ## v1.21.26 — 2026-11-28
 
 - Extract the backup dataset signature projection and stable-ID ordering into a pure policy.

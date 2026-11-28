@@ -90,7 +90,8 @@
     label.textContent = last ? localDateTimeLabel(last, deviceTimeZone()) : t('backup.noneYet');
     const freshness=backupFreshnessState();
     if(freshnessLabel){freshnessLabel.classList.toggle('good',freshness.state==='current');freshnessLabel.classList.toggle('warn',freshness.state==='stale'||freshness.state==='never');freshnessLabel.textContent=(freshness.state==='stale'||freshness.state==='never')?pendingBackupDetail():freshness.state==='current'?`${t('backup.current')} — ${localDateTimeLabel(freshness.last, deviceTimeZone())}`:freshness.state==='stale'?t('backup.changedSince'):freshness.state==='never'?t('backup.recommended'):t('backup.noData');}
-    const due = backupIsDue();
+    const reminder = backupReminderPolicy();
+    const due = reminder.due;
     renderFastingBackupIndicator(freshness, due);
     const snapshotAttention = hasBackupWorthyData() && (snapshotProtectionState.status === 'failed' || snapshotProtectionState.status === 'reduced');
     // The compact fasting backup action already covers aged and missing exports.
@@ -106,9 +107,7 @@
     if (nextLabel) {
       if (!hasBackupWorthyData()) nextLabel.textContent = t('backup.nextStarts');
       else {
-        const firstData = ensureBackupTrackingStarted();
-        const base = last || firstData;
-        const next = base ? new Date(base.getTime() + BACKUP_REMINDER_MS) : null;
+        const next = reminder.nextAtMs == null ? null : new Date(reminder.nextAtMs);
         nextLabel.textContent = !next ? t('backup.nextStarts') : (Date.now() >= next.getTime() ? t('backup.nextDueNow') : t('backup.nextOn', {date:localDateLabel(next)}));
       }
     }
