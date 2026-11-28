@@ -47,7 +47,7 @@ with sync_playwright() as p:
     }""", {'x':client_x,'y':client_y})
     page.wait_for_timeout(100)
     detail=page.locator('#chartDetailText').inner_text()
-    if '13h 5m of 23h 0m' not in detail:
+    if '13.08 h (13h 5m) of 23 h (23h 0m)' not in detail:
         print('FAIL: selected fasting segment did not show duration versus saved target:',detail); sys.exit(1)
     if errors:
         print('FAIL: browser errors: '+' | '.join(errors[:3])); sys.exit(1)
