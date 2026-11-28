@@ -1,3 +1,9 @@
+## v1.21.29 — 2026-11-28
+
+- Harden latest-weight record selection used by weigh-in reminders: ignore missing/non-array history, null or primitive entries, missing timestamps and timestamps that cannot be parsed.
+- Preserve latest-valid-timestamp selection and first-record tie behaviour.
+- Add regression coverage for malformed collections and entries. No changes to valid weight records, reminder cadence, notification tokens, storage schema or backup formats.
+
 ## v1.21.28 — 2026-11-28
 
 - Isolate optional stop-dialog riddle selection into a pure policy, keeping the existing randomized no-repeat cycle and saved progress behaviour.
