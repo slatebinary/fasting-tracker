@@ -52,7 +52,7 @@
     }else if(mode==='success'){
       genericChartSelectedKey=item.key;const source=chartRangeRecords('success');statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailSuccess',{rate:formatNumber(item.successRate||0,0,0),reached:formatNumber(item.reached||0),count:formatNumber(item.count||0)}),records:recordsEndingInMonth(item.key,source)};drawFastSuccessChart();
     }else if(mode==='cumulative'){
-      cumulativeSelectedDayKey=item.key;const first=items[0];statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailCumulative',{hours:formatNumber(item.cumulativeHours||0,0,1),today:formatNumber((item.totalFastMs||0)/3600000,0,1)}),records:first?recordsOverlappingRange(first.startMs,item.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();
+      cumulativeSelectedDayKey=item.key;const first=items[0];statsDetailOverride={dayKey:item.key,title:item.label,text:t('stats.detailCumulative',{hours:compactDuration((item.cumulativeHours||0)*3600000),today:compactDuration(item.totalFastMs||0)}),records:first?recordsOverlappingRange(first.startMs,item.endMs,chartRangeRecords('cumulative')):[]};drawFastCumulativeChart();
     }
     renderChartDetailForMode();if(el('statsChartData')&&!el('statsChartData').hidden)renderStatsChartData();syncStatsHistoryNavigator();
   }
