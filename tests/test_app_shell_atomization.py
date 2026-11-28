@@ -11,7 +11,7 @@ source = ROOT / "src" / "app"
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 css = (source / "styles.css").read_text(encoding="utf-8")
 parts = sorted((source / "js").glob("*.js"))
-assert len(parts) == 86, f"Expected eighty-six ordered app fragments, found {len(parts)}"
+assert len(parts) == 87, f"Expected eighty-seven ordered app fragments, found {len(parts)}"
 
 # Global lifecycle listeners and recurring background tasks are kept outside settings/startup wiring.
 lifecycle_runtime = (source / "js" / "52-app-lifecycle-runtime.js").read_text(encoding="utf-8")
@@ -29,6 +29,12 @@ for marker in ("window.addEventListener('online'", "window.addEventListener('off
 for marker in ("setInterval(() =>", "setInterval(checkFastNotifications", "setInterval(checkMaintenanceNotifications", "queueStorageProtectionRefresh();", "setTimeout(maybeAutoOpenSetupGuide, 180)"):
     assert marker in lifecycle_runtime, f"application lifecycle module is missing scheduled task {marker}"
     assert marker not in settings_startup, f"scheduled task {marker} must not remain in settings/startup wiring"
+
+riddle_selection = (source / "js" / "43zj-stop-riddle-selection-policy.js").read_text(encoding="utf-8")
+assert "function resolveStopRiddleSelectionPolicy" in riddle_selection
+riddle_bank = (source / "js" / "19z-stop-riddle-bank.js").read_text(encoding="utf-8")
+assert "resolveStopRiddleSelectionPolicy(" in riddle_bank
+assert "function resolveStopRiddleSelectionPolicy" not in riddle_bank
 
 assert (source / "js" / "31-timeline-interaction.js").is_file()
 storage_pressure = (source / "js" / "43r-storage-pressure-policy.js").read_text(encoding="utf-8")
