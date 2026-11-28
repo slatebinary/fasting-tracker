@@ -23,6 +23,7 @@ assert.equal(compactDuration(715.3*H),'715.3 h (29d 19h 18m)');
 assert.equal(compactDuration((715.3/27)*H),'26.49 h (1d 2h 29m)');
 assert.equal(compactDuration(24*H),'24 h (24h 0m)','exactly 24 hours stays in hours/minutes');
 assert.equal(compactDuration(24*H+60000),'24.02 h (1d 0h 1m)','days begin above 24 hours');
+assert.equal(compactDuration(24*H+1),'24 h (1d 0h 0m)','any duration above 24 hours uses day units');
 assert.equal(compactDuration(23.5*H),'23.5 h (23h 30m)');
 assert.equal(compactDuration(.5*H),'0.5 h (30m)');
 assert.equal(totalHoursDuration(715.3*H),'715.3 h (29d 19h 18m)');
