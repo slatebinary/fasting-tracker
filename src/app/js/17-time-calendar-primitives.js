@@ -10,7 +10,7 @@
   function durationDisplay(ms, compact = true, includeMinutes = true) {
     ms = Math.max(0, Number(ms) || 0);
     const totalMin = Math.floor(ms / 60000);
-    const useDays = totalMin > 1440;
+    const useDays = ms > 86400000;
     const days = useDays ? Math.floor(totalMin / 1440) : 0;
     const hours = useDays ? Math.floor((totalMin % 1440) / 60) : Math.floor(totalMin / 60);
     const minutes = totalMin % 60;
