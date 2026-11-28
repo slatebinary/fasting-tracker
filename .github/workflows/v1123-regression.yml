@@ -55,6 +55,7 @@ on:
       - fix/v1.21.27-backup-reminder-next-date
       - refactor/v1.21.28-stop-riddle-selection-policy
       - fix/v1.21.29-weight-reminder-malformed-records
+      - fix/v1.21.30-weigh-in-policy-malformed-inputs
       - test/v1.21.9-pwa-startup-rollback-regression
       - test/v1.21.10-snapshot-retention-regression
       - feat/v1.21.0-extend-nonfasting-period
